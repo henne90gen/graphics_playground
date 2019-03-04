@@ -3,16 +3,15 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 #include <imgui.h>
-#include <string>
 
 class Scene {
   public:
-    Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, std::string name)
+    Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char* name)
         : window(window), backToMainMenu(backToMainMenu), name(name){};
     virtual ~Scene(){};
 
     void renderBackMenu() {
-        ImGui::Begin(name.c_str());
+        ImGui::Begin(name);
         ImGui::SetWindowPos(ImVec2(0, 0));
         ImGui::SetWindowSize(ImVec2(100, 60));
 
@@ -24,12 +23,12 @@ class Scene {
 
     virtual void tick() = 0;
 
-    std::string getName() { return name; }
+    const char* getName() { return name; }
 
   protected:
     GLFWwindow *window;
 
   private:
-    std::string name;
+    const char* name;
     std::function<void(void)> &backToMainMenu;
 };

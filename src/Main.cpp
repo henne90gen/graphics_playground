@@ -14,21 +14,23 @@
 #include "scenes/Triangle.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-    std::cout << "Mouse " << button << std::endl;
+    // std::cout << "Mouse " << button << std::endl;
 }
 
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
-    std::cout << "Scrolled " << xoffset << ", " << yoffset << std::endl;
+    // std::cout << "Scrolled " << xoffset << ", " << yoffset << std::endl;
 }
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    std::cout << "Key " << key << std::endl;
+    // std::cout << "Key " << key << std::endl;
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
     }
 }
 
-void charCallback(GLFWwindow *window, unsigned int c) { std::cout << "Entered character " << c << std::endl; }
+void charCallback(GLFWwindow *window, unsigned int c) {
+    //  std::cout << "Entered character " << c << std::endl;
+}
 
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
