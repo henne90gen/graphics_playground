@@ -6,6 +6,8 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(SOURCES 
     "${SRC_DIR}/Main.cpp"
     "${SRC_DIR}/ImGui.cpp"
+    "${SRC_DIR}/MainMenu.cpp"
+    "${SRC_DIR}/TestScene.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

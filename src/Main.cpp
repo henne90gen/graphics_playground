@@ -1,15 +1,31 @@
-#include "ImGui.h"
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+
+#include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <iostream>
+#include <vector>
 
-void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {}
+#include "ImGui.h"
+#include "MainMenu.h"
+#include "Scene.h"
+#include "TestScene.h"
 
-void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {}
+void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+    std::cout << "Mouse " << button << std::endl;
+}
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {}
+void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+    std::cout << "Scrolled " << xoffset << ", " << yoffset << std::endl;
+}
 
-void charCallback(GLFWwindow *window, unsigned int c) {}
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    std::cout << "Key " << key << std::endl;
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+        glfwSetWindowShouldClose(window, 1);
+    }
+}
+
+void charCallback(GLFWwindow *window, unsigned int c) { std::cout << "Entered character " << c << std::endl; }
 
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -18,46 +34,55 @@ void installCallbacks(GLFWwindow *window) {
     glfwSetCharCallback(window, charCallback);
 }
 
-void newFrame(GLFWwindow *window) { ImGui::NewFrame(); }
+void updateViewport(GLFWwindow *window) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(0, 0, 0, 1);
+}
 
 int main() {
     GLFWwindow *window;
 
-    /* Initialize the library */
-    if (!glfwInit())
+    if (!glfwInit()) {
         return -1;
+    }
 
-    /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
     }
 
-    /* Make the window's context current */
+    installCallbacks(window);
     glfwMakeContextCurrent(window);
-
-    /* Initialize glad */
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     initImGui(window);
 
-    float f = 0.0;
-    char buf[255] = {};
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    unsigned int currentSceneIndex = 0;
 
-    /* Loop until the user closes the window */
+    std::vector<Scene *> scenes = std::vector<Scene *>();
+    MainMenu mainMenu = MainMenu(scenes, &currentSceneIndex);
+
+    std::function<void(void)> backToMainMenu = [&currentSceneIndex, &mainMenu]() { 
+        currentSceneIndex = 0;
+        mainMenu.activate();
+    };
+    scenes.push_back(new TestScene(window, backToMainMenu));
+
     while (!glfwWindowShouldClose(window)) {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
-
         startImGuiFrame();
-        ImGui::ColorEdit3("clear color", (float *)&clear_color);
+        updateViewport(window);
 
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        if (mainMenu.isActive()) {
+            mainMenu.tick();
+        } else {
+            scenes[currentSceneIndex]->renderBackMenu();
+            scenes[currentSceneIndex]->tick();
+        }
+
         finishImGuiFrame();
 
         glfwSwapBuffers(window);
