@@ -5,9 +5,11 @@ project(Playground)
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(SOURCES 
     "${SRC_DIR}/Main.cpp"
-    "${SRC_DIR}/ImGui.cpp"
+    "${SRC_DIR}/ImGuiUtils.cpp"
     "${SRC_DIR}/MainMenu.cpp"
-    "${SRC_DIR}/TestScene.cpp"
+    "${SRC_DIR}/scenes/TestScene.cpp"
+    "${SRC_DIR}/scenes/Triangle.cpp"
+    "${SRC_DIR}/scenes/AdvancedTriangle.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -31,6 +33,10 @@ add_library(glad "${GLAD_DIR}/src/glad.c")
 target_include_directories(glad PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} glad)
+
+# GLM
+set(GLM_DIR glm)
+target_include_directories(${PROJECT_NAME} PRIVATE "${GLM_DIR}")
 
 # ImGui
 set(IMGUI_DIR imgui)

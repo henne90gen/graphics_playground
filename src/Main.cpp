@@ -1,14 +1,17 @@
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <imgui.h>
 #include <iostream>
 #include <vector>
 
-#include "ImGui.h"
+#include "ImGuiUtils.h"
 #include "MainMenu.h"
-#include "Scene.h"
-#include "TestScene.h"
+#include "scenes/AdvancedTriangle.h"
+#include "scenes/Scene.h"
+#include "scenes/TestScene.h"
+#include "scenes/Triangle.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     std::cout << "Mouse " << button << std::endl;
@@ -64,20 +67,22 @@ int main() {
     unsigned int currentSceneIndex = 0;
 
     std::vector<Scene *> scenes = std::vector<Scene *>();
-    MainMenu mainMenu = MainMenu(scenes, &currentSceneIndex);
+    MainMenu mainMenu = MainMenu(window, scenes, &currentSceneIndex);
 
-    std::function<void(void)> backToMainMenu = [&currentSceneIndex, &mainMenu]() { 
+    std::function<void(void)> backToMainMenu = [&currentSceneIndex, &mainMenu]() {
         currentSceneIndex = 0;
         mainMenu.activate();
     };
     scenes.push_back(new TestScene(window, backToMainMenu));
+    scenes.push_back(new Triangle(window, backToMainMenu));
+    scenes.push_back(new AdvancedTriangle(window, backToMainMenu));
 
     while (!glfwWindowShouldClose(window)) {
         startImGuiFrame();
         updateViewport(window);
 
         if (mainMenu.isActive()) {
-            mainMenu.tick();
+            mainMenu.render();
         } else {
             scenes[currentSceneIndex]->renderBackMenu();
             scenes[currentSceneIndex]->tick();

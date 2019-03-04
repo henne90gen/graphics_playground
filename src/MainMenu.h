@@ -1,21 +1,26 @@
 #pragma once
 
-#include "Scene.h"
+#include "scenes/Scene.h"
 
 #include <vector>
 
 class MainMenu {
   public:
-    MainMenu(std::vector<Scene *> &scenes, unsigned int *currentSceneIndex)
-        : scenes(scenes), currentSceneIndex(currentSceneIndex){};
+    MainMenu(GLFWwindow *window, std::vector<Scene *> &scenes, unsigned int *currentSceneIndex)
+        : window(window), scenes(scenes), currentSceneIndex(currentSceneIndex) {
+        // Go straight to a certain scene
+        *currentSceneIndex = 1;
+        active = false;
+    };
     virtual ~MainMenu(){};
 
-    void tick();
+    void render();
 
     bool isActive() { return active; }
     void activate() { active = true; }
 
   private:
+    GLFWwindow *window;
     bool active = true;
     std::vector<Scene *> &scenes;
     unsigned int *currentSceneIndex;

@@ -12,7 +12,7 @@ class Scene {
     virtual ~Scene(){};
 
     void renderBackMenu() {
-        ImGui::Begin("Go back");
+        ImGui::Begin(name.c_str());
         ImGui::SetWindowPos(ImVec2(0, 0));
         ImGui::SetWindowSize(ImVec2(100, 60));
 

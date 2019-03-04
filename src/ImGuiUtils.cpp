@@ -1,4 +1,4 @@
-#include "ImGui.h"
+#include "ImGuiUtils.h"
 
 #include <imgui.h>
 
@@ -29,4 +29,14 @@ void startImGuiFrame() {
 void finishImGuiFrame() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void pickColorAndVertices(float *color, float *vertices) {
+    ImGui::Begin("Settings");
+    ImGui::ColorEdit3("Triangle Color", color);
+
+    ImGui::DragFloat2("Vertex 1", vertices, 0.01);
+    ImGui::DragFloat2("Vertex 2", vertices + 2, 0.01);
+    ImGui::DragFloat2("Vertex 3", vertices + 4, 0.01);
+    ImGui::End();
 }

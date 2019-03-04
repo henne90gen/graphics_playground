@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-void MainMenu::tick() {
+void MainMenu::render() {
     ImGui::Begin("Main Menu");
 
     for (unsigned int i = 0; i < scenes.size(); i++) {
@@ -11,6 +11,10 @@ void MainMenu::tick() {
             *currentSceneIndex = i;
             active = false;
         }
+    }
+
+    if (ImGui::Button("Exit")) {
+        glfwSetWindowShouldClose(window, 1);
     }
 
     ImGui::End();
