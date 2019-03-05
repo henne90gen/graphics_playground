@@ -1,4 +1,4 @@
-#include "scenes/AdvancedTriangle.h"
+#include "scenes/triangle/Triangle.h"
 
 #include <glad/glad.h>
 
@@ -86,12 +86,13 @@ GLuint loadShaders(const char *vertex_file_path, const char *fragment_file_path)
     return programId;
 }
 
-void AdvancedTriangle::tick() {
+void Triangle::tick() {
     static float color[3] = {1.0, 1.0, 1.0};
     static float vertices[6] = {-1, -1, 0, 1, 1, -1};
     pickColorAndVertices(color, vertices);
 
-    GLuint programId = loadShaders("../src/scenes/AdvancedTriangle.vertex", "../src/scenes/AdvancedTriangle.fragment");
+    GLuint programId =
+        loadShaders("../src/scenes/triangle/Triangle.vertex", "../src/scenes/triangle/Triangle.fragment");
 
     GL_Call(glUseProgram(programId));
 
@@ -125,5 +126,4 @@ void AdvancedTriangle::tick() {
     GL_Call(glDisableVertexAttribArray(0));
 
     GL_Call(glUseProgram(0));
-    
 }

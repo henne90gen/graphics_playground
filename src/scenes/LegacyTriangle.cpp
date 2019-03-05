@@ -1,11 +1,11 @@
-#include "scenes/Triangle.h"
+#include "scenes/LegacyTriangle.h"
 
 #include <glad/glad.h>
 
 #include "ImGuiUtils.h"
 #include "OpenGLUtils.h"
 
-void Triangle::tick() {
+void LegacyTriangle::tick() {
     GL_Call(glMatrixMode(GL_PROJECTION));
     GL_Call(glLoadIdentity());
 

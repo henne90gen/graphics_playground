@@ -1,3 +1,3 @@
-#include "TestScene.h"
+#include "scenes/TestScene.h"
 
 void TestScene::tick() {}

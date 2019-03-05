@@ -4,7 +4,8 @@
 
 class Triangle : public Scene {
   public:
-    Triangle(GLFWwindow *window, std::function<void()> &backToMainMenu) : Scene(window, backToMainMenu, "Triangle") {}
+    Triangle(GLFWwindow *window, std::function<void()> &backToMainMenu)
+        : Scene(window, backToMainMenu, "Triangle") {}
     virtual ~Triangle() {}
 
     virtual void tick() override;

@@ -9,8 +9,9 @@ set(SOURCES
     "${SRC_DIR}/OpenGLUtils.cpp"
     "${SRC_DIR}/MainMenu.cpp"
     "${SRC_DIR}/scenes/TestScene.cpp"
-    "${SRC_DIR}/scenes/Triangle.cpp"
-    "${SRC_DIR}/scenes/AdvancedTriangle.cpp"
+    "${SRC_DIR}/scenes/LegacyTriangle.cpp"
+    "${SRC_DIR}/scenes/triangle/Triangle.cpp"
+    "${SRC_DIR}/scenes/texture/Texture.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
