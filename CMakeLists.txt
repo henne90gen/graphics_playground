@@ -6,6 +6,7 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(SOURCES 
     "${SRC_DIR}/Main.cpp"
     "${SRC_DIR}/ImGuiUtils.cpp"
+    "${SRC_DIR}/OpenGLUtils.cpp"
     "${SRC_DIR}/MainMenu.cpp"
     "${SRC_DIR}/scenes/TestScene.cpp"
     "${SRC_DIR}/scenes/Triangle.cpp"
@@ -15,7 +16,7 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Wno-unused-parameter)
 
 # GLFW
 set(GLFW_DIR glfw)

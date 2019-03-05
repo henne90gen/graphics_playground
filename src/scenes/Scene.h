@@ -7,7 +7,7 @@
 class Scene {
   public:
     Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char* name)
-        : window(window), backToMainMenu(backToMainMenu), name(name){};
+        : window(window), name(name), backToMainMenu(backToMainMenu){};
     virtual ~Scene(){};
 
     void renderBackMenu() {
