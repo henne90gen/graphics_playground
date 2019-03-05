@@ -10,5 +10,7 @@ class TestScene : public Scene {
         : Scene(window, backToMainMenu, "Test Scene"){};
     virtual ~TestScene(){};
 
+    virtual void setup() override;
     virtual void tick() override;
+    virtual void destroy() override;
 };

@@ -8,5 +8,7 @@ class LegacyTriangle : public Scene {
         : Scene(window, backToMainMenu, "LegacyTriangle") {}
     virtual ~LegacyTriangle() {}
 
+    virtual void setup() override;
     virtual void tick() override;
+    virtual void destroy() override;
 };

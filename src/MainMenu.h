@@ -9,7 +9,7 @@ class MainMenu {
     MainMenu(GLFWwindow *window, std::vector<Scene *> &scenes, unsigned int *currentSceneIndex)
         : window(window), scenes(scenes), currentSceneIndex(currentSceneIndex) {
         // Go straight to a certain scene
-        *currentSceneIndex = 1;
+        *currentSceneIndex = 3;
         active = false;
     };
     virtual ~MainMenu(){};

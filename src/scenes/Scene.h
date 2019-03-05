@@ -6,7 +6,7 @@
 
 class Scene {
   public:
-    Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char* name)
+    Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char *name)
         : window(window), name(name), backToMainMenu(backToMainMenu){};
     virtual ~Scene(){};
 
@@ -21,14 +21,18 @@ class Scene {
         ImGui::End();
     }
 
+    virtual void setup() = 0;
+
     virtual void tick() = 0;
 
-    const char* getName() { return name; }
+    virtual void destroy() = 0;
+
+    const char *getName() { return name; }
 
   protected:
     GLFWwindow *window;
 
   private:
-    const char* name;
+    const char *name;
     std::function<void(void)> &backToMainMenu;
 };

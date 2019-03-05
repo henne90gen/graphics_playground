@@ -8,5 +8,7 @@ class Triangle : public Scene {
         : Scene(window, backToMainMenu, "Triangle") {}
     virtual ~Triangle() {}
 
+    virtual void setup() override;
     virtual void tick() override;
+    virtual void destroy() override;
 };

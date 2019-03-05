@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glad/glad.h>
+
 #define ASSERT(x)                                                                                                      \
     if (!(x))                                                                                                          \
         __builtin_debugtrap();
@@ -12,3 +14,7 @@
 void GL_ClearError();
 
 bool GL_LogCall(const char *function, const char *file, int line);
+
+GLuint loadShader(GLuint shaderType, const char *file_path);
+
+GLuint loadShaders(const char *vertex_file_path, const char *fragment_file_path);

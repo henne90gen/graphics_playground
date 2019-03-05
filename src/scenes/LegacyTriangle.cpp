@@ -5,6 +5,10 @@
 #include "ImGuiUtils.h"
 #include "OpenGLUtils.h"
 
+void LegacyTriangle::setup() {}
+
+void LegacyTriangle::destroy() {}
+
 void LegacyTriangle::tick() {
     GL_Call(glMatrixMode(GL_PROJECTION));
     GL_Call(glLoadIdentity());
