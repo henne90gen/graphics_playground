@@ -20,6 +20,8 @@ class MainMenu {
     void activate() { active = true; }
 
   private:
+    void goToScene(unsigned int sceneIndex);
+
     bool active = true;
     GLFWwindow *window;
     std::vector<Scene *> &scenes;

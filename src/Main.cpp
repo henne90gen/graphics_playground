@@ -8,11 +8,12 @@
 
 #include "ImGuiUtils.h"
 #include "MainMenu.h"
+#include "scenes/GammaCorrection.h"
+#include "scenes/LegacyTriangle.h"
 #include "scenes/Scene.h"
 #include "scenes/TestScene.h"
-#include "scenes/LegacyTriangle.h"
-#include "scenes/triangle/Triangle.h"
 #include "scenes/texture/Texture.h"
+#include "scenes/triangle/Triangle.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
@@ -72,7 +73,8 @@ int main() {
     std::vector<Scene *> scenes = std::vector<Scene *>();
     MainMenu mainMenu = MainMenu(window, scenes, &currentSceneIndex);
 
-    std::function<void(void)> backToMainMenu = [&currentSceneIndex, &mainMenu]() {
+    std::function<void(void)> backToMainMenu = [&currentSceneIndex, &mainMenu, &scenes]() {
+        scenes[currentSceneIndex]->destroy();
         currentSceneIndex = 0;
         mainMenu.activate();
     };
@@ -80,6 +82,7 @@ int main() {
     scenes.push_back(new LegacyTriangle(window, backToMainMenu));
     scenes.push_back(new Triangle(window, backToMainMenu));
     scenes.push_back(new Texture(window, backToMainMenu));
+    scenes.push_back(new GammaCorrection(window, backToMainMenu));
 
     while (!glfwWindowShouldClose(window)) {
         startImGuiFrame();
