@@ -3,6 +3,7 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <glad/glad.h>
 
 class Texture : public Scene {
   public:
@@ -12,4 +13,12 @@ class Texture : public Scene {
     virtual void setup() override;
     virtual void tick() override;
     virtual void destroy() override;
+
+  private:
+    GLuint programId;
+    GLuint vertexbuffer;
+    GLuint uvBuffer;
+    GLuint textureId;
+    GLuint positionLocation;
+    GLuint uvLocation;
 };

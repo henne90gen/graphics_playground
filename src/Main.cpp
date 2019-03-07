@@ -84,6 +84,8 @@ int main() {
     scenes.push_back(new Texture(window, backToMainMenu));
     scenes.push_back(new GammaCorrection(window, backToMainMenu));
 
+    mainMenu.goToScene(3);
+
     while (!glfwWindowShouldClose(window)) {
         startImGuiFrame();
         updateViewport(window);
