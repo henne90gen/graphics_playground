@@ -12,6 +12,7 @@
 #include "scenes/LegacyTriangle.h"
 #include "scenes/Scene.h"
 #include "scenes/TestScene.h"
+#include "scenes/cube/Cube.h"
 #include "scenes/texture/Texture.h"
 #include "scenes/triangle/Triangle.h"
 
@@ -83,6 +84,7 @@ int main() {
     scenes.push_back(new Triangle(window, backToMainMenu));
     scenes.push_back(new Texture(window, backToMainMenu));
     scenes.push_back(new GammaCorrection(window, backToMainMenu));
+    scenes.push_back(new Cube(window, backToMainMenu));
 
     mainMenu.goToScene(3);
 

@@ -13,6 +13,7 @@ set(SOURCES
     "${SRC_DIR}/scenes/LegacyTriangle.cpp"
     "${SRC_DIR}/scenes/triangle/Triangle.cpp"
     "${SRC_DIR}/scenes/texture/Texture.cpp"
+    "${SRC_DIR}/scenes/cube/Cube.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
