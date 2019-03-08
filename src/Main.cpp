@@ -13,7 +13,7 @@
 #include "scenes/Scene.h"
 #include "scenes/TestScene.h"
 #include "scenes/cube/Cube.h"
-#include "scenes/texture/Texture.h"
+#include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
@@ -82,7 +82,7 @@ int main() {
     scenes.push_back(new TestScene(window, backToMainMenu));
     scenes.push_back(new LegacyTriangle(window, backToMainMenu));
     scenes.push_back(new Triangle(window, backToMainMenu));
-    scenes.push_back(new Texture(window, backToMainMenu));
+    scenes.push_back(new TextureDemo(window, backToMainMenu));
     scenes.push_back(new GammaCorrection(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
 

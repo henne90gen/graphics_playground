@@ -4,6 +4,9 @@
 
 #include <glad/glad.h>
 
+#include "opengl/Shader.h"
+#include "opengl/VertexBuffer.h"
+
 class Triangle : public Scene {
   public:
     Triangle(GLFWwindow *window, std::function<void()> &backToMainMenu) : Scene(window, backToMainMenu, "Triangle") {}
@@ -14,9 +17,9 @@ class Triangle : public Scene {
     virtual void destroy() override;
 
   private:
-    GLuint programId;
-    GLuint vertexbuffer;
-    GLuint colorBuffer;
+    Shader *shader;
+    VertexBuffer *positionBuffer;
+    VertexBuffer *colorBuffer;
     GLuint positionLocation;
     GLuint colorLocation;
 };

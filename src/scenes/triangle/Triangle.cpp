@@ -6,20 +6,20 @@
 #include "OpenGLUtils.h"
 
 void Triangle::setup() {
-    GL_Call(glGenBuffers(1, &vertexbuffer));
-    GL_Call(glGenBuffers(1, &colorBuffer));
+    positionBuffer = new VertexBuffer();
+    colorBuffer = new VertexBuffer();
 
-    programId = loadShaders("../src/scenes/triangle/Triangle.vertex", "../src/scenes/triangle/Triangle.fragment");
-    GL_Call(glUseProgram(programId));
+    shader = new Shader("../src/scenes/triangle/Triangle.vertex", "../src/scenes/triangle/Triangle.fragment");
+    shader->bind();
 
-    GL_Call(positionLocation = glGetAttribLocation(programId, "position"));
+    positionBuffer->bind();
+    GL_Call(positionLocation = glGetAttribLocation(shader->getId(), "position"));
     GL_Call(glEnableVertexAttribArray(positionLocation));
-    GL_Call(glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer));
     GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *)0));
 
-    GL_Call(colorLocation = glGetAttribLocation(programId, "color"));
+    colorBuffer->bind();
+    GL_Call(colorLocation = glGetAttribLocation(shader->getId(), "color"));
     GL_Call(glEnableVertexAttribArray(colorLocation));
-    GL_Call(glBindBuffer(GL_ARRAY_BUFFER, colorBuffer));
     GL_Call(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, (void *)0));
 
     GL_Call(glUseProgram(0));
@@ -32,17 +32,15 @@ void Triangle::tick() {
     static float vertices[6] = {-1, -1, 0, 1, 1, -1};
     pickColorAndVertices(color, vertices);
 
-    GL_Call(glUseProgram(programId));
+    shader->bind();
 
-    GL_Call(glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer));
-    GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+    positionBuffer->update(vertices, sizeof(vertices));
 
     float colors[9] = {};
     for (int i = 0; i < 9; i++) {
         colors[i] = color[i % 3];
     }
-    GL_Call(glBindBuffer(GL_ARRAY_BUFFER, colorBuffer));
-    GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW));
+    colorBuffer->update(colors, sizeof(colors));
 
     GL_Call(glEnableVertexAttribArray(positionLocation));
     GL_Call(glEnableVertexAttribArray(colorLocation));

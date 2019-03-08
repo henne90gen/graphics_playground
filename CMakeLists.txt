@@ -8,11 +8,17 @@ set(SOURCES
     "${SRC_DIR}/ImGuiUtils.cpp"
     "${SRC_DIR}/OpenGLUtils.cpp"
     "${SRC_DIR}/MainMenu.cpp"
+    "${SRC_DIR}/opengl/VertexBuffer.cpp"
+    "${SRC_DIR}/opengl/IndexBuffer.cpp"
+    "${SRC_DIR}/opengl/VertexBufferLayout.cpp"
+    "${SRC_DIR}/opengl/VertexArray.cpp"
+    "${SRC_DIR}/opengl/Texture.cpp"
+    "${SRC_DIR}/opengl/Shader.cpp"
     "${SRC_DIR}/scenes/TestScene.cpp"
     "${SRC_DIR}/scenes/GammaCorrection.cpp"
     "${SRC_DIR}/scenes/LegacyTriangle.cpp"
     "${SRC_DIR}/scenes/triangle/Triangle.cpp"
-    "${SRC_DIR}/scenes/texture/Texture.cpp"
+    "${SRC_DIR}/scenes/texture_demo/TextureDemo.cpp"
     "${SRC_DIR}/scenes/cube/Cube.cpp"
 )
 

@@ -53,8 +53,9 @@ void main() {{
 def create_folder(name: str) -> Tuple[str, os.PathLike]:
     folder_name = name.lower()
     folder_path = os.path.join("./src/scenes", folder_name)
-    if not os.path.exists(folder_path):
-        os.mkdir(folder_path)
+    if os.path.exists(folder_path):
+        raise ValueError(f"Scene {name} already exists!")
+    os.mkdir(folder_path)
     return folder_name, folder_path
 
 
