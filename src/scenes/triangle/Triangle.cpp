@@ -22,7 +22,7 @@ void Triangle::setup() {
     GL_Call(glEnableVertexAttribArray(colorLocation));
     GL_Call(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, (void *)0));
 
-    GL_Call(glUseProgram(0));
+    shader->unbind();
 }
 
 void Triangle::destroy() {}
@@ -50,5 +50,5 @@ void Triangle::tick() {
     GL_Call(glDisableVertexAttribArray(colorLocation));
     GL_Call(glDisableVertexAttribArray(positionLocation));
 
-    GL_Call(glUseProgram(0));
+    shader->unbind();
 }

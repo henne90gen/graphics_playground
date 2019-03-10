@@ -2,9 +2,13 @@
 
 #include "scenes/Scene.h"
 
+#include <functional>
 #include <glad/glad.h>
 
-#include <functional>
+#include "opengl/Shader.h"
+#include "opengl/Texture.h"
+#include "opengl/VertexArray.h"
+#include "opengl/VertexBuffer.h"
 
 class Cube : public Scene {
   public:
@@ -16,10 +20,10 @@ class Cube : public Scene {
     virtual void destroy() override;
 
   private:
-    GLuint programId;
-    GLuint vertexbuffer;
-    GLuint uvBuffer;
-    GLuint textureId;
+    VertexArray *vertexArray;
+    Texture *texture;
+    Shader *shader;
+
     GLuint positionLocation;
     GLuint uvLocation;
 };
