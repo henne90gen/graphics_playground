@@ -5,6 +5,7 @@
 #include <functional>
 #include <glad/glad.h>
 
+#include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
 #include "opengl/Texture.h"
 #include "opengl/Shader.h"
@@ -19,6 +20,7 @@ class TextureDemo : public Scene {
     virtual void destroy() override;
 
   private:
+    VertexArray *vertexArray;
     VertexBuffer *positionBuffer;
     VertexBuffer *uvBuffer;
     Texture *texture;

@@ -86,7 +86,9 @@ int main() {
     scenes.push_back(new GammaCorrection(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
 
-    mainMenu.goToScene(3);
+    mainMenu.goToScene(5);
+
+    GL_Call(glEnable(GL_DEPTH_TEST));
 
     while (!glfwWindowShouldClose(window)) {
         startImGuiFrame();

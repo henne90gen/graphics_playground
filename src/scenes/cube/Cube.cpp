@@ -1,92 +1,89 @@
 #include "scenes/cube/Cube.h"
 
 #include <glad/glad.h>
+#include <glm/ext.hpp>
 
 #include "ImGuiUtils.h"
 #include "OpenGLUtils.h"
 
 void Cube::setup() {
-    vertexArray = new VertexArray();
-
-    static float vertices[12] = {
-        -1.0, 1.0,  //
-        -1.0, -1.0, //
-        1.0,  -1.0, //
-        -1.0, 1.0,  //
-        1.0,  -1.0, //
-        1.0,  1.0   //
-    };
-    static float uvCoords[12] = {
-        0.0, 1.0, //
-        0.0, 0.0, //
-        1.0, 0.0, //
-        0.0, 1.0, //
-        1.0, 0.0, //
-        1.0, 1.0  //
-    };
-    VertexBuffer positionBuffer = VertexBuffer(vertices, sizeof(vertices));
-    VertexBufferLayout positionLayout = VertexBufferLayout();
-    positionLayout.add<float>(shader, "position", 2);
-    vertexArray->addBuffer(positionBuffer, positionLayout);
-
-    VertexBuffer uvBuffer = VertexBuffer(uvCoords, sizeof(uvCoords));
-    VertexBufferLayout uvLayout = VertexBufferLayout();
-    uvLayout.add<float>(shader, "vertexUV", 2);
-    vertexArray->addBuffer(uvBuffer, uvLayout);
-
-    texture = new Texture();
-
-    shader =
-        new Shader("../src/scenes/texture_demo/TextureDemo.vertex", "../src/scenes/texture_demo/TextureDemo.fragment");
+    shader = new Shader("../src/scenes/cube/Cube.vertex", "../src/scenes/cube/Cube.fragment");
     shader->bind();
 
-    // positionBuffer->bind();
-    // GL_Call(positionLocation = glGetAttribLocation(shader->getId(), "position"));
-    // GL_Call(glEnableVertexAttribArray(positionLocation));
-    // GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *)0));
+    vertexArray = new VertexArray();
+    vertexArray->bind();
 
-    // uvBuffer->bind();
-    // GL_Call(uvLocation = glGetAttribLocation(shader->getId(), "vertexUV"));
-    // GL_Call(glEnableVertexAttribArray(uvLocation));
-    // GL_Call(glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *)0));
+    static float vertices[] = {
+            // back
+            -1.0f, -1.0f, -1.0f, 1, 0, 0, // 0
+            1.0f, -1.0f, -1.0f, 0, 1, 0,  // 1
+            1.0f, 1.0f, -1.0f, 0, 0, 1,   // 2
+            -1.0f, 1.0f, -1.0f, 1, 1, 0,  // 3
 
-    glActiveTexture(GL_TEXTURE0);
-    texture->bind();
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+            // front
+            -1.0f, -1.0f, 1.0f, 1, 0, 1, // 4
+            1.0f, -1.0f, 1.0f, 0, 1, 1,  // 5
+            1.0f, 1.0f, 1.0f, 1, 1, 1,   // 6
+            -1.0f, 1.0f, 1.0f, 0, 0, 0   // 7
+    };
+    auto *positionBuffer = new VertexBuffer(vertices, sizeof(vertices));
+    VertexBufferLayout bufferLayout;
+    bufferLayout.add<float>(shader, "position", 3);
+    bufferLayout.add<float>(shader, "color", 3);
+    vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
-    shader->setUniform<int>("textureSampler", 0);
+    unsigned int indices[] = {
+            0, 1, 2, //
+            0, 2, 3, //
+
+            4, 5, 6, //
+            4, 6, 7, //
+
+            5, 1, 2, //
+            5, 2, 6, //
+
+            7, 6, 2, //
+            7, 2, 3,//
+    };
+    indexBuffer = new IndexBuffer(indices, sizeof(indices) / sizeof(float));
 }
 
 void Cube::destroy() {}
 
 void Cube::tick() {
-    static float color[3] = {1.0, 1.0, 1.0};
-    pickColor(color);
+    static glm::vec3 translation = glm::vec3(0.0f, 0.0f, -4.5f);
+    static glm::vec3 modelRotation = glm::vec3(0.0f);
+    static glm::vec3 cameraRotation = glm::vec3(0.0f);
+    static float scale = 1.0f;
+
+    ImGui::Begin("Settings");
+    ImGui::DragFloat3("Position", (float *) &translation, 0.05f);
+    ImGui::DragFloat3("Rotation", (float *) &modelRotation, 0.01f);
+    ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01f);
+    ImGui::DragFloat("Scale", &scale, 0.1f);
+    ImGui::End();
 
     shader->bind();
-
     vertexArray->bind();
 
-    unsigned int width = 128;
-    unsigned int height = 128;
-    char data[128 * 128 * 3] = {};
-    for (unsigned int i = 0; i < sizeof(data) / sizeof(char); i += 3) {
-        data[i] = color[0] * 255;
-        data[i + 1] = color[1] * 255;
-        data[i + 2] = color[2] * 255;
-    }
-    texture->update(data, width, height);
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
+    viewMatrix = glm::translate(viewMatrix, translation);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 1.33f, 0.1f, 10.f);
+    shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("viewMatrix", viewMatrix);
+    shader->setUniform("projectionMatrix", projectionMatrix);
 
-    GL_Call(glEnableVertexAttribArray(positionLocation));
-    GL_Call(glEnableVertexAttribArray(uvLocation));
-
-    GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
-
-    GL_Call(glDisableVertexAttribArray(uvLocation));
-    GL_Call(glDisableVertexAttribArray(positionLocation));
+    indexBuffer->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, 0));
 
     vertexArray->unbind();
 
-    GL_Call(glUseProgram(0));
+    shader->unbind();
 }

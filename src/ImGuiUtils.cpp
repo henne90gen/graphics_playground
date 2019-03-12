@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
+
 #include "examples/imgui_impl_glfw.cpp"
 #include "examples/imgui_impl_opengl3.cpp"
 
@@ -37,6 +38,10 @@ void pickColor(float *color) {
     ImGui::End();
 }
 
+void pickColor(glm::vec3 &color) {
+    pickColor((float *) &color);
+}
+
 void pickColorAndVertices(float *color, float *vertices) {
     ImGui::Begin("Settings");
     pickColor(color);
@@ -44,5 +49,11 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::DragFloat2("Vertex 1", vertices, 0.01);
     ImGui::DragFloat2("Vertex 2", vertices + 2, 0.01);
     ImGui::DragFloat2("Vertex 3", vertices + 4, 0.01);
+    ImGui::End();
+}
+
+void pickPosition(glm::vec3 &position) {
+    ImGui::Begin("Settings");
+    ImGui::DragFloat3("Position", (float *) &position, 0.1f);
     ImGui::End();
 }

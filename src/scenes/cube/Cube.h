@@ -9,6 +9,7 @@
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
+#include "opengl/IndexBuffer.h"
 
 class Cube : public Scene {
   public:
@@ -21,9 +22,6 @@ class Cube : public Scene {
 
   private:
     VertexArray *vertexArray;
-    Texture *texture;
     Shader *shader;
-
-    GLuint positionLocation;
-    GLuint uvLocation;
+    IndexBuffer *indexBuffer;
 };
