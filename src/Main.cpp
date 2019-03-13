@@ -8,7 +8,6 @@
 
 #include "ImGuiUtils.h"
 #include "MainMenu.h"
-#include "scenes/GammaCorrection.h"
 #include "scenes/LegacyTriangle.h"
 #include "scenes/Scene.h"
 #include "scenes/TestScene.h"
@@ -81,11 +80,10 @@ int main() {
     scenes.push_back(new LegacyTriangle(window, backToMainMenu));
     scenes.push_back(new Triangle(window, backToMainMenu));
     scenes.push_back(new TextureDemo(window, backToMainMenu));
-    scenes.push_back(new GammaCorrection(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
     scenes.push_back(new Landscape(window, backToMainMenu));
 
-    mainMenu.goToScene(6);
+    mainMenu.goToScene(5);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 

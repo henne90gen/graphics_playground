@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 
 #include "ImGuiUtils.h"
-#include "OpenGLUtils.h"
+#include "opengl/OpenGLUtils.h"
 
 void TextureDemo::setup() {
     shader = new Shader("../src/scenes/texture_demo/TextureDemo.vertex",

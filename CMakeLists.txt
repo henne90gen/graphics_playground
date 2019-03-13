@@ -3,25 +3,25 @@ cmake_minimum_required(VERSION 3.13)
 project(Playground)
 
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(SOURCES 
-    "${SRC_DIR}/Main.cpp"
-    "${SRC_DIR}/ImGuiUtils.cpp"
-    "${SRC_DIR}/OpenGLUtils.cpp"
-    "${SRC_DIR}/MainMenu.cpp"
-    "${SRC_DIR}/opengl/VertexBuffer.cpp"
-    "${SRC_DIR}/opengl/IndexBuffer.cpp"
-    "${SRC_DIR}/opengl/VertexBufferLayout.cpp"
-    "${SRC_DIR}/opengl/VertexArray.cpp"
-    "${SRC_DIR}/opengl/Texture.cpp"
-    "${SRC_DIR}/opengl/Shader.cpp"
-    "${SRC_DIR}/scenes/TestScene.cpp"
-    "${SRC_DIR}/scenes/GammaCorrection.cpp"
-    "${SRC_DIR}/scenes/LegacyTriangle.cpp"
-    "${SRC_DIR}/scenes/triangle/Triangle.cpp"
-    "${SRC_DIR}/scenes/texture_demo/TextureDemo.cpp"
-    "${SRC_DIR}/scenes/cube/Cube.cpp"
-    "${SRC_DIR}/scenes/landscape/Landscape.cpp"
-        src/PerlinNoise.cpp src/PerlinNoise.h src/SimplexNoise.cpp src/SimplexNoise.h)
+set(SOURCES
+        ${SRC_DIR}/Main.cpp
+        ${SRC_DIR}/ImGuiUtils.cpp
+        ${SRC_DIR}/OpenGLUtils.cpp
+        ${SRC_DIR}/MainMenu.cpp
+        ${SRC_DIR}/opengl/VertexBuffer.cpp
+        ${SRC_DIR}/opengl/IndexBuffer.cpp
+        ${SRC_DIR}/opengl/VertexBufferLayout.cpp
+        ${SRC_DIR}/opengl/VertexArray.cpp
+        ${SRC_DIR}/opengl/Texture.cpp
+        ${SRC_DIR}/opengl/Shader.cpp
+        ${SRC_DIR}/scenes/TestScene.cpp
+        ${SRC_DIR}/scenes/LegacyTriangle.cpp
+        ${SRC_DIR}/scenes/triangle/Triangle.cpp
+        ${SRC_DIR}/scenes/texture_demo/TextureDemo.cpp
+        ${SRC_DIR}/scenes/cube/Cube.cpp
+        ${SRC_DIR}/scenes/landscape/Landscape.cpp
+        ${SRC_DIR}/PerlinNoise.cpp
+        ${SRC_DIR}/SimplexNoise.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
