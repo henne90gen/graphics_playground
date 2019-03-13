@@ -33,17 +33,29 @@ void Cube::setup() {
     vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
     unsigned int indices[] = {
+            // front
             0, 1, 2, //
             0, 2, 3, //
 
+            // back
             4, 5, 6, //
             4, 6, 7, //
 
+            // right
             5, 1, 2, //
             5, 2, 6, //
 
+            // left
+            0, 4, 7, //
+            0, 7, 3, //
+
+            // top
             7, 6, 2, //
-            7, 2, 3,//
+            7, 2, 3, //
+
+            // bottom
+            4, 5, 1, //
+            4, 1, 0, //
     };
     indexBuffer = new IndexBuffer(indices, sizeof(indices) / sizeof(float));
 }
@@ -75,7 +87,7 @@ void Cube::tick() {
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, translation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 1.33f, 0.1f, 10.f);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), getAspectRatio(), 0.1f, 10.f);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);

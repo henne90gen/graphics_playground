@@ -5,10 +5,11 @@
 #include <imgui.h>
 
 class Scene {
-  public:
+public:
     Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char *name)
-        : window(window), name(name), backToMainMenu(backToMainMenu){};
-    virtual ~Scene(){};
+            : window(window), name(name), backToMainMenu(backToMainMenu) {};
+
+    virtual ~Scene() {};
 
     void renderBackMenu() {
         ImGui::Begin(name);
@@ -29,10 +30,15 @@ class Scene {
 
     const char *getName() { return name; }
 
-  protected:
+    void setAspectRatio(const float aspectRatio) { this->aspectRatio = aspectRatio; }
+
+protected:
     GLFWwindow *window;
 
-  private:
+    inline float getAspectRatio() { return aspectRatio; }
+
+private:
     const char *name;
+    float aspectRatio = 16.0f / 9.0f;
     std::function<void(void)> &backToMainMenu;
 };

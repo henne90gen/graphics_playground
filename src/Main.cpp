@@ -35,19 +35,16 @@ void charCallback(GLFWwindow *window, unsigned int c) {
     //  std::cout << "Entered character " << c << std::endl;
 }
 
+void resizeCallback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCharCallback(window, charCallback);
-}
-
-void updateViewport(GLFWwindow *window) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    int display_w, display_h;
-    glfwGetFramebufferSize(window, &display_w, &display_h);
-    glViewport(0, 0, display_w, display_h);
-    glClearColor(0, 0, 0, 1);
+    glfwSetWindowSizeCallback(window, resizeCallback);
 }
 
 int main() {
@@ -65,7 +62,7 @@ int main() {
 
     installCallbacks(window);
     glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
     initImGui(window);
 
@@ -91,12 +88,17 @@ int main() {
     GL_Call(glEnable(GL_DEPTH_TEST));
 
     while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0, 0, 0, 1);
+
         startImGuiFrame();
-        updateViewport(window);
 
         if (mainMenu.isActive()) {
             mainMenu.render();
         } else {
+            int windowWidth, windowHeight;
+            glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+            scenes[currentSceneIndex]->setAspectRatio((float) windowWidth / (float) windowHeight);
             scenes[currentSceneIndex]->renderBackMenu();
             scenes[currentSceneIndex]->tick();
         }
