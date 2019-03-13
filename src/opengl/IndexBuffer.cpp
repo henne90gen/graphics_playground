@@ -1,6 +1,6 @@
 #include "opengl/IndexBuffer.h"
 
-#include "OpenGLUtils.h"
+#include "Utils.h"
 
 IndexBuffer::IndexBuffer(const unsigned int *data, unsigned int count) : count(count) {
     GL_Call(glGenBuffers(1, &id));

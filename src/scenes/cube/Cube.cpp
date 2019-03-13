@@ -4,7 +4,7 @@
 #include <glm/ext.hpp>
 
 #include "ImGuiUtils.h"
-#include "opengl/OpenGLUtils.h"
+#include "opengl/Utils.h"
 
 void Cube::setup() {
     shader = new Shader("../src/scenes/cube/Cube.vertex", "../src/scenes/cube/Cube.fragment");

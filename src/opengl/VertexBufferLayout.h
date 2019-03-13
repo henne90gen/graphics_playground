@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenGLUtils.h"
+#include "Utils.h"
 
 #include <iostream>
 #include <string>

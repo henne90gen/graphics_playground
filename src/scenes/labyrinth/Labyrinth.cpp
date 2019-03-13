@@ -1,4 +1,4 @@
-#include "scenes/landscape/Landscape.h"
+#include "scenes/labyrinth/Labyrinth.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -6,8 +6,8 @@
 #include "SimplexNoise.h"
 #include "PerlinNoise.h"
 
-void Landscape::setup() {
-    shader = new Shader("../src/scenes/landscape/Landscape.vertex", "../src/scenes/landscape/Landscape.fragment");
+void Labyrinth::setup() {
+    shader = new Shader("../src/scenes/labyrinth/Labyrinth.vertex", "../src/scenes/labyrinth/Labyrinth.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();
@@ -16,17 +16,18 @@ void Landscape::setup() {
 #define WIDTH 100
 #define HEIGHT 100
 
-    static float vertices[WIDTH * HEIGHT * 2] = {};
+    static float vertices[WIDTH * HEIGHT * 3] = {};
     float *vertPtr = vertices;
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
             *vertPtr++ = (float) x;
             *vertPtr++ = (float) y;
+            *vertPtr++ = (float) 0.0;
         }
     }
     auto *positionBuffer = new VertexBuffer(vertices, sizeof(vertices));
     VertexBufferLayout positionLayout;
-    positionLayout.add<float>(shader, "position", 2);
+    positionLayout.add<float>(shader, "position", 3);
     vertexArray->addBuffer(*positionBuffer, positionLayout);
 
     unsigned int indices[WIDTH * HEIGHT * 6] = {};
@@ -44,59 +45,18 @@ void Landscape::setup() {
     indexBuffer = new IndexBuffer(indices, sizeof(indices) / sizeof(float));
 }
 
-void Landscape::destroy() {}
+void Labyrinth::destroy() {}
 
-void Landscape::tick() {
+void Labyrinth::tick() {
     static glm::vec3 translation = glm::vec3(-50.0f, -20.0f, -50.0f);
     static glm::vec3 modelRotation = glm::vec3(-1.0f, 0.0f, 0.0f);
     static glm::vec3 cameraRotation = glm::vec3(0.0f);
-    static glm::vec3 scale = glm::vec3(5.0f, 5.0f, 1.0f);
-    scale.z += 0.01f;
-    static glm::vec2 movement = glm::vec2(0.0f);
-    static int noiseMode = 0;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Scale", (float *) &scale, 0.01f);
-    ImGui::DragFloat2("Movement", (float *) &movement, 0.01f);
-
-    ImGui::BeginGroup();
-    ImGui::RadioButton("Perlin", &noiseMode, 0);
-    ImGui::RadioButton("Simplex", &noiseMode, 1);
-    ImGui::EndGroup();
-
     ImGui::End();
 
     shader->bind();
     vertexArray->bind();
-
-    PerlinNoise perlin;
-    auto simplex = SimplexNoise(1);
-    static float heights[WIDTH * HEIGHT] = {};
-    float maxHeight = 0;
-    for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
-            float realX = (float) x / scale.x + movement.x;
-            float realY = (float) y / scale.y + movement.y;
-
-            float height;
-            if (noiseMode == 0) {
-                height = (float) perlin.noise(realX, realY, scale.z);
-            } else {
-                height = ((float) simplex.noise3(realX, realY, scale.z) + 1.0f) / 2.0f;
-            }
-
-            heights[y * WIDTH + x] = height * 10.0f;
-            if (heights[y * WIDTH + x] > maxHeight) {
-                maxHeight = heights[y * WIDTH + x];
-            }
-        }
-    }
-    auto *heightBuffer = new VertexBuffer(heights, sizeof(heights));
-    VertexBufferLayout heightLayout;
-    heightLayout.add<float>(shader, "height", 1);
-    vertexArray->addBuffer(*heightBuffer, heightLayout);
-
-    shader->setUniform("maxHeight", maxHeight);
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));

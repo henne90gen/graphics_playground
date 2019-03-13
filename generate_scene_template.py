@@ -67,7 +67,7 @@ def write_template(file_path, template, **kwargs):
 
 def add_to_cmake_lists(cpp_path):
     cpp_path = cpp_path.replace("./", "").replace("src", "${SRC_DIR}")
-    cpp_path = f"    \"{cpp_path}\"\n"
+    cpp_path = f"        {cpp_path}\n"
 
     with open("CMakeLists.txt") as f:
         lines = f.readlines()

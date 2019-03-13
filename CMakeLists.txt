@@ -6,8 +6,10 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(SOURCES
         ${SRC_DIR}/Main.cpp
         ${SRC_DIR}/ImGuiUtils.cpp
-        ${SRC_DIR}/OpenGLUtils.cpp
         ${SRC_DIR}/MainMenu.cpp
+        ${SRC_DIR}/PerlinNoise.cpp
+        ${SRC_DIR}/SimplexNoise.cpp
+        ${SRC_DIR}/opengl/Utils.cpp
         ${SRC_DIR}/opengl/VertexBuffer.cpp
         ${SRC_DIR}/opengl/IndexBuffer.cpp
         ${SRC_DIR}/opengl/VertexBufferLayout.cpp
@@ -20,8 +22,8 @@ set(SOURCES
         ${SRC_DIR}/scenes/texture_demo/TextureDemo.cpp
         ${SRC_DIR}/scenes/cube/Cube.cpp
         ${SRC_DIR}/scenes/landscape/Landscape.cpp
-        ${SRC_DIR}/PerlinNoise.cpp
-        ${SRC_DIR}/SimplexNoise.cpp)
+        ${SRC_DIR}/scenes/labyrinth/Labyrinth.cpp
+        )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")

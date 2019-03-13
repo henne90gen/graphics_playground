@@ -1,4 +1,4 @@
-#include "OpenGLUtils.h"
+#include "Utils.h"
 
 #include <fstream>
 #include <iostream>

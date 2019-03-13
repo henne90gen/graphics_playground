@@ -15,6 +15,7 @@
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "scenes/landscape/Landscape.h"
+#include "scenes/labyrinth/Labyrinth.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
@@ -82,8 +83,9 @@ int main() {
     scenes.push_back(new TextureDemo(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
     scenes.push_back(new Landscape(window, backToMainMenu));
+    scenes.push_back(new Labyrinth(window, backToMainMenu));
 
-    mainMenu.goToScene(5);
+    mainMenu.goToScene(6);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 

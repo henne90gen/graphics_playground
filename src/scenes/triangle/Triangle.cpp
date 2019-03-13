@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 
 #include "ImGuiUtils.h"
-#include "opengl/OpenGLUtils.h"
+#include "opengl/Utils.h"
 
 void Triangle::setup() {
     positionBuffer = new VertexBuffer();

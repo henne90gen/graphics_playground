@@ -1,6 +1,6 @@
 #include "opengl/Texture.h"
 
-#include "OpenGLUtils.h"
+#include "Utils.h"
 
 Texture::Texture() { GL_Call(glGenTextures(1, &id)); }
 
