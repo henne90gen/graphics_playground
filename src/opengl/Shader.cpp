@@ -7,7 +7,7 @@
 #include <vector>
 
 Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
-    : vertexPath(vertexPath), fragmentPath(fragmentPath), id(0) {
+    : id(0) , vertexPath(vertexPath), fragmentPath(fragmentPath){
     compile();
 }
 

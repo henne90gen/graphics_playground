@@ -21,11 +21,6 @@ class TextureDemo : public Scene {
 
   private:
     VertexArray *vertexArray;
-    VertexBuffer *positionBuffer;
-    VertexBuffer *uvBuffer;
     Texture *texture;
     Shader *shader;
-
-    GLuint positionLocation;
-    GLuint uvLocation;
 };

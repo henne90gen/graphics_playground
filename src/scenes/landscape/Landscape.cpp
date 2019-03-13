@@ -47,7 +47,7 @@ void Landscape::setup() {
 void Landscape::destroy() {}
 
 void Landscape::tick() {
-    static glm::vec3 translation = glm::vec3(-50.0f, -10.0f, -50.0f);
+    static glm::vec3 translation = glm::vec3(-50.0f, -20.0f, -50.0f);
     static glm::vec3 modelRotation = glm::vec3(-1.0f, 0.0f, 0.0f);
     static glm::vec3 cameraRotation = glm::vec3(0.0f);
     static glm::vec3 scale = glm::vec3(5.0f, 5.0f, 1.0f);
