@@ -51,11 +51,19 @@ void Landscape::tick() {
     static glm::vec3 modelRotation = glm::vec3(-1.0f, 0.0f, 0.0f);
     static glm::vec3 cameraRotation = glm::vec3(0.0f);
     static glm::vec3 scale = glm::vec3(5.0f, 5.0f, 1.0f);
+    scale.z += 0.01f;
     static glm::vec2 movement = glm::vec2(0.0f);
+    static int noiseMode = 0;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Scale", (float *) &scale, 0.01f);
     ImGui::DragFloat2("Movement", (float *) &movement, 0.01f);
+
+    ImGui::BeginGroup();
+    ImGui::RadioButton("Perlin", &noiseMode, 0);
+    ImGui::RadioButton("Simplex", &noiseMode, 1);
+    ImGui::EndGroup();
+
     ImGui::End();
 
     shader->bind();
@@ -69,8 +77,14 @@ void Landscape::tick() {
         for (int x = 0; x < WIDTH; x++) {
             float realX = (float) x / scale.x + movement.x;
             float realY = (float) y / scale.y + movement.y;
-//            float height = (float) perlin.noise(realX, realY, scale.z);
-            float height = ((float) simplex.noise3(realX, realY, scale.z) + 1.0f) / 2.0f;
+
+            float height;
+            if (noiseMode == 0) {
+                height = (float) perlin.noise(realX, realY, scale.z);
+            } else {
+                height = ((float) simplex.noise3(realX, realY, scale.z) + 1.0f) / 2.0f;
+            }
+
             heights[y * WIDTH + x] = height * 10.0f;
             if (heights[y * WIDTH + x] > maxHeight) {
                 maxHeight = heights[y * WIDTH + x];
