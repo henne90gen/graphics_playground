@@ -3,19 +3,16 @@
 #include "scenes/Scene.h"
 
 #include <functional>
-#include <glad/glad.h>
 
-#include "opengl/Shader.h"
-#include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
-#include "opengl/VertexBuffer.h"
 #include "opengl/IndexBuffer.h"
 
-class Cube : public Scene {
+class Landscape : public Scene {
 public:
-    Cube(GLFWwindow *window, std::function<void(void)> &backToMainMenu) : Scene(window, backToMainMenu, "Cube") {};
+    Landscape(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
+            : Scene(window, backToMainMenu, "Landscape") {};
 
-    virtual ~Cube() {};
+    virtual ~Landscape() {};
 
     virtual void setup() override;
 
