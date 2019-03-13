@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include "PerlinNoise.h"
+
 void Landscape::setup() {
     shader = new Shader("../src/scenes/landscape/Landscape.vertex", "../src/scenes/landscape/Landscape.fragment");
     shader->bind();
@@ -44,29 +46,29 @@ void Landscape::setup() {
 void Landscape::destroy() {}
 
 void Landscape::tick() {
-    static glm::vec3 translation = glm::vec3(-4.5f, -1.5f, -50.0f);
+    static glm::vec3 translation = glm::vec3(-50.0f, -10.0f, -50.0f);
     static glm::vec3 modelRotation = glm::vec3(-1.0f, 0.0f, 0.0f);
     static glm::vec3 cameraRotation = glm::vec3(0.0f);
-    static float scale = 1.0f;
+    static glm::vec3 scale = glm::vec3(5.0f, 5.0f, 1.0f);
+    static glm::vec2 movement = glm::vec2(0.0f);
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Position", (float *) &translation, 0.05f);
-    ImGui::DragFloat3("Rotation", (float *) &modelRotation, 0.01f);
-    ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01f);
-    ImGui::DragFloat("Scale", &scale, 0.1f);
+    ImGui::DragFloat3("Scale", (float *) &scale, 0.01f);
+    ImGui::DragFloat2("Movement", (float *) &movement, 0.01f);
     ImGui::End();
 
     shader->bind();
     vertexArray->bind();
 
+    PerlinNoise perlin;
     static float heights[WIDTH * HEIGHT] = {};
     float maxHeight = 0;
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            float realX = (float) x / (float) WIDTH - 0.5f;
-            float realY = (float) y / (float) HEIGHT - 0.5f;
-            heights[y * WIDTH + x] = -1 * realX * realX + -1 * realY * realY + 1.0f;
-            heights[y * WIDTH + x] = heights[y * WIDTH + x]  * scale;
+            float realX = (float) x / scale.x + movement.x;
+            float realY = (float) y / scale.y + movement.y;
+            float height = (float) perlin.noise(realX, realY, scale.z);
+            heights[y * WIDTH + x] = height * 10.0f;
             if (heights[y * WIDTH + x] > maxHeight) {
                 maxHeight = heights[y * WIDTH + x];
             }
