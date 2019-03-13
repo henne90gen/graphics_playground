@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include "SimplexNoise.h"
 #include "PerlinNoise.h"
 
 void Landscape::setup() {
@@ -61,13 +62,15 @@ void Landscape::tick() {
     vertexArray->bind();
 
     PerlinNoise perlin;
+    auto simplex = SimplexNoise(1);
     static float heights[WIDTH * HEIGHT] = {};
     float maxHeight = 0;
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
             float realX = (float) x / scale.x + movement.x;
             float realY = (float) y / scale.y + movement.y;
-            float height = (float) perlin.noise(realX, realY, scale.z);
+//            float height = (float) perlin.noise(realX, realY, scale.z);
+            float height = ((float) simplex.noise3(realX, realY, scale.z) + 1.0f) / 2.0f;
             heights[y * WIDTH + x] = height * 10.0f;
             if (heights[y * WIDTH + x] > maxHeight) {
                 maxHeight = heights[y * WIDTH + x];

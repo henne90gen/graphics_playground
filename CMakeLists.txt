@@ -21,7 +21,7 @@ set(SOURCES
     "${SRC_DIR}/scenes/texture_demo/TextureDemo.cpp"
     "${SRC_DIR}/scenes/cube/Cube.cpp"
     "${SRC_DIR}/scenes/landscape/Landscape.cpp"
-        src/PerlinNoise.cpp src/PerlinNoise.h)
+        src/PerlinNoise.cpp src/PerlinNoise.h src/SimplexNoise.cpp src/SimplexNoise.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
