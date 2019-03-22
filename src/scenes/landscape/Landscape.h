@@ -12,16 +12,24 @@ public:
     Landscape(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
             : Scene(window, backToMainMenu, "Landscape") {};
 
-    virtual ~Landscape() {};
+    ~Landscape() override = default;
 
-    virtual void setup() override;
+    void setup() override;
 
-    virtual void tick() override;
+    void tick() override;
 
-    virtual void destroy() override;
+    void destroy() override;
 
 private:
+    void generatePoints();
+
     VertexArray *vertexArray;
     Shader *shader;
     IndexBuffer *indexBuffer;
+
+    float *heightMap;
+    unsigned int heightMapSize;
+    VertexBuffer *heightBuffer;
+
+    int pointDensity = 1;
 };
