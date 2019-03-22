@@ -72,13 +72,14 @@ void Cube::tick() {
     ImGui::DragFloat3("Position", (float *) &translation, 0.05f);
     ImGui::DragFloat3("Rotation", (float *) &modelRotation, 0.01f);
     ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01f);
-    ImGui::DragFloat("Scale", &scale, 0.1f);
+    ImGui::DragFloat("Scale", &scale, 0.001f);
     ImGui::End();
 
     shader->bind();
     vertexArray->bind();
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
