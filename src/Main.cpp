@@ -2,19 +2,18 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <imgui.h>
 #include <iostream>
 #include <vector>
 
 #include "ImGuiUtils.h"
 #include "MainMenu.h"
 #include "scenes/LegacyTriangle.h"
-#include "scenes/Scene.h"
 #include "scenes/TestScene.h"
 #include "scenes/cube/Cube.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "scenes/landscape/Landscape.h"
+#include "scenes/rubiks_cube/RubiksCube.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
@@ -82,8 +81,9 @@ int main() {
     scenes.push_back(new TextureDemo(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
     scenes.push_back(new Landscape(window, backToMainMenu));
+    scenes.push_back(new RubiksCube(window, backToMainMenu));
 
-    mainMenu.goToScene((unsigned int)scenes.size() - 1);
+    mainMenu.goToScene((unsigned int) scenes.size() - 1);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 

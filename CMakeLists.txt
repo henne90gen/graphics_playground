@@ -22,6 +22,7 @@ set(SOURCES
         ${SRC_DIR}/scenes/texture_demo/TextureDemo.cpp
         ${SRC_DIR}/scenes/cube/Cube.cpp
         ${SRC_DIR}/scenes/landscape/Landscape.cpp
+        ${SRC_DIR}/scenes/rubiks_cube/RubiksCube.cpp
         )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
