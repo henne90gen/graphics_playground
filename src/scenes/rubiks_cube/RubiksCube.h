@@ -10,6 +10,31 @@
 #include "opengl/VertexBuffer.h"
 #include "opengl/IndexBuffer.h"
 
+enum Face {
+    FRONT,
+    BACK,
+    LEFT,
+    RIGHT,
+    TOP,
+    BOTTOM
+};
+
+enum Direction {
+    CLOCKWISE,
+    COUNTER_CLOCKWISE
+};
+
+struct Rotation {
+    Face face;
+    Direction direction;
+    float currentAngle;
+};
+
+struct CubeRotation {
+    glm::vec3 finalRotation;
+    glm::vec3 currentRotation;
+};
+
 class RubiksCube : public Scene {
 public:
     RubiksCube(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
@@ -29,5 +54,10 @@ private:
     IndexBuffer *indexBuffer;
 
     float *vertices;
-    glm::vec3 cubeRotations[27];
+    CubeRotation cubeRotations[27];
+    unsigned int cubePositions[27];
+
+    Rotation rotation;
+
+    bool rotate(Rotation &rotation);
 };
