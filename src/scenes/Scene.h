@@ -30,7 +30,7 @@ public:
 
     const char *getName() { return name; }
 
-    void setAspectRatio(const float aspectRatio) { this->aspectRatio = aspectRatio; }
+    void setAspectRatio(const float ratio) { this->aspectRatio = ratio; }
 
 protected:
     GLFWwindow *window;

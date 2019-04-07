@@ -49,15 +49,15 @@ public:
     void destroy() override;
 
 private:
-    VertexArray *vertexArray;
-    Shader *shader;
-    IndexBuffer *indexBuffer;
+    VertexArray *vertexArray{};
+    Shader *shader{};
+    IndexBuffer *indexBuffer{};
 
-    float *vertices;
-    CubeRotation cubeRotations[27];
-    unsigned int cubePositions[27];
+    float *vertices{};
+    CubeRotation cubeRotations[27]{};
+    unsigned int cubePositions[27]{};
 
-    Rotation rotation;
+    Rotation rotation{};
 
-    bool rotate(Rotation &rotation);
+    bool rotate(Rotation &rot);
 };

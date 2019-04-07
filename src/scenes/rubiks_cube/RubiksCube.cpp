@@ -298,69 +298,69 @@ void RubiksCube::tick() {
     shader->unbind();
 }
 
-bool RubiksCube::rotate(Rotation &rotation) {
+bool RubiksCube::rotate(Rotation &rot) {
     float direction = 1.0f;
-    if (rotation.direction == CLOCKWISE && rotation.face != LEFT && rotation.face != BOTTOM) {
+    if (rot.direction == CLOCKWISE && rot.face != LEFT && rot.face != BOTTOM) {
         direction = -1.0f;
     }
-    rotation.currentAngle += 0.01f;
+    rot.currentAngle += 0.01f;
 
     bool isDoneRotating = false;
     auto piHalf = glm::pi<float>() / 2.0f;
-    if (rotation.currentAngle >= piHalf) {
+    if (rot.currentAngle >= piHalf) {
         isDoneRotating = true;
-        rotation.currentAngle = piHalf;
+        rot.currentAngle = piHalf;
     }
 
     std::vector<unsigned int> cubes(9);
     glm::vec3 rotationVector;
-    switch (rotation.face) {
+    switch (rot.face) {
         case FRONT:
             cubes = {18, 19, 20, 21, 22, 23, 24, 25, 26};
-            rotationVector = glm::vec3(0, 0, direction * rotation.currentAngle);
+            rotationVector = glm::vec3(0, 0, direction * rot.currentAngle);
             break;
         case BACK:
             cubes = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-            rotationVector = glm::vec3(0, 0, direction * rotation.currentAngle);
+            rotationVector = glm::vec3(0, 0, direction * rot.currentAngle);
             break;
         case LEFT:
             cubes = {0, 3, 6, 9, 12, 15, 18, 21, 24};
-            rotationVector = glm::vec3(direction * rotation.currentAngle, 0, 0);
+            rotationVector = glm::vec3(direction * rot.currentAngle, 0, 0);
             break;
         case RIGHT:
             cubes = {2, 5, 8, 11, 14, 17, 20, 23, 26};
-            rotationVector = glm::vec3(direction * rotation.currentAngle, 0, 0);
+            rotationVector = glm::vec3(direction * rot.currentAngle, 0, 0);
             break;
         case TOP:
             cubes = {6, 7, 8, 15, 16, 17, 24, 25, 26};
-            rotationVector = glm::vec3(0, direction * rotation.currentAngle, 0);
+            rotationVector = glm::vec3(0, direction * rot.currentAngle, 0);
             break;
         case BOTTOM:
             cubes = {0, 1, 2, 9, 10, 11, 18, 19, 20};
-            rotationVector = glm::vec3(0, direction * rotation.currentAngle, 0);
+            rotationVector = glm::vec3(0, direction * rot.currentAngle, 0);
             break;
     }
 
     if (isDoneRotating) {
-        unsigned int i = cubePositions[cubes[0]];
-        unsigned int tmp = cubePositions[cubes[1]];
-        cubePositions[cubes[0]] = cubePositions[cubes[3]];
-        cubePositions[cubes[1]] = i;
-        i = tmp;
-        tmp = cubePositions[cubes[2]];
-        cubePositions[cubes[2]] = i;
-        i = tmp;
-        cubePositions[cubes[3]] = i;
-
-        i = cubePositions[cubes[4]];
-        tmp = cubePositions[cubes[5]];
-        cubePositions[cubes[4]] = cubePositions[cubes[7]];
-        cubePositions[cubes[5]] = i;
-        i = tmp;
-        tmp = cubePositions[cubes[6]];
-        cubePositions[cubes[6]] = i;
-        i = tmp;
-        cubePositions[cubes[7]] = i;
+//        unsigned int i = cubePositions[cubes[0]];
+//        unsigned int tmp = cubePositions[cubes[1]];
+//        cubePositions[cubes[0]] = cubePositions[cubes[3]];
+//        cubePositions[cubes[1]] = i;
+//        i = tmp;
+//        tmp = cubePositions[cubes[2]];
+//        cubePositions[cubes[2]] = i;
+//        i = tmp;
+//        cubePositions[cubes[3]] = i;
+//
+//        i = cubePositions[cubes[4]];
+//        tmp = cubePositions[cubes[5]];
+//        cubePositions[cubes[4]] = cubePositions[cubes[7]];
+//        cubePositions[cubes[5]] = i;
+//        i = tmp;
+//        tmp = cubePositions[cubes[6]];
+//        cubePositions[cubes[6]] = i;
+//        i = tmp;
+//        cubePositions[cubes[7]] = i;
     }
 
     for (unsigned int i = 0; i < 9; i++) {
