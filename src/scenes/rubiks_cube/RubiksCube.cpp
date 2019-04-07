@@ -1,10 +1,6 @@
 #include "scenes/rubiks_cube/RubiksCube.h"
-#include "RubiksCube.h"
-
 
 #include <glm/ext.hpp>
-#include <glm/gtc/constants.hpp>
-#include <memory>
 
 float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
     // front face
@@ -213,7 +209,7 @@ void RubiksCube::setup() {
     vertices = (float *) malloc(verticesSize);
 
     unsigned int indicesCount = 6 * 6 * cubeCount;
-    auto indices = (unsigned int *) malloc(indicesCount * sizeof(unsigned int));
+    indices = (unsigned int *) malloc(indicesCount * sizeof(unsigned int));
 
     float *vertPtr = vertices;
     unsigned int *indPtr = indices;
@@ -246,7 +242,10 @@ void RubiksCube::setup() {
     }
 }
 
-void RubiksCube::destroy() {}
+void RubiksCube::destroy() {
+    free(vertices);
+    free(indices);
+}
 
 void RubiksCube::tick() {
     static glm::vec3 translation = glm::vec3(-2.0f, 0.0f, -12.0f);
