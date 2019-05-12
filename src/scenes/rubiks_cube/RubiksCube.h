@@ -62,3 +62,7 @@ private:
 
     bool rotate(Rotation &rot);
 };
+
+void adjustIndicesClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);
+
+void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);

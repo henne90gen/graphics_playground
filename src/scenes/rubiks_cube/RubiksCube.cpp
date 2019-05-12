@@ -237,9 +237,11 @@ void RubiksCube::setup() {
         cubeRotation = {};
     }
 
-    for (unsigned int i = 0; i < sizeof(cubePositions); i++) {
+    for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(unsigned int); i++) {
         cubePositions[i] = i;
     }
+
+    rotation = {BOTTOM, CLOCKWISE, 0};
 }
 
 void RubiksCube::destroy() {
@@ -276,10 +278,13 @@ void RubiksCube::tick() {
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
-    rotation = {BOTTOM, CLOCKWISE, rotation.currentAngle};
-    static bool isDoneRotating = false;
-    if (isDoneRotating || rotate(rotation)) {
-        isDoneRotating = true;
+    rotation = {rotation.face, rotation.direction, rotation.currentAngle};
+    if (rotate(rotation)) {
+        if (rotation.face == BOTTOM) {
+            rotation = {RIGHT, CLOCKWISE, 0};
+        } else {
+            rotation = {BOTTOM, CLOCKWISE, 0};
+        }
     }
 
     for (int i = 0; i < 27; i++) {
@@ -292,6 +297,7 @@ void RubiksCube::tick() {
         GL_Call(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void *) (i * 36 * sizeof(unsigned int))));
     }
 
+    indexBuffer->unbind();
     vertexArray->unbind();
 
     shader->unbind();
@@ -340,28 +346,6 @@ bool RubiksCube::rotate(Rotation &rot) {
             break;
     }
 
-    if (isDoneRotating) {
-//        unsigned int i = cubePositions[cubes[0]];
-//        unsigned int tmp = cubePositions[cubes[1]];
-//        cubePositions[cubes[0]] = cubePositions[cubes[3]];
-//        cubePositions[cubes[1]] = i;
-//        i = tmp;
-//        tmp = cubePositions[cubes[2]];
-//        cubePositions[cubes[2]] = i;
-//        i = tmp;
-//        cubePositions[cubes[3]] = i;
-//
-//        i = cubePositions[cubes[4]];
-//        tmp = cubePositions[cubes[5]];
-//        cubePositions[cubes[4]] = cubePositions[cubes[7]];
-//        cubePositions[cubes[5]] = i;
-//        i = tmp;
-//        tmp = cubePositions[cubes[6]];
-//        cubePositions[cubes[6]] = i;
-//        i = tmp;
-//        cubePositions[cubes[7]] = i;
-    }
-
     for (unsigned int i = 0; i < 9; i++) {
         unsigned int cubeIndex = cubePositions[cubes[i]];
         cubeRotations[cubeIndex].currentRotation = rotationVector;
@@ -371,5 +355,53 @@ bool RubiksCube::rotate(Rotation &rot) {
         }
     }
 
+    if (isDoneRotating) {
+        if (rot.direction == CLOCKWISE) {
+            adjustIndicesClockwise(cubePositions, cubes);
+        } else {
+            adjustIndicesCounterClockwise(cubePositions, cubes);
+        }
+    }
+
     return isDoneRotating;
+}
+
+void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes) {
+    // move the corners
+    unsigned int tmp1 = positions[selectedCubes[2]];
+    positions[selectedCubes[2]] = positions[selectedCubes[0]];
+    unsigned int tmp2 = positions[selectedCubes[8]];
+    positions[selectedCubes[8]] = tmp1;
+    tmp1 = positions[selectedCubes[6]];
+    positions[selectedCubes[6]] = tmp2;
+    positions[selectedCubes[0]] = tmp1;
+
+    // move the edges
+    tmp1 = positions[selectedCubes[5]];
+    positions[selectedCubes[5]] = positions[selectedCubes[1]];
+    tmp2 = positions[selectedCubes[7]];
+    positions[selectedCubes[7]] = tmp1;
+    tmp1 = positions[selectedCubes[3]];
+    positions[selectedCubes[3]] = tmp2;
+    positions[selectedCubes[1]] = tmp1;
+}
+
+void adjustIndicesClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes) {
+    // move the corners
+    unsigned int tmp1 = positions[selectedCubes[6]];
+    positions[selectedCubes[6]] = positions[selectedCubes[0]];
+    unsigned int tmp2 = positions[selectedCubes[8]];
+    positions[selectedCubes[8]] = tmp1;
+    tmp1 = positions[selectedCubes[2]];
+    positions[selectedCubes[2]] = tmp2;
+    positions[selectedCubes[0]] = tmp1;
+
+    // move the edges
+    tmp1 = positions[selectedCubes[3]];
+    positions[selectedCubes[3]] = positions[selectedCubes[1]];
+    tmp2 = positions[selectedCubes[7]];
+    positions[selectedCubes[7]] = tmp1;
+    tmp1 = positions[selectedCubes[5]];
+    positions[selectedCubes[5]] = tmp2;
+    positions[selectedCubes[1]] = tmp1;
 }
