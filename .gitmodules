@@ -7,3 +7,6 @@
 [submodule "glm"]
 	path = glm
 	url = git@github.com:g-truc/glm.git
+[submodule "catch"]
+	path = catch
+	url = git@github.com:catchorg/Catch2.git
