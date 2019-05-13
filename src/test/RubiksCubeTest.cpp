@@ -63,7 +63,7 @@ TEST_CASE("Indices are adjusted correctly for clockwise bottom rotation") {
     REQUIRE(cubePositions[9] == 11);
 }
 
-TEST_CASE("Indices are adjusted correctly for clockwise bottom and clockwise right rotation") {
+TEST_CASE("Indices are adjusted correctly for cw bottom and cw right rotation") {
     unsigned int cubePositions[27];
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BOTTOM_CUBES;

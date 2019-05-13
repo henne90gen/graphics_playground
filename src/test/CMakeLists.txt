@@ -10,3 +10,5 @@ target_include_directories(RubiksCubeTest PRIVATE
         ${LOGIC_DIR}
         ${GLM_DIR})
 target_link_libraries(RubiksCubeTest logic)
+
+catch_discover_tests(RubiksCubeTest)
