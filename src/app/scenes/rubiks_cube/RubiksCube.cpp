@@ -195,7 +195,8 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCube::setup() {
-    shader = new Shader("../../../src/app/scenes/rubiks_cube/RubiksCube.vertex", "../../../src/app/scenes/rubiks_cube/RubiksCube.fragment");
+    shader = new Shader("../../../src/app/scenes/rubiks_cube/RubiksCube.vertex",
+                        "../../../src/app/scenes/rubiks_cube/RubiksCube.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();
@@ -234,7 +235,11 @@ void RubiksCube::setup() {
     indexBuffer = new IndexBuffer(indices, indicesCount);
 
     for (auto &cubeRotation : cubeRotations) {
-        cubeRotation = {};
+        cubeRotation = {
+                std::vector<glm::vec3>(),
+                glm::mat4(1.0f)
+        };
+        cubeRotation.rotations.emplace_back();
     }
 
     for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(unsigned int); i++) {
@@ -294,13 +299,8 @@ void RubiksCube::tick() {
         }
     }
 
-    for (int i = 0; i < 27; i++) {
-        glm::vec3 cubeRotation = cubeRotations[i].finalRotation + cubeRotations[i].currentRotation;
-        glm::mat4 cubeMatrix = glm::mat4(1.0f);
-        cubeMatrix = glm::rotate(cubeMatrix, cubeRotation.x, glm::vec3(1, 0, 0));
-        cubeMatrix = glm::rotate(cubeMatrix, cubeRotation.y, glm::vec3(0, 1, 0));
-        cubeMatrix = glm::rotate(cubeMatrix, cubeRotation.z, glm::vec3(0, 0, 1));
-        shader->setUniform("cubeMatrix", cubeMatrix);
+    for (unsigned int i = 0; i < 27; i++) {
+        shader->setUniform("cubeMatrix", cubeRotations[i].rotationMatrix);
         GL_Call(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void *) (i * 36 * sizeof(unsigned int))));
     }
 

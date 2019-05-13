@@ -92,6 +92,8 @@ def add_to_cmake_lists(cpp_path):
 
 
 def main():
+    print("Please adjust the template generator ot the new folder structure before using it.")
+    exit()
     name = input("Name of the scene: ")
     folder_name, folder_path = create_folder(name)
 

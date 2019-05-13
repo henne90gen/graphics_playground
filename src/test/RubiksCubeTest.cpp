@@ -1,5 +1,7 @@
 #include "catch.hpp"
 #include "RubiksCubeLogic.h"
+#include <vector>
+#include <iostream>
 
 void initCubePositions(unsigned int *cubePosition) {
     for (int i = 0; i < 27; i++) {
@@ -61,7 +63,6 @@ TEST_CASE("Indices are adjusted correctly for clockwise bottom rotation") {
     REQUIRE(cubePositions[9] == 11);
 }
 
-
 TEST_CASE("Indices are adjusted correctly for clockwise bottom and clockwise right rotation") {
     unsigned int cubePositions[27];
     initCubePositions(cubePositions);
@@ -88,4 +89,31 @@ TEST_CASE("Indices are adjusted correctly for clockwise bottom and clockwise rig
     REQUIRE(cubePositions[5] == 17);
     REQUIRE(cubePositions[8] == 26);
     REQUIRE(cubePositions[17] == 23);
+}
+
+TEST_CASE("Rotation matrix is updated correctly for one rotation vector") {
+    CubeRotation cubeRotation = {
+            std::vector<glm::vec3>(),
+            glm::mat4()
+    };
+    float piHalf = glm::pi<float>() / 2.0f;
+    cubeRotation.rotations.emplace_back(piHalf, 0, 0);
+
+    updateRotationMatrix(cubeRotation);
+
+    REQUIRE(cubeRotation.rotations.size() == 2);
+
+    glm::mat4 &matrix = cubeRotation.rotationMatrix;
+    REQUIRE(matrix[0][0] == Approx(1.0f));
+    REQUIRE(matrix[1][0] == Approx(0.0f));
+    REQUIRE(matrix[2][0] == Approx(0.0f));
+    REQUIRE(matrix[0][1] == Approx(0.0f));
+    REQUIRE(matrix[0][2] == Approx(0.0f));
+
+    float margin = std::numeric_limits<float>::epsilon() * 100;
+    REQUIRE(matrix[1][1] ==
+            Approx(-0.0f).margin(margin)); // cos(a)
+    REQUIRE(matrix[1][2] == Approx(1.0f).margin(margin)); // -sin(a)
+    REQUIRE(matrix[2][1] == Approx(-1.0f)); // sin(a)
+    REQUIRE(matrix[2][2] == Approx(0.0f).margin(margin)); // cos(a)
 }

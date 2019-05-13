@@ -31,8 +31,8 @@ struct Rotation {
 };
 
 struct CubeRotation {
-    glm::vec3 finalRotation;
-    glm::vec3 currentRotation;
+    std::vector<glm::vec3> rotations;
+    glm::mat4 rotationMatrix;
 };
 
 bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &rot, float rotationSpeed = 0.1f);
@@ -40,3 +40,5 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
 void adjustIndicesClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);
 
 void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);
+
+void updateRotationMatrix(CubeRotation &cubeRotation);

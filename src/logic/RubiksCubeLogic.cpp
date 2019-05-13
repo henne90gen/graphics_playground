@@ -1,4 +1,5 @@
 #include "RubiksCubeLogic.h"
+#include <iostream>
 
 bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &rot, float rotationSpeed) {
     float direction = 1.0f;
@@ -45,11 +46,12 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
 
     for (unsigned int i = 0; i < 9; i++) {
         unsigned int cubeIndex = cubePositions[cubes[i]];
-        cubeRotations[cubeIndex].currentRotation = rotationVector;
-        if (isDoneRotating) {
-            cubeRotations[cubeIndex].finalRotation += rotationVector;
-            cubeRotations[cubeIndex].currentRotation = glm::vec3();
+        cubeRotations[cubeIndex].rotations[cubeRotations[cubeIndex].rotations.size() - 1] = rotationVector;
+        if (!isDoneRotating) {
+            continue;
         }
+
+        updateRotationMatrix(cubeRotations[cubeIndex]);
     }
 
     if (isDoneRotating) {
@@ -61,6 +63,24 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
     }
 
     return isDoneRotating;
+}
+
+void updateRotationMatrix(CubeRotation &cubeRotation) {
+    glm::mat4 cubeMatrix = glm::mat4(1.0f);
+    for (auto &rotation : cubeRotation.rotations) {
+        const glm::vec3 &normalizedRotation = glm::normalize(rotation);
+        float rotationAngle;
+        if (normalizedRotation.x >= 1.0f) {
+            rotationAngle = rotation.x;
+        } else if (normalizedRotation.y >= 1.0f) {
+            rotationAngle = rotation.y;
+        } else {
+            rotationAngle = rotation.z;
+        }
+        cubeMatrix = glm::rotate(cubeMatrix, rotationAngle, normalizedRotation);
+    }
+    cubeRotation.rotationMatrix = cubeMatrix;
+    cubeRotation.rotations.emplace_back();
 }
 
 void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes) {
