@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/ext.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <vector>
 
 #define FRONT_CUBES {18, 19, 20, 21, 22, 23, 24, 25, 26}
@@ -41,4 +42,4 @@ void adjustIndicesClockwise(unsigned int positions[27], std::vector<unsigned int
 
 void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);
 
-void updateRotationMatrix(CubeRotation &cubeRotation);
+void updateCubeRotation(CubeRotation &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating);

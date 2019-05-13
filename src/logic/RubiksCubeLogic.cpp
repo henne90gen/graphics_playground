@@ -44,14 +44,12 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
             break;
     }
 
+//    std::cout << "Rotation vector: (" << rotationVector[0] << "," << rotationVector[1] << ","
+//              << rotationVector[2] << ")" << std::endl;
+
     for (unsigned int i = 0; i < 9; i++) {
         unsigned int cubeIndex = cubePositions[cubes[i]];
-        cubeRotations[cubeIndex].rotations[cubeRotations[cubeIndex].rotations.size() - 1] = rotationVector;
-        if (!isDoneRotating) {
-            continue;
-        }
-
-        updateRotationMatrix(cubeRotations[cubeIndex]);
+        updateCubeRotation(cubeRotations[cubeIndex], rotationVector, isDoneRotating);
     }
 
     if (isDoneRotating) {
@@ -65,22 +63,48 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
     return isDoneRotating;
 }
 
-void updateRotationMatrix(CubeRotation &cubeRotation) {
+void printRotations(std::vector<glm::vec3> &rotations) {
+    std::string result;
+    bool isFirst = true;
+    for (auto &rotation: rotations) {
+        if (!isFirst) {
+            result += "->";
+        } else {
+            isFirst = false;
+        }
+        result += glm::to_string(rotation);
+    }
+
+    std::cout << result << std::endl;
+}
+
+void updateCubeRotation(CubeRotation &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating) {
+    cubeRotation.rotations[cubeRotation.rotations.size() - 1] = rotationVector;
+
     glm::mat4 cubeMatrix = glm::mat4(1.0f);
     for (auto &rotation : cubeRotation.rotations) {
-        const glm::vec3 &normalizedRotation = glm::normalize(rotation);
+        glm::vec3 normalizedRotation = glm::abs(glm::normalize(rotation));
         float rotationAngle;
-        if (normalizedRotation.x >= 1.0f) {
+        if (std::abs(normalizedRotation.x) > 0.0f) {
             rotationAngle = rotation.x;
-        } else if (normalizedRotation.y >= 1.0f) {
+        } else if (std::abs(normalizedRotation.y) > 0.0f) {
             rotationAngle = rotation.y;
-        } else {
+        } else if (std::abs(normalizedRotation.z) > 0.0f) {
             rotationAngle = rotation.z;
+        } else {
+            std::cout << "Corrupted rotation vector! (" << rotation[0] << "," << rotation[1] << "," << rotation[2]
+                      << ")" << std::endl;
+            continue;
         }
-        cubeMatrix = glm::rotate(cubeMatrix, rotationAngle, normalizedRotation);
+        glm::vec3 rotationAxis = glm::vec3(cubeMatrix * glm::vec4(normalizedRotation, 1.0f));
+        rotationAxis = normalizedRotation;
+        cubeMatrix = glm::rotate(cubeMatrix, rotationAngle, rotationAxis);
     }
     cubeRotation.rotationMatrix = cubeMatrix;
-    cubeRotation.rotations.emplace_back();
+
+    if (isDoneRotating) {
+        cubeRotation.rotations.emplace_back();
+    }
 }
 
 void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes) {

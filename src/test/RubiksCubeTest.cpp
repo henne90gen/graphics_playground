@@ -97,11 +97,10 @@ TEST_CASE("Rotation matrix is updated correctly for one rotation vector") {
             glm::mat4()
     };
     float piHalf = glm::pi<float>() / 2.0f;
-    cubeRotation.rotations.emplace_back(piHalf, 0, 0);
+    const glm::vec3 rotationVector = glm::vec3(piHalf, 0, 0);
+    cubeRotation.rotations.push_back(rotationVector);
 
-    updateRotationMatrix(cubeRotation);
-
-    REQUIRE(cubeRotation.rotations.size() == 2);
+    updateCubeRotation(cubeRotation, rotationVector, false);
 
     glm::mat4 &matrix = cubeRotation.rotationMatrix;
     REQUIRE(matrix[0][0] == Approx(1.0f));
@@ -111,9 +110,53 @@ TEST_CASE("Rotation matrix is updated correctly for one rotation vector") {
     REQUIRE(matrix[0][2] == Approx(0.0f));
 
     float margin = std::numeric_limits<float>::epsilon() * 100;
-    REQUIRE(matrix[1][1] ==
-            Approx(-0.0f).margin(margin)); // cos(a)
+    REQUIRE(matrix[1][1] == Approx(-0.0f).margin(margin)); // cos(a)
     REQUIRE(matrix[1][2] == Approx(1.0f).margin(margin)); // -sin(a)
     REQUIRE(matrix[2][1] == Approx(-1.0f)); // sin(a)
     REQUIRE(matrix[2][2] == Approx(0.0f).margin(margin)); // cos(a)
+}
+
+TEST_CASE("Rotation matrix is updated correctly for two opposing rotation vectors") {
+    CubeRotation cubeRotation = {
+            std::vector<glm::vec3>(),
+            glm::mat4()
+    };
+    float piHalf = glm::pi<float>() / 2.0f;
+    const glm::vec3 rotationVector = glm::vec3(piHalf, 0, 0);
+    cubeRotation.rotations.push_back(rotationVector);
+    glm::vec3 negativeRotationVector = glm::vec3(-1.0f * piHalf, 0, 0);
+    cubeRotation.rotations.push_back(negativeRotationVector);
+
+    updateCubeRotation(cubeRotation, negativeRotationVector, false);
+
+    glm::mat4 &matrix = cubeRotation.rotationMatrix;
+    REQUIRE(matrix[0][0] == Approx(1.0f));
+    REQUIRE(matrix[1][0] == Approx(0.0f));
+    REQUIRE(matrix[2][0] == Approx(0.0f));
+    REQUIRE(matrix[0][1] == Approx(0.0f));
+    REQUIRE(matrix[0][2] == Approx(0.0f));
+
+    REQUIRE(matrix[1][1] == Approx(1.0f));
+    REQUIRE(matrix[1][2] == Approx(0.0f));
+    REQUIRE(matrix[2][1] == Approx(0.0f));
+    REQUIRE(matrix[2][2] == Approx(1.0f));
+}
+
+TEST_CASE("Rotations list is updated correctly") {
+    CubeRotation cubeRotation = {
+            std::vector<glm::vec3>(),
+            glm::mat4()
+    };
+    float piHalf = glm::pi<float>() / 2.0f;
+    const glm::vec3 rotationVector = glm::vec3(piHalf, 0, 0);
+    cubeRotation.rotations.push_back(rotationVector);
+
+    updateCubeRotation(cubeRotation, rotationVector, false);
+    REQUIRE(cubeRotation.rotations.size() == 1);
+    REQUIRE(cubeRotation.rotations[0] == rotationVector);
+
+    updateCubeRotation(cubeRotation, rotationVector, true);
+    REQUIRE(cubeRotation.rotations.size() == 2);
+    REQUIRE(cubeRotation.rotations[0] == rotationVector);
+    REQUIRE(cubeRotation.rotations[1] == glm::vec3());
 }
