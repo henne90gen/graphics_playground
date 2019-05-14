@@ -243,33 +243,6 @@ TEST_CASE("Rotation matrix is calculated correctly for two rotations") {
     REQUIRE(matrix[2][2] == Approx(0.0f).margin(margin));
 }
 
-TEST_CASE("Rotation is calculated correctly for three rotations", "[.]") {
-    CubeRotation cubeRotation = {
-            std::vector<glm::vec3>(),
-            glm::mat4()
-    };
-    float piHalf = glm::pi<float>() / 2.0f;
-    cubeRotation.rotations.emplace_back(-1.0f * piHalf, 0, 0);
-    cubeRotation.rotations.emplace_back(0, piHalf, 0);
-    cubeRotation.rotations.emplace_back(piHalf, 0, 0);
-
-    updateCubeRotation(cubeRotation, glm::vec3(piHalf, 0, 0), false);
-
-    glm::mat4 &matrix = cubeRotation.rotationMatrix;
-    std::cout << glm::to_string(matrix) << std::endl;
-    float margin = std::numeric_limits<float>::epsilon() * 100;
-    REQUIRE(matrix[0][0] == Approx(-0.0f).margin(margin));
-    REQUIRE(matrix[0][1] == Approx(0.0f));
-    REQUIRE(matrix[0][2] == Approx(-1.0f));
-    REQUIRE(matrix[1][0] == Approx(1.0f));
-    REQUIRE(matrix[1][1] == Approx(-0.0f).margin(margin));
-    REQUIRE(matrix[1][2] == Approx(-0.0f).margin(margin));
-
-    REQUIRE(matrix[2][0] == Approx(-0.0f).margin(margin));
-    REQUIRE(matrix[2][1] == Approx(-1.0f));
-    REQUIRE(matrix[2][2] == Approx(0.0f).margin(margin));
-}
-
 void assertDirection(Face face, int direction) {
     Rotation rot = {face, CLOCKWISE};
     REQUIRE(getDirection(rot) == direction);
