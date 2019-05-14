@@ -31,8 +31,9 @@ private:
 
     float *vertices;
     unsigned int *indices;
-    CubeRotation cubeRotations[27];
-    unsigned int cubePositions[27];
+    std::vector<CubeRotation> cubeRotations;
+    std::vector<unsigned int> cubePositions;
 
-    Rotation rotation;
+    std::vector<Rotation> rotations;
+    unsigned int currentRotationIndex = 0;
 };

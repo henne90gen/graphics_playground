@@ -234,19 +234,18 @@ void RubiksCube::setup() {
 
     indexBuffer = new IndexBuffer(indices, indicesCount);
 
-    for (auto &cubeRotation : cubeRotations) {
-        cubeRotation = {
+    for (unsigned int i = 0; i < 27; i++) {
+        CubeRotation cubeRotation = {
                 std::vector<glm::vec3>(),
                 glm::mat4(1.0f)
         };
         cubeRotation.rotations.emplace_back();
+        cubeRotations.push_back(cubeRotation);
+
+        cubePositions.emplace_back(i);
     }
 
-    for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(unsigned int); i++) {
-        cubePositions[i] = i;
-    }
-
-    rotation = {RIGHT, CLOCKWISE, 0};
+    rotations = {R_RI, R_BOI, R_R, R_BO};
 }
 
 void RubiksCube::destroy() {
@@ -290,18 +289,19 @@ void RubiksCube::tick() {
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
-    rotation = {rotation.face, rotation.direction, rotation.currentAngle};
+    Rotation &rotation = rotations[currentRotationIndex];
     if (rotate(cubeRotations, cubePositions, rotation, 0.01f)) {
-        if (rotation.face == BOTTOM) {
-            rotation = {RIGHT, CLOCKWISE, 0};
-        } else {
-            rotation = {BOTTOM, CLOCKWISE, 0};
+        rotation.currentAngle = 0;
+        currentRotationIndex++;
+        if (currentRotationIndex >= rotations.size()) {
+            currentRotationIndex = 0;
         }
     }
 
     for (unsigned int i = 0; i < 27; i++) {
-        shader->setUniform("cubeMatrix", cubeRotations[i].rotationMatrix);
-        GL_Call(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void *) (i * 36 * sizeof(unsigned int))));
+//    unsigned int i = 26;
+    shader->setUniform("cubeMatrix", cubeRotations[i].rotationMatrix);
+    GL_Call(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void *) (i * 36 * sizeof(unsigned int))));
     }
 
     indexBuffer->unbind();

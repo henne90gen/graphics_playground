@@ -11,6 +11,20 @@
 #define TOP_CUBES {6, 7, 8, 15, 16, 17, 24, 25, 26}
 #define BOTTOM_CUBES {0, 1, 2, 9, 10, 11, 18, 19, 20}
 
+// macros for cube rotations (I - inverse)
+#define R_R {RIGHT, CLOCKWISE}
+#define R_RI {RIGHT, COUNTER_CLOCKWISE}
+#define R_F {FRONT, CLOCKWISE}
+#define R_FI {FRONT, COUNTER_CLOCKWISE}
+#define R_BO {BOTTOM, CLOCKWISE}
+#define R_BOI {BOTTOM, COUNTER_CLOCKWISE}
+#define R_L {LEFT, CLOCKWISE}
+#define R_LI {LEFT, COUNTER_CLOCKWISE}
+#define R_T {TOP, CLOCKWISE}
+#define R_TI {TOP, COUNTER_CLOCKWISE}
+#define R_BA {BACK, CLOCKWISE}
+#define R_BAI {BACK, COUNTER_CLOCKWISE}
+
 enum Face {
     FRONT,
     BACK,
@@ -28,7 +42,7 @@ enum Direction {
 struct Rotation {
     Face face;
     Direction direction;
-    float currentAngle;
+    float currentAngle = 0;
 };
 
 struct CubeRotation {
@@ -36,10 +50,13 @@ struct CubeRotation {
     glm::mat4 rotationMatrix;
 };
 
-bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &rot, float rotationSpeed = 0.1f);
+bool rotate(std::vector<CubeRotation> &cubeRotations, std::vector<unsigned int> &cubePositions, Rotation &rot,
+            float rotationSpeed = 0.1f);
 
-void adjustIndicesClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);
+int getDirection(Rotation &rot);
 
-void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes);
+void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes);
+
+void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes);
 
 void updateCubeRotation(CubeRotation &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating);

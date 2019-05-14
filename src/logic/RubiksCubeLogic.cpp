@@ -1,11 +1,8 @@
 #include "RubiksCubeLogic.h"
 #include <iostream>
 
-bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &rot, float rotationSpeed) {
-    float direction = 1.0f;
-    if (rot.direction == CLOCKWISE && rot.face != LEFT && rot.face != BOTTOM) {
-        direction = -1.0f;
-    }
+bool rotate(std::vector<CubeRotation> &cubeRotations, std::vector<unsigned int> &cubePositions, Rotation &rot,
+            float rotationSpeed) {
     rot.currentAngle += rotationSpeed;
 
     bool isDoneRotating = false;
@@ -17,6 +14,7 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
 
     std::vector<unsigned int> cubes(9);
     glm::vec3 rotationVector;
+    float direction = getDirection(rot);
     switch (rot.face) {
         case FRONT:
             cubes = FRONT_CUBES;
@@ -44,11 +42,8 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
             break;
     }
 
-//    std::cout << "Rotation vector: (" << rotationVector[0] << "," << rotationVector[1] << ","
-//              << rotationVector[2] << ")" << std::endl;
-
-    for (unsigned int i = 0; i < 9; i++) {
-        unsigned int cubeIndex = cubePositions[cubes[i]];
+    for (unsigned int cube : cubes) {
+        unsigned int cubeIndex = cubePositions[cube];
         updateCubeRotation(cubeRotations[cubeIndex], rotationVector, isDoneRotating);
     }
 
@@ -61,6 +56,20 @@ bool rotate(CubeRotation *cubeRotations, unsigned int *cubePositions, Rotation &
     }
 
     return isDoneRotating;
+}
+
+int getDirection(Rotation &rot) {
+    if (rot.direction == CLOCKWISE) {
+        if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
+            return 1;
+        }
+        return -1;
+    } else {
+        if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
+            return -1;
+        }
+        return 1;
+    }
 }
 
 void printRotations(std::vector<glm::vec3> &rotations) {
@@ -96,8 +105,8 @@ void updateCubeRotation(CubeRotation &cubeRotation, glm::vec3 rotationVector, bo
                       << ")" << std::endl;
             continue;
         }
-        glm::vec3 rotationAxis = glm::vec3(cubeMatrix * glm::vec4(normalizedRotation, 1.0f));
-        rotationAxis = normalizedRotation;
+        // applying accumulated rotations to rotation axis
+        glm::vec3 rotationAxis = glm::vec3(glm::inverse(cubeMatrix) * glm::vec4(normalizedRotation, 1.0f));
         cubeMatrix = glm::rotate(cubeMatrix, rotationAngle, rotationAxis);
     }
     cubeRotation.rotationMatrix = cubeMatrix;
@@ -107,7 +116,7 @@ void updateCubeRotation(CubeRotation &cubeRotation, glm::vec3 rotationVector, bo
     }
 }
 
-void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes) {
+void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
     // move the corners
     unsigned int tmp1 = positions[selectedCubes[2]];
     positions[selectedCubes[2]] = positions[selectedCubes[0]];
@@ -127,7 +136,7 @@ void adjustIndicesCounterClockwise(unsigned int positions[27], std::vector<unsig
     positions[selectedCubes[1]] = tmp1;
 }
 
-void adjustIndicesClockwise(unsigned int positions[27], std::vector<unsigned int> &selectedCubes) {
+void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
     // move the corners
     unsigned int tmp1 = positions[selectedCubes[6]];
     positions[selectedCubes[6]] = positions[selectedCubes[0]];
