@@ -9,7 +9,87 @@ void initCubePositions(std::vector<unsigned int> &cubePosition) {
     }
 }
 
-TEST_CASE("Indices are adjusted correctly for counter clockwise bottom rotation") {
+TEST_CASE("Indices are adjusted correctly for counter clockwise front rotation") {
+    std::vector<unsigned int> cubePositions;
+    initCubePositions(cubePositions);
+    std::vector<unsigned int> cubes = FRONT_CUBES;
+    adjustIndicesCounterClockwise(cubePositions, cubes);
+
+    REQUIRE(cubePositions[18] == 24);
+    REQUIRE(cubePositions[19] == 21);
+    REQUIRE(cubePositions[20] == 18);
+    REQUIRE(cubePositions[21] == 25);
+    REQUIRE(cubePositions[23] == 19);
+    REQUIRE(cubePositions[24] == 26);
+    REQUIRE(cubePositions[25] == 23);
+    REQUIRE(cubePositions[26] == 20);
+}
+
+TEST_CASE("Indices are adjusted correctly for counter clockwise back rotation") {
+    std::vector<unsigned int> cubePositions;
+    initCubePositions(cubePositions);
+    std::vector<unsigned int> cubes = BACK_CUBES;
+    adjustIndicesCounterClockwise(cubePositions, cubes);
+
+    REQUIRE(cubePositions[0] == 2);
+    REQUIRE(cubePositions[1] == 5);
+    REQUIRE(cubePositions[2] == 8);
+    REQUIRE(cubePositions[3] == 1);
+    REQUIRE(cubePositions[5] == 7);
+    REQUIRE(cubePositions[6] == 0);
+    REQUIRE(cubePositions[7] == 3);
+    REQUIRE(cubePositions[8] == 6);
+}
+
+TEST_CASE("Indices are adjusted correctly for counter clockwise left rotation") {
+    std::vector<unsigned int> cubePositions;
+    initCubePositions(cubePositions);
+    std::vector<unsigned int> cubes = LEFT_CUBES;
+    adjustIndicesCounterClockwise(cubePositions, cubes);
+
+    REQUIRE(cubePositions[18] == 0);
+    REQUIRE(cubePositions[9] == 3);
+    REQUIRE(cubePositions[0] == 6);
+    REQUIRE(cubePositions[21] == 9);
+    REQUIRE(cubePositions[3] == 15);
+    REQUIRE(cubePositions[24] == 18);
+    REQUIRE(cubePositions[15] == 21);
+    REQUIRE(cubePositions[6] == 24);
+}
+
+TEST_CASE("Indices are adjusted correctly for counter clockwise right rotation") {
+    std::vector<unsigned int> cubePositions;
+    initCubePositions(cubePositions);
+    std::vector<unsigned int> cubes = RIGHT_CUBES;
+    adjustIndicesCounterClockwise(cubePositions, cubes);
+
+    REQUIRE(cubePositions[26] == 8);
+    REQUIRE(cubePositions[17] == 5);
+    REQUIRE(cubePositions[8] == 2);
+    REQUIRE(cubePositions[23] == 17);
+    REQUIRE(cubePositions[5] == 11);
+    REQUIRE(cubePositions[20] == 26);
+    REQUIRE(cubePositions[11] == 23);
+    REQUIRE(cubePositions[2] == 20);
+}
+
+TEST_CASE("Indices are adjusted correctly for counter clockwise top rotation") {
+    std::vector<unsigned int> cubePositions;
+    initCubePositions(cubePositions);
+    std::vector<unsigned int> cubes = TOP_CUBES;
+    adjustIndicesCounterClockwise(cubePositions, cubes);
+
+    REQUIRE(cubePositions[6] == 8);
+    REQUIRE(cubePositions[7] == 17);
+    REQUIRE(cubePositions[8] == 26);
+    REQUIRE(cubePositions[15] == 7);
+    REQUIRE(cubePositions[17] == 25);
+    REQUIRE(cubePositions[24] == 6);
+    REQUIRE(cubePositions[25] == 15);
+    REQUIRE(cubePositions[26] == 24);
+}
+
+TEST_CASE("Indices are adjusted correctly for two counter clockwise bottom rotations") {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BOTTOM_CUBES;
@@ -36,7 +116,7 @@ TEST_CASE("Indices are adjusted correctly for counter clockwise bottom rotation"
     REQUIRE(cubePositions[9] == 11);
 }
 
-TEST_CASE("Indices are adjusted correctly for clockwise bottom rotation") {
+TEST_CASE("Indices are adjusted correctly for two clockwise bottom rotations") {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BOTTOM_CUBES;
@@ -244,7 +324,7 @@ TEST_CASE("Rotation matrix is calculated correctly for two rotations") {
 }
 
 void assertDirection(Face face, int direction) {
-    Rotation rot = {face, CLOCKWISE};
+    RotationCommand rot = {face, CLOCKWISE};
     REQUIRE(getDirection(rot) == direction);
     rot = {face, COUNTER_CLOCKWISE};
     REQUIRE(getDirection(rot) == -1 * direction);

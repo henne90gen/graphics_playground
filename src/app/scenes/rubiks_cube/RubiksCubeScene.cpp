@@ -1,4 +1,4 @@
-#include "RubiksCube.h"
+#include "RubiksCubeScene.h"
 
 #include <glm/ext.hpp>
 
@@ -194,7 +194,7 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
     return indPtr;
 }
 
-void RubiksCube::setup() {
+void RubiksCubeScene::setup() {
     shader = new Shader("../../../src/app/scenes/rubiks_cube/RubiksCube.vertex",
                         "../../../src/app/scenes/rubiks_cube/RubiksCube.fragment");
     shader->bind();
@@ -234,21 +234,10 @@ void RubiksCube::setup() {
 
     indexBuffer = new IndexBuffer(indices, indicesCount);
 
-    for (unsigned int i = 0; i < 27; i++) {
-        CubeRotation cubeRotation = {
-                std::vector<glm::vec3>(),
-                glm::mat4(1.0f)
-        };
-        cubeRotation.rotations.emplace_back();
-        cubeRotations.push_back(cubeRotation);
-
-        cubePositions.emplace_back(i);
-    }
-
-    rotations = {R_RI, R_BOI, R_R, R_BO};
+    rubiksCube = RubiksCube();
 }
 
-void RubiksCube::destroy() {
+void RubiksCubeScene::destroy() {
     free(vertices);
     free(indices);
 }
@@ -260,7 +249,7 @@ std::string to_string(unsigned int input) {
     return std::to_string(input);
 }
 
-void RubiksCube::tick() {
+void RubiksCubeScene::tick() {
     static auto translation = glm::vec3(-2.0f, 0.0f, -12.0f);
     static auto modelRotation = glm::vec3(0.4f, -0.3f, 0.0f);
     static auto cameraRotation = glm::vec3(0.0f);
@@ -271,6 +260,12 @@ void RubiksCube::tick() {
     ImGui::DragFloat3("Rotation", (float *) &modelRotation, 0.01f);
     ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01f);
     ImGui::DragFloat("Animation Speed", &rotationSpeed, 0.001f, 0.001f, 1.0f);
+
+    ImGui::Checkbox("Loop Commands", &rubiksCube.loop);
+    if (ImGui::Button("Shuffle")) {
+        rubiksCube.shuffle();
+    }
+
     ImGui::End();
 
     shader->bind();
@@ -291,17 +286,10 @@ void RubiksCube::tick() {
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
-    Rotation &rotation = rotations[currentRotationIndex];
-    if (rotate(cubeRotations, cubePositions, rotation, rotationSpeed)) {
-        rotation.currentAngle = 0;
-        currentRotationIndex++;
-        if (currentRotationIndex >= rotations.size()) {
-            currentRotationIndex = 0;
-        }
-    }
+    rubiksCube.rotate(rotationSpeed);
 
     for (unsigned int i = 0; i < 27; i++) {
-        shader->setUniform("cubeMatrix", cubeRotations[i].rotationMatrix);
+        shader->setUniform("cubeMatrix", rubiksCube.getRotationMatrix(i));
         GL_Call(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void *) (i * 36 * sizeof(unsigned int))));
     }
 

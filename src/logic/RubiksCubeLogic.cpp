@@ -1,44 +1,46 @@
 #include "RubiksCubeLogic.h"
 #include <iostream>
+#include <random>
+#include <chrono>
 
-bool rotate(std::vector<CubeRotation> &cubeRotations, std::vector<unsigned int> &cubePositions, Rotation &rot,
-            float rotationSpeed) {
-    rot.currentAngle += rotationSpeed;
+bool rotate(std::vector<CubeRotation> &cubeRotations, std::vector<unsigned int> &cubePositions,
+            RotationCommand command, float *currentAngle, float rotationSpeed) {
+    *currentAngle += rotationSpeed;
 
     bool isDoneRotating = false;
     auto piHalf = glm::pi<float>() / 2.0f;
-    if (rot.currentAngle >= piHalf) {
+    if (*currentAngle >= piHalf) {
         isDoneRotating = true;
-        rot.currentAngle = piHalf;
+        *currentAngle = piHalf;
     }
 
     std::vector<unsigned int> cubes(9);
     glm::vec3 rotationVector;
-    float direction = getDirection(rot);
-    switch (rot.face) {
+    float direction = getDirection(command);
+    switch (command.face) {
         case FRONT:
             cubes = FRONT_CUBES;
-            rotationVector = glm::vec3(0, 0, direction * rot.currentAngle);
+            rotationVector = glm::vec3(0, 0, direction * *currentAngle);
             break;
         case BACK:
             cubes = BACK_CUBES;
-            rotationVector = glm::vec3(0, 0, direction * rot.currentAngle);
+            rotationVector = glm::vec3(0, 0, direction * *currentAngle);
             break;
         case LEFT:
             cubes = LEFT_CUBES;
-            rotationVector = glm::vec3(direction * rot.currentAngle, 0, 0);
+            rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
             break;
         case RIGHT:
             cubes = RIGHT_CUBES;
-            rotationVector = glm::vec3(direction * rot.currentAngle, 0, 0);
+            rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
             break;
         case TOP:
             cubes = TOP_CUBES;
-            rotationVector = glm::vec3(0, direction * rot.currentAngle, 0);
+            rotationVector = glm::vec3(0, direction * *currentAngle, 0);
             break;
         case BOTTOM:
             cubes = BOTTOM_CUBES;
-            rotationVector = glm::vec3(0, direction * rot.currentAngle, 0);
+            rotationVector = glm::vec3(0, direction * *currentAngle, 0);
             break;
     }
 
@@ -48,17 +50,16 @@ bool rotate(std::vector<CubeRotation> &cubeRotations, std::vector<unsigned int> 
     }
 
     if (isDoneRotating) {
-        if (rot.direction == CLOCKWISE) {
+        if (command.direction == CLOCKWISE) {
             adjustIndicesClockwise(cubePositions, cubes);
         } else {
             adjustIndicesCounterClockwise(cubePositions, cubes);
         }
     }
-
     return isDoneRotating;
 }
 
-int getDirection(Rotation &rot) {
+int getDirection(RotationCommand &rot) {
     if (rot.direction == CLOCKWISE) {
         if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
             return 1;
@@ -155,4 +156,3 @@ void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<un
     positions[selectedCubes[5]] = tmp2;
     positions[selectedCubes[1]] = tmp1;
 }
-

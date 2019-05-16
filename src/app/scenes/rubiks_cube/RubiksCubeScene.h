@@ -2,6 +2,7 @@
 
 #include "scenes/Scene.h"
 #include "RubiksCubeLogic.h"
+#include "RubiksCube.h"
 
 #include <functional>
 
@@ -11,12 +12,12 @@
 #include "opengl/VertexBuffer.h"
 #include "opengl/IndexBuffer.h"
 
-class RubiksCube : public Scene {
+class RubiksCubeScene : public Scene {
 public:
-    RubiksCube(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
+    RubiksCubeScene(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
             : Scene(window, backToMainMenu, "RubiksCube") {};
 
-    ~RubiksCube() override = default;;
+    ~RubiksCubeScene() override = default;;
 
     void setup() override;
 
@@ -31,9 +32,6 @@ private:
 
     float *vertices;
     unsigned int *indices;
-    std::vector<CubeRotation> cubeRotations;
-    std::vector<unsigned int> cubePositions;
 
-    std::vector<Rotation> rotations;
-    unsigned int currentRotationIndex = 0;
+    RubiksCube rubiksCube;
 };

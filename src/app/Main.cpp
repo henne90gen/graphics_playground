@@ -13,7 +13,7 @@
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "scenes/landscape/Landscape.h"
-#include "scenes/rubiks_cube/RubiksCube.h"
+#include "scenes/rubiks_cube/RubiksCubeScene.h"
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
@@ -53,7 +53,7 @@ int main() {
         return -1;
     }
 
-    window = glfwCreateWindow(640, 480, "Hello World", nullptr, nullptr);
+    window = glfwCreateWindow(800, 600, "Hello World", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -81,7 +81,7 @@ int main() {
     scenes.push_back(new TextureDemo(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
     scenes.push_back(new Landscape(window, backToMainMenu));
-    scenes.push_back(new RubiksCube(window, backToMainMenu));
+    scenes.push_back(new RubiksCubeScene(window, backToMainMenu));
 
     mainMenu.goToScene((unsigned int) scenes.size() - 1);
 
