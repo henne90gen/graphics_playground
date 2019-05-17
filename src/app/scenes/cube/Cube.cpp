@@ -7,7 +7,8 @@
 #include "opengl/Utils.h"
 
 void Cube::setup() {
-    shader = new Shader("../src/scenes/cube/Cube.vertex", "../src/scenes/cube/Cube.fragment");
+    shader = new Shader("../../../src/app/scenes/cube/Cube.vertex",
+                        "../../../src/app/scenes/cube/Cube.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();

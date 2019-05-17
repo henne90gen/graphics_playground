@@ -10,7 +10,8 @@
 #define HEIGHT 10
 
 void Landscape::setup() {
-    shader = new Shader("../src/scenes/landscape/Landscape.vertex", "../src/scenes/landscape/Landscape.fragment");
+    shader = new Shader("../../../src/app/scenes/landscape/Landscape.vertex",
+                        "../../../src/app/scenes/landscape/Landscape.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();

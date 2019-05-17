@@ -6,8 +6,8 @@
 #include "opengl/Utils.h"
 
 void TextureDemo::setup() {
-    shader = new Shader("../src/scenes/texture_demo/TextureDemo.vertex",
-                        "../src/scenes/texture_demo/TextureDemo.fragment");
+    shader = new Shader("../../../src/app/scenes/texture_demo/TextureDemo.vertex",
+                        "../../../src/app/scenes/texture_demo/TextureDemo.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();

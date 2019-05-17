@@ -6,21 +6,22 @@
 #include "opengl/Utils.h"
 
 void Triangle::setup() {
+    shader = new Shader("../../../src/app/scenes/triangle/Triangle.vertex",
+                        "../../../src/app/scenes/triangle/Triangle.fragment");
+    shader->bind();
+
     positionBuffer = new VertexBuffer();
     colorBuffer = new VertexBuffer();
-
-    shader = new Shader("../src/scenes/triangle/Triangle.vertex", "../src/scenes/triangle/Triangle.fragment");
-    shader->bind();
 
     positionBuffer->bind();
     GL_Call(positionLocation = glGetAttribLocation(shader->getId(), "position"));
     GL_Call(glEnableVertexAttribArray(positionLocation));
-    GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *)0));
+    GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *) 0));
 
     colorBuffer->bind();
     GL_Call(colorLocation = glGetAttribLocation(shader->getId(), "color"));
     GL_Call(glEnableVertexAttribArray(colorLocation));
-    GL_Call(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, (void *)0));
+    GL_Call(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0));
 
     shader->unbind();
 }
