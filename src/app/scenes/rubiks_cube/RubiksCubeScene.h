@@ -1,8 +1,8 @@
 #pragma once
 
 #include "scenes/Scene.h"
-#include "RubiksCubeLogic.h"
-#include "RubiksCube.h"
+#include "rubiks_cube/RubiksCube.h"
+#include "rubiks_cube/RubiksCubeLogic.h"
 
 #include <functional>
 

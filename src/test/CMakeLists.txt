@@ -1,12 +1,16 @@
 
 include("../../catch/contrib/Catch.cmake")
+set(CATCH_INCLUDE_DIR ../../catch/single_include/catch2)
 
-add_executable(Tests
+set(SOURCES
         main.cpp
-        RubiksCubeTest.cpp)
+        RubiksCubeTest.cpp
+        RubiksCubeLogicTest.cpp)
+
+add_executable(Tests ${SOURCES})
 
 target_include_directories(Tests PRIVATE
-        ../../catch/single_include/catch2
+        ${CATCH_INCLUDE_DIR}
         ${LOGIC_DIR}
         ${GLM_DIR})
 target_link_libraries(Tests logic)

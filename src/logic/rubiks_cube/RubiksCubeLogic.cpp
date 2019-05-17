@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 
-bool rotate(std::vector<CubeRotation> &cubeRotations, std::vector<unsigned int> &cubePositions,
+bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions,
             RotationCommand command, float *currentAngle, float rotationSpeed) {
     *currentAngle += rotationSpeed;
 
@@ -88,7 +88,7 @@ void printRotations(std::vector<glm::vec3> &rotations) {
     std::cout << result << std::endl;
 }
 
-void updateCubeRotation(CubeRotation &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating) {
+void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating) {
     cubeRotation.rotations[cubeRotation.rotations.size() - 1] = rotationVector;
 
     glm::mat4 cubeMatrix = glm::mat4(1.0f);
@@ -155,4 +155,34 @@ void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<un
     tmp1 = positions[selectedCubes[5]];
     positions[selectedCubes[5]] = tmp2;
     positions[selectedCubes[1]] = tmp1;
+}
+
+Face rotateFace(Face currentFace, glm::vec3 rotation) {
+    if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) {
+        return currentFace;
+    }
+    // FIXME make sure the axis are set up correctly
+    Face nextFaceMap[6][6] = {
+            {FRONT, FRONT, TOP, BOTTOM, LEFT, RIGHT}, // FRONT
+            {}, // BACK
+            {}, // LEFT
+            {}, // RIGHT
+            {}, // TOP
+            {}, // BOTTOM
+    };
+    unsigned int rotationIndex = 0;
+    if (rotation.x > 0.0f) {
+        rotationIndex = 0;
+    } else if (rotation.x < 0.0f) {
+        rotationIndex = 1;
+    } else if (rotation.y > 0.0f) {
+        rotationIndex = 2;
+    } else if (rotation.y < 0.0f) {
+        rotationIndex = 3;
+    } else if (rotation.z > 0.0f) {
+        rotationIndex = 4;
+    } else if (rotation.z < 0.0f) {
+        rotationIndex = 5;
+    }
+    return nextFaceMap[currentFace][rotationIndex];
 }

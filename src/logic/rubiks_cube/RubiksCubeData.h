@@ -43,7 +43,7 @@ struct RotationCommand {
     Direction direction;
 };
 
-struct CubeRotation {
+struct SmallCube {
     std::vector<glm::vec3> rotations;
     glm::mat4 rotationMatrix;
 };
