@@ -340,6 +340,31 @@ TEST_CASE("Direction is calculated correctly") {
     assertDirection(BACK, 1);
 }
 
+void assertFaceRotation(Face face, std::vector<Face> results) {
+    REQUIRE(rotateFaceBack(face, glm::vec3(1, 0, 0)) == results[0]);
+    REQUIRE(rotateFaceBack(face, glm::vec3(-1, 0, 0)) == results[1]);
+    REQUIRE(rotateFaceBack(face, glm::vec3(0, 1, 0)) == results[2]);
+    REQUIRE(rotateFaceBack(face, glm::vec3(0, -1, 0)) == results[3]);
+    REQUIRE(rotateFaceBack(face, glm::vec3(0, 0, 1)) == results[4]);
+    REQUIRE(rotateFaceBack(face, glm::vec3(0, 0, -1)) == results[5]);
+}
+
 TEST_CASE("Single face is rotated correctly") {
-//    REQUIRE(rotateFace(TOP, {glm::vec3(0, 1, 0)}) == FRONT);
+    std::vector<Face> results = {TOP, BOTTOM, LEFT, RIGHT, FRONT, FRONT};
+    assertFaceRotation(FRONT, results);
+
+    results = {BOTTOM, TOP, RIGHT, LEFT, BACK, BACK};
+    assertFaceRotation(BACK, results);
+
+    results = {LEFT, LEFT, BACK, FRONT, TOP, BOTTOM};
+    assertFaceRotation(LEFT, results);
+
+    results = {RIGHT, RIGHT, FRONT, BACK, BOTTOM, TOP};
+    assertFaceRotation(RIGHT, results);
+
+    results = {BACK, FRONT, TOP, TOP, RIGHT, LEFT};
+    assertFaceRotation(TOP, results);
+
+    results = {FRONT, BACK, BOTTOM, BOTTOM, LEFT, RIGHT};
+    assertFaceRotation(BOTTOM, results);
 }

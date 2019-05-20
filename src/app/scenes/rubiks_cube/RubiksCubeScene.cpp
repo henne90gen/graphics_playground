@@ -234,7 +234,14 @@ void RubiksCubeScene::setup() {
 
     indexBuffer = new IndexBuffer(indices, indicesCount);
 
-    rubiksCube = RubiksCube();
+    rubiksCube = RubiksCube({
+                                    R_FI, R_F,
+//                                    R_BA, R_BAI,
+//                                    R_L, R_LI,
+//                                    R_R, R_RI,
+//                                    R_T, R_TI,
+//                                    R_BO, R_BOI
+                            });
 }
 
 void RubiksCubeScene::destroy() {
@@ -253,7 +260,7 @@ void RubiksCubeScene::tick() {
     static auto translation = glm::vec3(-2.0f, 0.0f, -12.0f);
     static auto modelRotation = glm::vec3(0.4f, -0.3f, 0.0f);
     static auto cameraRotation = glm::vec3(0.0f);
-    static auto rotationSpeed = 0.01f;
+    static auto rotationSpeed = 2.01f;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Position", (float *) &translation, 0.05f);
@@ -265,7 +272,9 @@ void RubiksCubeScene::tick() {
     if (ImGui::Button("Shuffle")) {
         rubiksCube.shuffle();
     }
-
+    ImGui::Text("Average Rotation List Length: %d", rubiksCube.getAverageRotationListLength());
+    ImGui::Text("Maximum Rotation List Length: %d", rubiksCube.getMaximumRotationListLength());
+    ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube.getTotalRotationListEntriesCount());
     ImGui::End();
 
     shader->bind();

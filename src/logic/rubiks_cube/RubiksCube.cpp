@@ -3,6 +3,7 @@
 #include <random>
 #include <chrono>
 #include <iostream>
+#include <algorithm>
 
 unsigned int WHOLE_CUBE[6][9] = {FRONT_CUBES, BACK_CUBES, LEFT_CUBES, RIGHT_CUBES, TOP_CUBES, BOTTOM_CUBES};
 
@@ -30,6 +31,36 @@ RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
     }
 }
 
+std::string to_string(Face face) {
+    switch (face) {
+        case FRONT:
+            return "FRONT";
+        case BACK:
+            return "BACK";
+        case LEFT:
+            return "LEFT";
+        case RIGHT:
+            return "RIGHT";
+        case TOP:
+            return "TOP";
+        case BOTTOM:
+            return "BOTTOM";
+    }
+}
+
+std::string to_string(Direction dir) {
+    switch (dir) {
+        case CLOCKWISE:
+            return "CLOCKWISE";
+        case COUNTER_CLOCKWISE:
+            return "COUNTER_CLOCKWISE";
+    }
+}
+
+std::string to_string(RotationCommand cmd) {
+    return to_string(cmd.face) + ", " + to_string(cmd.direction);
+}
+
 void RubiksCube::rotate(float rotationSpeed) {
     if (loop && !isRotating && rotationCommands.hasCommands()) {
         isRotating = true;
@@ -40,6 +71,8 @@ void RubiksCube::rotate(float rotationSpeed) {
     if (!shouldStartNextCommand) {
         return;
     }
+
+    squashRotations(smallCubes);
 
     currentAngle = 0.0f;
     if (rotationCommands.hasNext()) {
@@ -66,19 +99,48 @@ void RubiksCube::shuffle() {
     std::cout << "Shuffeling cube..." << std::endl;
 
     isRotating = true;
-    loop = false;
 }
 
 Face RubiksCube::getCurrentFace(Face direction, unsigned int localIndex) {
-    if (localIndex == 5) {
+    if (localIndex == 4) {
         return direction;
     }
     unsigned int globalIndex = WHOLE_CUBE[direction][localIndex];
     unsigned int cubeIndex = positionMapping[globalIndex];
     SmallCube cube = smallCubes[cubeIndex];
+
     Face currentFace = direction;
-    for (auto &rotation : cube.rotations) {
-        currentFace = rotateFace(currentFace, rotation);
+    std::vector<glm::vec3> rotations(cube.rotations.size());
+    std::reverse_copy(cube.rotations.begin(), cube.rotations.end(), rotations.begin());
+    for (auto &rotation : rotations) {
+        currentFace = rotateFaceBack(currentFace, rotation);
     }
-    return direction;
+
+    return currentFace;
+}
+
+unsigned int RubiksCube::getMaximumRotationListLength() {
+    unsigned int result = 0;
+    for (auto &cube : smallCubes) {
+        if (cube.rotations.size() > result) {
+            result = cube.rotations.size();
+        }
+    }
+    return result;
+}
+
+unsigned int RubiksCube::getTotalRotationListEntriesCount() {
+    unsigned int result = 0;
+    for (auto &cube : smallCubes) {
+        result += cube.rotations.size();
+    }
+    return result;
+}
+
+unsigned int RubiksCube::getAverageRotationListLength() {
+    unsigned int result = 0;
+    for (auto &cube : smallCubes) {
+        result += cube.rotations.size();
+    }
+    return result / smallCubes.size();
 }
