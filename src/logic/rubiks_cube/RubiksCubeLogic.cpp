@@ -200,8 +200,7 @@ unsigned int squashRotations(std::vector<glm::vec3> &rotations) {
         if ((current.x == -next.x && current.y == 0 && current.z == 0) ||
             (current.x == 0 && current.y == -next.y && current.z == 0) ||
             (current.x == 0 && current.y == 0 && current.z == -next.z)) {
-            // remove current and next from rotations
-            std::cout << "Removing " << i << std::endl;
+
             rotations.erase(rotations.begin() + i, rotations.begin() + (i + 2));
             i--;
             currentSize -= 2;
