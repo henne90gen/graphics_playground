@@ -2,6 +2,23 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Playground)
 
+# Clang Tidy
+message(STATUS "Looking for clang-tidy")
+find_program(
+        CLANG_TIDY_EXE
+        NAMES "clang-tidy"
+        DOC "Path to clang-tidy executable"
+)
+if (NOT CLANG_TIDY_EXE)
+    message(STATUS "Looking for clang-tidy - not found")
+else ()
+    message(STATUS "Looking for clang-tidy - found")
+    set(DO_CLANG_TIDY
+            "${CLANG_TIDY_EXE}"
+            "-checks=*,-fuchsia-default-arguments,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg")
+endif ()
+
+
 # GLFW
 set(GLFW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw)
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")

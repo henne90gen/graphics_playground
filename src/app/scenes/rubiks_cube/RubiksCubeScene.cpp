@@ -299,7 +299,10 @@ void RubiksCubeScene::tick() {
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, translation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), getAspectRatio(), 0.1f, 100.f);
+    float fieldOfView = 45.0F;
+    float zNear = 0.1F;
+    float zFar = 100.0F;
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(fieldOfView), getAspectRatio(), zNear, zFar);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);

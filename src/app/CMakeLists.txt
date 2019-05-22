@@ -21,12 +21,24 @@ set(SOURCES
         scenes/rubiks_cube/RubiksCubeScene.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 target_compile_options(${PROJECT_NAME} PRIVATE
         -Wall
         -Wextra
         -pedantic
         -Wno-unused-parameter)
+
+set_target_properties(
+        ${PROJECT_NAME} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
+
+if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
+    set_target_properties(
+            ${PROJECT_NAME} PROPERTIES
+            CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+    )
+endif ()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
 

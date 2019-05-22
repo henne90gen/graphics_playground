@@ -376,6 +376,6 @@ TEST_CASE("Rotations are squashed correctly") {
     rotations.emplace_back(-1.0f, 0, 0);
     cubes.push_back({rotations, glm::mat4()});
     unsigned int squashedRotations = squashRotations(cubes);
-    REQUIRE(cubes[0].rotations.size() == 0);
+    REQUIRE(cubes[0].rotations.empty());
     REQUIRE(squashedRotations == 2);
 }

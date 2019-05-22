@@ -2,6 +2,6 @@
 
 mkdir -p build
 cd build
-cmake ..
+cmake -DRUN_CLANG_TIDY=ON ..
 make
 make test
