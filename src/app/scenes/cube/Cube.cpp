@@ -8,6 +8,9 @@
 #include "opengl/Utils.h"
 #include "util/ImGuiUtils.h"
 
+const unsigned int VERTICES_COUNT = 48;
+const unsigned int INDICES_COUNT = 36;
+
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
@@ -20,7 +23,7 @@ void Cube::setup() {
     vertexArray = new VertexArray();
     vertexArray->bind();
 
-    std::array<float, 48> vertices = {
+    std::array<float, VERTICES_COUNT> vertices = {
             // back
             -1.0F, -1.0F, -1.0F, 1, 0, 0, // 0
             1.0F, -1.0F, -1.0F, 0, 1, 0,  // 1
@@ -39,30 +42,30 @@ void Cube::setup() {
     bufferLayout.add<float>(shader, "color", 3);
     vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
-    std::array<unsigned int, 36> indices = {
+    std::array<unsigned int, INDICES_COUNT> indices = {
             // front
-            0, 1, 2, //
-            0, 2, 3, //
+            0, 1, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            0, 2, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
             // back
-            4, 5, 6, //
-            4, 6, 7, //
+            4, 5, 6, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            4, 6, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
             // right
-            5, 1, 2, //
-            5, 2, 6, //
+            5, 1, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            5, 2, 6, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
             // left
-            0, 4, 7, //
-            0, 7, 3, //
+            0, 4, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            0, 7, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
             // top
-            7, 6, 2, //
-            7, 2, 3, //
+            7, 6, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            7, 2, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
             // bottom
-            4, 5, 1, //
-            4, 1, 0, //
+            4, 5, 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            4, 1, 0, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     };
     indexBuffer = new IndexBuffer(indices.data(), sizeof(indices) / sizeof(float));
 }
@@ -70,16 +73,21 @@ void Cube::setup() {
 void Cube::destroy() {}
 
 void Cube::tick() {
-    static auto translation = glm::vec3(0.0F, 0.0F, -4.5F);
+    static auto translation = glm::vec3(0.0F, 0.0F,
+                                        -4.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F);
     static auto cameraRotation = glm::vec3(0.0F);
     static float scale = 1.0F;
 
     ImGui::Begin("Settings");
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
-    ImGui::DragFloat("Scale", &scale, 0.001F);
+    ImGui::DragFloat("Scale", &scale,
+                     0.001F); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     ImGui::End();
 
     shader->bind();
