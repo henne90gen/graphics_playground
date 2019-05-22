@@ -33,6 +33,9 @@ public:
     bool loop = false;
     unsigned int squashedRotations = 0;
     unsigned int executedRotationCommands = 0;
+
+    void solve();
+
 private:
     bool isRotating = true;
     float currentAngle = 0;

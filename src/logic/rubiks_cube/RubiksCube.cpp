@@ -35,36 +35,6 @@ RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
     }
 }
 
-std::string to_string(Face face) {
-    switch (face) {
-        case FRONT:
-            return "FRONT";
-        case BACK:
-            return "BACK";
-        case LEFT:
-            return "LEFT";
-        case RIGHT:
-            return "RIGHT";
-        case TOP:
-            return "TOP";
-        case BOTTOM:
-            return "BOTTOM";
-    }
-}
-
-std::string to_string(Direction dir) {
-    switch (dir) {
-        case CLOCKWISE:
-            return "CLOCKWISE";
-        case COUNTER_CLOCKWISE:
-            return "COUNTER_CLOCKWISE";
-    }
-}
-
-std::string to_string(RotationCommand cmd) {
-    return to_string(cmd.face) + ", " + to_string(cmd.direction);
-}
-
 void RubiksCube::rotate(float rotationSpeed) {
     if (loop && !isRotating && rotationCommands.hasCommands()) {
         isRotating = true;
@@ -94,6 +64,7 @@ void RubiksCube::rotate(float rotationSpeed) {
 
 void RubiksCube::shuffle() {
     rotationCommands.clear();
+
     const unsigned int rotationCommandCount = 12;
     std::array<RotationCommand, rotationCommandCount> rotations = {
             RotationCommand(R_R), R_RI, R_F, R_FI, R_BO, R_BOI, R_L, R_LI, R_T, R_TI, R_BA, R_BAI
@@ -101,12 +72,15 @@ void RubiksCube::shuffle() {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
+
     const int shuffleCount = 20;
     for (unsigned int i = 0; i < shuffleCount; i++) {
         unsigned int randomIndex = distribution(generator);
         rotationCommands.push(rotations[randomIndex]);
     }
+
     std::cout << "Shuffeling cube..." << std::endl;
+    std::cout << to_string(rotationCommands) << std::endl;
 
     isRotating = true;
 }
@@ -153,4 +127,37 @@ unsigned int RubiksCube::getAverageRotationListLength() {
         result += cube.rotations.size();
     }
     return result / smallCubes.size();
+}
+
+void RubiksCube::solve() {
+    // find miss-aligned bottom pieces
+    struct EdgePiece {
+        unsigned int localIndex;
+        Face face;
+    };
+    std::array<EdgePiece, 4> edgePieces = {EdgePiece({1, BACK}), {3, LEFT}, {5, RIGHT}, {7, FRONT}};
+    for (EdgePiece edgePiece : edgePieces) {
+        Face bottomFace = getCurrentFace(BOTTOM, edgePiece.localIndex);
+        if (bottomFace == BOTTOM) {
+            Face edgePartnerFace = getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
+            if (edgePartnerFace != edgePiece.face) {
+                rotationCommands.clear();
+                isRotating = true;
+                std::cout << edgePiece.localIndex << " needs to be moved to " << to_string(edgePartnerFace)
+                          << std::endl;
+
+                Face oppositeFace = getOppositeFace(edgePiece.face);
+                std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
+                if (edgePartnerFace == oppositeFace) {
+                    rotationCommands.push(R_BO);
+                    rotationCommands.push(R_BO);
+                } else {
+                    rotationCommands.push(R_BO);
+                }
+            }
+        }
+    }
+
+    // find the bottom edge pieces
+    // move them to the correct position
 }

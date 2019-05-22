@@ -254,12 +254,8 @@ void RubiksCubeScene::setup() {
     indexBuffer = new IndexBuffer(indices, indicesCount);
 
     rubiksCube = RubiksCube({
-                                    R_FI, R_F,
-//                                    R_BA, R_BAI,
-//                                    R_L, R_LI,
-//                                    R_R, R_RI,
-//                                    R_T, R_TI,
-//                                    R_BO, R_BOI
+                                    R_F, R_L, R_RI, R_LI, R_R, R_F, R_F, R_BOI, R_TI, R_BAI, R_L, R_FI, R_FI, R_L, R_L,
+                                    R_BO, R_BOI, R_BAI, R_TI, R_BOI
                             });
 }
 
@@ -298,6 +294,9 @@ void RubiksCubeScene::tick() {
     ImGui::Checkbox("Loop Commands", &rubiksCube.loop);
     if (ImGui::Button("Shuffle")) {
         rubiksCube.shuffle();
+    }
+    if (ImGui::Button("Solve")) {
+        rubiksCube.solve();
     }
     ImGui::Text("Executed Rotation Commands: %d", rubiksCube.executedRotationCommands);
 

@@ -34,6 +34,9 @@ public:
         return !commands.empty();
     }
 
+    std::vector<RotationCommand> getAllCommands() {
+        return commands;
+    }
 private:
     std::vector<RotationCommand> commands;
     unsigned int nextCommandIndex = 0;

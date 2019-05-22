@@ -7,6 +7,8 @@
 #include "RubiksCubeData.h"
 #include "RotationCommandStack.h"
 
+#include "RubiksCube.h"
+
 void printRotations(std::vector<glm::vec3> &rotations);
 
 bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions,
@@ -23,3 +25,16 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation);
 
 unsigned int squashRotations(std::vector<SmallCube> &cubeRotations);
+
+std::string to_string(Face &face, bool simple = false);
+
+std::string to_string(Direction &dir, bool simple = false);
+
+std::string to_string(RotationCommand &cmd, bool simple = false);
+
+std::string to_string(RotationCommandStack &cmdStack);
+
+class RubiksCube; // forward declaration
+Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index);
+
+Face getOppositeFace(Face face);

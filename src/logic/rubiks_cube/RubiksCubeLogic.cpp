@@ -1,4 +1,5 @@
 #include "RubiksCubeLogic.h"
+
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -219,4 +220,113 @@ unsigned int squashRotations(std::vector<SmallCube> &cubeRotations) {
         removed += squashRotations(&cube.rotations);
     }
     return removed;
+}
+
+std::string to_string(Face &face, bool simple) {
+    switch (face) {
+        case FRONT:
+            if (simple) {
+                return "R_F";
+            } else {
+                return "FRONT";
+            }
+        case BACK:
+            if (simple) {
+                return "R_BA";
+            } else {
+                return "BACK";
+            }
+        case LEFT:
+            if (simple) {
+                return "R_L";
+            } else {
+                return "LEFT";
+            }
+        case RIGHT:
+            if (simple) {
+                return "R_R";
+            } else {
+                return "RIGHT";
+            }
+        case TOP:
+            if (simple) {
+                return "R_T";
+            } else {
+                return "TOP";
+            }
+        case BOTTOM:
+            if (simple) {
+                return "R_BO";
+            } else {
+                return "BOTTOM";
+            }
+    }
+}
+
+std::string to_string(Direction &dir, bool simple) {
+    if (dir == CLOCKWISE) {
+        if (simple) {
+            return "";
+        }
+        return "CLOCKWISE";
+    } else {
+        if (simple) {
+            return "I";
+        }
+        return "COUNTER_CLOCKWISE";
+    }
+}
+
+std::string to_string(RotationCommand &cmd, bool simple) {
+    std::string separator;
+    if (simple) {
+        separator = "";
+    } else {
+        separator = ", ";
+    }
+    return to_string(cmd.face, simple) + separator + to_string(cmd.direction, simple);
+}
+
+
+std::string to_string(RotationCommandStack &cmdStack) {
+    std::string result;
+    for (RotationCommand &cmd : cmdStack.getAllCommands()) {
+        result += to_string(cmd, true) + " -> ";
+    }
+    return result + "END";
+}
+
+Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index) {
+    if (face == BOTTOM) {
+        switch (index) {
+            case 1:
+                return cube->getCurrentFace(BACK, 1);
+            case 3:
+                return cube->getCurrentFace(LEFT, 1);
+            case 5:
+                return cube->getCurrentFace(RIGHT, 1);
+            case 7:
+                return cube->getCurrentFace(FRONT, 1);
+            default:
+                throw std::exception();
+        }
+    }
+    throw std::exception();
+}
+
+Face getOppositeFace(Face face) {
+    switch (face) {
+        case FRONT:
+            return BACK;
+        case BACK:
+            return FRONT;
+        case TOP:
+            return BOTTOM;
+        case BOTTOM:
+            return TOP;
+        case LEFT:
+            return RIGHT;
+        case RIGHT:
+            return LEFT;
+    }
 }
