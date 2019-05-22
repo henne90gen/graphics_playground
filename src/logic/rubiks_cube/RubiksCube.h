@@ -1,10 +1,14 @@
 #pragma once
 
+#include <array>
+
 #include "RubiksCubeData.h"
 #include "RubiksCubeLogic.h"
 #include "RotationCommandStack.h"
 
-extern unsigned int WHOLE_CUBE[6][9];
+const unsigned int FACE_COUNT = 6;
+const unsigned int SMALL_FACE_COUNT = 9;
+extern const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_CUBE;
 
 class RubiksCube {
 public:

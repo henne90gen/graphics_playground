@@ -191,18 +191,18 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
     return NEXT_FACE_MAP[currentFace][rotationIndex];
 }
 
-unsigned int squashRotations(std::vector<glm::vec3> &rotations) {
+unsigned int squashRotations(std::vector<glm::vec3> *rotations) {
     unsigned int removed = 0;
     int i = 0;
-    int currentSize = rotations.size();
+    int currentSize = rotations->size();
     while (currentSize > 0 && i < currentSize - 1) {
-        auto &current = rotations[i];
-        auto &next = rotations[i + 1];
+        auto &current = rotations->at(i);
+        auto &next = rotations->at(i + 1);
         if ((current.x == -next.x && current.y == 0 && current.z == 0) ||
             (current.x == 0 && current.y == -next.y && current.z == 0) ||
             (current.x == 0 && current.y == 0 && current.z == -next.z)) {
 
-            rotations.erase(rotations.begin() + i, rotations.begin() + (i + 2));
+            rotations->erase(rotations->begin() + i, rotations->begin() + (i + 2));
             i--;
             currentSize -= 2;
             removed += 2;
@@ -216,7 +216,7 @@ unsigned int squashRotations(std::vector<glm::vec3> &rotations) {
 unsigned int squashRotations(std::vector<SmallCube> &cubeRotations) {
     unsigned int removed = 0;
     for (auto &cube : cubeRotations) {
-        removed += squashRotations(cube.rotations);
+        removed += squashRotations(&cube.rotations);
     }
     return removed;
 }

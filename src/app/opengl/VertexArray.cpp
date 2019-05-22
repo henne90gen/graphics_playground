@@ -6,8 +6,6 @@ VertexArray::VertexArray() { GL_Call(glGenVertexArrays(1, &id)); }
 
 VertexArray::~VertexArray() { GL_Call(glDeleteVertexArrays(1, &id)); }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
 void VertexArray::addBuffer(const VertexBuffer &vertexBuffer, const VertexBufferLayout &layout) {
     bind();
 
@@ -17,11 +15,10 @@ void VertexArray::addBuffer(const VertexBuffer &vertexBuffer, const VertexBuffer
     for (auto &element : elements) {
         GL_Call(glEnableVertexAttribArray(element.location));
         GL_Call(glVertexAttribPointer(element.location, element.count, element.type, element.normalized,
-                                      layout.getStride(), (const GLvoid *) offset));
+                                      layout.getStride(), reinterpret_cast<GLvoid *>(offset)));
         offset += element.count * element.getSize();
     }
 }
-#pragma clang diagnostic pop
 
 void VertexArray::bind() const { GL_Call(glBindVertexArray(id)); }
 

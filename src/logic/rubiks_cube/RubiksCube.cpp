@@ -5,10 +5,14 @@
 #include <iostream>
 #include <random>
 
-unsigned int WHOLE_CUBE[6][9] = {FRONT_CUBES, BACK_CUBES, LEFT_CUBES, RIGHT_CUBES, TOP_CUBES, BOTTOM_CUBES};
+const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_CUBE = {
+        std::array<unsigned int, SMALL_FACE_COUNT>(FRONT_CUBES), BACK_CUBES, LEFT_CUBES, RIGHT_CUBES, TOP_CUBES,
+        BOTTOM_CUBES
+};
 
 RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
-    for (unsigned int i = 0; i < 27; i++) {
+    const unsigned int smallCubeCount = 27;
+    for (unsigned int i = 0; i < smallCubeCount; i++) {
         SmallCube cubeRotation = {
                 std::vector<glm::vec3>(),
                 glm::mat4(1.0F)
@@ -90,11 +94,15 @@ void RubiksCube::rotate(float rotationSpeed) {
 
 void RubiksCube::shuffle() {
     rotationCommands.clear();
-    RotationCommand rotations[] = {R_R, R_RI, R_F, R_FI, R_BO, R_BOI, R_L, R_LI, R_T, R_TI, R_BA, R_BAI};
+    const unsigned int rotationCommandCount = 12;
+    std::array<RotationCommand, rotationCommandCount> rotations = {
+            RotationCommand(R_R), R_RI, R_F, R_FI, R_BO, R_BOI, R_L, R_LI, R_T, R_TI, R_BA, R_BAI
+    };
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> distribution(0, 11);
-    for (unsigned int i = 0; i < 20; i++) {
+    std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
+    const int shuffleCount = 20;
+    for (unsigned int i = 0; i < shuffleCount; i++) {
         unsigned int randomIndex = distribution(generator);
         rotationCommands.push(rotations[randomIndex]);
     }
