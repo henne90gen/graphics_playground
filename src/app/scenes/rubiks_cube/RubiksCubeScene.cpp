@@ -2,6 +2,10 @@
 
 #include <glm/ext.hpp>
 
+const float FIELD_OF_VIEW = 45.0F;
+const float Z_NEAR = 0.1F;
+const float Z_FAR = 100.0F;
+
 float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
     // front face
     *vertPtr++ = min.x; // x
@@ -299,10 +303,7 @@ void RubiksCubeScene::tick() {
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, translation);
-    float fieldOfView = 45.0F;
-    float zNear = 0.1F;
-    float zFar = 100.0F;
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(fieldOfView), getAspectRatio(), zNear, zFar);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);

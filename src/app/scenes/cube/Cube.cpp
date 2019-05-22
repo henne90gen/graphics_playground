@@ -1,10 +1,16 @@
 #include "Cube.h"
 
+#include <array>
+
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
 #include "opengl/Utils.h"
 #include "util/ImGuiUtils.h"
+
+const float FIELD_OF_VIEW = 45.0F;
+const float Z_NEAR = 0.1F;
+const float Z_FAR = 10.0F;
 
 void Cube::setup() {
     shader = new Shader("../../../src/app/scenes/cube/Cube.vertex",
@@ -14,7 +20,7 @@ void Cube::setup() {
     vertexArray = new VertexArray();
     vertexArray->bind();
 
-    static float vertices[] = {
+    std::array<float, 48> vertices = {
             // back
             -1.0F, -1.0F, -1.0F, 1, 0, 0, // 0
             1.0F, -1.0F, -1.0F, 0, 1, 0,  // 1
@@ -27,13 +33,13 @@ void Cube::setup() {
             1.0F, 1.0F, 1.0F, 1, 1, 1,   // 6
             -1.0F, 1.0F, 1.0F, 0, 0, 0   // 7
     };
-    auto *positionBuffer = new VertexBuffer(vertices, sizeof(vertices));
+    auto *positionBuffer = new VertexBuffer(vertices.data(), sizeof(vertices));
     VertexBufferLayout bufferLayout;
     bufferLayout.add<float>(shader, "position", 3);
     bufferLayout.add<float>(shader, "color", 3);
     vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
-    unsigned int indices[] = {
+    std::array<unsigned int, 36> indices = {
             // front
             0, 1, 2, //
             0, 2, 3, //
@@ -58,7 +64,7 @@ void Cube::setup() {
             4, 5, 1, //
             4, 1, 0, //
     };
-    indexBuffer = new IndexBuffer(indices, sizeof(indices) / sizeof(float));
+    indexBuffer = new IndexBuffer(indices.data(), sizeof(indices) / sizeof(float));
 }
 
 void Cube::destroy() {}
@@ -89,7 +95,7 @@ void Cube::tick() {
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, translation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.F), getAspectRatio(), 0.1F, 10.F);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);

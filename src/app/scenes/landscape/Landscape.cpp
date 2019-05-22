@@ -9,6 +9,10 @@
 #define WIDTH 10
 #define HEIGHT 10
 
+const float FIELD_OF_VIEW = 45.0F;
+const float Z_NEAR = 0.1F;
+const float Z_FAR = 1000.0F;
+
 void Landscape::setup() {
     shader = new Shader("../../../src/app/scenes/landscape/Landscape.vertex",
                         "../../../src/app/scenes/landscape/Landscape.fragment");
@@ -141,7 +145,7 @@ void Landscape::tick() {
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, translation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.F), getAspectRatio(), 0.1F, 1000.F);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
