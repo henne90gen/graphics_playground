@@ -33,7 +33,7 @@ GLuint loadShader(GLuint shaderType, const char *file_path) {
     GL_Call(GLuint shaderId = glCreateShader(shaderType));
 
     char const *sourcePointer = shaderCode.c_str();
-    GL_Call(glShaderSource(shaderId, 1, &sourcePointer, NULL));
+    GL_Call(glShaderSource(shaderId, 1, &sourcePointer, nullptr));
     GL_Call(glCompileShader(shaderId));
 
     int error;
@@ -42,7 +42,7 @@ GLuint loadShader(GLuint shaderType, const char *file_path) {
     GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
         std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
-        GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, NULL, &vertexShaderErrorMessage[0]));
+        GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &vertexShaderErrorMessage[0]));
         std::cout << &vertexShaderErrorMessage[0] << std::endl;
     }
 
@@ -64,7 +64,7 @@ GLuint loadShaders(const char *vertex_file_path, const char *fragment_file_path)
     GL_Call(glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
         std::vector<char> programErrorMessage(infoLogLength + 1);
-        GL_Call(glGetProgramInfoLog(programId, infoLogLength, NULL, &programErrorMessage[0]));
+        GL_Call(glGetProgramInfoLog(programId, infoLogLength, nullptr, &programErrorMessage[0]));
         std::cout << &programErrorMessage[0] << std::endl;
     }
 

@@ -15,7 +15,7 @@ void initImGui(GLFWwindow *window) {
     // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
-//    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
@@ -38,9 +38,9 @@ void pickColor(float *color) {
     ImGui::End();
 }
 
-void pickColor(glm::vec3 &color) {
-    pickColor((float *) &color);
-}
+//void pickColor(glm::vec3 &color) {
+//    pickColor(reinterpret_cast<float *>(&color));
+//}
 
 void pickColorAndVertices(float *color, float *vertices) {
     ImGui::Begin("Settings");
@@ -52,8 +52,8 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::End();
 }
 
-void pickPosition(glm::vec3 &position) {
-    ImGui::Begin("Settings");
-    ImGui::DragFloat3("Position", (float *) &position, 0.1f);
-    ImGui::End();
-}
+//void pickPosition(glm::vec3 &position) {
+//    ImGui::Begin("Settings");
+//    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), 0.1F);
+//    ImGui::End();
+//}
