@@ -15,5 +15,5 @@ class VertexArray {
     void unbind() const;
 
   private:
-    unsigned int id;
+    unsigned int id = 0;
 };

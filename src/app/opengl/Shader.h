@@ -14,7 +14,7 @@ private:
     std::unordered_map<std::string, int> uniformLocations;
 
 public:
-    Shader(const std::string &vertexPath, const std::string &fragmentPath);
+    Shader(std::string vertexPath, std::string fragmentPath);
 
     ~Shader() {}
 

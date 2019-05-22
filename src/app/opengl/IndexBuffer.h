@@ -11,6 +11,6 @@ class IndexBuffer {
     unsigned int getCount() const { return count; }
 
   private:
-    unsigned int id;
+    unsigned int id = 0;
     unsigned int count;
 };

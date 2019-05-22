@@ -4,10 +4,11 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
-Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
-        : id(0), vertexPath(vertexPath), fragmentPath(fragmentPath) {
+Shader::Shader(std::string vertexPath, std::string fragmentPath)
+        : id(0), vertexPath(std::move(vertexPath)), fragmentPath(std::move(fragmentPath)) {
     compile();
 }
 

@@ -207,18 +207,18 @@ void RubiksCubeScene::setup() {
     int verticesPerCube = 4 * 6;
     int floatsPerVertex = 6;
     unsigned int verticesSize = cubeCount * verticesPerCube * floatsPerVertex * sizeof(float);
-    vertices = (float *) malloc(verticesSize);
+    vertices = static_cast<float *>(malloc(verticesSize));
 
     unsigned int indicesCount = 6 * 6 * cubeCount;
-    indices = (unsigned int *) malloc(indicesCount * sizeof(unsigned int));
+    indices = static_cast<unsigned int *>(malloc(indicesCount * sizeof(unsigned int)));
 
     float *vertPtr = vertices;
     unsigned int *indPtr = indices;
     for (unsigned int x = 0; x < sideCount; x++) {
         for (unsigned int y = 0; y < sideCount; y++) {
             for (unsigned int z = 0; z < sideCount; z++) {
-                const glm::vec3 min = glm::vec3(x - 1.5f, y - 1.5f, z - 1.5f);
-                const glm::vec3 max = glm::vec3(x - 0.5f, y - 0.5f, z - 0.5f);
+                const glm::vec3 min = glm::vec3(x - 1.5F, y - 1.5F, z - 1.5F);
+                const glm::vec3 max = glm::vec3(x - 0.5F, y - 0.5F, z - 0.5F);
                 vertPtr = addCubeVertices(vertPtr, min, max);
                 unsigned int cubeNumber = x + (y * sideCount) + (z * sideCount * sideCount);
                 indPtr = addCubeIndices(indPtr, cubeNumber);
@@ -257,16 +257,16 @@ std::string to_string(unsigned int input) {
 }
 
 void RubiksCubeScene::tick() {
-    static auto translation = glm::vec3(-2.0f, 0.0f, -12.0f);
-    static auto modelRotation = glm::vec3(0.4f, -0.3f, 0.0f);
-    static auto cameraRotation = glm::vec3(0.0f);
-    static auto rotationSpeed = 2.01f;
+    static auto translation = glm::vec3(-2.0F, 0.0F, -12.0F);
+    static auto modelRotation = glm::vec3(0.4F, -0.3F, 0.0F);
+    static auto cameraRotation = glm::vec3(0.0F);
+    static auto rotationSpeed = 2.01F;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Position", (float *) &translation, 0.05f);
-    ImGui::DragFloat3("Rotation", (float *) &modelRotation, 0.01f);
-    ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01f);
-    ImGui::DragFloat("Animation Speed", &rotationSpeed, 0.001f, 0.001f, 1.0f);
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
+    ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
+    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
+    ImGui::DragFloat("Animation Speed", &rotationSpeed, 0.001F, 0.001F, 1.0F);
 
     ImGui::Checkbox("Loop Commands", &rubiksCube.loop);
     if (ImGui::Button("Shuffle")) {
@@ -275,11 +275,11 @@ void RubiksCubeScene::tick() {
     ImGui::Text("Executed Rotation Commands: %d", rubiksCube.executedRotationCommands);
 
     unsigned int averageLength = rubiksCube.getAverageRotationListLength();
-    float averageLengthPerRotationCommand = (float) averageLength / (float) rubiksCube.executedRotationCommands;
+    float averageLengthPerRotationCommand = static_cast<float>(averageLength) / static_cast<float>(rubiksCube.executedRotationCommands);
     ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
 
     unsigned int maximumLength = rubiksCube.getMaximumRotationListLength();
-    float maximumLengthPerRotationCommand = (float) maximumLength / (float) rubiksCube.executedRotationCommands;
+    float maximumLengthPerRotationCommand = static_cast<float>(maximumLength) / static_cast<float>(rubiksCube.executedRotationCommands);
     ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
 
     ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube.getTotalRotationListEntriesCount());
@@ -290,11 +290,11 @@ void RubiksCubeScene::tick() {
     vertexArray->bind();
     indexBuffer->bind();
 
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::mat4 viewMatrix = glm::mat4(1.0F);
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));

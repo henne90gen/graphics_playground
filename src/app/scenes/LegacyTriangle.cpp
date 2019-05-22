@@ -2,8 +2,8 @@
 
 #include <glad/glad.h>
 
-#include "util/ImGuiUtils.h"
 #include "opengl/Utils.h"
+#include "util/ImGuiUtils.h"
 
 void LegacyTriangle::setup() {}
 
