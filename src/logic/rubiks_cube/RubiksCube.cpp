@@ -72,7 +72,9 @@ void RubiksCube::rotate(float rotationSpeed) {
         return;
     }
 
-    squashRotations(smallCubes);
+    executedRotationCommands++;
+
+    squashedRotations += squashRotations(smallCubes);
 
     currentAngle = 0.0f;
     if (rotationCommands.hasNext()) {

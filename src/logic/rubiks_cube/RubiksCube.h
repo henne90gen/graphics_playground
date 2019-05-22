@@ -20,14 +20,15 @@ public:
         return smallCubes[index].rotationMatrix;
     }
 
-    bool loop = false;
-
     unsigned int getMaximumRotationListLength();
 
     unsigned int getTotalRotationListEntriesCount();
 
     unsigned int getAverageRotationListLength();
 
+    bool loop = false;
+    unsigned int squashedRotations = 0;
+    unsigned int executedRotationCommands = 0;
 private:
     bool isRotating = true;
     float currentAngle = 0;

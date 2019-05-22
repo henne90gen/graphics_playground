@@ -22,4 +22,4 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation);
 
-void squashRotations(std::vector<SmallCube> &cubeRotations);
+unsigned int squashRotations(std::vector<SmallCube> &cubeRotations);

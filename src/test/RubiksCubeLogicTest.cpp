@@ -368,3 +368,14 @@ TEST_CASE("Single face is rotated correctly") {
     results = {FRONT, BACK, BOTTOM, BOTTOM, LEFT, RIGHT};
     assertFaceRotation(BOTTOM, results);
 }
+
+TEST_CASE("Rotations are squashed correctly") {
+    auto cubes = std::vector<SmallCube>();
+    auto rotations = std::vector<glm::vec3>();
+    rotations.emplace_back(1.0f, 0, 0);
+    rotations.emplace_back(-1.0f, 0, 0);
+    cubes.push_back({rotations, glm::mat4()});
+    unsigned int squashedRotations = squashRotations(cubes);
+    REQUIRE(cubes[0].rotations.size() == 0);
+    REQUIRE(squashedRotations == 2);
+}

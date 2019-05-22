@@ -272,9 +272,18 @@ void RubiksCubeScene::tick() {
     if (ImGui::Button("Shuffle")) {
         rubiksCube.shuffle();
     }
-    ImGui::Text("Average Rotation List Length: %d", rubiksCube.getAverageRotationListLength());
-    ImGui::Text("Maximum Rotation List Length: %d", rubiksCube.getMaximumRotationListLength());
+    ImGui::Text("Executed Rotation Commands: %d", rubiksCube.executedRotationCommands);
+
+    unsigned int averageLength = rubiksCube.getAverageRotationListLength();
+    float averageLengthPerRotationCommand = (float) averageLength / (float) rubiksCube.executedRotationCommands;
+    ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
+
+    unsigned int maximumLength = rubiksCube.getMaximumRotationListLength();
+    float maximumLengthPerRotationCommand = (float) maximumLength / (float) rubiksCube.executedRotationCommands;
+    ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
+
     ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube.getTotalRotationListEntriesCount());
+    ImGui::Text("Squashed Rotations: %d", rubiksCube.squashedRotations);
     ImGui::End();
 
     shader->bind();
