@@ -3,8 +3,6 @@ set(SOURCES
         Main.cpp
         MainMenu.cpp
         util/ImGuiUtils.cpp
-        util/PerlinNoise.cpp
-        util/SimplexNoise.cpp
         opengl/Utils.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
