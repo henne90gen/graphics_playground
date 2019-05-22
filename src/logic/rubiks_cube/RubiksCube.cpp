@@ -1,9 +1,9 @@
 #include "RubiksCube.h"
 
-#include <random>
+#include <algorithm>
 #include <chrono>
 #include <iostream>
-#include <algorithm>
+#include <random>
 
 unsigned int WHOLE_CUBE[6][9] = {FRONT_CUBES, BACK_CUBES, LEFT_CUBES, RIGHT_CUBES, TOP_CUBES, BOTTOM_CUBES};
 
@@ -11,7 +11,7 @@ RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
     for (unsigned int i = 0; i < 27; i++) {
         SmallCube cubeRotation = {
                 std::vector<glm::vec3>(),
-                glm::mat4(1.0f)
+                glm::mat4(1.0F)
         };
         cubeRotation.rotations.emplace_back();
         smallCubes.push_back(cubeRotation);
@@ -76,7 +76,7 @@ void RubiksCube::rotate(float rotationSpeed) {
 
     squashedRotations += squashRotations(smallCubes);
 
-    currentAngle = 0.0f;
+    currentAngle = 0.0F;
     if (rotationCommands.hasNext()) {
         currentCommand = rotationCommands.next();
     } else if (loop) {

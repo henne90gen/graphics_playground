@@ -1,7 +1,7 @@
 #include "RubiksCubeLogic.h"
+#include <chrono>
 #include <iostream>
 #include <random>
-#include <chrono>
 
 Face NEXT_FACE_MAP[6][6] = {
         // x,    -x,     y,      -y,     z,      -z
@@ -18,7 +18,7 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
     *currentAngle += rotationSpeed;
 
     bool isDoneRotating = false;
-    auto piHalf = glm::pi<float>() / 2.0f;
+    auto piHalf = glm::pi<float>() / 2.0F;
     if (*currentAngle >= piHalf) {
         isDoneRotating = true;
         *currentAngle = piHalf;
@@ -75,12 +75,13 @@ int getDirection(RotationCommand &rot) {
             return 1;
         }
         return -1;
-    } else {
-        if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
-            return -1;
-        }
-        return 1;
     }
+
+    if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
+        return -1;
+    }
+
+    return 1;
 }
 
 void printRotations(std::vector<glm::vec3> &rotations) {
@@ -101,15 +102,15 @@ void printRotations(std::vector<glm::vec3> &rotations) {
 void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating) {
     cubeRotation.rotations[cubeRotation.rotations.size() - 1] = rotationVector;
 
-    glm::mat4 cubeMatrix = glm::mat4(1.0f);
+    glm::mat4 cubeMatrix = glm::mat4(1.0F);
     for (auto &rotation : cubeRotation.rotations) {
         glm::vec3 normalizedRotation = glm::abs(glm::normalize(rotation));
         float rotationAngle;
-        if (std::abs(normalizedRotation.x) > 0.0f) {
+        if (std::abs(normalizedRotation.x) > 0.0F) {
             rotationAngle = rotation.x;
-        } else if (std::abs(normalizedRotation.y) > 0.0f) {
+        } else if (std::abs(normalizedRotation.y) > 0.0F) {
             rotationAngle = rotation.y;
-        } else if (std::abs(normalizedRotation.z) > 0.0f) {
+        } else if (std::abs(normalizedRotation.z) > 0.0F) {
             rotationAngle = rotation.z;
         } else {
             std::cout << "Corrupted rotation vector! (" << rotation[0] << "," << rotation[1] << "," << rotation[2]
@@ -117,7 +118,7 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
             continue;
         }
         // applying accumulated rotations to rotation axis
-        glm::vec3 rotationAxis = glm::vec3(glm::inverse(cubeMatrix) * glm::vec4(normalizedRotation, 1.0f));
+        glm::vec3 rotationAxis = glm::vec3(glm::inverse(cubeMatrix) * glm::vec4(normalizedRotation, 1.0F));
         cubeMatrix = glm::rotate(cubeMatrix, rotationAngle, rotationAxis);
     }
     cubeRotation.rotationMatrix = cubeMatrix;
@@ -168,22 +169,22 @@ void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<un
 }
 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
-    if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) {
+    if (rotation.x == 0.0F && rotation.y == 0.0F && rotation.z == 0.0F) {
         return currentFace;
     }
 
     unsigned int rotationIndex = 0;
-    if (rotation.x > 0.0f) {
+    if (rotation.x > 0.0F) {
         rotationIndex = 0;
-    } else if (rotation.x < 0.0f) {
+    } else if (rotation.x < 0.0F) {
         rotationIndex = 1;
-    } else if (rotation.y > 0.0f) {
+    } else if (rotation.y > 0.0F) {
         rotationIndex = 2;
-    } else if (rotation.y < 0.0f) {
+    } else if (rotation.y < 0.0F) {
         rotationIndex = 3;
-    } else if (rotation.z > 0.0f) {
+    } else if (rotation.z > 0.0F) {
         rotationIndex = 4;
-    } else if (rotation.z < 0.0f) {
+    } else if (rotation.z < 0.0F) {
         rotationIndex = 5;
     }
 
@@ -191,7 +192,7 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
 }
 
 unsigned int squashRotations(std::vector<glm::vec3> &rotations) {
-    unsigned int removed =0;
+    unsigned int removed = 0;
     int i = 0;
     int currentSize = rotations.size();
     while (currentSize > 0 && i < currentSize - 1) {
@@ -204,7 +205,7 @@ unsigned int squashRotations(std::vector<glm::vec3> &rotations) {
             rotations.erase(rotations.begin() + i, rotations.begin() + (i + 2));
             i--;
             currentSize -= 2;
-            removed +=2;
+            removed += 2;
         }
         i++;
     }

@@ -16,7 +16,7 @@ else ()
     set(DO_CLANG_TIDY
             "${CLANG_TIDY_EXE}"
             "-fix"
-            "-checks=*,-fuchsia-default-arguments,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg")
+            "-checks=*,-fuchsia-default-arguments,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-owning-memory")
 endif ()
 
 

@@ -11,4 +11,11 @@ target_include_directories(logic PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${GLM_DIR})
 
+if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
+    set_target_properties(
+            logic PROPERTIES
+            CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+    )
+endif ()
+
 set(LOGIC_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)

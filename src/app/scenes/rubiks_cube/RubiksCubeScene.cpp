@@ -187,15 +187,16 @@ float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
 }
 
 unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
-    // 6 indices per face, 6 faces per cube
-    unsigned int startIndex = cubeNumber * 24;
-    for (unsigned int i = 0; i < 6; i++) {
-        *indPtr++ = startIndex + i * 4; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        *indPtr++ = startIndex + i * 4 + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        *indPtr++ = startIndex + i * 4 + 2; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        *indPtr++ = startIndex + i * 4; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        *indPtr++ = startIndex + i * 4 + 2; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        *indPtr++ = startIndex + i * 4 + 3; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const unsigned int numVerticesPerFace = 4;
+    const unsigned int numFaces = 6;
+    const unsigned int startIndex = cubeNumber * numFaces * numVerticesPerFace;
+    for (unsigned int i = 0; i < numFaces; i++) {
+        *indPtr++ = startIndex + i * numVerticesPerFace; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace + 2; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace + 2; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace + 3; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
     return indPtr;
 }
@@ -215,10 +216,12 @@ void RubiksCubeScene::setup() {
     const int verticesPerCube = numFaces * numVerticesPerFace;
     const int floatsPerVertex = 6;
     const unsigned int verticesSize = cubeCount * verticesPerCube * floatsPerVertex * sizeof(float);
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
     vertices = static_cast<float *>(malloc(verticesSize));
 
     const int numIndicesPerFace = 6;
     const unsigned int indicesCount = numFaces * numIndicesPerFace * cubeCount;
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
     indices = static_cast<unsigned int *>(malloc(indicesCount * sizeof(unsigned int)));
 
     float *vertPtr = vertices;
