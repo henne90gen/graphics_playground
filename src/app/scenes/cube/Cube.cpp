@@ -86,8 +86,8 @@ void Cube::tick() {
     ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
-    ImGui::DragFloat("Scale", &scale,
-                     0.001F); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    ImGui::DragFloat("Scale", &scale, 0.001F);
     ImGui::End();
 
     shader->bind();
