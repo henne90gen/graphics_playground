@@ -11,13 +11,12 @@ void Triangle::setup() {
     shader->bind();
 
     positionBuffer = new VertexBuffer();
-    colorBuffer = new VertexBuffer();
-
     positionBuffer->bind();
     GL_Call(positionLocation = glGetAttribLocation(shader->getId(), "position"));
     GL_Call(glEnableVertexAttribArray(positionLocation));
     GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *) nullptr));
 
+    colorBuffer = new VertexBuffer();
     colorBuffer->bind();
     GL_Call(colorLocation = glGetAttribLocation(shader->getId(), "color"));
     GL_Call(glEnableVertexAttribArray(colorLocation));
