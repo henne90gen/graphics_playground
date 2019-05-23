@@ -269,12 +269,12 @@ std::string to_string(Direction &dir, bool simple) {
             return "";
         }
         return "CLOCKWISE";
-    } else {
+    } 
         if (simple) {
             return "I";
         }
         return "COUNTER_CLOCKWISE";
-    }
+    
 }
 
 std::string to_string(RotationCommand &cmd, bool simple) {
