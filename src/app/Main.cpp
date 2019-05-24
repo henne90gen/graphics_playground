@@ -11,6 +11,7 @@
 #include "scenes/cube/Cube.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
+#include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "util/ImGuiUtils.h"
@@ -79,11 +80,13 @@ int main() {
     scenes.push_back(new LegacyTriangle(window, backToMainMenu));
     scenes.push_back(new Triangle(window, backToMainMenu));
     scenes.push_back(new TextureDemo(window, backToMainMenu));
+    scenes.push_back(new GammaCalculation(window, backToMainMenu));
     scenes.push_back(new Cube(window, backToMainMenu));
     scenes.push_back(new Landscape(window, backToMainMenu));
     scenes.push_back(new RubiksCubeScene(window, backToMainMenu));
 
-    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+//    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    mainMenu.goToScene(4);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 
@@ -99,7 +102,7 @@ int main() {
             int windowWidth;
             int windowHeight;
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-            scenes[currentSceneIndex]->setAspectRatio(static_cast<float>(windowWidth) / static_cast<float>(windowHeight));
+            scenes[currentSceneIndex]->setDimensions(windowWidth, windowHeight);
             scenes[currentSceneIndex]->renderBackMenu();
             scenes[currentSceneIndex]->tick();
         }

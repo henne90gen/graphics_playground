@@ -38,10 +38,6 @@ void pickColor(float *color) {
     ImGui::End();
 }
 
-//void pickColor(glm::vec3 &color) {
-//    pickColor(reinterpret_cast<float *>(&color));
-//}
-
 void pickColorAndVertices(float *color, float *vertices) {
     ImGui::Begin("Settings");
     pickColor(color);
@@ -51,9 +47,3 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::DragFloat2("Vertex 3", vertices + 4, 0.01);
     ImGui::End();
 }
-
-//void pickPosition(glm::vec3 &position) {
-//    ImGui::Begin("Settings");
-//    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), 0.1F);
-//    ImGui::End();
-//}

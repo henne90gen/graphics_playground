@@ -14,6 +14,7 @@ set(SOURCES
         scenes/LegacyTriangle.cpp
         scenes/triangle/Triangle.cpp
         scenes/texture_demo/TextureDemo.cpp
+        scenes/gamma_calculation/GammaCalculation.cpp
         scenes/cube/Cube.cpp
         scenes/landscape/Landscape.cpp
         scenes/rubiks_cube/RubiksCubeScene.cpp)

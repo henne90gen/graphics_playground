@@ -23,4 +23,6 @@ class TextureDemo : public Scene {
     VertexArray *vertexArray;
     Texture *texture;
     Shader *shader;
+
+    void updateTexture(const float *color, bool checkerBoard);
 };
