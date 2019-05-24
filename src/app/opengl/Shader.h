@@ -34,6 +34,9 @@ public:
     void setUniform<int>(const std::string &name, int i) { GL_Call(glUniform1i(getUniformLocation(name), i)); }
 
     template<>
+    void setUniform<bool>(const std::string &name, bool i) { setUniform(name, (int) i); }
+
+    template<>
     void setUniform<glm::vec3>(const std::string &name, glm::vec3 v) {
         GL_Call(glUniform3f(getUniformLocation(name), v.x, v.y, v.z));
     }
