@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include "MainMenu.h"
+#include "util/MainMenu.h"
 #include "scenes/LegacyTriangle.h"
 #include "scenes/TestScene.h"
 #include "scenes/cube/Cube.h"
@@ -15,6 +15,9 @@
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "util/ImGuiUtils.h"
+
+const unsigned int INITIAL_WINDOW_WIDTH = 1200;
+const unsigned int INITIAL_WINDOW_HEIGHT = 900;
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
@@ -54,7 +57,7 @@ int main() {
         return -1;
     }
 
-    window = glfwCreateWindow(800, 600, "Hello World", nullptr, nullptr);
+    window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Hello World", nullptr, nullptr);
     if (window == nullptr) {
         glfwTerminate();
         return -1;
@@ -86,7 +89,7 @@ int main() {
     scenes.push_back(new RubiksCubeScene(window, backToMainMenu));
 
 //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(4);
+    mainMenu.goToScene(2);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 
