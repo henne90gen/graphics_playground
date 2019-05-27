@@ -4,8 +4,10 @@ attribute vec2 position;
 attribute vec3 color;
 
 varying vec3 passColor;
+varying vec3 v_Position;
 
 void main() {
     passColor = color;
-    gl_Position = vec4(position, 0.0, 1.0);
+    v_Position = vec3(position, 0);
+    gl_Position = vec4(v_Position, 1.0);
 }
