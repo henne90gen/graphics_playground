@@ -108,7 +108,33 @@ void Landscape::tick() {
         generatePoints();
     }
 
-    PerlinNoise perlin;
+    updateHeightBuffer(scale, movement, noiseMode);
+
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+    modelMatrix = glm::scale(modelMatrix, modelScale);
+    glm::mat4 viewMatrix = glm::mat4(1.0F);
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
+    viewMatrix = glm::translate(viewMatrix, translation);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+    shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("viewMatrix", viewMatrix);
+    shader->setUniform("projectionMatrix", projectionMatrix);
+
+    indexBuffer->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    vertexArray->unbind();
+
+    shader->unbind();
+}
+
+void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, int noiseMode) const {
+    auto perlin = PerlinNoise();
     auto simplex = SimplexNoise(1);
     float maxHeight = 0;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
@@ -134,26 +160,4 @@ void Landscape::tick() {
     heightBuffer->update(heightMap, heightMapSize);
 
     shader->setUniform("maxHeight", maxHeight);
-
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    modelMatrix = glm::scale(modelMatrix, modelScale);
-    glm::mat4 viewMatrix = glm::mat4(1.0F);
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
-    viewMatrix = glm::translate(viewMatrix, translation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-    shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
-
-    indexBuffer->bind();
-    GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
-
-    vertexArray->unbind();
-
-    shader->unbind();
 }

@@ -32,4 +32,6 @@ private:
     VertexBuffer *heightBuffer;
 
     int pointDensity = 1;
+
+    void updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, int noiseMode) const;
 };
