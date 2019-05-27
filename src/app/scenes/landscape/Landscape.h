@@ -3,6 +3,7 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <memory>
 
 #include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
@@ -27,8 +28,7 @@ private:
     Shader *shader;
     IndexBuffer *indexBuffer;
 
-    float *heightMap;
-    unsigned int heightMapSize;
+    std::vector<float> heightMap = std::vector<float>();
     VertexBuffer *heightBuffer;
 
     int pointDensity = 1;

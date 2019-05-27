@@ -1,4 +1,9 @@
+#include <cmath>
+
 #include "Landscape.h"
+
+#include <array>
+#include <memory>
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -6,8 +11,8 @@
 #include "util/PerlinNoise.h"
 #include "util/SimplexNoise.h"
 
-#define WIDTH 10
-#define HEIGHT 10
+const unsigned int WIDTH = 10;
+const unsigned int HEIGHT = 10;
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -25,79 +30,91 @@ void Landscape::setup() {
 void Landscape::generatePoints() {
     vertexArray->bind();
 
-    auto width = static_cast<unsigned int>(WIDTH * pointDensity);
-    auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
+    const auto width = static_cast<unsigned int>(WIDTH * pointDensity);
+    const auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
 
-    unsigned int verticesSize = width * height * 2 * sizeof(float);
-    auto vertices = static_cast<float *>(malloc(verticesSize));
-    float *vertPtr = vertices;
-    for (unsigned int y = 0; y < height; y++) {
-        for (unsigned int x = 0; x < width; x++) {
-            *vertPtr++ = static_cast<float>(x) / pointDensity;
-            *vertPtr++ = static_cast<float>(y) / pointDensity;
-        }
+    const unsigned int verticesCount = width * height;
+    std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
+    for (unsigned long i = 0; i < vertices.size(); i++) {
+        auto x = static_cast<float>(i % width);
+        auto y = std::floor(static_cast<float>(i) / static_cast<float>(width));
+        x /= static_cast<float>(pointDensity);
+        y /= static_cast<float>(pointDensity);
+        vertices[i] = glm::vec2(x, y);
     }
-    auto *positionBuffer = new VertexBuffer(vertices, verticesSize);
+
+    const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
+    auto *positionBuffer = new VertexBuffer(vertices.data(), verticesSize);
     VertexBufferLayout positionLayout;
     positionLayout.add<float>(shader, "position", 2);
     vertexArray->addBuffer(*positionBuffer, positionLayout);
 
-    heightMapSize = width * height * sizeof(float);
-    heightMap = static_cast<float *>(malloc(heightMapSize));
+    const unsigned int heightMapCount = width * height;
+    heightMap = std::vector<float>(heightMapCount);
     heightBuffer = new VertexBuffer();
     VertexBufferLayout heightLayout;
     heightLayout.add<float>(shader, "height", 1);
     vertexArray->addBuffer(*heightBuffer, heightLayout);
 
-    unsigned int indicesCount = width * height * 6;
-    auto indices = static_cast<unsigned int *>(malloc(indicesCount * sizeof(unsigned int)));
-    unsigned int *indPtr = indices;
+    const unsigned int indicesPerQuad = 6;
+    unsigned int indicesCount = width * height * indicesPerQuad;
+    auto indices = std::vector<unsigned int>(indicesCount);
+    unsigned int *indPtr = indices.data();
     for (unsigned int y = 0; y < height - 1; y++) {
         for (unsigned int x = 0; x < width - 1; x++) {
-            *indPtr++ = (y + 1) * width + x;
-            *indPtr++ = y * width + (x + 1);
-            *indPtr++ = y * width + x;
-            *indPtr++ = (y + 1) * width + x;
-            *indPtr++ = (y + 1) * width + (x + 1);
-            *indPtr++ = y * width + (x + 1);
+            *indPtr++ = (y + 1) * width + x; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            *indPtr++ = y * width + (x + 1); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            *indPtr++ = y * width + x; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            *indPtr++ = (y + 1) * width + x; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            *indPtr++ = (y + 1) * width + (x + 1); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            *indPtr++ = y * width + (x + 1); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         }
     }
-    indexBuffer = new IndexBuffer(indices, indicesCount);
-
-    free(vertices);
-    free(indices);
+    indexBuffer = new IndexBuffer(indices.data(), indices.size());
 }
 
 void Landscape::destroy() {
-    free(heightMap);
 }
 
 void Landscape::tick() {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelScale = glm::vec3(7.0F, 7.0F, 2.0F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto translation = glm::vec3(-30.0F, -20.0F, -50.0F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(-1.0F, 0.0F, 0.0F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(0.0F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
     scale.x = pointDensity;
     scale.y = pointDensity;
-    scale.z += 0.01F;
+    const float timeSpeed = 0.01F;
+    scale.z += timeSpeed;
     static auto movement = glm::vec2(0.0F);
     static int noiseMode = 0;
     int lastPointDensity = pointDensity;
 
 
+    const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.01F);
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.01F);
-    ImGui::DragFloat3("Scale", reinterpret_cast<float *>(&scale), 0.01F);
-    ImGui::DragFloat2("Movement", reinterpret_cast<float *>(&movement), 0.01F);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Scale", reinterpret_cast<float *>(&scale), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat2("Movement", reinterpret_cast<float *>(&movement), dragSpeed);
 
     ImGui::BeginGroup();
     ImGui::RadioButton("Perlin", &noiseMode, 0);
     ImGui::RadioButton("Simplex", &noiseMode, 1);
     ImGui::EndGroup();
 
-    ImGui::SliderInt("Point Density", &pointDensity, 1, 100);
+    const int minimumPointDensity = 1;
+    const int maximumPointDensity = 100;
+    ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
     ImGui::End();
 
@@ -148,16 +165,21 @@ void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &move
             if (noiseMode == 0) {
                 generatedHeight = static_cast<float>(perlin.noise(realX, realY, scale.z));
             } else {
-                generatedHeight = (static_cast<float>(simplex.noise3(realX, realY, scale.z)) + 1.0F) / 2.0F;
+                const float offset = 1.0F;
+                const float scaleFactor = 2.0F;
+                generatedHeight = (static_cast<float>(simplex.noise3(realX, realY, scale.z)) + offset) / scaleFactor;
             }
 
-            heightMap[y * width + x] = generatedHeight * 10.0F;
+            auto *ptr = const_cast<float *>(heightMap.data()); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+            const float arbitraryScaleFactor = 10.0F;
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            ptr[y * width + x] = generatedHeight * arbitraryScaleFactor;
             if (heightMap[y * width + x] > maxHeight) {
                 maxHeight = heightMap[y * width + x];
             }
         }
     }
-    heightBuffer->update(heightMap, heightMapSize);
+    heightBuffer->update(heightMap.data(), heightMap.size() * sizeof(float));
 
     shader->setUniform("maxHeight", maxHeight);
 }
