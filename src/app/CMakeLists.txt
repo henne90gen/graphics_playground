@@ -1,7 +1,7 @@
 
 set(SOURCES
         Main.cpp
-        MainMenu.cpp
+        util/MainMenu.cpp
         util/ImGuiUtils.cpp
         opengl/Utils.cpp
         opengl/VertexBuffer.cpp
