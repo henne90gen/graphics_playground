@@ -28,19 +28,19 @@ void Triangle::setup() {
 void Triangle::destroy() {}
 
 void Triangle::tick() {
-    static float color[3] = {1.0, 1.0, 1.0};
-    static float vertices[6] = {-1, -1, 0, 1, 1, -1};
-    pickColorAndVertices(color, vertices);
+    static std::array<float, 3> color = {1.0, 1.0, 1.0};
+    static std::array<float, 6> vertices = {-1, -1, 0, 1, 1, -1};
+    pickColorAndVertices(color.data(), vertices.data());
 
     shader->bind();
 
-    positionBuffer->update(vertices, sizeof(vertices));
+    positionBuffer->update(vertices.data(), vertices.size() * sizeof(float));
 
-    float colors[9] = {};
-    for (int i = 0; i < 9; i++) {
+    std::array<float, 9> colors = {};
+    for (unsigned int i = 0; i < colors.size(); i++) {
         colors[i] = color[i % 3];
     }
-    colorBuffer->update(colors, sizeof(colors));
+    colorBuffer->update(colors.data(), colors.size() * sizeof(float));
 
     GL_Call(glEnableVertexAttribArray(positionLocation));
     GL_Call(glEnableVertexAttribArray(colorLocation));

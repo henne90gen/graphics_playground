@@ -13,9 +13,9 @@ void LegacyTriangle::tick() {
     GL_Call(glMatrixMode(GL_PROJECTION));
     GL_Call(glLoadIdentity());
 
-    static float color[3] = {1.0, 1.0, 1.0};
-    static float vertices[6] = {-1, -1, 0, 1, 1, -1};
-    pickColorAndVertices(color, vertices);
+    static std::array<float, 3> color = {1.0, 1.0, 1.0};
+    static std::array<float, 6> vertices = {-1, -1, 0, 1, 1, -1};
+    pickColorAndVertices(color.data(), vertices.data());
 
     // DO NOT USE glGetError inside a glBegin/glEnd block
     // https://stackoverflow.com/a/13442010/2840827

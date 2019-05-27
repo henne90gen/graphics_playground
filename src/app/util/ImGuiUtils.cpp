@@ -42,8 +42,9 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::Begin("Settings");
     pickColor(color);
 
-    ImGui::DragFloat2("Vertex 1", vertices, 0.01);
-    ImGui::DragFloat2("Vertex 2", vertices + 2, 0.01);
-    ImGui::DragFloat2("Vertex 3", vertices + 4, 0.01);
+    const double dragSpeed = 0.01;
+    ImGui::DragFloat2("Vertex 1", vertices, dragSpeed);
+    ImGui::DragFloat2("Vertex 2", vertices + 2, dragSpeed);
+    ImGui::DragFloat2("Vertex 3", vertices + 4, dragSpeed);
     ImGui::End();
 }

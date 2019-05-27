@@ -9,9 +9,9 @@ VertexBuffer::VertexBuffer(const void *data, unsigned int size) {
     update(data, size);
 }
 
-void VertexBuffer::update(const void *data, unsigned int size) {
+void VertexBuffer::update(const void *data, unsigned int sizeInBytes) {
     bind();
-    GL_Call(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data, GL_STATIC_DRAW));
 }
 
 VertexBuffer::~VertexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }

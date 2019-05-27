@@ -6,7 +6,7 @@ class VertexBuffer {
     VertexBuffer(const void *data, unsigned int size);
     ~VertexBuffer();
 
-    void update(const void *data, unsigned int size);
+    void update(const void *data, unsigned int sizeInBytes);
 
     void bind() const;
 
