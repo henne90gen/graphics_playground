@@ -1,5 +1,6 @@
-from dataclasses import dataclass
+import sys
 from collections import defaultdict
+from dataclasses import dataclass
 
 
 @dataclass
@@ -12,7 +13,12 @@ class Warning:
 
 
 def convert(s: str) -> Warning:
-    path_parts, msg_parts = s.split(": warning: ")
+    if "warning" in s:
+        path_parts, msg_parts = s.split(": warning: ")
+    elif "error" in s:
+        path_parts, msg_parts = s.split(": error: ")
+    else:
+        raise Exception(f"Could not determine warning type for: {s}")
     path_parts = path_parts.split(":")
     path = path_parts[0]
     line_number = int(path_parts[1])
@@ -51,10 +57,39 @@ def main():
                           map(strip,
                               lines)))))
 
+    show_counter(warning_type_count(warnings))
+    show_counter(file_path_count(warnings))
+
+    print()
+    show_warnings_for_file(warnings, sys.argv[1])
+
+
+def show_warnings_for_file(warnings, file_path):
+    print(f"Warnings for {file_path}:")
+    for warning in warnings:
+        if file_path not in warning.file_path:
+            continue
+
+        print(warning.line_number, warning.warning_type)
+
+
+def file_path_count(warnings):
+    counter = defaultdict(lambda: 0)
+    for warning in warnings:
+        counter[warning.file_path] += 1
+    return counter
+
+
+def warning_type_count(warnings):
     counter = defaultdict(lambda: 0)
     for warning in warnings:
         counter[warning.warning_type] += 1
-    print(sorted(counter.items(), key=lambda k: k[1], reverse=True))
+    return counter
+
+
+def show_counter(counter):
+    for elem, count in sorted(counter.items(), key=lambda k: k[1], reverse=True):
+        print(count, elem)
 
 
 if __name__ == "__main__":
