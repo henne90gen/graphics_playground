@@ -9,6 +9,7 @@ public:
     void clear() {
         commands.clear();
         nextCommandIndex = 0;
+        beenCleared = true;
     }
 
     void push(RotationCommand cmd) {
@@ -18,6 +19,7 @@ public:
     RotationCommand next() {
         RotationCommand command = commands[nextCommandIndex];
         nextCommandIndex++;
+        beenCleared = false;
         return command;
     }
 
@@ -37,7 +39,16 @@ public:
     std::vector<RotationCommand> getAllCommands() {
         return commands;
     }
+
+    bool hasBeenCleared() {
+        return beenCleared;
+    }
+
 private:
     std::vector<RotationCommand> commands;
     unsigned int nextCommandIndex = 0;
+    bool beenCleared = false;
 };
+
+
+std::string to_string(RotationCommandStack &cmdStack);

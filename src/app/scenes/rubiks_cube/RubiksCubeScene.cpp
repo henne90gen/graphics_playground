@@ -276,7 +276,7 @@ void RubiksCubeScene::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     static auto translation = glm::vec3(-2.0F, 0.0F, -12.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    static auto modelRotation = glm::vec3(0.4F, -0.3F, 0.0F);
+    static auto modelRotation = glm::vec3(-0.56F, -0.68F, 0.0F);
     static auto cameraRotation = glm::vec3(0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     static auto rotationSpeed = 2.01F;
@@ -296,7 +296,7 @@ void RubiksCubeScene::tick() {
         rubiksCube.shuffle();
     }
     if (ImGui::Button("Solve")) {
-        rubiksCube.solve();
+        rubiksCube.startSolving();
     }
     ImGui::Text("Executed Rotation Commands: %d", rubiksCube.executedRotationCommands);
 
@@ -332,6 +332,7 @@ void RubiksCubeScene::tick() {
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
+    rubiksCube.solve();
     rubiksCube.rotate(rotationSpeed);
 
     for (unsigned int i = 0; i < NUMBER_OF_SMALL_CUBES; i++) {

@@ -36,6 +36,9 @@ public:
 
     void solve();
 
+    void startSolving() {
+        solving = true;
+    }
 private:
     bool isRotating = true;
     float currentAngle = 0;
@@ -45,4 +48,5 @@ private:
     std::vector<unsigned int> positionMapping;
 
     RotationCommandStack rotationCommands;
+    bool solving = false;
 };

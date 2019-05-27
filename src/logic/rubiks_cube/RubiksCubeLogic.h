@@ -26,14 +26,6 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation);
 
 unsigned int squashRotations(std::vector<SmallCube> &cubeRotations);
 
-std::string to_string(Face &face, bool simple = false);
-
-std::string to_string(Direction &dir, bool simple = false);
-
-std::string to_string(RotationCommand &cmd, bool simple = false);
-
-std::string to_string(RotationCommandStack &cmdStack);
-
 class RubiksCube; // forward declaration
 Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index);
 

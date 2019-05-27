@@ -39,12 +39,18 @@ void RubiksCube::rotate(float rotationSpeed) {
     if (loop && !isRotating && rotationCommands.hasCommands()) {
         isRotating = true;
     }
+    if (rotationCommands.hasBeenCleared() && rotationCommands.hasCommands()) {
+        isRotating = true;
+        currentCommand = rotationCommands.next();
+    }
 
     bool shouldStartNextCommand =
             isRotating && ::rotate(smallCubes, positionMapping, currentCommand, &currentAngle, rotationSpeed);
     if (!shouldStartNextCommand) {
         return;
     }
+
+    std::cout << "Rotated: " << to_string(currentCommand, true) << std::endl;
 
     executedRotationCommands++;
 
@@ -130,6 +136,12 @@ unsigned int RubiksCube::getAverageRotationListLength() {
 }
 
 void RubiksCube::solve() {
+    if (!solving) {
+        return;
+    }
+    rotationCommands.clear();
+    std::cout << "Solving..." << std::endl;
+
     // find miss-aligned bottom pieces
     struct EdgePiece {
         unsigned int localIndex;
@@ -141,11 +153,6 @@ void RubiksCube::solve() {
         if (bottomFace == BOTTOM) {
             Face edgePartnerFace = getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
             if (edgePartnerFace != edgePiece.face) {
-                rotationCommands.clear();
-                isRotating = true;
-                std::cout << edgePiece.localIndex << " needs to be moved to " << to_string(edgePartnerFace)
-                          << std::endl;
-
                 Face oppositeFace = getOppositeFace(edgePiece.face);
                 std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
                 if (edgePartnerFace == oppositeFace) {
@@ -154,10 +161,12 @@ void RubiksCube::solve() {
                 } else {
                     rotationCommands.push(R_BO);
                 }
+                return;
             }
         }
     }
 
+    std::cout << to_string(rotationCommands) << std::endl;
     // find the bottom edge pieces
     // move them to the correct position
 }

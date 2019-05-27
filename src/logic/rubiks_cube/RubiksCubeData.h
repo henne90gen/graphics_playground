@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <glm/ext.hpp>
 
 #define FRONT_CUBES {18, 19, 20, 21, 22, 23, 24, 25, 26}
@@ -47,3 +48,9 @@ struct SmallCube {
     std::vector<glm::vec3> rotations;
     glm::mat4 rotationMatrix;
 };
+
+std::string to_string(Face &face, bool simple = false);
+
+std::string to_string(Direction &dir, bool simple = false);
+
+std::string to_string(RotationCommand &cmd, bool simple = false);
