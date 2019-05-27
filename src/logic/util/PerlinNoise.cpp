@@ -1,9 +1,9 @@
 #include "PerlinNoise.h"
 
-#include <cmath>
-#include <random>
 #include <algorithm>
+#include <cmath>
 #include <numeric>
+#include <random>
 
 // Initialize with the reference values for the permutation vector
 PerlinNoise::PerlinNoise() {
@@ -45,9 +45,9 @@ PerlinNoise::PerlinNoise(unsigned int seed) {
 
 double PerlinNoise::noise(double x, double y, double z) {
     // Find the unit cube that contains the point
-    int X = (int) floor(x) & 255;
-    int Y = (int) floor(y) & 255;
-    int Z = (int) floor(z) & 255;
+    int X = static_cast<int>(floor(x)) & 255;
+    int Y = static_cast<int>(floor(y)) & 255;
+    int Z = static_cast<int>(floor(z)) & 255;
 
     // Find relative x, y, z of point in cube
     x -= floor(x);
@@ -86,7 +86,7 @@ double PerlinNoise::lerp(double t, double a, double b) {
 double PerlinNoise::grad(int hash, double x, double y, double z) {
     int h = hash & 15;
     // Convert lower 4 bits of hash into 12 gradient directions
-    double u = h < 8 ? x : y,
-            v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+    double u = h < 8 ? x : y;
+    double v = h < 4 ? y : h == 12 || h == 14 ? x : z;
     return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }

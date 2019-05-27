@@ -1,10 +1,10 @@
 #include "SimplexNoise.h"
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
 #include <errno.h>
+#include <math.h>
+#include <cstdlib>
+#include <cstring>
 
 #define STRETCH_CONSTANT_2D (-0.211324865405187)    /* (1 / sqrt(2 + 1) - 1 ) / 2; */
 #define SQUISH_CONSTANT_2D  (0.366025403784439)     /* (sqrt(2 + 1) -1) / 2; */
@@ -75,11 +75,11 @@ static const signed char gradients4D[] = {
 };
 
 SimplexNoise::~SimplexNoise() {
-    if (perm) {
+    if (perm != nullptr) {
         free(perm);
         perm = nullptr;
     }
-    if (permGradIndex3D) {
+    if (permGradIndex3D != nullptr) {
         free(permGradIndex3D);
         permGradIndex3D = nullptr;
     }
@@ -107,24 +107,24 @@ double SimplexNoise::extrapolate4(int xsb, int ysb, int zsb, int wsb, double dx,
 }
 
 inline int fastFloor(double x) {
-    int xi = (int) x;
+    int xi = static_cast<int>(x);
     return x < xi ? xi - 1 : xi;
 }
 
 int SimplexNoise::allocate_perm(int nperm, int ngrad) {
-    if (perm) {
+    if (perm != nullptr) {
         free(perm);
     }
-    perm = (int16_t *) malloc(sizeof(*perm) * nperm);
-    if (!perm) {
+    perm = static_cast<int16_t *>(malloc(sizeof(*perm) * nperm));
+    if (perm == nullptr) {
         return -ENOMEM;
     }
 
-    if (permGradIndex3D) {
+    if (permGradIndex3D != nullptr) {
         free(permGradIndex3D);
     }
-    permGradIndex3D = (int16_t *) malloc(sizeof(*permGradIndex3D) * ngrad);
-    if (!permGradIndex3D) {
+    permGradIndex3D = static_cast<int16_t *>(malloc(sizeof(*permGradIndex3D) * ngrad));
+    if (permGradIndex3D == nullptr) {
         free(perm);
         return -ENOMEM;
     }
@@ -133,14 +133,14 @@ int SimplexNoise::allocate_perm(int nperm, int ngrad) {
 
 int SimplexNoise::init_perm(int16_t *p, int nelements) {
     int rc = allocate_perm(nelements, 256);
-    if (rc) {
+    if (rc != 0) {
         return rc;
     }
     memcpy(perm, p, sizeof(*perm) * nelements);
 
     for (int i = 0; i < 256; i++) {
         /* Since 3D has 24 gradients, simple bitmask won't work, so precompute modulo array. */
-        permGradIndex3D[i] = (int16_t) ((perm[i] % (ARRAYSIZE(gradients3D) / 3)) * 3);
+        permGradIndex3D[i] = static_cast<int16_t>((perm[i] % (ARRAYSIZE(gradients3D) / 3)) * 3);
     }
     return 0;
 }
@@ -152,7 +152,7 @@ int SimplexNoise::init_perm(int16_t *p, int nelements) {
  */
 SimplexNoise::SimplexNoise(int64_t seed) : perm(nullptr), permGradIndex3D(nullptr) {
     int rc = allocate_perm(256, 256);
-    if (rc) {
+    if (rc != 0) {
         perm = nullptr;
         permGradIndex3D = nullptr;
         return;
@@ -160,7 +160,7 @@ SimplexNoise::SimplexNoise(int64_t seed) : perm(nullptr), permGradIndex3D(nullpt
 
     int16_t source[256] = {};
     for (int i = 0; i < 256; i++) {
-        source[i] = (int16_t) i;
+        source[i] = static_cast<int16_t>(i);
     }
     seed = seed * 6364136223846793005LL + 1442695040888963407LL;
     seed = seed * 6364136223846793005LL + 1442695040888963407LL;
@@ -169,11 +169,12 @@ SimplexNoise::SimplexNoise(int64_t seed) : perm(nullptr), permGradIndex3D(nullpt
     int r;
     for (int i = 255; i >= 0; i--) {
         seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-        r = (int) ((seed + 31) % (i + 1));
-        if (r < 0)
+        r = static_cast<int>((seed + 31) % (i + 1));
+        if (r < 0) {
             r += (i + 1);
+}
         perm[i] = source[r];
-        permGradIndex3D[i] = (short) ((perm[i] % (ARRAYSIZE(gradients3D) / 3)) * 3);
+        permGradIndex3D[i] = static_cast<short>((perm[i] % (ARRAYSIZE(gradients3D) / 3)) * 3);
         source[r] = source[i];
     }
 }
@@ -206,8 +207,10 @@ double SimplexNoise::noise2(double x, double y) {
     double dy0 = y - yb;
 
     /* We'll be defining these inside the next block and using them afterwards. */
-    double dx_ext, dy_ext;
-    int xsv_ext, ysv_ext;
+    double dx_ext;
+    double dy_ext;
+    int xsv_ext;
+    int ysv_ext;
 
     double dx1;
     double dy1;
@@ -335,27 +338,60 @@ double SimplexNoise::noise3(double x, double y, double z) {
     double dz0 = z - zb;
 
     /* We'll be defining these inside the next block and using them afterwards. */
-    double dx_ext0, dy_ext0, dz_ext0;
-    double dx_ext1, dy_ext1, dz_ext1;
-    int xsv_ext0, ysv_ext0, zsv_ext0;
-    int xsv_ext1, ysv_ext1, zsv_ext1;
+    double dx_ext0;
+    double dy_ext0;
+    double dz_ext0;
+    double dx_ext1;
+    double dy_ext1;
+    double dz_ext1;
+    int xsv_ext0;
+    int ysv_ext0;
+    int zsv_ext0;
+    int xsv_ext1;
+    int ysv_ext1;
+    int zsv_ext1;
 
     double wins;
-    int8_t c, c1, c2;
-    int8_t aPoint, bPoint;
-    double aScore, bScore;
+    int8_t c;
+    int8_t c1;
+    int8_t c2;
+    int8_t aPoint;
+    int8_t bPoint;
+    double aScore;
+    double bScore;
     int aIsFurtherSide;
     int bIsFurtherSide;
-    double p1, p2, p3;
+    double p1;
+    double p2;
+    double p3;
     double score;
-    double attn0, attn1, attn2, attn3, attn4, attn5, attn6;
-    double dx1, dy1, dz1;
-    double dx2, dy2, dz2;
-    double dx3, dy3, dz3;
-    double dx4, dy4, dz4;
-    double dx5, dy5, dz5;
-    double dx6, dy6, dz6;
-    double attn_ext0, attn_ext1;
+    double attn0;
+    double attn1;
+    double attn2;
+    double attn3;
+    double attn4;
+    double attn5;
+    double attn6;
+    double dx1;
+    double dy1;
+    double dz1;
+    double dx2;
+    double dy2;
+    double dz2;
+    double dx3;
+    double dy3;
+    double dz3;
+    double dx4;
+    double dy4;
+    double dz4;
+    double dx5;
+    double dy5;
+    double dz5;
+    double dx6;
+    double dy6;
+    double dz6;
+    double attn_ext0;
+    double attn_ext1;
 
     double value = 0;
     if (inSum <= 1) { /* We're inside the tetrahedron (3-Simplex) at (0,0,0) */
@@ -414,7 +450,7 @@ double SimplexNoise::noise3(double x, double y, double z) {
                 dz_ext0 = dz_ext1 = dz0 - 1;
             }
         } else { /* (0,0,0) is not one of the closest two tetrahedral vertices. */
-            c = (int8_t) (aPoint | bPoint); /* Our two extra vertices are determined by the closest two. */
+            c = static_cast<int8_t>(aPoint | bPoint); /* Our two extra vertices are determined by the closest two. */
 
             if ((c & 0x01) == 0) {
                 xsv_ext0 = xsb;
@@ -542,7 +578,7 @@ double SimplexNoise::noise3(double x, double y, double z) {
                 dz_ext0 = dz_ext1 = dz0 - 3 * SQUISH_CONSTANT_3D;
             }
         } else { /* (1,1,1) is not one of the closest two tetrahedral vertices. */
-            c = (int8_t) (aPoint & bPoint); /* Our two extra vertices are determined by the closest two. */
+            c = static_cast<int8_t>(aPoint & bPoint); /* Our two extra vertices are determined by the closest two. */
 
             if ((c & 0x01) != 0) {
                 xsv_ext0 = xsb + 1;
@@ -670,7 +706,7 @@ double SimplexNoise::noise3(double x, double y, double z) {
 
         /* Where each of the two closest points are determines how the extra two vertices are calculated. */
         if (aIsFurtherSide == bIsFurtherSide) {
-            if (aIsFurtherSide) { /* Both closest points on (1,1,1) side */
+            if (aIsFurtherSide != 0) { /* Both closest points on (1,1,1) side */
 
                 /* One of the two extra points is (1,1,1) */
                 dx_ext0 = dx0 - 1 - 3 * SQUISH_CONSTANT_3D;
@@ -681,7 +717,7 @@ double SimplexNoise::noise3(double x, double y, double z) {
                 zsv_ext0 = zsb + 1;
 
                 /* Other extra point is based on the shared axis. */
-                c = (int8_t) (aPoint & bPoint);
+                c = static_cast<int8_t>(aPoint & bPoint);
                 if ((c & 0x01) != 0) {
                     dx_ext1 = dx0 - 2 - 2 * SQUISH_CONSTANT_3D;
                     dy_ext1 = dy0 - 2 * SQUISH_CONSTANT_3D;
@@ -715,7 +751,7 @@ double SimplexNoise::noise3(double x, double y, double z) {
                 zsv_ext0 = zsb;
 
                 /* Other extra point is based on the omitted axis. */
-                c = (int8_t) (aPoint | bPoint);
+                c = static_cast<int8_t>(aPoint | bPoint);
                 if ((c & 0x01) == 0) {
                     dx_ext1 = dx0 + 1 - SQUISH_CONSTANT_3D;
                     dy_ext1 = dy0 - 1 - SQUISH_CONSTANT_3D;
@@ -740,7 +776,7 @@ double SimplexNoise::noise3(double x, double y, double z) {
                 }
             }
         } else { /* One point on (0,0,0) side, one point on (1,1,1) side */
-            if (aIsFurtherSide) {
+            if (aIsFurtherSide != 0) {
                 c1 = aPoint;
                 c2 = bPoint;
             } else {
@@ -871,25 +907,73 @@ double SimplexNoise::noise3(double x, double y, double z) {
 
 double SimplexNoise::noise4(double x, double y, double z, double w) {
     double uins;
-    double dx1, dy1, dz1, dw1;
-    double dx2, dy2, dz2, dw2;
-    double dx3, dy3, dz3, dw3;
-    double dx4, dy4, dz4, dw4;
-    double dx5, dy5, dz5, dw5;
-    double dx6, dy6, dz6, dw6;
-    double dx7, dy7, dz7, dw7;
-    double dx8, dy8, dz8, dw8;
-    double dx9, dy9, dz9, dw9;
-    double dx10, dy10, dz10, dw10;
-    double attn0, attn1, attn2, attn3, attn4;
-    double attn5, attn6, attn7, attn8, attn9, attn10;
-    double attn_ext0, attn_ext1, attn_ext2;
-    int8_t c, c1, c2;
-    int8_t aPoint, bPoint;
-    double aScore, bScore;
+    double dx1;
+    double dy1;
+    double dz1;
+    double dw1;
+    double dx2;
+    double dy2;
+    double dz2;
+    double dw2;
+    double dx3;
+    double dy3;
+    double dz3;
+    double dw3;
+    double dx4;
+    double dy4;
+    double dz4;
+    double dw4;
+    double dx5;
+    double dy5;
+    double dz5;
+    double dw5;
+    double dx6;
+    double dy6;
+    double dz6;
+    double dw6;
+    double dx7;
+    double dy7;
+    double dz7;
+    double dw7;
+    double dx8;
+    double dy8;
+    double dz8;
+    double dw8;
+    double dx9;
+    double dy9;
+    double dz9;
+    double dw9;
+    double dx10;
+    double dy10;
+    double dz10;
+    double dw10;
+    double attn0;
+    double attn1;
+    double attn2;
+    double attn3;
+    double attn4;
+    double attn5;
+    double attn6;
+    double attn7;
+    double attn8;
+    double attn9;
+    double attn10;
+    double attn_ext0;
+    double attn_ext1;
+    double attn_ext2;
+    int8_t c;
+    int8_t c1;
+    int8_t c2;
+    int8_t aPoint;
+    int8_t bPoint;
+    double aScore;
+    double bScore;
     int aIsBiggerSide;
     int bIsBiggerSide;
-    double p1, p2, p3, p4;
+    double p1;
+    double p2;
+    double p3;
+    double p4;
     double score;
 
     /* Place input coordinates on simplectic honeycomb. */
@@ -928,12 +1012,30 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
     double dw0 = w - wb;
 
     /* We'll be defining these inside the next block and using them afterwards. */
-    double dx_ext0, dy_ext0, dz_ext0, dw_ext0;
-    double dx_ext1, dy_ext1, dz_ext1, dw_ext1;
-    double dx_ext2, dy_ext2, dz_ext2, dw_ext2;
-    int xsv_ext0, ysv_ext0, zsv_ext0, wsv_ext0;
-    int xsv_ext1, ysv_ext1, zsv_ext1, wsv_ext1;
-    int xsv_ext2, ysv_ext2, zsv_ext2, wsv_ext2;
+    double dx_ext0;
+    double dy_ext0;
+    double dz_ext0;
+    double dw_ext0;
+    double dx_ext1;
+    double dy_ext1;
+    double dz_ext1;
+    double dw_ext1;
+    double dx_ext2;
+    double dy_ext2;
+    double dz_ext2;
+    double dw_ext2;
+    int xsv_ext0;
+    int ysv_ext0;
+    int zsv_ext0;
+    int wsv_ext0;
+    int xsv_ext1;
+    int ysv_ext1;
+    int zsv_ext1;
+    int wsv_ext1;
+    int xsv_ext2;
+    int ysv_ext2;
+    int zsv_ext2;
+    int wsv_ext2;
 
     double value = 0;
     if (inSum <= 1) { /* We're inside the pentachoron (4-Simplex) at (0,0,0,0) */
@@ -1018,7 +1120,7 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
                 dw_ext0 = dw_ext1 = dw_ext2 = dw0 - 1;
             }
         } else { /* (0,0,0,0) is not one of the closest two pentachoron vertices. */
-            c = (int8_t) (aPoint | bPoint); /* Our three extra vertices are determined by the closest two. */
+            c = static_cast<int8_t>(aPoint | bPoint); /* Our three extra vertices are determined by the closest two. */
 
             if ((c & 0x01) == 0) {
                 xsv_ext0 = xsv_ext2 = xsb;
@@ -1211,7 +1313,7 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
                 dw_ext0 = dw_ext1 = dw_ext2 = dw0 - 4 * SQUISH_CONSTANT_4D;
             }
         } else { /* (1,1,1,1) is not one of the closest two pentachoron vertices. */
-            c = (int8_t) (aPoint & bPoint); /* Our three extra vertices are determined by the closest two. */
+            c = static_cast<int8_t>(aPoint & bPoint); /* Our three extra vertices are determined by the closest two. */
 
             if ((c & 0x01) != 0) {
                 xsv_ext0 = xsv_ext2 = xsb + 1;
@@ -1419,9 +1521,9 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
 
         /* Where each of the two closest points are determines how the extra three vertices are calculated. */
         if (aIsBiggerSide == bIsBiggerSide) {
-            if (aIsBiggerSide) { /* Both closest points on the bigger side */
-                c1 = (int8_t) (aPoint | bPoint);
-                c2 = (int8_t) (aPoint & bPoint);
+            if (aIsBiggerSide != 0) { /* Both closest points on the bigger side */
+                c1 = static_cast<int8_t>(aPoint | bPoint);
+                c2 = static_cast<int8_t>(aPoint & bPoint);
                 if ((c1 & 0x01) == 0) {
                     xsv_ext0 = xsb;
                     xsv_ext1 = xsb - 1;
@@ -1501,7 +1603,7 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
                 dw_ext2 = dw0;
 
                 /* Other two points are based on the omitted axes. */
-                c = (int8_t) (aPoint | bPoint);
+                c = static_cast<int8_t>(aPoint | bPoint);
 
                 if ((c & 0x01) == 0) {
                     xsv_ext0 = xsb - 1;
@@ -1555,7 +1657,7 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
 
             }
         } else { /* One point on each "side" */
-            if (aIsBiggerSide) {
+            if (aIsBiggerSide != 0) {
                 c1 = aPoint;
                 c2 = bPoint;
             } else {
@@ -1840,9 +1942,9 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
 
         /* Where each of the two closest points are determines how the extra three vertices are calculated. */
         if (aIsBiggerSide == bIsBiggerSide) {
-            if (aIsBiggerSide) { /* Both closest points on the bigger side */
-                c1 = (int8_t) (aPoint & bPoint);
-                c2 = (int8_t) (aPoint | bPoint);
+            if (aIsBiggerSide != 0) { /* Both closest points on the bigger side */
+                c1 = static_cast<int8_t>(aPoint & bPoint);
+                c2 = static_cast<int8_t>(aPoint | bPoint);
 
                 /* Two contributions are permutations of (0,0,0,1) and (0,0,0,2) based on c1 */
                 xsv_ext0 = xsv_ext1 = xsb;
@@ -1913,7 +2015,7 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
                 dw_ext2 = dw0 - 1 - 4 * SQUISH_CONSTANT_4D;
 
                 /* Other two points are based on the shared axes. */
-                c = (int8_t) (aPoint & bPoint);
+                c = static_cast<int8_t>(aPoint & bPoint);
 
                 if ((c & 0x01) != 0) {
                     xsv_ext0 = xsb + 2;
@@ -1966,7 +2068,7 @@ double SimplexNoise::noise4(double x, double y, double z, double w) {
                 }
             }
         } else { /* One point on each "side" */
-            if (aIsBiggerSide) {
+            if (aIsBiggerSide != 0) {
                 c1 = aPoint;
                 c2 = bPoint;
             } else {
