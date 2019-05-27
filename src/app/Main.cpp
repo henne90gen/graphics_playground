@@ -5,16 +5,16 @@
 #include <iostream>
 #include <vector>
 
-#include "util/MainMenu.h"
 #include "scenes/LegacyTriangle.h"
 #include "scenes/TestScene.h"
 #include "scenes/cube/Cube.h"
+#include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
-#include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "util/ImGuiUtils.h"
+#include "util/MainMenu.h"
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;

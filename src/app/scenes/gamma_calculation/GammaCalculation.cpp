@@ -1,5 +1,6 @@
 #include "GammaCalculation.h"
 
+#include <cmath>
 #include <vector>
 
 #include <glad/glad.h>
@@ -102,5 +103,6 @@ void GammaCalculation::createCheckerBoard() {
 }
 
 float GammaCalculation::calculateGammaValue(float color) {
-    return log(0.5) / log(color);
+    // 0.5 is the middle gray value
+    return std::log(0.5) / std::log(color);
 }
