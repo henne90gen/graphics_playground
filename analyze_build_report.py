@@ -62,8 +62,9 @@ def main():
     print()
     show_counter(file_path_count(warnings))
 
-    print()
-    show_warnings_for_file(warnings, sys.argv[1])
+    if len(sys.argv) >= 2:
+        print()
+        show_warnings_for_file(warnings, sys.argv[1])
 
 
 def show_warnings_for_file(warnings, file_path):
