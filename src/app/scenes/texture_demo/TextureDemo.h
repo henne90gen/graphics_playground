@@ -11,18 +11,22 @@
 #include "opengl/Shader.h"
 
 class TextureDemo : public Scene {
-  public:
-    TextureDemo(GLFWwindow *window, std::function<void(void)> &backToMainMenu) : Scene(window, backToMainMenu, "TextureDemo"){};
-    virtual ~TextureDemo(){};
+public:
+    TextureDemo(GLFWwindow *window, std::function<void(void)> &backToMainMenu) : Scene(window, backToMainMenu,
+                                                                                       "TextureDemo") {};
 
-    virtual void setup() override;
-    virtual void tick() override;
-    virtual void destroy() override;
+    ~TextureDemo() override = default;;
 
-  private:
+    void setup() override;
+
+    void tick() override;
+
+    void destroy() override;
+
+private:
     VertexArray *vertexArray;
     Texture *texture;
     Shader *shader;
 
-    void updateTexture(const float *color, bool checkerBoard);
+    void updateTexture(std::array<float, 3> color, bool checkerBoard);
 };
