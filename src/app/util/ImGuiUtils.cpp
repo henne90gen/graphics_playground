@@ -11,6 +11,7 @@ void initImGui(GLFWwindow *window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
+    // NOLINTNEXTLINE(hicpp-signed-bitwise)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
@@ -42,9 +43,9 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::Begin("Settings");
     pickColor(color);
 
-    const double dragSpeed = 0.01;
+    const float dragSpeed = 0.01F;
     ImGui::DragFloat2("Vertex 1", vertices, dragSpeed);
-    ImGui::DragFloat2("Vertex 2", vertices + 2, dragSpeed);
-    ImGui::DragFloat2("Vertex 3", vertices + 4, dragSpeed);
+    ImGui::DragFloat2("Vertex 2", vertices + 2, dragSpeed); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    ImGui::DragFloat2("Vertex 3", vertices + 4, dragSpeed); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     ImGui::End();
 }
