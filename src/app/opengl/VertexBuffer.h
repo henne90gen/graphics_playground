@@ -1,9 +1,15 @@
 #pragma once
 
+#include <vector>
+
 class VertexBuffer {
-  public:
+public:
     VertexBuffer();
+
     VertexBuffer(const void *data, unsigned int size);
+
+    explicit VertexBuffer(const std::vector<float>& data);
+
     ~VertexBuffer();
 
     void update(const void *data, unsigned int sizeInBytes);
@@ -12,6 +18,6 @@ class VertexBuffer {
 
     void unbind() const;
 
-  private:
+private:
     unsigned int id = 0;
 };
