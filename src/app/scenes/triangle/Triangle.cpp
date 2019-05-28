@@ -28,17 +28,20 @@ void Triangle::setup() {
 void Triangle::destroy() {}
 
 void Triangle::tick() {
-    static std::array<float, 3> color = {1.0, 1.0, 1.0};
-    static std::array<float, 6> vertices = {-1, -1, 0, 1, 1, -1};
+    const unsigned int COLOR_COUNT = 3;
+    const unsigned int VERTEX_COUNT = 6;
+    static std::array<float, COLOR_COUNT> color = {1.0, 1.0, 1.0};
+    static std::array<float, VERTEX_COUNT> vertices = {-1, -1, 0, 1, 1, -1};
     pickColorAndVertices(color.data(), vertices.data());
 
     shader->bind();
 
     positionBuffer->update(vertices.data(), vertices.size() * sizeof(float));
 
-    std::array<float, 9> colors = {};
-    for (unsigned int i = 0; i < colors.size(); i++) {
-        colors[i] = color[i % 3];
+    const unsigned int TOTAL_COLOR_COUNT = 9;
+    std::array<float, TOTAL_COLOR_COUNT> colors = {};
+    for (unsigned long i = 0; i < colors.size(); i++) {
+        colors[i] = color[i % 3]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
     }
     colorBuffer->update(colors.data(), colors.size() * sizeof(float));
 
