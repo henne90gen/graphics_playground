@@ -65,6 +65,7 @@ int main() {
 
     installCallbacks(window);
     glfwMakeContextCurrent(window);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
 
     initImGui(window);
@@ -94,7 +95,7 @@ int main() {
     GL_Call(glEnable(GL_DEPTH_TEST));
 
     while (glfwWindowShouldClose(window) == 0) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
         glClearColor(0, 0, 0, 1);
 
         startImGuiFrame();
