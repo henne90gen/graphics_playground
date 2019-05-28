@@ -82,7 +82,8 @@ void RubiksCube::shuffle() {
     const int shuffleCount = 20;
     for (unsigned int i = 0; i < shuffleCount; i++) {
         unsigned int randomIndex = distribution(generator);
-        rotationCommands.push(rotations[randomIndex]);
+        RotationCommand rotation = rotations[randomIndex]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+        rotationCommands.push(rotation);
     }
 
     std::cout << "Shuffeling cube..." << std::endl;
@@ -95,7 +96,7 @@ Face RubiksCube::getCurrentFace(Face direction, unsigned int localIndex) {
     if (localIndex == 4) {
         return direction;
     }
-    unsigned int globalIndex = WHOLE_CUBE[direction][localIndex];
+    unsigned int globalIndex = WHOLE_CUBE[direction][localIndex]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
     unsigned int cubeIndex = positionMapping[globalIndex];
     SmallCube cube = smallCubes[cubeIndex];
 
@@ -147,7 +148,15 @@ void RubiksCube::solve() {
         unsigned int localIndex;
         Face face;
     };
-    std::array<EdgePiece, 4> edgePieces = {EdgePiece({1, BACK}), {3, LEFT}, {5, RIGHT}, {7, FRONT}};
+    const unsigned int EDGE_PIECE_COUNT = 4;
+    std::array<EdgePiece, EDGE_PIECE_COUNT> edgePieces = {
+            {
+                    {1, BACK}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                    {3, LEFT}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                    {5, RIGHT}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                    {7, FRONT} // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            }
+    };
     for (EdgePiece edgePiece : edgePieces) {
         Face bottomFace = getCurrentFace(BOTTOM, edgePiece.localIndex);
         if (bottomFace == BOTTOM) {
