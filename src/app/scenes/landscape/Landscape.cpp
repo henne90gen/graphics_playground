@@ -59,15 +59,15 @@ void Landscape::generatePoints() {
     const unsigned int indicesPerQuad = 6;
     unsigned int indicesCount = width * height * indicesPerQuad;
     auto indices = std::vector<unsigned int>(indicesCount);
-    unsigned int *indPtr = indices.data();
+    unsigned int counter = 0;
     for (unsigned int y = 0; y < height - 1; y++) {
         for (unsigned int x = 0; x < width - 1; x++) {
-            *indPtr++ = (y + 1) * width + x; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            *indPtr++ = y * width + (x + 1); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            *indPtr++ = y * width + x; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            *indPtr++ = (y + 1) * width + x; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            *indPtr++ = (y + 1) * width + (x + 1); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            *indPtr++ = y * width + (x + 1); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            indices[counter++] = (y + 1) * width + x;
+            indices[counter++] = y * width + (x + 1);
+            indices[counter++] = y * width + x;
+            indices[counter++] = (y + 1) * width + x;
+            indices[counter++] = (y + 1) * width + (x + 1);
+            indices[counter++] = y * width + (x + 1);
         }
     }
     indexBuffer = new IndexBuffer(indices.data(), indices.size());

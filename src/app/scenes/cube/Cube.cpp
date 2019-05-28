@@ -8,7 +8,6 @@
 #include "opengl/Utils.h"
 #include "util/ImGuiUtils.h"
 
-const unsigned int VERTICES_COUNT = 48;
 const unsigned int INDICES_COUNT = 36;
 
 const float FIELD_OF_VIEW = 45.0F;
@@ -23,7 +22,7 @@ void Cube::setup() {
     vertexArray = new VertexArray();
     vertexArray->bind();
 
-    std::array<float, VERTICES_COUNT> vertices = {
+    std::vector<float> vertices = {
             // back
             -1.0F, -1.0F, -1.0F, 1, 0, 0, // 0
             1.0F, -1.0F, -1.0F, 0, 1, 0,  // 1
@@ -36,7 +35,7 @@ void Cube::setup() {
             1.0F, 1.0F, 1.0F, 1, 1, 1,   // 6
             -1.0F, 1.0F, 1.0F, 0, 0, 0   // 7
     };
-    auto *positionBuffer = new VertexBuffer(vertices.data(), sizeof(vertices));
+    auto *positionBuffer = new VertexBuffer(vertices);
     VertexBufferLayout bufferLayout;
     bufferLayout.add<float>(shader, "position", 3);
     bufferLayout.add<float>(shader, "color", 3);

@@ -17,7 +17,7 @@ void GammaCalculation::setup() {
     vertexArray = new VertexArray();
     vertexArray->bind();
 
-    static float vertices[12] = {
+    std::vector<float> vertices = {
             -1.0, 1.0,  //
             -1.0, -1.0, //
             0.0, -1.0, //
@@ -25,12 +25,12 @@ void GammaCalculation::setup() {
             0.0, -1.0, //
             0.0, 1.0   //
     };
-    auto *positionBuffer = new VertexBuffer(vertices, sizeof(vertices));
+    auto *positionBuffer = new VertexBuffer(vertices);
     VertexBufferLayout positionLayout;
     positionLayout.add<float>(shader, "position", 2);
     vertexArray->addBuffer(*positionBuffer, positionLayout);
 
-    static float uvCoords[12] = {
+    std::vector<float> uvCoords = {
             0.0, 1.0, //
             0.0, 0.0, //
             1.0, 0.0, //
@@ -38,7 +38,7 @@ void GammaCalculation::setup() {
             1.0, 0.0, //
             1.0, 1.0  //
     };
-    auto *uvBuffer = new VertexBuffer(uvCoords, sizeof(uvCoords));
+    auto *uvBuffer = new VertexBuffer(uvCoords);
     VertexBufferLayout uvLayout;
     uvLayout.add<float>(shader, "vertexUV", 2);
     vertexArray->addBuffer(*uvBuffer, uvLayout);
@@ -54,9 +54,12 @@ void GammaCalculation::setup() {
 void GammaCalculation::destroy() {}
 
 void GammaCalculation::tick() {
-    static float color = 0.5F;
+    static float color = 0.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     ImGui::Begin("Settings");
-    ImGui::DragFloat("GrayValue", &color, 0.001F, 0.0F, 1.0F);
+    const float dragSpeed = 0.001F;
+    const float minColor = 0.0F;
+    const float maxColor = 1.0F;
+    ImGui::DragFloat("GrayValue", &color, dragSpeed, minColor, maxColor);
     float gammaValue = calculateGammaValue(color);
     ImGui::Text("GammaValue: %f", gammaValue);
     ImGui::End();
@@ -84,15 +87,16 @@ void GammaCalculation::tick() {
 void GammaCalculation::createCheckerBoard() {
     unsigned int width = getWidth() / 2;
     std::vector<char> data = std::vector<char>(width * getHeight() * 3);
-    for (unsigned int i = 0; i < data.size() / 3; i++) {
-        float r = 255.0;
-        float g = 255.0;
-        float b = 255.0;
+    for (unsigned long i = 0; i < data.size() / 3; i++) {
+        const float fullBrightness = 255.0F;
+        float r = fullBrightness;
+        float g = fullBrightness;
+        float b = fullBrightness;
         unsigned int row = i / width;
         if ((i % 2 == 0 && row % 2 == 0) || (i % 2 == 1 && row % 2 == 1)) {
-            r = 0.0;
-            g = 0.0;
-            b = 0.0;
+            r = 0.0F;
+            g = 0.0F;
+            b = 0.0F;
         }
         unsigned int idx = i * 3;
         data[idx] = static_cast<char>(r);
@@ -103,6 +107,6 @@ void GammaCalculation::createCheckerBoard() {
 }
 
 float GammaCalculation::calculateGammaValue(float color) {
-    // 0.5 is the middle gray value
-    return std::log(0.5) / std::log(color);
+    const float middleGrayValue = 0.5F;
+    return std::log(middleGrayValue) / std::log(color);
 }
