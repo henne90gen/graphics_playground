@@ -79,17 +79,17 @@ int main() {
         currentSceneIndex = 0;
         mainMenu.activate();
     };
-    scenes.push_back(new TestScene(window, backToMainMenu));
-    scenes.push_back(new LegacyTriangle(window, backToMainMenu));
-    scenes.push_back(new Triangle(window, backToMainMenu));
-    scenes.push_back(new TextureDemo(window, backToMainMenu));
-    scenes.push_back(new GammaCalculation(window, backToMainMenu));
-    scenes.push_back(new Cube(window, backToMainMenu));
-    scenes.push_back(new Landscape(window, backToMainMenu));
-    scenes.push_back(new RubiksCubeScene(window, backToMainMenu));
+    scenes.push_back(new TestScene(window, backToMainMenu)); // 0
+    scenes.push_back(new LegacyTriangle(window, backToMainMenu)); // 1
+    scenes.push_back(new Triangle(window, backToMainMenu)); // 2
+    scenes.push_back(new TextureDemo(window, backToMainMenu)); // 3
+    scenes.push_back(new GammaCalculation(window, backToMainMenu)); // 4
+    scenes.push_back(new Cube(window, backToMainMenu)); // 5
+    scenes.push_back(new Landscape(window, backToMainMenu)); // 6
+    scenes.push_back(new RubiksCubeScene(window, backToMainMenu)); // 7
 
 //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(2);
+    mainMenu.goToScene(6);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 

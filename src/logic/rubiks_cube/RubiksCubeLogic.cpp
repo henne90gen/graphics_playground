@@ -1,10 +1,11 @@
 #include "RubiksCubeLogic.h"
 
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <random>
 
-Face NEXT_FACE_MAP[6][6] = {
+std::array<std::array<Face, 6>, 6> NEXT_FACE_MAP = {{
         // x,    -x,     y,      -y,     z,      -z
         {TOP,    BOTTOM, LEFT,   RIGHT,  FRONT,  FRONT}, // FRONT
         {BOTTOM, TOP,    RIGHT,  LEFT,   BACK,   BACK}, // BACK
@@ -12,20 +13,21 @@ Face NEXT_FACE_MAP[6][6] = {
         {RIGHT,  RIGHT,  FRONT,  BACK,   BOTTOM, TOP}, // RIGHT
         {BACK,   FRONT,  TOP,    TOP,    RIGHT,  LEFT}, // TOP
         {FRONT,  BACK,   BOTTOM, BOTTOM, LEFT,   RIGHT}, // BOTTOM
-};
+}};
 
 bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions,
             RotationCommand command, float *currentAngle, float rotationSpeed) {
     *currentAngle += rotationSpeed;
 
     bool isDoneRotating = false;
-    auto piHalf = glm::pi<float>() / 2.0F;
+    const auto piHalf = glm::pi<float>() / 2.0F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     if (*currentAngle >= piHalf) {
         isDoneRotating = true;
         *currentAngle = piHalf;
     }
 
-    std::vector<unsigned int> cubes(9);
+    const unsigned int cubeCount = 9;
+    std::vector<unsigned int> cubes(cubeCount);
     glm::vec3 rotationVector;
     float direction = getDirection(command);
     switch (command.face) {

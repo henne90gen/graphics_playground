@@ -58,6 +58,8 @@ def main():
                               lines)))))
 
     show_counter(warning_type_count(warnings))
+
+    print()
     show_counter(file_path_count(warnings))
 
     print()
