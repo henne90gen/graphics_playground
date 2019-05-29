@@ -3,12 +3,15 @@
 #include "Scene.h"
 
 class LegacyTriangle : public Scene {
-  public:
+public:
     LegacyTriangle(GLFWwindow *window, std::function<void()> &backToMainMenu)
-        : Scene(window, backToMainMenu, "LegacyTriangle") {}
-    virtual ~LegacyTriangle() {}
+            : Scene(window, backToMainMenu, "LegacyTriangle") {}
 
-    virtual void setup() override;
-    virtual void tick() override;
-    virtual void destroy() override;
+    ~LegacyTriangle() override = default;
+
+    void setup() override;
+
+    void tick() override;
+
+    void destroy() override;
 };

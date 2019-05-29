@@ -5,12 +5,15 @@
 #include <functional>
 
 class TestScene : public Scene {
-  public:
-    TestScene(GLFWwindow *window, std::function<void(void)>& backToMainMenu)
-        : Scene(window, backToMainMenu, "Test Scene"){};
-    virtual ~TestScene(){};
+public:
+    TestScene(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
+            : Scene(window, backToMainMenu, "Test Scene") {};
 
-    virtual void setup() override;
-    virtual void tick() override;
-    virtual void destroy() override;
+    ~TestScene() override = default;;
+
+    void setup() override;
+
+    void tick() override;
+
+    void destroy() override;
 };

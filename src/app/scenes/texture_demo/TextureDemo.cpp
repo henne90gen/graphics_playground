@@ -9,38 +9,27 @@
 #include "util/ImGuiUtils.h"
 
 void TextureDemo::setup() {
-    shader = new Shader("../../../src/app/scenes/texture_demo/GammaCalculation.vertex",
-                        "../../../src/app/scenes/texture_demo/GammaCalculation.fragment");
+    shader = new Shader("../../../src/app/scenes/texture_demo/TextureDemo.vertex",
+                        "../../../src/app/scenes/texture_demo/TextureDemo.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();
     vertexArray->bind();
 
     std::vector<float> vertices = {
-            -1.0, 1.0,  //
-            -1.0, -1.0, //
-            1.0, -1.0, //
-            -1.0, 1.0,  //
-            1.0, -1.0, //
-            1.0, 1.0   //
+            -1.0, 1.0, 0.0, 1.0,  //
+            -1.0, -1.0, 0.0, 0.0,  //
+            1.0, -1.0, 1.0, 0.0, //
+            -1.0, 1.0, 0.0, 1.0,  //
+            1.0, -1.0, 1.0, 0.0, //
+            1.0, 1.0, 1.0, 1.0  //
     };
-    auto *positionBuffer = new VertexBuffer(vertices);
-    VertexBufferLayout positionLayout;
-    positionLayout.add<float>(shader, "position", 2);
-    vertexArray->addBuffer(*positionBuffer, positionLayout);
+    auto *buffer = new VertexBuffer(vertices);
+    VertexBufferLayout bufferLayout;
+    bufferLayout.add<float>(shader, "position", 2);
+    bufferLayout.add<float>(shader, "vertexUV", 2);
+    vertexArray->addBuffer(*buffer, bufferLayout);
 
-    std::vector<float> uvCoords = {
-            0.0, 1.0, //
-            0.0, 0.0, //
-            1.0, 0.0, //
-            0.0, 1.0, //
-            1.0, 0.0, //
-            1.0, 1.0  //
-    };
-    auto *uvBuffer = new VertexBuffer(uvCoords);
-    VertexBufferLayout uvLayout;
-    uvLayout.add<float>(shader, "vertexUV", 2);
-    vertexArray->addBuffer(*uvBuffer, uvLayout);
 
     texture = new Texture();
     glActiveTexture(GL_TEXTURE0);
@@ -69,9 +58,12 @@ void TextureDemo::tick() {
     vertexArray->bind();
     texture->bind();
 
-    if (previousCheckerboard != checkerBoard || previousColor[0] != color[0] || previousColor[1] != color[1] ||
-        previousColor[2] != color[2]) {
+    static bool initialized = false;
+    bool checkerBoardChanged = previousCheckerboard != checkerBoard;
+    bool colorChanged = previousColor[0] != color[0] || previousColor[1] != color[1] || previousColor[2] != color[2];
+    if (!initialized || checkerBoardChanged || colorChanged) {
         updateTexture(color, checkerBoard);
+        initialized = true;
     }
 
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));

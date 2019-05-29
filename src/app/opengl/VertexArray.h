@@ -5,15 +5,17 @@
 #include "VertexBufferLayout.h"
 
 class VertexArray {
-  public:
+public:
     VertexArray();
+
     ~VertexArray();
 
     void addBuffer(const VertexBuffer &vertexBuffer, const VertexBufferLayout &layout);
 
     void bind() const;
+
     void unbind() const;
 
-  private:
+private:
     unsigned int id = 0;
 };
