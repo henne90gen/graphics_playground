@@ -17,7 +17,7 @@ set(SOURCES
         scenes/gamma_calculation/GammaCalculation.cpp
         scenes/cube/Cube.cpp
         scenes/landscape/Landscape.cpp
-        scenes/cube_marching/CubeMarching.cpp
+        scenes/marching_cubes/MarchingCubes.cpp
         scenes/rubiks_cube/RubiksCubeScene.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})

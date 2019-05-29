@@ -11,11 +11,12 @@
 #include "opengl/VertexBuffer.h"
 #include "opengl/IndexBuffer.h"
 
-class Cube : public Scene {
+class MarchingCubes : public Scene {
 public:
-    Cube(GLFWwindow *window, std::function<void(void)> &backToMainMenu) : Scene(window, backToMainMenu, "Cube") {};
+    MarchingCubes(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
+            : Scene(window, backToMainMenu, "MarchingCubes") {};
 
-    ~Cube() override = default;;
+    ~MarchingCubes() override = default;
 
     void setup() override;
 
@@ -23,7 +24,7 @@ public:
 
     void destroy() override;
 
-private:
+public:
     VertexArray *vertexArray;
     Shader *shader;
     IndexBuffer *indexBuffer;

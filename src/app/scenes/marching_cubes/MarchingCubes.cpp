@@ -1,4 +1,4 @@
-#include "Cube.h"
+#include "MarchingCubes.h"
 
 #include <array>
 
@@ -12,9 +12,9 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
-void Cube::setup() {
-    shader = new Shader("../../../src/app/scenes/cube/Cube.vertex",
-                        "../../../src/app/scenes/cube/Cube.fragment");
+void MarchingCubes::setup() {
+    shader = new Shader("../../../src/app/scenes/marching_cubes/MarchingCubes.vertex",
+                        "../../../src/app/scenes/marching_cubes/MarchingCubes.fragment");
     shader->bind();
 
     vertexArray = new VertexArray();
@@ -22,21 +22,20 @@ void Cube::setup() {
 
     std::vector<float> vertices = {
             // back
-            -1.0F, -1.0F, -1.0F, 1, 0, 0, // 0
-            1.0F, -1.0F, -1.0F, 0, 1, 0,  // 1
-            1.0F, 1.0F, -1.0F, 0, 0, 1,   // 2
-            -1.0F, 1.0F, -1.0F, 1, 1, 0,  // 3
+            -1.0F, -1.0F, -1.0F, // 0
+            1.0F, -1.0F, -1.0F,  // 1
+            1.0F, 1.0F, -1.0F,   // 2
+            -1.0F, 1.0F, -1.0F,  // 3
 
             // front
-            -1.0F, -1.0F, 1.0F, 1, 0, 1, // 4
-            1.0F, -1.0F, 1.0F, 0, 1, 1,  // 5
-            1.0F, 1.0F, 1.0F, 1, 1, 1,   // 6
-            -1.0F, 1.0F, 1.0F, 0, 0, 0   // 7
+            -1.0F, -1.0F, 1.0F, // 4
+            1.0F, -1.0F, 1.0F,  // 5
+            1.0F, 1.0F, 1.0F,   // 6
+            -1.0F, 1.0F, 1.0F   // 7
     };
     auto *positionBuffer = new VertexBuffer(vertices);
     VertexBufferLayout bufferLayout;
     bufferLayout.add<float>(shader, "position", 3);
-    bufferLayout.add<float>(shader, "color", 3);
     vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
     std::vector<unsigned int> indices = {
@@ -67,9 +66,9 @@ void Cube::setup() {
     indexBuffer = new IndexBuffer(indices);
 }
 
-void Cube::destroy() {}
+void MarchingCubes::destroy() {}
 
-void Cube::tick() {
+void MarchingCubes::tick() {
     static auto translation = glm::vec3(0.0F, 0.0F, -4.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F);
     static auto cameraRotation = glm::vec3(0.0F);
@@ -82,7 +81,7 @@ void Cube::tick() {
     ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numberss)
     ImGui::DragFloat("Scale", &scale, 0.001F);
     ImGui::End();
 
@@ -105,9 +104,10 @@ void Cube::tick() {
     shader->setUniform("projectionMatrix", projectionMatrix);
 
     indexBuffer->bind();
+    GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
     vertexArray->unbind();
-
     shader->unbind();
 }
