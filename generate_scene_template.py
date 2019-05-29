@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Tuple
 
 CPP_TEMPLATE = """\
@@ -22,11 +23,11 @@ class {name} : public Scene {{
   public:
     {name}(GLFWwindow *window, std::function<void(void)>& backToMainMenu)
         : Scene(window, backToMainMenu, "{name}"){{}};
-    virtual ~{name}(){{}};
+    ~{name}() override = default;
 
-    virtual void setup() override;
-    virtual void tick() override;
-    virtual void destroy() override;
+    void setup() override;
+    void tick() override;
+    void destroy() override;
 }};\
 """
 
@@ -50,9 +51,14 @@ void main() {{
 """
 
 
+def convert_camel_to_snake_case(name: str):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
 def create_folder(name: str) -> Tuple[str, os.PathLike]:
-    folder_name = name.lower()
-    folder_path = os.path.join("./src/scenes", folder_name)
+    folder_name = convert_camel_to_snake_case(name)
+    folder_path = os.path.join("./src/app/scenes", folder_name)
     if os.path.exists(folder_path):
         raise ValueError(f"Scene {name} already exists!")
     os.mkdir(folder_path)
@@ -66,10 +72,11 @@ def write_template(file_path, template, **kwargs):
 
 
 def add_to_cmake_lists(cpp_path):
-    cpp_path = cpp_path.replace("./", "").replace("src", "${SRC_DIR}")
+    cpp_path = cpp_path.replace("./", "").replace("src/app/", "")
     cpp_path = f"        {cpp_path}\n"
 
-    with open("CMakeLists.txt") as f:
+    cmake_path = "src/app/CMakeLists.txt"
+    with open(cmake_path) as f:
         lines = f.readlines()
 
     result_lines = []
@@ -87,13 +94,11 @@ def add_to_cmake_lists(cpp_path):
 
         result_lines.append(line)
 
-    with open("CMakeLists.txt", "w") as f:
+    with open(cmake_path, "w") as f:
         f.writelines(result_lines)
 
 
 def main():
-    print("Please adjust the template generator ot the new folder structure before using it.")
-    exit()
     name = input("Name of the scene: ")
     folder_name, folder_path = create_folder(name)
 
