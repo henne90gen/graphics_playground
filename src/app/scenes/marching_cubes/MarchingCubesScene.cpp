@@ -1,4 +1,4 @@
-#include "MarchingCubes.h"
+#include "MarchingCubesScene.h"
 
 #include <array>
 
@@ -12,7 +12,7 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
-void MarchingCubes::setup() {
+void MarchingCubesScene::setup() {
     shader = new Shader("../../../src/app/scenes/marching_cubes/MarchingCubes.vertex",
                         "../../../src/app/scenes/marching_cubes/MarchingCubes.fragment");
     shader->bind();
@@ -66,9 +66,9 @@ void MarchingCubes::setup() {
     indexBuffer = new IndexBuffer(indices);
 }
 
-void MarchingCubes::destroy() {}
+void MarchingCubesScene::destroy() {}
 
-void MarchingCubes::tick() {
+void MarchingCubesScene::tick() {
     static auto translation = glm::vec3(0.0F, 0.0F, -4.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F);
     static auto cameraRotation = glm::vec3(0.0F);
@@ -84,6 +84,13 @@ void MarchingCubes::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numberss)
     ImGui::DragFloat("Scale", &scale, 0.001F);
     ImGui::End();
+
+    // create button to reset animation
+    // move cube to new position
+    // create vertices at new position
+    //  - check which corners of the cube are inside the volume
+    //  - get triangle indices from triangleMap
+    //  - interpolate vertex positions (make it possible to switch this on and off)
 
     shader->bind();
     vertexArray->bind();

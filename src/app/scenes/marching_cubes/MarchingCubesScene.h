@@ -11,12 +11,12 @@
 #include "opengl/VertexBuffer.h"
 #include "opengl/IndexBuffer.h"
 
-class MarchingCubes : public Scene {
+class MarchingCubesScene : public Scene {
 public:
-    MarchingCubes(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
+    MarchingCubesScene(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
             : Scene(window, backToMainMenu, "MarchingCubes") {};
 
-    ~MarchingCubes() override = default;
+    ~MarchingCubesScene() override = default;
 
     void setup() override;
 

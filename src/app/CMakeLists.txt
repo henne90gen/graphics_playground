@@ -10,6 +10,7 @@ set(SOURCES
         opengl/VertexArray.cpp
         opengl/Texture.cpp
         opengl/Shader.cpp
+        scenes/Scene.cpp
         scenes/TestScene.cpp
         scenes/LegacyTriangle.cpp
         scenes/triangle/Triangle.cpp
@@ -17,7 +18,7 @@ set(SOURCES
         scenes/gamma_calculation/GammaCalculation.cpp
         scenes/cube/Cube.cpp
         scenes/landscape/Landscape.cpp
-        scenes/marching_cubes/MarchingCubes.cpp
+        scenes/marching_cubes/MarchingCubesScene.cpp
         scenes/rubiks_cube/RubiksCubeScene.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})

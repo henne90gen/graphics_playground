@@ -5,7 +5,8 @@ set(SOURCES
         rubiks_cube/RubiksCubeData.cpp
         rubiks_cube/RubiksCubeLogic.cpp
         rubiks_cube/RubiksCube.cpp
-        rubiks_cube/RotationCommandStack.cpp)
+        rubiks_cube/RotationCommandStack.cpp
+        marching_cubes/MarchingCubes.cpp)
 
 add_library(logic ${SOURCES})
 target_include_directories(logic PRIVATE

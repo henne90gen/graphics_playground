@@ -9,18 +9,9 @@ public:
     Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char *name)
             : window(window), name(name), backToMainMenu(backToMainMenu) {};
 
-    virtual ~Scene() {};
+    virtual ~Scene() = default;;
 
-    void renderBackMenu() {
-        ImGui::Begin(name);
-        ImGui::SetWindowPos(ImVec2(0, 0));
-        ImGui::SetWindowSize(ImVec2(100, 60));
-
-        if (ImGui::Button("Back")) {
-            backToMainMenu();
-        }
-        ImGui::End();
-    }
+    void renderBackMenu();
 
     virtual void setup() = 0;
 
