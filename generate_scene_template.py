@@ -3,7 +3,7 @@ import re
 from typing import Tuple
 
 CPP_TEMPLATE = """\
-#include "scenes/{folder_name}/{name}.h"
+#include "{name}.h"
 
 void {name}::setup() {{}}
 
@@ -23,10 +23,13 @@ class {name} : public Scene {{
   public:
     {name}(GLFWwindow *window, std::function<void(void)>& backToMainMenu)
         : Scene(window, backToMainMenu, "{name}"){{}};
+
     ~{name}() override = default;
 
     void setup() override;
+
     void tick() override;
+
     void destroy() override;
 }};\
 """
