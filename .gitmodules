@@ -10,3 +10,6 @@
 [submodule "catch"]
 	path = catch
 	url = git@github.com:catchorg/Catch2.git
+[submodule "FastNoise"]
+	path = FastNoise
+	url = git@github.com:henne90gen/FastNoise.git
