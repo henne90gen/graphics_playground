@@ -19,6 +19,7 @@ set(SOURCES
         scenes/cube/Cube.cpp
         scenes/landscape/Landscape.cpp
         scenes/marching_cubes/MarchingCubesScene.cpp
+        scenes/font_demo/FontDemo.cpp
         scenes/rubiks_cube/RubiksCubeScene.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})

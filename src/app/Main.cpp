@@ -14,6 +14,7 @@
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
+#include "scenes/font_demo/FontDemo.h"
 #include "util/ImGuiUtils.h"
 #include "util/MainMenu.h"
 
@@ -90,6 +91,7 @@ int main() {
     scenes.push_back(new Landscape(window, backToMainMenu)); // 6
     scenes.push_back(new RubiksCubeScene(window, backToMainMenu)); // 7
     scenes.push_back(new MarchingCubesScene(window, backToMainMenu)); // 8
+    scenes.push_back(new FontDemo(window, backToMainMenu)); // 8
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(6);
