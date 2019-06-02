@@ -1,7 +1,5 @@
 
 set(SOURCES
-        util/PerlinNoise.cpp
-        util/SimplexNoise.cpp
         rubiks_cube/RubiksCubeData.cpp
         rubiks_cube/RubiksCubeLogic.cpp
         rubiks_cube/RubiksCube.cpp

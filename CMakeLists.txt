@@ -41,6 +41,10 @@ set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 add_library(imgui "${IMGUI_DIR}/imgui.cpp" "${IMGUI_DIR}/imgui_draw.cpp" "${IMGUI_DIR}/imgui_widgets.cpp")
 target_include_directories(imgui PRIVATE "${IMGUI_DIR}")
 
+# FastNoise
+set(FAST_NOISE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/FastNoise)
+add_subdirectory(${FAST_NOISE_DIR})
+
 # Catch
 set(CATCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/catch)
 add_subdirectory(${CATCH_DIR})
@@ -48,14 +52,16 @@ add_subdirectory(${CATCH_DIR})
 enable_testing()
 add_subdirectory(src)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
-target_link_libraries(${PROJECT_NAME} "glfw" "${GLFW_LIBRARIES}")
+target_link_libraries(${PROJECT_NAME} glfw "${GLFW_LIBRARIES}")
 target_link_libraries(${PROJECT_NAME} glad)
 target_link_libraries(${PROJECT_NAME} imgui)
+target_link_libraries(${PROJECT_NAME} FastNoise)
 target_link_libraries(${PROJECT_NAME} logic)
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLFW_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLM_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}")
+target_include_directories(${PROJECT_NAME} PRIVATE "${FAST_NOISE_DIR}")

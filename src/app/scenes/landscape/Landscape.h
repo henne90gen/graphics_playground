@@ -5,6 +5,8 @@
 #include <functional>
 #include <memory>
 
+#include <FastNoise.h>
+
 #include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
 
@@ -32,6 +34,7 @@ private:
     VertexBuffer *heightBuffer;
 
     int pointDensity = 1;
+    FastNoise *noise;
 
     void updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, int noiseMode) const;
 };

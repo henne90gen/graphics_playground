@@ -8,9 +8,6 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "util/PerlinNoise.h"
-#include "util/SimplexNoise.h"
-
 const unsigned int WIDTH = 10;
 const unsigned int HEIGHT = 10;
 
@@ -25,6 +22,8 @@ void Landscape::setup() {
 
     vertexArray = new VertexArray();
     generatePoints();
+
+    noise = new FastNoise();
 }
 
 void Landscape::generatePoints() {
@@ -74,6 +73,7 @@ void Landscape::generatePoints() {
 }
 
 void Landscape::destroy() {
+    delete noise;
 }
 
 void Landscape::tick() {
@@ -94,7 +94,7 @@ void Landscape::tick() {
     static auto movement = glm::vec2(0.0F);
     static int noiseMode = 0;
     int lastPointDensity = pointDensity;
-
+    static float frequency = 0.3F;
 
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
@@ -111,6 +111,7 @@ void Landscape::tick() {
     ImGui::RadioButton("Perlin", &noiseMode, 0);
     ImGui::RadioButton("Simplex", &noiseMode, 1);
     ImGui::EndGroup();
+    ImGui::DragFloat("Frequency", &frequency, dragSpeed, 0.0F, 1.0F);
 
     const int minimumPointDensity = 1;
     const int maximumPointDensity = 100;
@@ -121,6 +122,7 @@ void Landscape::tick() {
     shader->bind();
     vertexArray->bind();
 
+    noise->SetFrequency(frequency);
     if (lastPointDensity != pointDensity) {
         generatePoints();
     }
@@ -151,8 +153,11 @@ void Landscape::tick() {
 }
 
 void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, int noiseMode) const {
-    auto perlin = PerlinNoise();
-    auto simplex = SimplexNoise(1);
+    if (noiseMode == 0) {
+        noise->SetNoiseType(FastNoise::Perlin);
+    } else {
+        noise->SetNoiseType(FastNoise::Simplex);
+    }
     float maxHeight = 0;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
@@ -161,14 +166,11 @@ void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &move
             float realX = static_cast<float>(x) / scale.x + movement.x;
             float realY = static_cast<float>(y) / scale.y + movement.y;
 
-            float generatedHeight;
-            if (noiseMode == 0) {
-                generatedHeight = static_cast<float>(perlin.noise(realX, realY, scale.z));
-            } else {
-                const float offset = 1.0F;
-                const float scaleFactor = 2.0F;
-                generatedHeight = (static_cast<float>(simplex.noise3(realX, realY, scale.z)) + offset) / scaleFactor;
-            }
+            float generatedHeight = noise->GetNoise(realX, realY, scale.z);
+            const float offset = 1.0F;
+            const float scaleFactor = 2.0F;
+            generatedHeight += offset;
+            generatedHeight /= scaleFactor;
 
             auto *ptr = const_cast<float *>(heightMap.data()); // NOLINT(cppcoreguidelines-pro-type-const-cast)
             const float arbitraryScaleFactor = 10.0F;
