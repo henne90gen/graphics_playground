@@ -10,7 +10,7 @@
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
-const float Z_FAR = 10.0F;
+const float Z_FAR = 100.0F;
 
 void MarchingCubesScene::setup() {
     shader = new Shader("../../../src/app/scenes/marching_cubes/MarchingCubes.vertex",
@@ -64,17 +64,22 @@ void MarchingCubesScene::setup() {
             4, 1, 0, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     };
     indexBuffer = new IndexBuffer(indices);
+
+    marchingCubes = new MarchingCubes();
 }
 
-void MarchingCubesScene::destroy() {}
+void MarchingCubesScene::destroy() {
+    delete marchingCubes;
+}
 
 void MarchingCubesScene::tick() {
     static auto translation = glm::vec3(0.0F, 0.0F, -4.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F);
     static auto cameraRotation = glm::vec3(0.0F);
-    static float scale = 1.0F;
+    static float scale = 0.1F;
 
     ImGui::Begin("Settings");
+
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
@@ -83,24 +88,31 @@ void MarchingCubesScene::tick() {
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numberss)
     ImGui::DragFloat("Scale", &scale, 0.001F);
+
+    ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed);
+    if (ImGui::Button("Start")) {
+        marchingCubes->start();
+    }
+    if (ImGui::Button("Reset")) {
+        marchingCubes->reset();
+    }
+
     ImGui::End();
 
-    // create button to reset animation
-    // move cube to new position
-    // create vertices at new position
-    //  - check which corners of the cube are inside the volume
-    //  - get triangle indices from triangleMap
-    //  - interpolate vertex positions (make it possible to switch this on and off)
+    marchingCubes->step();
 
     shader->bind();
     vertexArray->bind();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+    modelMatrix = glm::translate(modelMatrix, marchingCubes->getCubeTranslation());
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     glm::mat4 viewMatrix = glm::mat4(1.0F);
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(1.0F));
+    viewMatrix = glm::translate(viewMatrix, glm::vec3());
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));

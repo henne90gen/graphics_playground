@@ -91,10 +91,10 @@ int main() {
     scenes.push_back(new Landscape(window, backToMainMenu)); // 6
     scenes.push_back(new RubiksCubeScene(window, backToMainMenu)); // 7
     scenes.push_back(new MarchingCubesScene(window, backToMainMenu)); // 8
-    scenes.push_back(new FontDemo(window, backToMainMenu)); // 8
+    scenes.push_back(new FontDemo(window, backToMainMenu)); // 9
 
-    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-//    mainMenu.goToScene(6);
+//    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    mainMenu.goToScene(8);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 

@@ -10,6 +10,7 @@
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
 #include "opengl/IndexBuffer.h"
+#include "marching_cubes/MarchingCubes.h"
 
 class MarchingCubesScene : public Scene {
 public:
@@ -28,4 +29,6 @@ public:
     VertexArray *vertexArray;
     Shader *shader;
     IndexBuffer *indexBuffer;
+
+    MarchingCubes *marchingCubes;
 };
