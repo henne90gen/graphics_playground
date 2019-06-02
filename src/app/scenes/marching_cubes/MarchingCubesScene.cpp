@@ -22,16 +22,16 @@ void MarchingCubesScene::setup() {
 
     std::vector<float> vertices = {
             // back
-            -1.0F, -1.0F, -1.0F, // 0
-            1.0F, -1.0F, -1.0F,  // 1
-            1.0F, 1.0F, -1.0F,   // 2
-            -1.0F, 1.0F, -1.0F,  // 3
+            -0.5F, -0.5F, -0.5F, // 0
+            0.5F, -0.5F, -0.5F,  // 1
+            0.5F, 0.5F, -0.5F,   // 2
+            -0.5F, 0.5F, -0.5F,  // 3
 
             // front
-            -1.0F, -1.0F, 1.0F, // 4
-            1.0F, -1.0F, 1.0F,  // 5
-            1.0F, 1.0F, 1.0F,   // 6
-            -1.0F, 1.0F, 1.0F   // 7
+            -0.5F, -0.5F, 0.5F, // 4
+            0.5F, -0.5F, 0.5F,  // 5
+            0.5F, 0.5F, 0.5F,   // 6
+            -0.5F, 0.5F, 0.5F   // 7
     };
     auto *positionBuffer = new VertexBuffer(vertices);
     VertexBufferLayout bufferLayout;
@@ -39,29 +39,14 @@ void MarchingCubesScene::setup() {
     vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
     std::vector<unsigned int> indices = {
-            // front
-            0, 1, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-            0, 2, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-
-            // back
-            4, 5, 6, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-            4, 6, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-
-            // right
-            5, 1, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-            5, 2, 6, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-
-            // left
-            0, 4, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-            0, 7, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            // bottom
+            4,5,1,0,4,
 
             // top
-            7, 6, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-            7, 2, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            7, 6, 2, 3, 7,
 
-            // bottom
-            4, 5, 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-            4, 1, 0, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            // edges
+            6, 5, 1, 2, 3, 0
     };
     indexBuffer = new IndexBuffer(indices);
 
@@ -73,17 +58,14 @@ void MarchingCubesScene::destroy() {
 }
 
 void MarchingCubesScene::tick() {
-    static auto translation = glm::vec3(0.0F, 0.0F, -4.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto modelRotation = glm::vec3(0.0F);
-    static auto cameraRotation = glm::vec3(0.0F);
+    static auto translation = glm::vec3(-2.75F, -2.1F, -5.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto cameraRotation = glm::vec3(0.21F, -0.35F, 0.0F);
     static float scale = 0.1F;
 
     ImGui::Begin("Settings");
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numberss)
@@ -101,15 +83,17 @@ void MarchingCubesScene::tick() {
 
     marchingCubes->step();
 
+    drawCube(translation, cameraRotation, scale);
+
+}
+
+void MarchingCubesScene::drawCube(const glm::vec3 &translation, const glm::vec3 &cameraRotation, float scale) {
     shader->bind();
     vertexArray->bind();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
     modelMatrix = glm::translate(modelMatrix, marchingCubes->getCubeTranslation());
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     glm::mat4 viewMatrix = glm::mat4(1.0F);
     viewMatrix = glm::scale(viewMatrix, glm::vec3(1.0F));
     viewMatrix = glm::translate(viewMatrix, glm::vec3());
@@ -123,9 +107,7 @@ void MarchingCubesScene::tick() {
     shader->setUniform("projectionMatrix", projectionMatrix);
 
     indexBuffer->bind();
-    GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-    GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
-    GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    GL_Call(glDrawElements(GL_LINE_LOOP, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 
     vertexArray->unbind();
     shader->unbind();

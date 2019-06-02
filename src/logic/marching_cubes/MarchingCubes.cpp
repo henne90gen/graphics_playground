@@ -1,24 +1,35 @@
 #include "MarchingCubes.h"
 
-MarchingCubes::MarchingCubes() : cubeTranslation(glm::vec3()) {
+MarchingCubes::MarchingCubes() : cubePosition(glm::vec3()), stepCount(0) {
 
 }
 
 void MarchingCubes::start() {
-
+    isRunning = true;
 }
 
 void MarchingCubes::reset() {
     // reset all data in the scene
+    isRunning = false;
 }
 
 void MarchingCubes::step() {
-    stepCount++;
-    if (stepCount % animationSpeed != 0) {
+    if (!isRunning) {
+        return;
+    }
+    if (stepCount++ % animationSpeed != 0) {
         return;
     }
     // move cube to new position
-    cubeTranslation += glm::vec3(2.0F, 0.0F, 0.0F);
+    cubePosition.x += 1.0F;
+    if (cubePosition.x >= 10.0F) {
+        cubePosition.x = 0.0F;
+        cubePosition.y += 1.0F;
+    }
+    if (cubePosition.y >= 10.0F) {
+        cubePosition.y = 0.0F;
+        cubePosition.z += 1.0F;
+    }
 
     // create vertices at new position
     //  - check which corners of the cube are inside the volume

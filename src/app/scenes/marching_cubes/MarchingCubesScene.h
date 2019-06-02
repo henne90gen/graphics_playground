@@ -31,4 +31,6 @@ public:
     IndexBuffer *indexBuffer;
 
     MarchingCubes *marchingCubes;
+
+    void drawCube(const glm::vec3 &translation, const glm::vec3 &cameraRotation, float scale);
 };
