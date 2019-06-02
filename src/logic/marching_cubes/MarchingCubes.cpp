@@ -11,6 +11,7 @@ void MarchingCubes::start() {
 void MarchingCubes::reset() {
     // reset all data in the scene
     isRunning = false;
+    cubePosition = glm::vec3(0.0F);
 }
 
 void MarchingCubes::step() {

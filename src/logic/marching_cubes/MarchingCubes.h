@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/ext.hpp>
+#include <FastNoise.h>
+
 #include "TriangulationTable.h"
 
 class MarchingCubes {
@@ -22,4 +24,5 @@ private:
     glm::vec3 cubePosition;
     int stepCount;
     bool isRunning;
+    FastNoise noise;
 };
