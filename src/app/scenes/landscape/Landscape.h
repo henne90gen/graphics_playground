@@ -36,5 +36,5 @@ private:
     int pointDensity = 1;
     FastNoise *noise;
 
-    void updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, int noiseMode) const;
+    void updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, FastNoise::NoiseType &noiseType);
 };

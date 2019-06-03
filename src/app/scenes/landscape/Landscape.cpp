@@ -1,12 +1,13 @@
-#include <cmath>
-
 #include "Landscape.h"
 
+#include <cmath>
 #include <array>
 #include <memory>
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
+
+#include "util/ImGuiUtils.h"
 
 const unsigned int WIDTH = 10;
 const unsigned int HEIGHT = 10;
@@ -92,7 +93,7 @@ void Landscape::tick() {
     const float timeSpeed = 0.01F;
     scale.z += timeSpeed;
     static auto movement = glm::vec2(0.0F);
-    static int noiseMode = 0;
+    static FastNoise::NoiseType noiseType = FastNoise::Simplex;
     int lastPointDensity = pointDensity;
     static float frequency = 0.3F;
 
@@ -107,11 +108,8 @@ void Landscape::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat2("Movement", reinterpret_cast<float *>(&movement), dragSpeed);
 
-    ImGui::BeginGroup();
-    ImGui::RadioButton("Perlin", &noiseMode, 0);
-    ImGui::RadioButton("Simplex", &noiseMode, 1);
-    ImGui::EndGroup();
-    ImGui::DragFloat("Frequency", &frequency, dragSpeed, 0.0F, 1.0F);
+    ImGui::NoiseTypeSelector(&noiseType);
+    ImGui::SliderFloat("Frequency", &frequency, 0.0F, 1.0F);
 
     const int minimumPointDensity = 1;
     const int maximumPointDensity = 100;
@@ -127,7 +125,7 @@ void Landscape::tick() {
         generatePoints();
     }
 
-    updateHeightBuffer(scale, movement, noiseMode);
+    updateHeightBuffer(scale, movement, noiseType);
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
@@ -152,12 +150,9 @@ void Landscape::tick() {
     shader->unbind();
 }
 
-void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement, int noiseMode) const {
-    if (noiseMode == 0) {
-        noise->SetNoiseType(FastNoise::Perlin);
-    } else {
-        noise->SetNoiseType(FastNoise::Simplex);
-    }
+void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement,
+                                   FastNoise::NoiseType &noiseType) {
+    noise->SetNoiseType(noiseType);
     float maxHeight = 0;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);

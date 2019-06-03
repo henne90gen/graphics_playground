@@ -123,9 +123,7 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     ImGui::SliderFloat("Surface Level", &marchingCubes->surfaceLevel, 0.0F, 1.0F);
     ImGui::SliderFloat("Frequency", &marchingCubes->frequency, 0.0F, 1.0F);
 
-    const std::array<const char *, 10> items = {"Value", "ValueFractal", "Perlin", "PerlinFractal", "Simplex",
-                                                "SimplexFractal", "Cellular", "WhiteNoise", "Cubic", "CubicFractal"};
-    ImGui::Combo("Noise Algorithm", (int *) &marchingCubes->noiseType, items.data(), items.size());
+    ImGui::NoiseTypeSelector(&marchingCubes->noiseType);
 
     if (ImGui::Button("Start")) {
         marchingCubes->start();

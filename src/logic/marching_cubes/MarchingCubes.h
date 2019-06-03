@@ -48,10 +48,10 @@ public:
     unsigned int width = 20;
     unsigned int height = 20;
     unsigned int depth = 20;
-    float surfaceLevel = 0.22;
+    float surfaceLevel = 0.4;
     bool interpolate = true;
     float frequency = 0.08F;
-    FastNoise::NoiseType noiseType = FastNoise::Simplex;
+    FastNoise::NoiseType noiseType = FastNoise::ValueFractal;
 private:
     glm::vec3 cubePosition = glm::vec3();
     int stepCount = 0;

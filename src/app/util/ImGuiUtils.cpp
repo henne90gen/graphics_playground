@@ -1,6 +1,6 @@
 #include "ImGuiUtils.h"
 
-#include <imgui.h>
+#include <array>
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 
@@ -48,4 +48,11 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::DragFloat2("Vertex 2", vertices + 2, dragSpeed); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     ImGui::DragFloat2("Vertex 3", vertices + 4, dragSpeed); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     ImGui::End();
+}
+
+void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) {
+    static const std::array<const char *, 10> items = {"Value", "ValueFractal", "Perlin", "PerlinFractal", "Simplex",
+                                                       "SimplexFractal", "Cellular", "WhiteNoise", "Cubic",
+                                                       "CubicFractal"};
+    ImGui::Combo("Noise Algorithm", (int *) pType, items.data(), items.size());
 }
