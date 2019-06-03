@@ -8,13 +8,13 @@
 #include "scenes/LegacyTriangle.h"
 #include "scenes/TestScene.h"
 #include "scenes/cube/Cube.h"
+#include "scenes/font_demo/FontDemo.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/landscape/Landscape.h"
+#include "scenes/marching_cubes/MarchingCubesScene.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
-#include "scenes/marching_cubes/MarchingCubesScene.h"
-#include "scenes/font_demo/FontDemo.h"
 #include "util/ImGuiUtils.h"
 #include "util/MainMenu.h"
 
@@ -94,7 +94,7 @@ int main() {
     scenes.push_back(new FontDemo(window, backToMainMenu)); // 9
 
 //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(8);
+    mainMenu.goToScene(9);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 
