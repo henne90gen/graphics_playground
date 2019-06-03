@@ -1,6 +1,7 @@
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -12,11 +13,17 @@ class Warning:
     warning_type: str
 
 
-def convert(s: str) -> Warning:
+def convert(s: str) -> Optional[Warning]:
     if "warning" in s:
-        path_parts, msg_parts = s.split(": warning: ")
+        try:
+            path_parts, msg_parts = s.split(": warning: ")
+        except ValueError:
+            return None
     elif "error" in s:
-        path_parts, msg_parts = s.split(": error: ")
+        try:
+            path_parts, msg_parts = s.split(": error: ")
+        except ValueError:
+            return None
     else:
         raise Exception(f"Could not determine warning type for: {s}")
     path_parts = path_parts.split(":")
@@ -51,11 +58,12 @@ def main():
     with open("build/build_report.csv") as f:
         lines = f.readlines()
     warnings = list(
-        map(convert,
-            filter(warnings_only,
-                   filter(remove_carets,
-                          map(strip,
-                              lines)))))
+        filter(lambda x: x is not None,
+               map(convert,
+                   filter(warnings_only,
+                          filter(remove_carets,
+                                 map(strip,
+                                     lines))))))
 
     show_counter(warning_type_count(warnings))
 
