@@ -95,7 +95,7 @@ void Landscape::tick() {
     static auto movement = glm::vec2(0.0F);
     static FastNoise::NoiseType noiseType = FastNoise::Simplex;
     int lastPointDensity = pointDensity;
-    static float frequency = 0.3F;
+    static float frequency = 0.3F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
