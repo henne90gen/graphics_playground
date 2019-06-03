@@ -2,12 +2,16 @@
 
 #include "Utils.h"
 
-IndexBuffer::IndexBuffer(const unsigned int *data, unsigned int count) : count(count) {
-    create(data);
+IndexBuffer::IndexBuffer() { GL_Call(glGenBuffers(1, &id)); }
+
+IndexBuffer::IndexBuffer(const unsigned int *data, const unsigned int count) {
+    GL_Call(glGenBuffers(1, &id));
+    update(data, count);
 }
 
-IndexBuffer::IndexBuffer(const std::vector<unsigned int> &data) : count(data.size()) {
-    create(data.data());
+IndexBuffer::IndexBuffer(const std::vector<unsigned int> &data) {
+    GL_Call(glGenBuffers(1, &id));
+    update(data);
 }
 
 IndexBuffer::~IndexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
@@ -16,9 +20,16 @@ void IndexBuffer::bind() const { GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, i
 
 void IndexBuffer::unbind() const { GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)); }
 
-void IndexBuffer::create(const unsigned int *data) {
-    GL_Call(glGenBuffers(1, &id));
+void IndexBuffer::update(const unsigned int *data, const unsigned int countParam) {
+    count = countParam;
     bind();
-    GL_Call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW));
+    unsigned int sizeInBytes = count * sizeof(unsigned int);
+    GL_Call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, data, GL_STATIC_DRAW));
 }
 
+void IndexBuffer::update(const std::vector<unsigned int> &data) {
+    count = data.size();
+    bind();
+    unsigned int sizeInBytes = count * sizeof(unsigned int);
+    GL_Call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
+}

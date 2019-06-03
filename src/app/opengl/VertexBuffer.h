@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <glm/ext.hpp>
 
 class VertexBuffer {
 public:
@@ -13,6 +14,10 @@ public:
     ~VertexBuffer();
 
     void update(const void *data, unsigned int sizeInBytes);
+
+    void update(const std::vector<float> &data);
+
+    void update(const std::vector<glm::vec3> &data);
 
     void bind() const;
 
