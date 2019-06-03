@@ -2,6 +2,36 @@
 
 #include <array>
 
+static const std::array<int, 12> cornerIndexAFromEdge = {
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        0,
+        1,
+        2,
+        3
+};
+
+static const std::array<int, 12> cornerIndexBFromEdge = {
+        1,
+        2,
+        3,
+        0,
+        5,
+        6,
+        7,
+        4,
+        4,
+        5,
+        6,
+        7
+};
+
 static const std::array<std::array<int, 16>, 256> triangulation =
         {{
                  {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},

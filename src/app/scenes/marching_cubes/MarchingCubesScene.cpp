@@ -17,30 +17,19 @@ void MarchingCubesScene::setup() {
                         "../../../src/app/scenes/marching_cubes/MarchingCubes.fragment");
     shader->bind();
 
-    vertexArray = new VertexArray();
-    vertexArray->bind();
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
-    std::vector<float> vertices = {
-            // back
-            -0.5F, -0.5F, -0.5F, // 0
-            0.5F, -0.5F, -0.5F,  // 1
-            0.5F, 0.5F, -0.5F,   // 2
-            -0.5F, 0.5F, -0.5F,  // 3
+    cubeVertexArray = new VertexArray();
+    cubeVertexArray->bind();
 
-            // front
-            -0.5F, -0.5F, 0.5F, // 4
-            0.5F, -0.5F, 0.5F,  // 5
-            0.5F, 0.5F, 0.5F,   // 6
-            -0.5F, 0.5F, 0.5F   // 7
-    };
-    auto *positionBuffer = new VertexBuffer(vertices);
+    auto positionBuffer = VertexBuffer(cubeCorners.data(), cubeCorners.size() * 3 * sizeof(float));
     VertexBufferLayout bufferLayout;
     bufferLayout.add<float>(shader, "position", 3);
-    vertexArray->addBuffer(*positionBuffer, bufferLayout);
+    cubeVertexArray->addBuffer(positionBuffer, bufferLayout);
 
     std::vector<unsigned int> indices = {
             // bottom
-            4,5,1,0,4,
+            4, 5, 1, 0, 4,
 
             // top
             7, 6, 2, 3, 7,
@@ -48,9 +37,19 @@ void MarchingCubesScene::setup() {
             // edges
             6, 5, 1, 2, 3, 0
     };
-    indexBuffer = new IndexBuffer(indices);
+    cubeIndexBuffer = new IndexBuffer(indices);
+    cubeIndexBuffer->bind();
 
     marchingCubes = new MarchingCubes();
+
+    surfaceVertexArray = new VertexArray();
+    surfaceVertexBuffer = new VertexBuffer();
+    surfaceVertexBuffer->bind();
+    bufferLayout = VertexBufferLayout();
+    bufferLayout.add<float>(shader, "position", 3);
+    surfaceVertexArray->addBuffer(*surfaceVertexBuffer, bufferLayout);
+    surfaceIndexBuffer = new IndexBuffer();
+    surfaceIndexBuffer->bind();
 }
 
 void MarchingCubesScene::destroy() {
@@ -58,20 +57,72 @@ void MarchingCubesScene::destroy() {
 }
 
 void MarchingCubesScene::tick() {
-    static auto translation = glm::vec3(-2.75F, -2.1F, -5.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(0.21F, -0.35F, 0.0F);
+    static auto translation = glm::vec3(0.0F, -2.5F, -8.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto modelRotation = glm::vec3();
+    static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F);
     static float scale = 0.1F;
 
+    showSettings(translation, cameraRotation, modelRotation, scale);
+
+    marchingCubes->step();
+
+    glm::vec3 modelCenter = glm::vec3(marchingCubes->width * -0.5F, marchingCubes->height * -0.5F,
+                                      marchingCubes->depth * -0.5F);
+
+    shader->bind();
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+    modelMatrix = glm::translate(modelMatrix, modelCenter);
+    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
+    shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("viewMatrix", viewMatrix);
+    shader->setUniform("projectionMatrix", projectionMatrix);
+
+    drawSurface();
+    drawCube();
+    shader->unbind();
+}
+
+glm::mat4 MarchingCubesScene::createViewMatrix(const glm::vec3 &translation, const glm::vec3 &cameraRotation) const {
+    glm::mat4 viewMatrix = glm::mat4(1.0F);
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(1.0F));
+    viewMatrix = glm::translate(viewMatrix, glm::vec3());
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
+    viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
+    viewMatrix = glm::translate(viewMatrix, translation);
+    return viewMatrix;
+}
+
+void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
+                                      float &scale) const {
     ImGui::Begin("Settings");
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numberss)
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
-    ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed);
+    ImGui::Checkbox("Animate", &marchingCubes->animate);
+    ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed, 1.0f, 1, 100);
+
+    int dimensions[3] = {(int) marchingCubes->width, (int) marchingCubes->height, (int) marchingCubes->depth};
+    ImGui::DragInt3("Dimensions", dimensions, 1.0f, 1, 100);
+    marchingCubes->width = dimensions[0];
+    marchingCubes->height = dimensions[1];
+    marchingCubes->depth = dimensions[2];
+
+    ImGui::Checkbox("Interpolate", &marchingCubes->interpolate);
+    ImGui::DragFloat("Surface Level", &marchingCubes->surfaceLevel, 0.001F, 0.0F, 1.0F);
+    ImGui::DragFloat("Frequency", &marchingCubes->frequency, 0.001F, 0.0F, 1.0F);
+
     if (ImGui::Button("Start")) {
         marchingCubes->start();
     }
@@ -80,35 +131,21 @@ void MarchingCubesScene::tick() {
     }
 
     ImGui::End();
-
-    marchingCubes->step();
-
-    drawCube(translation, cameraRotation, scale);
-
 }
 
-void MarchingCubesScene::drawCube(const glm::vec3 &translation, const glm::vec3 &cameraRotation, float scale) {
-    shader->bind();
-    vertexArray->bind();
+void MarchingCubesScene::drawCube() {
+    shader->setUniform("offset", marchingCubes->getCubeTranslation());
+    cubeVertexArray->bind();
+    GL_Call(glDrawElements(GL_LINE_LOOP, cubeIndexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+    cubeVertexArray->unbind();
+}
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
-    modelMatrix = glm::translate(modelMatrix, marchingCubes->getCubeTranslation());
-    glm::mat4 viewMatrix = glm::mat4(1.0F);
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(1.0F));
-    viewMatrix = glm::translate(viewMatrix, glm::vec3());
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
-    viewMatrix = glm::translate(viewMatrix, translation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-    shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
+void MarchingCubesScene::drawSurface() {
+    surfaceVertexBuffer->update(marchingCubes->getVertices());
+    surfaceIndexBuffer->update(marchingCubes->getIndices());
 
-    indexBuffer->bind();
-    GL_Call(glDrawElements(GL_LINE_LOOP, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
-
-    vertexArray->unbind();
-    shader->unbind();
+    shader->setUniform("offset", glm::vec3());
+    surfaceVertexArray->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, surfaceIndexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+    surfaceVertexArray->unbind();
 }

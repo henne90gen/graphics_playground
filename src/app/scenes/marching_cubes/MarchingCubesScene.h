@@ -26,11 +26,25 @@ public:
     void destroy() override;
 
 public:
-    VertexArray *vertexArray;
     Shader *shader;
-    IndexBuffer *indexBuffer;
+
+    VertexArray *cubeVertexArray;
+    IndexBuffer *cubeIndexBuffer;
+
+    VertexArray *surfaceVertexArray;
+    VertexBuffer *surfaceVertexBuffer;
+    IndexBuffer *surfaceIndexBuffer;
 
     MarchingCubes *marchingCubes;
 
-    void drawCube(const glm::vec3 &translation, const glm::vec3 &cameraRotation, float scale);
+    void drawCube();
+
+    void drawSurface();
+
+    void showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
+                      float &scale) const;
+
+    glm::mat4 projectionMatrix;
+
+    glm::mat4 createViewMatrix(const glm::vec3 &translation, const glm::vec3 &cameraRotation) const;
 };
