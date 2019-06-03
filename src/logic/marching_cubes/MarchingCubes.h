@@ -43,13 +43,13 @@ public:
         return indices;
     }
 
-    bool animate = true;
+    bool animate = false;
     int animationSpeed = 15;
     unsigned int width = 20;
     unsigned int height = 20;
     unsigned int depth = 20;
     float surfaceLevel = 0.2;
-    bool interpolate = false;
+    bool interpolate = true;
     float frequency = 0.045F;
 private:
     glm::vec3 cubePosition = glm::vec3();
