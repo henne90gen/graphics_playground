@@ -54,5 +54,5 @@ void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) {
     static const std::array<const char *, 10> items = {"Value", "ValueFractal", "Perlin", "PerlinFractal", "Simplex",
                                                        "SimplexFractal", "Cellular", "WhiteNoise", "Cubic",
                                                        "CubicFractal"};
-    ImGui::Combo("Noise Algorithm", (int *) pType, items.data(), items.size());
+    ImGui::Combo("Noise Algorithm", reinterpret_cast<int *>(pType), items.data(), items.size());
 }

@@ -1,7 +1,7 @@
 #include "Landscape.h"
 
-#include <cmath>
 #include <array>
+#include <cmath>
 #include <memory>
 
 #include <glm/ext.hpp>

@@ -114,10 +114,10 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
     ImGui::Checkbox("Animate", &marchingCubes->animate);
-    ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed, 1.0f, 1, 100);
+    ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed, 1.0F, 1, 100);
 
-    int dimensions[3] = {(int) marchingCubes->width, (int) marchingCubes->height, (int) marchingCubes->depth};
-    ImGui::DragInt3("Dimensions", dimensions, 1.0f, 1, 100);
+    int dimensions[3] = {static_cast<int>(marchingCubes->width), static_cast<int>(marchingCubes->height), static_cast<int>(marchingCubes->depth)};
+    ImGui::DragInt3("Dimensions", dimensions, 1.0F, 1, 100);
     marchingCubes->width = dimensions[0];
     marchingCubes->height = dimensions[1];
     marchingCubes->depth = dimensions[2];

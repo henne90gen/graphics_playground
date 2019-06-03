@@ -47,14 +47,22 @@ void MarchingCubes::runOneStep() {
     }
 
     int cubeIndex = 0;
-    if (getSurfaceValue(cubeCorners[0]) < surfaceLevel) cubeIndex |= 1;
-    if (getSurfaceValue(cubeCorners[1]) < surfaceLevel) cubeIndex |= 2;
-    if (getSurfaceValue(cubeCorners[2]) < surfaceLevel) cubeIndex |= 4;
-    if (getSurfaceValue(cubeCorners[3]) < surfaceLevel) cubeIndex |= 8;
-    if (getSurfaceValue(cubeCorners[4]) < surfaceLevel) cubeIndex |= 16;
-    if (getSurfaceValue(cubeCorners[5]) < surfaceLevel) cubeIndex |= 32;
-    if (getSurfaceValue(cubeCorners[6]) < surfaceLevel) cubeIndex |= 64;
-    if (getSurfaceValue(cubeCorners[7]) < surfaceLevel) cubeIndex |= 128;
+    if (getSurfaceValue(cubeCorners[0]) < surfaceLevel) { cubeIndex |= 1;
+}
+    if (getSurfaceValue(cubeCorners[1]) < surfaceLevel) { cubeIndex |= 2;
+}
+    if (getSurfaceValue(cubeCorners[2]) < surfaceLevel) { cubeIndex |= 4;
+}
+    if (getSurfaceValue(cubeCorners[3]) < surfaceLevel) { cubeIndex |= 8;
+}
+    if (getSurfaceValue(cubeCorners[4]) < surfaceLevel) { cubeIndex |= 16;
+}
+    if (getSurfaceValue(cubeCorners[5]) < surfaceLevel) { cubeIndex |= 32;
+}
+    if (getSurfaceValue(cubeCorners[6]) < surfaceLevel) { cubeIndex |= 64;
+}
+    if (getSurfaceValue(cubeCorners[7]) < surfaceLevel) { cubeIndex |= 128;
+}
 
     for (int i = 0; triangulation[cubeIndex][i] != -1; i += 3) {
         // Get indices of corner points A and B for each of the three edges
