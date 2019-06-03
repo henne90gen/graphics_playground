@@ -120,15 +120,23 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     marchingCubes->depth = dimensions[2];
 
     ImGui::Checkbox("Interpolate", &marchingCubes->interpolate);
-    ImGui::DragFloat("Surface Level", &marchingCubes->surfaceLevel, 0.001F, 0.0F, 1.0F);
-    ImGui::DragFloat("Frequency", &marchingCubes->frequency, 0.001F, 0.0F, 1.0F);
+    ImGui::SliderFloat("Surface Level", &marchingCubes->surfaceLevel, 0.0F, 1.0F);
+    ImGui::SliderFloat("Frequency", &marchingCubes->frequency, 0.0F, 1.0F);
+
+    const std::array<const char *, 10> items = {"Value", "ValueFractal", "Perlin", "PerlinFractal", "Simplex",
+                                                "SimplexFractal", "Cellular", "WhiteNoise", "Cubic", "CubicFractal"};
+    ImGui::Combo("Noise Algorithm", (int *) &marchingCubes->noiseType, items.data(), items.size());
 
     if (ImGui::Button("Start")) {
         marchingCubes->start();
     }
+    ImGui::SameLine();
     if (ImGui::Button("Reset")) {
         marchingCubes->reset();
     }
+
+    ImGui::Text("Number of vertices: %zu", marchingCubes->getVertices().size());
+    ImGui::Text("Number of indices: %zu", marchingCubes->getIndices().size());
 
     ImGui::End();
 }

@@ -16,6 +16,8 @@ void MarchingCubes::reset() {
 
 void MarchingCubes::step() {
     noise.SetFrequency(frequency);
+    noise.SetNoiseType(noiseType);
+
     if (!animate) {
         runComplete();
     }
