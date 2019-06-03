@@ -29,13 +29,13 @@ void MarchingCubesScene::setup() {
 
     std::vector<unsigned int> indices = {
             // bottom
-            4, 5, 1, 0, 4,
+            4, 5, 1, 0, 4, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
             // top
-            7, 6, 2, 3, 7,
+            7, 6, 2, 3, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
             // edges
-            6, 5, 1, 2, 3, 0
+            6, 5, 1, 2, 3, 0 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
     cubeIndexBuffer = new IndexBuffer(indices);
     cubeIndexBuffer->bind();
@@ -59,8 +59,8 @@ void MarchingCubesScene::destroy() {
 void MarchingCubesScene::tick() {
     static auto translation = glm::vec3(0.0F, -2.5F, -8.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
-    static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F);
-    static float scale = 0.1F;
+    static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float scale = 0.1F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     const float rotationSpeed = 0.03F;
     modelRotation.y += rotationSpeed;
@@ -69,8 +69,11 @@ void MarchingCubesScene::tick() {
 
     marchingCubes->step();
 
-    glm::vec3 modelCenter = glm::vec3(marchingCubes->width * -0.5F, marchingCubes->height * -0.5F,
-                                      marchingCubes->depth * -0.5F);
+    glm::vec3 modelCenter = glm::vec3(
+            static_cast<float>(marchingCubes->width) * -0.5F, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            static_cast<float>(marchingCubes->height) * -0.5F, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            static_cast<float>(marchingCubes->depth) * -0.5F // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    );
 
     shader->bind();
     glm::mat4 modelMatrix = glm::mat4(1.0F);
@@ -110,14 +113,17 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numberss)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
     ImGui::Checkbox("Animate", &marchingCubes->animate);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed, 1.0F, 1, 100);
 
-    int dimensions[3] = {static_cast<int>(marchingCubes->width), static_cast<int>(marchingCubes->height), static_cast<int>(marchingCubes->depth)};
-    ImGui::DragInt3("Dimensions", dimensions, 1.0F, 1, 100);
+    std::array<int, 3> dimensions = {static_cast<int>(marchingCubes->width), static_cast<int>(marchingCubes->height),
+                                     static_cast<int>(marchingCubes->depth)};
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    ImGui::DragInt3("Dimensions", dimensions.data(), 1.0F, 1, 100);
     marchingCubes->width = dimensions[0];
     marchingCubes->height = dimensions[1];
     marchingCubes->depth = dimensions[2];

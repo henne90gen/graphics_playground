@@ -16,7 +16,7 @@ else ()
     set(DO_CLANG_TIDY
             "${CLANG_TIDY_EXE}"
             "-fix"
-            "-checks=*,-fuchsia-default-arguments,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-owning-memory,-readability-magic-numbers,-google-runtime-int")
+            "-checks=*,-fuchsia-default-arguments,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-owning-memory,-readability-magic-numbers,-google-runtime-int,-readability-braces-around-statements,-cppcoreguidelines-pro-bounds-constant-array-index")
 endif ()
 
 
