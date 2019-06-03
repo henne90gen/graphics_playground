@@ -62,6 +62,9 @@ void MarchingCubesScene::tick() {
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F);
     static float scale = 0.1F;
 
+    const float rotationSpeed = 0.03F;
+    modelRotation.y += rotationSpeed;
+
     showSettings(translation, cameraRotation, modelRotation, scale);
 
     marchingCubes->step();
