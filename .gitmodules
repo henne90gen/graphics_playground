@@ -13,3 +13,6 @@
 [submodule "FastNoise"]
 	path = FastNoise
 	url = git@github.com:henne90gen/FastNoise.git
+[submodule "freetype2"]
+	path = freetype2
+	url = git@github.com:aseprite/freetype2.git
