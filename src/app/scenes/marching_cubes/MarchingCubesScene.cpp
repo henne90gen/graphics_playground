@@ -69,11 +69,12 @@ void MarchingCubesScene::tick() {
 
     marchingCubes->step();
 
-    glm::vec3 modelCenter = glm::vec3(
-            static_cast<float>(marchingCubes->width) * -0.5F, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            static_cast<float>(marchingCubes->height) * -0.5F, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            static_cast<float>(marchingCubes->depth) * -0.5F // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    glm::vec3 dimensions = glm::vec3(
+            static_cast<float>(marchingCubes->width),
+            static_cast<float>(marchingCubes->height),
+            static_cast<float>(marchingCubes->depth)
     );
+    glm::vec3 modelCenter = dimensions * -0.5F;
 
     shader->bind();
     glm::mat4 modelMatrix = glm::mat4(1.0F);
@@ -86,6 +87,7 @@ void MarchingCubesScene::tick() {
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("dimensions", dimensions);
 
     drawSurface();
     drawCube();

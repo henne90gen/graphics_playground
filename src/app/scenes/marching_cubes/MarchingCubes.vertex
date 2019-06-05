@@ -7,6 +7,9 @@ uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 offset;
 
+varying vec3 finalPosition;
+
 void main() {
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position + offset, 1.0);
+    finalPosition = position + offset;
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(finalPosition, 1.0);
 }
