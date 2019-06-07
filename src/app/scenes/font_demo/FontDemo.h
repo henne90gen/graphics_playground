@@ -45,7 +45,7 @@ private:
 
     void loadAlphabet();
 
-    void renderCharacter(const Texture &texture, const glm::vec3 &translation, float scale) const;
+    void renderCharacter(const Texture &texture, const glm::vec2 &translation, float scale) const;
 };
 
 bool settingsHaveChanged(bool height, int characterHeight);

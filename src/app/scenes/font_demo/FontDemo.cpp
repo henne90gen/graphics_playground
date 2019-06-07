@@ -45,17 +45,17 @@ void FontDemo::destroy() {
 void FontDemo::tick() {
     std::string text = "Jeb quickly drove a few extra miles on the glazed pavement";
     static auto color = glm::vec3(1.0F, 1.0F, 1.0F);
-//    static auto translation = glm::vec3(-0.7F, 0.6F, 0.0F);
-    static auto translation = glm::vec3(0.0F);
+    static auto translation = glm::vec2(-16, 11);
     static float scale = 0.02F;
     static bool usePixelHeight = true;
     static int characterHeight = 64;
-    const float dragSpeed = 0.01;
+    const float translationDragSpeed = 0.1;
+    const float scaleDragSpeed = 0.001;
 
     ImGui::Begin("Settings");
     ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
-    ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), dragSpeed);
-    ImGui::DragFloat("Scale", &scale, dragSpeed, 0.01F, 10.0F);
+    ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
+    ImGui::DragFloat("Scale", &scale, scaleDragSpeed, 0.001F, 10.0F);
     ImGui::Checkbox("Use Pixel Height", &usePixelHeight);
     ImGui::SliderInt("Character Height", &characterHeight, 1, 100);
     if ((face != nullptr) && (face->glyph != nullptr)) {
@@ -77,7 +77,7 @@ void FontDemo::tick() {
     for (unsigned long i = 0; i < characters.size(); i++) {
         const unsigned int row = i / numColumns;
         const unsigned int column = i % numColumns;
-        glm::vec3 offset = glm::vec3(0.05F * column, -0.05F * row, 0.0F);
+        glm::vec2 offset = glm::vec2(5.0F * column, -5.0F * row);
         renderCharacter(characters[i].texture, translation + offset, scale);
     }
 
@@ -85,10 +85,10 @@ void FontDemo::tick() {
     shader->unbind();
 }
 
-void FontDemo::renderCharacter(const Texture &texture, const glm::vec3 &translation, float scale) const {
+void FontDemo::renderCharacter(const Texture &texture, const glm::vec2 &translation, float scale) const {
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
-    modelMatrix = glm::translate(modelMatrix, translation / scale);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(translation, 0.0F));
     shader->setUniform("model", modelMatrix);
     texture.bind();
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
