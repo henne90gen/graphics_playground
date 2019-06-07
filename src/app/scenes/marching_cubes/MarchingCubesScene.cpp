@@ -61,11 +61,15 @@ void MarchingCubesScene::tick() {
     static auto modelRotation = glm::vec3();
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static float scale = 0.1F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static bool rotate = true;
+    static bool drawWireframe = false;
 
     const float rotationSpeed = 0.03F;
-    modelRotation.y += rotationSpeed;
+    if (rotate) {
+        modelRotation.y += rotationSpeed;
+    }
 
-    showSettings(translation, cameraRotation, modelRotation, scale);
+    showSettings(translation, cameraRotation, modelRotation, scale, rotate, drawWireframe);
 
     marchingCubes->step();
 
@@ -89,7 +93,7 @@ void MarchingCubesScene::tick() {
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("dimensions", dimensions);
 
-    drawSurface();
+    drawSurface(drawWireframe);
     drawCube();
     shader->unbind();
 }
@@ -106,7 +110,7 @@ glm::mat4 MarchingCubesScene::createViewMatrix(const glm::vec3 &translation, con
 }
 
 void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
-                                      float &scale) const {
+                                      float &scale, bool &rotate, bool &drawWireframe) const {
     ImGui::Begin("Settings");
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
@@ -115,6 +119,8 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
+    ImGui::Checkbox("Rotate", &rotate);
+    ImGui::Checkbox("Wireframe", &drawWireframe);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
@@ -157,12 +163,18 @@ void MarchingCubesScene::drawCube() {
     cubeVertexArray->unbind();
 }
 
-void MarchingCubesScene::drawSurface() {
+void MarchingCubesScene::drawSurface(bool drawWireframe) {
     surfaceVertexBuffer->update(marchingCubes->getVertices());
     surfaceIndexBuffer->update(marchingCubes->getIndices());
 
     shader->setUniform("offset", glm::vec3());
     surfaceVertexArray->bind();
+    if (drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+    }
     GL_Call(glDrawElements(GL_TRIANGLES, surfaceIndexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+    if (drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    }
     surfaceVertexArray->unbind();
 }
