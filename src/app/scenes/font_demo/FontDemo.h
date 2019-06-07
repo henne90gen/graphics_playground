@@ -1,5 +1,8 @@
 #pragma once
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include "scenes/Scene.h"
 
 #include <functional>
@@ -8,6 +11,11 @@
 #include "opengl/VertexBuffer.h"
 #include "opengl/Texture.h"
 #include "opengl/Shader.h"
+
+struct Character {
+    unsigned long characterCode;
+    Texture texture;
+};
 
 class FontDemo : public Scene {
 public:
@@ -24,8 +32,20 @@ public:
 
 private:
     VertexArray *vertexArray;
-    Texture *texture;
     Shader *shader;
 
-    void updateTexture(std::array<float, 3> color);
+    std::vector<Character> characters = {};
+
+    FT_Library library = nullptr;
+    FT_Face face = nullptr;
+
+    void loadFont(bool usePixelSize, int characterHeight);
+
+    Character loadCharacter(unsigned long characterCode);
+
+    void loadAlphabet();
+
+    void renderCharacter(const Texture &texture, const glm::vec3 &translation, float scale) const;
 };
+
+bool settingsHaveChanged(bool height, int characterHeight);
