@@ -9,8 +9,8 @@
 #include "util/ImGuiUtils.h"
 
 void TextureDemo::setup() {
-    shader = new Shader("../../../src/app/scenes/texture_demo/TextureDemo.vertex",
-                        "../../../src/app/scenes/texture_demo/TextureDemo.fragment");
+    shader = new Shader("../../../src/app/scenes/texture_demo/TextureDemoVert.glsl",
+                        "../../../src/app/scenes/texture_demo/TextureDemoFrag.glsl");
     shader->bind();
 
     vertexArray = new VertexArray();
@@ -73,7 +73,6 @@ void TextureDemo::tick() {
 }
 
 void TextureDemo::updateTexture(const std::array<float, 3> color, bool checkerBoard) {
-    std::cout << "Updating texture..." << std::endl;
     std::vector<char> data = std::vector<char>(getWidth() * getHeight() * 3);
     for (unsigned long i = 0; i < data.size() / 3; i++) {
         const float colorScaleFactor = 255.0F;

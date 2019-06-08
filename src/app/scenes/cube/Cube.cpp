@@ -13,8 +13,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
 void Cube::setup() {
-    shader = new Shader("../../../src/app/scenes/cube/Cube.vertex",
-                        "../../../src/app/scenes/cube/Cube.fragment");
+    shader = new Shader("../../../src/app/scenes/cube/CubeVert.glsl",
+                        "../../../src/app/scenes/cube/CubeFrag.glsl");
     shader->bind();
 
     vertexArray = new VertexArray();

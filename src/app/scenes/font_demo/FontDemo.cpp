@@ -1,8 +1,8 @@
 #include "FontDemo.h"
 
 void FontDemo::setup() {
-    shader = new Shader("../../../src/app/scenes/font_demo/FontDemo.vertex",
-                        "../../../src/app/scenes/font_demo/FontDemo.fragment");
+    shader = new Shader("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
+                        "../../../src/app/scenes/font_demo/FontDemoFrag.glsl");
     shader->bind();
 
     vertexArray = new VertexArray();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene.h"
+#include "scenes/Scene.h"
 
 class LegacyTriangle : public Scene {
 public:

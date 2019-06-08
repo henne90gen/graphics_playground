@@ -5,8 +5,8 @@
 #include <iostream>
 #include <vector>
 
-#include "scenes/LegacyTriangle.h"
-#include "scenes/TestScene.h"
+#include "scenes/legacy_triangle/LegacyTriangle.h"
+#include "scenes/test_scene/TestScene.h"
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"

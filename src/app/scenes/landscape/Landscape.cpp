@@ -11,23 +11,24 @@
 
 const unsigned int WIDTH = 10;
 const unsigned int HEIGHT = 10;
+const unsigned int INITIAL_POINT_DENSITY = 15;
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
 void Landscape::setup() {
-    shader = new Shader("../../../src/app/scenes/landscape/Landscape.vertex",
-                        "../../../src/app/scenes/landscape/Landscape.fragment");
+    shader = new Shader("../../../src/app/scenes/landscape/LandscapeVert.glsl",
+                        "../../../src/app/scenes/landscape/LandscapeFrag.glsl");
     shader->bind();
 
     vertexArray = new VertexArray();
-    generatePoints();
+    generatePoints(INITIAL_POINT_DENSITY);
 
     noise = new FastNoise();
 }
 
-void Landscape::generatePoints() {
+void Landscape::generatePoints(unsigned int pointDensity) {
     vertexArray->bind();
 
     const auto width = static_cast<unsigned int>(WIDTH * pointDensity);
@@ -88,6 +89,7 @@ void Landscape::tick() {
     static auto cameraRotation = glm::vec3(0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
+    static int pointDensity = INITIAL_POINT_DENSITY;
     scale.x = pointDensity;
     scale.y = pointDensity;
     const float timeSpeed = 0.01F;
@@ -122,10 +124,10 @@ void Landscape::tick() {
 
     noise->SetFrequency(frequency);
     if (lastPointDensity != pointDensity) {
-        generatePoints();
+        generatePoints(pointDensity);
     }
 
-    updateHeightBuffer(scale, movement, noiseType);
+    updateHeightBuffer(pointDensity, scale, movement, noiseType);
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
@@ -150,7 +152,7 @@ void Landscape::tick() {
     shader->unbind();
 }
 
-void Landscape::updateHeightBuffer(const glm::vec3 &scale, const glm::vec2 &movement,
+void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
                                    FastNoise::NoiseType &noiseType) {
     noise->SetNoiseType(noiseType);
     float maxHeight = 0;

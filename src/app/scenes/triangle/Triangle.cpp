@@ -6,8 +6,8 @@
 #include "util/ImGuiUtils.h"
 
 void Triangle::setup() {
-    shader = new Shader("../../../src/app/scenes/triangle/Triangle.vertex",
-                        "../../../src/app/scenes/triangle/Triangle.fragment");
+    shader = new Shader("../../../src/app/scenes/triangle/TriangleVert.glsl",
+                        "../../../src/app/scenes/triangle/TriangleFrag.glsl");
     shader->bind();
 
     positionBuffer = new VertexBuffer();

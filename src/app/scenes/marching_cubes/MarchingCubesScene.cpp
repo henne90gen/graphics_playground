@@ -13,8 +13,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void MarchingCubesScene::setup() {
-    shader = new Shader("../../../src/app/scenes/marching_cubes/MarchingCubes.vertex",
-                        "../../../src/app/scenes/marching_cubes/MarchingCubes.fragment");
+    shader = new Shader("../../../src/app/scenes/marching_cubes/MarchingCubesVert.glsl",
+                        "../../../src/app/scenes/marching_cubes/MarchingCubesFrag.glsl");
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);

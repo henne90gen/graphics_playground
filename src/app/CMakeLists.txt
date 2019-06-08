@@ -11,8 +11,8 @@ set(SOURCES
         opengl/Texture.cpp
         opengl/Shader.cpp
         scenes/Scene.cpp
-        scenes/TestScene.cpp
-        scenes/LegacyTriangle.cpp
+        scenes/test_scene/TestScene.cpp
+        scenes/legacy_triangle/LegacyTriangle.cpp
         scenes/triangle/Triangle.cpp
         scenes/texture_demo/TextureDemo.cpp
         scenes/gamma_calculation/GammaCalculation.cpp

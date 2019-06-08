@@ -10,8 +10,8 @@
 #include "util/ImGuiUtils.h"
 
 void GammaCalculation::setup() {
-    shader = new Shader("../../../src/app/scenes/gamma_calculation/GammaCalculation.vertex",
-                        "../../../src/app/scenes/gamma_calculation/GammaCalculation.fragment");
+    shader = new Shader("../../../src/app/scenes/gamma_calculation/GammaCalculationVert.glsl",
+                        "../../../src/app/scenes/gamma_calculation/GammaCalculationFrag.glsl");
     shader->bind();
 
     vertexArray = new VertexArray();

@@ -202,8 +202,8 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCubeScene::setup() {
-    shader = new Shader("../../../src/app/scenes/rubiks_cube/RubiksCube.vertex",
-                        "../../../src/app/scenes/rubiks_cube/RubiksCube.fragment");
+    shader = new Shader("../../../src/app/scenes/rubiks_cube/RubiksCubeVert.glsl",
+                        "../../../src/app/scenes/rubiks_cube/RubiksCubeFrag.glsl");
     shader->bind();
 
     vertexArray = new VertexArray();
