@@ -65,6 +65,13 @@ void FontDemo::tick() {
 
     shader->setUniform("textColor", color);
 
+    renderAlphabet(translation, zoom);
+
+    vertexArray->unbind();
+    shader->unbind();
+}
+
+void FontDemo::renderAlphabet(const glm::vec2 &translation, float zoom) const {
     const unsigned int numColumns = 10;
     for (unsigned long i = 0; i < characters.size(); i++) {
         const unsigned int row = i / numColumns;
@@ -72,45 +79,14 @@ void FontDemo::tick() {
         glm::vec2 offset = glm::vec2(5.0F * column, -5.0F * row);
         renderCharacter(characters[i], translation + offset, zoom);
     }
-
-    vertexArray->unbind();
-    shader->unbind();
-}
-
-void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
-                  bool &usePixelHeight, unsigned int &characterResolution, unsigned int &selectedFontIndex,
-                  FT_Face &face) {
-    const float translationDragSpeed = 0.1;
-    const float scaleDragSpeed = 0.001;
-
-    ImGui::Begin("Settings");
-    ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
-    ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
-    ImGui::DragFloat("Zoom", &zoom, scaleDragSpeed, 0.001F, 10.0F);
-    ImGui::Checkbox("Use Pixel Height", &usePixelHeight);
-    ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), 1, 500);
-
-    ImGui::ListBoxHeader("Font", fontPaths.size());
-    std::string path = "../../../src/app/scenes/font_demo/fonts";
-    for (unsigned long i = 0; i < fontPaths.size(); i++) {
-        auto fileName = fontPaths[i].substr(path.size() + 1);
-        if (ImGui::Selectable(fileName.c_str(), i == selectedFontIndex)) {
-            selectedFontIndex = i;
-        }
-    }
-    ImGui::ListBoxFooter();
-
-    if (face != nullptr) {
-        showFontInfo(face);
-    }
-    ImGui::End();
 }
 
 void FontDemo::renderCharacter(const Character &character, const glm::vec2 &translation, float scale) const {
-    float horizontalScale = 1.0F;
-    if (character.width != 0) {
-        horizontalScale = 1.0F / (static_cast<float>(character.height) / static_cast<float>(character.width));
+    if (character.width == 0) {
+        return;
     }
+
+    float horizontalScale = 1.0F / (static_cast<float>(character.height) / static_cast<float>(character.width));
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
@@ -202,6 +178,35 @@ std::vector<std::string> FontDemo::getFontPaths() {
         result.push_back(fileName);
     }
     return result;
+}
+
+void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
+                  bool &usePixelHeight, unsigned int &characterResolution, unsigned int &selectedFontIndex,
+                  FT_Face &face) {
+    const float translationDragSpeed = 0.1;
+    const float scaleDragSpeed = 0.001;
+
+    ImGui::Begin("Settings");
+    ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
+    ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
+    ImGui::DragFloat("Zoom", &zoom, scaleDragSpeed, 0.001F, 10.0F);
+    ImGui::Checkbox("Use Pixel Height", &usePixelHeight);
+    ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), 1, 1000);
+
+    ImGui::ListBoxHeader("Font", fontPaths.size());
+    std::string path = "../../../src/app/scenes/font_demo/fonts";
+    for (unsigned long i = 0; i < fontPaths.size(); i++) {
+        auto fileName = fontPaths[i].substr(path.size() + 1);
+        if (ImGui::Selectable(fileName.c_str(), i == selectedFontIndex)) {
+            selectedFontIndex = i;
+        }
+    }
+    ImGui::ListBoxFooter();
+
+    if (face != nullptr) {
+        showFontInfo(face);
+    }
+    ImGui::End();
 }
 
 void showFontInfo(FT_Face &f) {

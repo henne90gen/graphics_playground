@@ -51,6 +51,7 @@ private:
 
     std::vector<std::string> getFontPaths();
 
+    void renderAlphabet(const glm::vec2 &translation, float zoom) const;
 };
 
 void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
