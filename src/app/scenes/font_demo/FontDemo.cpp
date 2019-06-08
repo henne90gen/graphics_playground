@@ -1,5 +1,7 @@
 #include "FontDemo.h"
 
+#include <filesystem>
+
 void FontDemo::setup() {
     shader = new Shader("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
                         "../../../src/app/scenes/font_demo/FontDemoFrag.glsl");
@@ -46,26 +48,16 @@ void FontDemo::tick() {
     std::string text = "Jeb quickly drove a few extra miles on the glazed pavement";
     static auto color = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto translation = glm::vec2(-16, 11);
-    static float scale = 0.02F;
+    static float zoom = 0.02F;
     static bool usePixelHeight = true;
-    static int characterHeight = 64;
-    const float translationDragSpeed = 0.1;
-    const float scaleDragSpeed = 0.001;
+    static unsigned int characterResolution = 64;
+    static unsigned int selectedFontIndex = 0;
 
-    ImGui::Begin("Settings");
-    ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
-    ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
-    ImGui::DragFloat("Scale", &scale, scaleDragSpeed, 0.001F, 10.0F);
-    ImGui::Checkbox("Use Pixel Height", &usePixelHeight);
-    ImGui::SliderInt("Character Height", &characterHeight, 1, 100);
-    if ((face != nullptr) && (face->glyph != nullptr)) {
-        ImGui::Text("Bitmap Pitch: %d", face->glyph->bitmap.pitch);
-        ImGui::Text("Bitmap (Top,Left): (%d,%d)", face->glyph->bitmap_left, face->glyph->bitmap_top);
-    }
-    ImGui::End();
+    std::vector<std::string> fontPaths = getFontPaths();
 
-    if (settingsHaveChanged(usePixelHeight, characterHeight)) {
-        loadFont(usePixelHeight, characterHeight);
+    showSettings(fontPaths, color, translation, zoom, usePixelHeight, characterResolution, selectedFontIndex, face);
+    if (settingsHaveChanged(usePixelHeight, characterResolution, selectedFontIndex)) {
+        loadFont(fontPaths[selectedFontIndex], usePixelHeight, characterResolution);
     }
 
     shader->bind();
@@ -78,24 +70,60 @@ void FontDemo::tick() {
         const unsigned int row = i / numColumns;
         const unsigned int column = i % numColumns;
         glm::vec2 offset = glm::vec2(5.0F * column, -5.0F * row);
-        renderCharacter(characters[i].texture, translation + offset, scale);
+        renderCharacter(characters[i], translation + offset, zoom);
     }
 
     vertexArray->unbind();
     shader->unbind();
 }
 
-void FontDemo::renderCharacter(const Texture &texture, const glm::vec2 &translation, float scale) const {
+void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
+                  bool &usePixelHeight, unsigned int &characterResolution, unsigned int &selectedFontIndex,
+                  FT_Face &face) {
+    const float translationDragSpeed = 0.1;
+    const float scaleDragSpeed = 0.001;
+
+    ImGui::Begin("Settings");
+    ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
+    ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
+    ImGui::DragFloat("Zoom", &zoom, scaleDragSpeed, 0.001F, 10.0F);
+    ImGui::Checkbox("Use Pixel Height", &usePixelHeight);
+    ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), 1, 500);
+
+    ImGui::ListBoxHeader("Font", fontPaths.size());
+    std::string path = "../../../src/app/scenes/font_demo/fonts";
+    for (unsigned long i = 0; i < fontPaths.size(); i++) {
+        auto fileName = fontPaths[i].substr(path.size() + 1);
+        if (ImGui::Selectable(fileName.c_str(), i == selectedFontIndex)) {
+            selectedFontIndex = i;
+        }
+    }
+    ImGui::ListBoxFooter();
+
+    if (face != nullptr) {
+        showFontInfo(face);
+    }
+    ImGui::End();
+}
+
+void FontDemo::renderCharacter(const Character &character, const glm::vec2 &translation, float scale) const {
+    float horizontalScale = 1.0F;
+    if (character.width != 0) {
+        horizontalScale = 1.0F / (static_cast<float>(character.height) / static_cast<float>(character.width));
+    }
+
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(translation, 0.0F));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(horizontalScale, 1.0F, 1.0F));
     shader->setUniform("model", modelMatrix);
-    texture.bind();
+
+    character.texture.bind();
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
-    texture.unbind();
+    character.texture.unbind();
 }
 
-void FontDemo::loadFont(bool usePixelSize, int characterHeight) {
+void FontDemo::loadFont(std::string &fontPath, bool usePixelSize, int characterHeight) {
     if (library == nullptr) {
         const int error = FT_Init_FreeType(&library);
         if (error != 0) {
@@ -103,43 +131,12 @@ void FontDemo::loadFont(bool usePixelSize, int characterHeight) {
         }
     }
 
-//    const char *fontName = "../../../src/app/scenes/font_demo/fonts/STANFORD_FREE.ttf";
-    const char *fontName = "../../../src/app/scenes/font_demo/fonts/CRACKROCK.ttf";
     long faceIndex = 0;
-    int error = FT_New_Face(library, fontName, faceIndex, &face);
+    int error = FT_New_Face(library, fontPath.c_str(), faceIndex, &face);
     if (error == FT_Err_Unknown_File_Format) {
         std::cerr << "Corrupt font file" << std::endl;
     } else if (error != 0) {
         std::cerr << "Could not read font file" << std::endl;
-    }
-
-    {
-        std::cout << "Loaded Font" << std::endl;
-        std::cout << "\tNumber of faces: " << face->num_faces << std::endl;
-        std::cout << "\tFace index: " << face->face_index << std::endl;
-        std::cout << "\tFace flags: " << toBits(face->face_flags) << std::endl;
-        std::cout << "\tStyle flags: " << toBits(face->style_flags) << std::endl;
-        std::cout << "\tNumber of glyphs: " << face->num_glyphs << std::endl;
-        std::cout << "\tFamily name: " << face->family_name << std::endl;
-        std::cout << "\tStyle name: " << face->style_name << std::endl;
-        std::cout << "\tNumber of fixed sizes: " << face->num_fixed_sizes << std::endl;
-        std::cout << "\tAvailable sizes: " << face->available_sizes << std::endl;
-        std::cout << "\tNumber of character maps: " << face->num_charmaps << std::endl;
-        std::cout << "\tCharacter maps: " << face->charmaps << std::endl;
-        std::cout << "\tBounding box: (" << face->bbox.xMin << "," << face->bbox.yMin << ") - (" << face->bbox.xMax
-                  << ","
-                  << face->bbox.yMax << ")" << std::endl;
-        std::cout << "\tUnits per EM: " << face->units_per_EM << std::endl;
-        std::cout << "\tAscender: " << face->ascender << std::endl;
-        std::cout << "\tDescender: " << face->descender << std::endl;
-        std::cout << "\tHeight: " << face->height << std::endl;
-        std::cout << "\tMaximum advance width: " << face->max_advance_width << std::endl;
-        std::cout << "\tMaximum advance height: " << face->max_advance_height << std::endl;
-        std::cout << "\tUnderline position: " << face->underline_position << std::endl;
-        std::cout << "\tUnderline thickness: " << face->underline_thickness << std::endl;
-        std::cout << "\tGlyph: " << face->glyph << std::endl;
-        std::cout << "\tSize: " << face->size << std::endl;
-        std::cout << "\tCharacter map: " << face->charmap << std::endl;;
     }
 
     if (!usePixelSize) {
@@ -185,27 +182,71 @@ Character FontDemo::loadCharacter(unsigned long characterCode) {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-    FT_Bitmap bitmap = face->glyph->bitmap;
+    FT_GlyphSlot glyph = face->glyph;
+    FT_Bitmap bitmap = glyph->bitmap;
     texture.update(reinterpret_cast<const char *>(bitmap.buffer), bitmap.width, bitmap.rows, 1);
 
-    return {characterCode, texture};
+    return {
+            characterCode,
+            texture,
+            glyph->metrics.width,
+            glyph->metrics.height
+    };
 }
 
-bool settingsHaveChanged(bool height, int characterHeight) {
+std::vector<std::string> FontDemo::getFontPaths() {
+    std::vector<std::string> result = {};
+    std::string path = "../../../src/app/scenes/font_demo/fonts";
+    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+        std::string fileName = entry.path();
+        result.push_back(fileName);
+    }
+    return result;
+}
+
+void showFontInfo(FT_Face &f) {
+    ImGui::Text("Number of faces: %ld", f->num_faces);
+    ImGui::Text("Face index: %ld", f->face_index);
+    ImGui::Text("Face flags: %s", toBits(f->face_flags).c_str());
+    ImGui::Text("Style flags: %s", toBits(f->style_flags).c_str());
+    ImGui::Text("Number of glyphs: %ld", f->num_glyphs);
+    ImGui::Text("Family name: %s", f->family_name);
+    ImGui::Text("Style name: %s", f->style_name);
+    ImGui::Text("Number of fixed sizes: %d", f->num_fixed_sizes);
+    ImGui::Text("Number of character maps: %d", f->num_charmaps);
+    ImGui::Text("Bounding box: (%ld,%ld) - (%ld,%ld)", f->bbox.xMin, f->bbox.yMin, f->bbox.xMax, f->bbox.yMax);
+    ImGui::Text("Units per EM: %d", f->units_per_EM);
+    ImGui::Text("Ascender: %d", f->ascender);
+    ImGui::Text("Descender: %d", f->descender);
+    ImGui::Text("Height: %d", f->height);
+    ImGui::Text("Maximum advance width: %d", f->max_advance_width);
+    ImGui::Text("Maximum advance height: %d", f->max_advance_height);
+    ImGui::Text("Underline position: %d", f->underline_position);
+    ImGui::Text("Underline thickness: %d", f->underline_thickness);
+    ImGui::Text("Size Metrics");
+    FT_Size_Metrics &metrics = f->size->metrics;
+    ImGui::Text("\tHeight: %ld", metrics.height);
+}
+
+bool settingsHaveChanged(bool height, int characterHeight, int selectedFontIndex) {
     static bool initialized = false;
     static bool lastUsePixelHeight = true;
     static int lastCharacterHeight = 0;
+    static int lastSelectedFontIndex = 0;
     if (!initialized) {
         initialized = true;
         lastUsePixelHeight = height;
         lastCharacterHeight = characterHeight;
+        lastSelectedFontIndex = selectedFontIndex;
         return true;
     }
     bool result = false;
-    if (lastUsePixelHeight != height || lastCharacterHeight != characterHeight) {
+    if (lastUsePixelHeight != height || lastCharacterHeight != characterHeight ||
+        lastSelectedFontIndex != selectedFontIndex) {
         result = true;
     }
     lastUsePixelHeight = height;
     lastCharacterHeight = characterHeight;
+    lastSelectedFontIndex = selectedFontIndex;
     return result;
 }

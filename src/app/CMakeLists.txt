@@ -34,6 +34,7 @@ set_target_properties(
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 )
+add_definitions(-std=c++17)
 
 if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
     set_target_properties(
@@ -49,6 +50,7 @@ target_link_libraries(${PROJECT_NAME}
         glad
         imgui
         logic)
+target_link_libraries(${PROJECT_NAME}  stdc++fs)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
