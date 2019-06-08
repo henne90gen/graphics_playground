@@ -41,7 +41,7 @@ private:
     FT_Library library = nullptr;
     FT_Face face = nullptr;
 
-    void loadFont(std::string &fontPath, bool usePixelSize, int characterHeight);
+    void loadFont(std::string &fontPath, int characterHeight);
 
     Character loadCharacter(unsigned long characterCode);
 
@@ -52,11 +52,13 @@ private:
     std::vector<std::string> getFontPaths();
 
     void renderAlphabet(const glm::vec2 &translation, float zoom) const;
+
+    void renderText(std::string &text, const glm::vec2 &translation, float zoom);
 };
 
 void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
-                  bool &usePixelHeight, unsigned int &characterResolution, unsigned int &selectedFontIndex, FT_Face &face);
+                  unsigned int &characterResolution, unsigned int &selectedFontIndex, FT_Face &face);
 
 void showFontInfo(FT_Face &face);
 
-bool settingsHaveChanged(bool height, int characterHeight, int selectedFontIndex);
+bool settingsHaveChanged(int characterHeight, int selectedFontIndex);

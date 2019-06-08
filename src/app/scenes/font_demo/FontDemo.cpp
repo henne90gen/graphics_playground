@@ -49,15 +49,14 @@ void FontDemo::tick() {
     static auto color = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto translation = glm::vec2(-16, 11);
     static float zoom = 0.02F;
-    static bool usePixelHeight = true;
     static unsigned int characterResolution = 64;
     static unsigned int selectedFontIndex = 0;
 
     std::vector<std::string> fontPaths = getFontPaths();
 
-    showSettings(fontPaths, color, translation, zoom, usePixelHeight, characterResolution, selectedFontIndex, face);
-    if (settingsHaveChanged(usePixelHeight, characterResolution, selectedFontIndex)) {
-        loadFont(fontPaths[selectedFontIndex], usePixelHeight, characterResolution);
+    showSettings(fontPaths, color, translation, zoom, characterResolution, selectedFontIndex, face);
+    if (settingsHaveChanged(characterResolution, selectedFontIndex)) {
+        loadFont(fontPaths[selectedFontIndex], characterResolution);
     }
 
     shader->bind();
@@ -66,6 +65,9 @@ void FontDemo::tick() {
     shader->setUniform("textColor", color);
 
     renderAlphabet(translation, zoom);
+
+    const glm::vec2 textTranslation = translation - glm::vec2(5.0F, -10.0F);
+    renderText(text, textTranslation, zoom);
 
     vertexArray->unbind();
     shader->unbind();
@@ -81,17 +83,31 @@ void FontDemo::renderAlphabet(const glm::vec2 &translation, float zoom) const {
     }
 }
 
+void FontDemo::renderText(std::string &text, const glm::vec2 &translation, float zoom) {
+    for (unsigned long i = 0; i < text.size(); i++) {
+        const char c = text[i];
+        glm::vec2 offset = glm::vec2(5.0F * i, 0.0F);
+        renderCharacter(characters[static_cast<int>(c) - 32], translation + offset, zoom);
+    }
+}
+
 void FontDemo::renderCharacter(const Character &character, const glm::vec2 &translation, float scale) const {
-    if (character.width == 0) {
+    if (character.width == 0 || character.height == 0) {
         return;
     }
 
-    float horizontalScale = 1.0F / (static_cast<float>(character.height) / static_cast<float>(character.width));
+    float horizontalScale = 1.0F;
+    float verticalScale = 1.0F;
+    if (character.width < character.height) {
+        horizontalScale /= (static_cast<float>(character.height) / static_cast<float>(character.width));
+    } else if (character.width > character.height) {
+        verticalScale /= (static_cast<float>(character.width) / static_cast<float>(character.height));
+    }
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(translation, 0.0F));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(horizontalScale, 1.0F, 1.0F));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(horizontalScale, verticalScale, 1.0F));
     shader->setUniform("model", modelMatrix);
 
     character.texture.bind();
@@ -99,7 +115,7 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
     character.texture.unbind();
 }
 
-void FontDemo::loadFont(std::string &fontPath, bool usePixelSize, int characterHeight) {
+void FontDemo::loadFont(std::string &fontPath, int characterHeight) {
     if (library == nullptr) {
         const int error = FT_Init_FreeType(&library);
         if (error != 0) {
@@ -115,21 +131,10 @@ void FontDemo::loadFont(std::string &fontPath, bool usePixelSize, int characterH
         std::cerr << "Could not read font file" << std::endl;
     }
 
-    if (!usePixelSize) {
-        const int charWidth = 0;
-        const int charHeight = characterHeight * 64;
-        const int horizontalResolution = 0;
-        const int verticalResolution = 0;
-        error = FT_Set_Char_Size(face, charWidth, charHeight, horizontalResolution, verticalResolution);
-        if (error != 0) {
-            std::cerr << "Could not set the character size." << std::endl;
-        }
-    } else {
-        const int pixelWidth = 0;
-        error = FT_Set_Pixel_Sizes(face, pixelWidth, characterHeight);
-        if (error != 0) {
-            std::cerr << "Could not set the character pixel size." << std::endl;
-        }
+    const int pixelWidth = 0;
+    error = FT_Set_Pixel_Sizes(face, pixelWidth, characterHeight);
+    if (error != 0) {
+        std::cerr << "Could not set the character pixel size." << std::endl;
     }
 
     loadAlphabet();
@@ -181,7 +186,7 @@ std::vector<std::string> FontDemo::getFontPaths() {
 }
 
 void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
-                  bool &usePixelHeight, unsigned int &characterResolution, unsigned int &selectedFontIndex,
+                  unsigned int &characterResolution, unsigned int &selectedFontIndex,
                   FT_Face &face) {
     const float translationDragSpeed = 0.1;
     const float scaleDragSpeed = 0.001;
@@ -190,7 +195,6 @@ void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, g
     ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
     ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
     ImGui::DragFloat("Zoom", &zoom, scaleDragSpeed, 0.001F, 10.0F);
-    ImGui::Checkbox("Use Pixel Height", &usePixelHeight);
     ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), 1, 1000);
 
     ImGui::ListBoxHeader("Font", fontPaths.size());
@@ -233,24 +237,21 @@ void showFontInfo(FT_Face &f) {
     ImGui::Text("\tHeight: %ld", metrics.height);
 }
 
-bool settingsHaveChanged(bool height, int characterHeight, int selectedFontIndex) {
+bool settingsHaveChanged(int characterHeight, int selectedFontIndex) {
     static bool initialized = false;
-    static bool lastUsePixelHeight = true;
     static int lastCharacterHeight = 0;
     static int lastSelectedFontIndex = 0;
     if (!initialized) {
         initialized = true;
-        lastUsePixelHeight = height;
         lastCharacterHeight = characterHeight;
         lastSelectedFontIndex = selectedFontIndex;
         return true;
     }
     bool result = false;
-    if (lastUsePixelHeight != height || lastCharacterHeight != characterHeight ||
+    if (lastCharacterHeight != characterHeight ||
         lastSelectedFontIndex != selectedFontIndex) {
         result = true;
     }
-    lastUsePixelHeight = height;
     lastCharacterHeight = characterHeight;
     lastSelectedFontIndex = selectedFontIndex;
     return result;
