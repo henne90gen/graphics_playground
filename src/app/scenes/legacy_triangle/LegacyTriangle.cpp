@@ -1,5 +1,6 @@
 #include "LegacyTriangle.h"
 
+#include <array>
 #include <glad/glad.h>
 
 #include "opengl/Utils.h"

@@ -2,9 +2,16 @@
 
 #include <glad/glad.h>
 
-#define ASSERT(x)                                                                                                      \
-    if (!(x))                                                                                                          \
-        __builtin_debugtrap()
+#ifdef WIN32
+	#define ASSERT(x)                                                                                                      \
+		if (!(x))                                                                                                          \
+			__debugbreak()
+#else
+	#define ASSERT(x)                                                                                                      \
+		if (!(x))                                                                                                          \
+			__builtin_debugtrap()
+#endif
+
 #define GL_Call(x)                                                                                                     \
     GL_ClearError();                                                                                                   \
     x;                                                                                                                 \

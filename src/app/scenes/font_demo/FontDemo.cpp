@@ -179,7 +179,7 @@ std::vector<std::string> FontDemo::getFontPaths() {
     std::vector<std::string> result = {};
     std::string path = "../../../src/app/scenes/font_demo/fonts";
     for (const auto &entry : std::filesystem::directory_iterator(path)) {
-        std::string fileName = entry.path();
+        std::string fileName = entry.path().u8string();;
         result.push_back(fileName);
     }
     return result;
