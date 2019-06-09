@@ -15,8 +15,10 @@
 struct Character {
     unsigned long characterCode;
     Texture texture;
-    long width;
-    long height;
+    glm::ivec2 dimensions;
+    glm::ivec2 offset;
+    long advance;
+    long requestedCharacterHeight;
 };
 
 class FontDemo : public Scene {
@@ -43,9 +45,9 @@ private:
 
     void loadFont(std::string &fontPath, int characterHeight);
 
-    Character loadCharacter(unsigned long characterCode);
+    Character loadCharacter(unsigned long characterCode, int characterHeight);
 
-    void loadAlphabet();
+    void loadAlphabet(int characterHeight);
 
     void renderCharacter(const Character &character, const glm::vec2 &translation, float scale) const;
 

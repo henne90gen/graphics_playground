@@ -11,12 +11,12 @@ void FontDemo::setup() {
     vertexArray->bind();
 
     std::vector<float> vertices = {
-            -1.0, 1.0, 0.0, 0.0,  //
-            -1.0, -1.0, 0.0, 1.0,  //
-            1.0, -1.0, 1.0, 1.0, //
-            -1.0, 1.0, 0.0, 0.0,  //
-            1.0, -1.0, 1.0, 1.0, //
-            1.0, 1.0, 1.0, 0.0  //
+            -0.5, 0.5, 0.0, 0.0,  //
+            -0.5, -0.5, 0.0, 1.0,  //
+            0.5, -0.5, 1.0, 1.0, //
+            -0.5, 0.5, 0.0, 0.0,  //
+            0.5, -0.5, 1.0, 1.0, //
+            0.5, 0.5, 1.0, 0.0  //
     };
     auto *buffer = new VertexBuffer(vertices);
     VertexBufferLayout bufferLayout;
@@ -45,9 +45,9 @@ void FontDemo::destroy() {
 }
 
 void FontDemo::tick() {
-    std::string text = "Jeb quickly drove a few extra miles on the glazed pavement";
+    std::string text = "Je";//b quickly drove a few extra miles on the glazed pavement";
     static auto color = glm::vec3(1.0F, 1.0F, 1.0F);
-    static auto translation = glm::vec2(-16, 11);
+    static auto translation = glm::vec2(-0.16, 0.11);
     static float zoom = 0.02F;
     static unsigned int characterResolution = 64;
     static unsigned int selectedFontIndex = 0;
@@ -64,9 +64,9 @@ void FontDemo::tick() {
 
     shader->setUniform("textColor", color);
 
-    renderAlphabet(translation, zoom);
+//    renderAlphabet(translation, zoom);
 
-    const glm::vec2 textTranslation = translation - glm::vec2(5.0F, -10.0F);
+    const glm::vec2 textTranslation = translation + glm::vec2(0.1F, 0.1F);
     renderText(text, textTranslation, zoom);
 
     vertexArray->unbind();
@@ -78,36 +78,47 @@ void FontDemo::renderAlphabet(const glm::vec2 &translation, float zoom) const {
     for (unsigned long i = 0; i < characters.size(); i++) {
         const unsigned int row = i / numColumns;
         const unsigned int column = i % numColumns;
-        glm::vec2 offset = glm::vec2(5.0F * column, -5.0F * row);
+        glm::vec2 offset = glm::vec2(0.05F * column, -0.05F * row);
         renderCharacter(characters[i], translation + offset, zoom);
     }
 }
 
 void FontDemo::renderText(std::string &text, const glm::vec2 &translation, float zoom) {
+    glm::vec2 nextCharacterPosition = translation;
     for (unsigned long i = 0; i < text.size(); i++) {
         const char c = text[i];
-        glm::vec2 offset = glm::vec2(5.0F * i, 0.0F);
-        renderCharacter(characters[static_cast<int>(c) - 32], translation + offset, zoom);
+        Character &character = characters[static_cast<int>(c) - 32];
+        renderCharacter(character, nextCharacterPosition, zoom);
+        auto scaledAdvance =
+                static_cast<float>(character.advance) / static_cast<float>(character.requestedCharacterHeight);
+//        std::cout << scaledAdvance << std::endl;
+        nextCharacterPosition += glm::vec2(scaledAdvance, 0.0F);
     }
 }
 
 void FontDemo::renderCharacter(const Character &character, const glm::vec2 &translation, float scale) const {
-    if (character.width == 0 || character.height == 0) {
+    if (character.dimensions.x == 0 || character.dimensions.y == 0) {
         return;
     }
 
     float horizontalScale = 1.0F;
     float verticalScale = 1.0F;
-    if (character.width < character.height) {
-        horizontalScale /= (static_cast<float>(character.height) / static_cast<float>(character.width));
-    } else if (character.width > character.height) {
-        verticalScale /= (static_cast<float>(character.width) / static_cast<float>(character.height));
+    if (character.dimensions.x < character.dimensions.y) {
+        horizontalScale /= static_cast<float>(character.dimensions.y) / static_cast<float>(character.dimensions.x);
+    } else if (character.dimensions.x > character.dimensions.y) {
+        verticalScale /= static_cast<float>(character.dimensions.x) / static_cast<float>(character.dimensions.y);
     }
 
+    auto floatOffset = glm::vec2(character.offset);
+    floatOffset.y *= -1;
+    floatOffset.y += character.dimensions.y;
+    floatOffset /= character.requestedCharacterHeight;
+    glm::vec2 finalTranslation = translation + floatOffset;
+
     glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(translation, 0.0F));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(horizontalScale, verticalScale, 1.0F));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
     shader->setUniform("model", modelMatrix);
 
     character.texture.bind();
@@ -137,18 +148,18 @@ void FontDemo::loadFont(std::string &fontPath, int characterHeight) {
         std::cerr << "Could not set the character pixel size." << std::endl;
     }
 
-    loadAlphabet();
+    loadAlphabet(characterHeight);
 }
 
-void FontDemo::loadAlphabet() {
+void FontDemo::loadAlphabet(int characterHeight) {
     characters.clear();
     for (unsigned int i = 32; i < 127; i++) {
-        Character character = loadCharacter(i);
+        Character character = loadCharacter(i, characterHeight);
         characters.push_back(character);
     }
 }
 
-Character FontDemo::loadCharacter(unsigned long characterCode) {
+Character FontDemo::loadCharacter(unsigned long characterCode, int characterHeight) {
     int error = FT_Load_Char(face, characterCode, FT_LOAD_RENDER);
     if (error != 0) {
         std::cerr << "Could not load glyph" << std::endl;
@@ -170,8 +181,10 @@ Character FontDemo::loadCharacter(unsigned long characterCode) {
     return {
             characterCode,
             texture,
-            glyph->metrics.width,
-            glyph->metrics.height
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            face->glyph->advance.x >> 6,
+            characterHeight
     };
 }
 
