@@ -5,14 +5,14 @@
 #include <iostream>
 #include <vector>
 
-#include "scenes/legacy_triangle/LegacyTriangle.h"
-#include "scenes/test_scene/TestScene.h"
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/landscape/Landscape.h"
+#include "scenes/legacy_triangle/LegacyTriangle.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
+#include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "util/ImGuiUtils.h"

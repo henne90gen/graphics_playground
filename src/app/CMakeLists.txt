@@ -24,16 +24,16 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-if (!WIN32)
-	target_compile_options(${PROJECT_NAME} PRIVATE
-			-Wall
-			-Wextra
-			-pedantic
-			-Wno-unused-parameter)
-else()
-	target_compile_options(${PROJECT_NAME} PRIVATE
-			/std:c++17)
-endif()
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            /std:c++17)
+else ()
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            -Wall
+            -Wextra
+            -pedantic
+            -Wno-unused-parameter)
+endif ()
 
 set_target_properties(
         ${PROJECT_NAME} PROPERTIES
@@ -56,13 +56,14 @@ target_link_libraries(${PROJECT_NAME}
         glad
         imgui
         logic)
-if (!WIN32)
-	target_link_libraries(${PROJECT_NAME}  stdc++fs)
-else()
-	find_package(OpenGL REQUIRED)
-	target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR})
-	target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
-endif()
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    find_package(OpenGL REQUIRED)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
+else ()
+    target_link_libraries(${PROJECT_NAME} stdc++fs)
+endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}

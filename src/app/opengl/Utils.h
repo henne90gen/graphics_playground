@@ -3,12 +3,12 @@
 #include <glad/glad.h>
 
 #ifdef WIN32
-	#define ASSERT(x)                                                                                                      \
-		if (!(x))                                                                                                          \
+	#define ASSERT(x)             \
+		if (!(x))                 \
 			__debugbreak()
 #else
-	#define ASSERT(x)                                                                                                      \
-		if (!(x))                                                                                                          \
+	#define ASSERT(x)             \
+		if (!(x))                 \
 			__builtin_debugtrap()
 #endif
 
