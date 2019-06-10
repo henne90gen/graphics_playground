@@ -13,12 +13,12 @@
 #include "opengl/Shader.h"
 
 struct Character {
-    unsigned long characterCode;
+    char character;
     Texture texture;
-    glm::ivec2 dimensions;
+    glm::ivec2 dimension;
     glm::ivec2 offset;
     long advance;
-    long requestedCharacterHeight;
+    long maxHeight;
 };
 
 class FontDemo : public Scene {
@@ -45,22 +45,27 @@ private:
 
     void loadFont(std::string &fontPath, int characterHeight);
 
-    Character loadCharacter(unsigned long characterCode, int characterHeight);
+    Character loadCharacter(char character, int characterHeight);
 
     void loadAlphabet(int characterHeight);
 
-    void renderCharacter(const Character &character, const glm::vec2 &translation, float scale) const;
+    void renderCharacter(const Character &character, const glm::vec2 &translation) const;
 
     std::vector<std::string> getFontPaths();
 
     void renderAlphabet(const glm::vec2 &translation, float zoom) const;
 
     void renderText(std::string &text, const glm::vec2 &translation, float zoom);
+
+    void setViewMatrix(const glm::vec2 &translation, float zoom) const;
 };
 
 void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
-                  unsigned int &characterResolution, unsigned int &selectedFontIndex, FT_Face &face);
+                  unsigned int &characterResolution, unsigned int &selectedFontIndex, bool &shouldRenderAlphabet,
+                  FT_Face &face);
 
 void showFontInfo(FT_Face &face);
 
 bool settingsHaveChanged(int characterHeight, int selectedFontIndex);
+
+std::string toBits(long number);
