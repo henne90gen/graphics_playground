@@ -57,7 +57,7 @@ void MarchingCubesScene::destroy() {
 }
 
 void MarchingCubesScene::tick() {
-    static auto translation = glm::vec3(0.0F, -2.5F, -8.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto translation = glm::vec3(1.7F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static float scale = 0.1F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -121,10 +121,11 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Wireframe", &drawWireframe);
+    ImGui::Checkbox("Interpolate", &marchingCubes->interpolate);
+    ImGui::Checkbox("Animate", &marchingCubes->animate);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
-    ImGui::Checkbox("Animate", &marchingCubes->animate);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed, 1.0F, 1, 100);
 
@@ -136,7 +137,6 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     marchingCubes->height = dimensions[1];
     marchingCubes->depth = dimensions[2];
 
-    ImGui::Checkbox("Interpolate", &marchingCubes->interpolate);
     ImGui::SliderFloat("Surface Level", &marchingCubes->surfaceLevel, 0.0F, 1.0F);
     ImGui::SliderFloat("Frequency", &marchingCubes->frequency, 0.0F, 1.0F);
 

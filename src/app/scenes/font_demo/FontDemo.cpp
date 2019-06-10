@@ -28,6 +28,8 @@ void FontDemo::setup() {
 }
 
 void FontDemo::destroy() {
+    GL_Call(glEnable(GL_DEPTH_TEST));
+
     FT_Done_Face(face);
     FT_Done_FreeType(library);
 }
