@@ -4,7 +4,8 @@ set(SOURCES
         rubiks_cube/RubiksCubeLogic.cpp
         rubiks_cube/RubiksCube.cpp
         rubiks_cube/RotationCommandStack.cpp
-        marching_cubes/MarchingCubes.cpp)
+        marching_cubes/MarchingCubes.cpp
+        model_loading/ModelLoader.cpp)
 
 add_library(logic ${SOURCES})
 target_link_libraries(logic PRIVATE FastNoise)

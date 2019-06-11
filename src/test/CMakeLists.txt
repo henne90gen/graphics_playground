@@ -5,7 +5,8 @@ set(CATCH_INCLUDE_DIR ../../catch/single_include/catch2)
 set(SOURCES
         main.cpp
         RubiksCubeTest.cpp
-        RubiksCubeLogicTest.cpp)
+        RubiksCubeLogicTest.cpp
+        ModelLoaderTest.cpp)
 
 add_executable(Tests ${SOURCES})
 
