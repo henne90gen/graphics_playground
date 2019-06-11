@@ -107,8 +107,8 @@ def main():
 
     cpp_path = os.path.join(folder_path, f"{name}.cpp")
     h_path = os.path.join(folder_path, f"{name}.h")
-    vertex_path = os.path.join(folder_path, f"{name}.vertex")
-    fragment_path = os.path.join(folder_path, f"{name}.fragment")
+    vertex_path = os.path.join(folder_path, f"{name}Vert.glsl")
+    fragment_path = os.path.join(folder_path, f"{name}Frag.glsl")
 
     write_template(cpp_path, CPP_TEMPLATE,
                    name=name, folder_name=folder_name)
