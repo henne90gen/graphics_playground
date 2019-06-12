@@ -15,6 +15,7 @@
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
+#include "scenes/model_loading/ModelLoading.h"
 #include "util/ImGuiUtils.h"
 #include "util/MainMenu.h"
 
@@ -92,9 +93,10 @@ int main() {
     scenes.push_back(new RubiksCubeScene(window, backToMainMenu)); // 7
     scenes.push_back(new MarchingCubesScene(window, backToMainMenu)); // 8
     scenes.push_back(new FontDemo(window, backToMainMenu)); // 9
+    scenes.push_back(new ModelLoading(window, backToMainMenu)); // 10
 
-//    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(9);
+    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+//    mainMenu.goToScene(9);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 

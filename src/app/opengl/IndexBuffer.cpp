@@ -1,6 +1,6 @@
 #include "IndexBuffer.h"
 
-#include "Utils.h"
+#include "util/OpenGLUtils.h"
 
 IndexBuffer::IndexBuffer() { GL_Call(glGenBuffers(1, &id)); }
 
@@ -29,6 +29,13 @@ void IndexBuffer::update(const unsigned int *data, const unsigned int countParam
 
 void IndexBuffer::update(const std::vector<unsigned int> &data) {
     count = data.size();
+    bind();
+    unsigned int sizeInBytes = count * sizeof(unsigned int);
+    GL_Call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
+}
+
+void IndexBuffer::update(const std::vector<glm::ivec3> &data) {
+    count = data.size() * 3;
     bind();
     unsigned int sizeInBytes = count * sizeof(unsigned int);
     GL_Call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));

@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
-#include "opengl/Utils.h"
+#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
 
 void GammaCalculation::setup() {

@@ -37,14 +37,12 @@ public:
 
     MarchingCubes *marchingCubes;
 
+    glm::mat4 projectionMatrix;
+
     void drawCube();
 
     void drawSurface(bool drawWireframe);
 
     void showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
                       float &scale, bool &rotate, bool &drawWireframe) const;
-
-    glm::mat4 projectionMatrix;
-
-    glm::mat4 createViewMatrix(const glm::vec3 &translation, const glm::vec3 &cameraRotation) const;
 };

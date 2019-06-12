@@ -70,6 +70,8 @@ namespace ModelLoader {
                 parseNormal(fileName, lineNumber, l, parsedNormals);
             } else if (l[0] == 'f') {
                 parseFace(fileName, lineNumber, l, faces);
+            } else if (l[0] == 'o' || l[0] == 's') {
+                // ignore these for now
             } else {
                 std::cout << "Could not parse line in " << fileName << ": " << l << std::endl;
             }

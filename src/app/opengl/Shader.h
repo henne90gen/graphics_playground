@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utils.h"
+#include "util/OpenGLUtils.h"
 
 #include <string>
 #include <unordered_map>

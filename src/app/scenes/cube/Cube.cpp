@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
-#include "opengl/Utils.h"
+#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;

@@ -5,7 +5,7 @@
 
 #include <glad/glad.h>
 
-#include "opengl/Utils.h"
+#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
 
 void TextureDemo::setup() {

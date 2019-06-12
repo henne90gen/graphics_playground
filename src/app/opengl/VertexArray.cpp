@@ -1,6 +1,6 @@
 #include "VertexArray.h"
 
-#include "Utils.h"
+#include "util/OpenGLUtils.h"
 
 VertexArray::VertexArray() { GL_Call(glGenVertexArrays(1, &id)); }
 

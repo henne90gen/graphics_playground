@@ -1,15 +1,16 @@
 #pragma once
 
+#include <glm/ext.hpp>
 #include <glad/glad.h>
 
 #ifdef WIN32
-	#define ASSERT(x)             \
-		if (!(x))                 \
-			__debugbreak()
+#define ASSERT(x)             \
+        if (!(x))                 \
+            __debugbreak()
 #else
-	#define ASSERT(x)             \
-		if (!(x))                 \
-			__builtin_debugtrap()
+#define ASSERT(x)             \
+        if (!(x))                 \
+            __builtin_debugtrap()
 #endif
 
 #define GL_Call(x)                                                                                                     \
@@ -25,3 +26,5 @@ bool GL_LogCall(const char *function, const char *file, int line);
 GLuint loadShader(GLuint shaderType, const char *file_path);
 
 GLuint loadShaders(const char *vertex_file_path, const char *fragment_file_path);
+
+glm::mat4 createViewMatrix(const glm::vec3 &translation, const glm::vec3 &cameraRotation);

@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
-#include "opengl/Utils.h"
+#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
@@ -95,18 +95,8 @@ void MarchingCubesScene::tick() {
 
     drawSurface(drawWireframe);
     drawCube();
-    shader->unbind();
-}
 
-glm::mat4 MarchingCubesScene::createViewMatrix(const glm::vec3 &translation, const glm::vec3 &cameraRotation) const {
-    glm::mat4 viewMatrix = glm::mat4(1.0F);
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(1.0F));
-    viewMatrix = glm::translate(viewMatrix, glm::vec3());
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.x, glm::vec3(1, 0, 0));
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.y, glm::vec3(0, 1, 0));
-    viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
-    viewMatrix = glm::translate(viewMatrix, translation);
-    return viewMatrix;
+    shader->unbind();
 }
 
 void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
@@ -164,17 +154,22 @@ void MarchingCubesScene::drawCube() {
 }
 
 void MarchingCubesScene::drawSurface(bool drawWireframe) {
+    surfaceVertexArray->bind();
+
     surfaceVertexBuffer->update(marchingCubes->getVertices());
     surfaceIndexBuffer->update(marchingCubes->getIndices());
 
     shader->setUniform("offset", glm::vec3());
-    surfaceVertexArray->bind();
+
     if (drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
+
     GL_Call(glDrawElements(GL_TRIANGLES, surfaceIndexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+
     if (drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
+
     surfaceVertexArray->unbind();
 }
