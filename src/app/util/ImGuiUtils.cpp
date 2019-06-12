@@ -1,7 +1,5 @@
 #include "ImGuiUtils.h"
 
-#include <array>
-
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 
 #include "examples/imgui_impl_glfw.cpp"
@@ -56,4 +54,22 @@ void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) {
                                                        "CubicFractal"};
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::Combo("Noise Algorithm", reinterpret_cast<int *>(pType), items.data(), items.size());
+}
+
+void ImGui::ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
+                    const std::string &prefix) {
+    unsigned long count = items.size();
+    ImGui::ListBoxHeader(label.c_str(), count);
+    for (unsigned long i = 0; i < count; i++) {
+        auto fileName = items[i].substr(prefix.size());
+        if (ImGui::Selectable(fileName.c_str(), i == currentItem)) {
+            currentItem = i;
+        }
+    }
+    ImGui::ListBoxFooter();
+}
+
+void ImGui::FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem, std::vector<std::string> &filePaths) {
+    getFilesInDirectory(path, filePaths);
+    ImGui::ListBox(label,currentItem, filePaths, path);
 }

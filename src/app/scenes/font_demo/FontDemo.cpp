@@ -1,6 +1,7 @@
 #include "FontDemo.h"
 
-#include <filesystem>
+#include "util/ImGuiUtils.h"
+#include "util/FileUtils.h"
 
 void FontDemo::setup() {
     shader = new Shader("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
@@ -43,7 +44,7 @@ void FontDemo::tick() {
     static unsigned int selectedFontIndex = 3;
     static bool shouldRenderAlphabet = true;
 
-    std::vector<std::string> fontPaths = getFontPaths();
+    std::vector<std::string> fontPaths = {};
 
     showSettings(fontPaths, color, translation, zoom, characterResolution, selectedFontIndex, shouldRenderAlphabet,
                  face);
@@ -195,17 +196,7 @@ Character FontDemo::loadCharacter(const char character, const int characterHeigh
     };
 }
 
-std::vector<std::string> FontDemo::getFontPaths() {
-    std::vector<std::string> result = {};
-    std::string path = "../../../src/app/scenes/font_demo/fonts";
-    for (const auto &entry : std::filesystem::directory_iterator(path)) {
-        std::string fileName = entry.path().u8string();;
-        result.push_back(fileName);
-    }
-    return result;
-}
-
-void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
+void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
                   unsigned int &characterResolution, unsigned int &selectedFontIndex, bool &shouldRenderAlphabet,
                   FT_Face &face) {
     const float translationDragSpeed = 0.01;
@@ -218,15 +209,8 @@ void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, g
     ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), 1, 1000);
     ImGui::Checkbox("Show Alphabet", &shouldRenderAlphabet);
 
-    ImGui::ListBoxHeader("Font", fontPaths.size());
-    std::string path = "../../../src/app/scenes/font_demo/fonts";
-    for (unsigned long i = 0; i < fontPaths.size(); i++) {
-        auto fileName = fontPaths[i].substr(path.size() + 1);
-        if (ImGui::Selectable(fileName.c_str(), i == selectedFontIndex)) {
-            selectedFontIndex = i;
-        }
-    }
-    ImGui::ListBoxFooter();
+    std::string prefix = "../../../src/app/scenes/font_demo/fonts/";
+    ImGui::FileSelector("Font", prefix, selectedFontIndex, fontPaths);
 
     if (face != nullptr) {
         showFontInfo(face);

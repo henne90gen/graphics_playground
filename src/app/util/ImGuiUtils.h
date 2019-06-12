@@ -4,6 +4,11 @@
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <FastNoise.h>
+#include <array>
+#include <vector>
+#include <string>
+
+#include "util/FileUtils.h"
 
 void initImGui(GLFWwindow *window);
 
@@ -21,4 +26,10 @@ void pickColorAndVertices(float *color, float *vertices);
 
 namespace ImGui {
     void NoiseTypeSelector(FastNoise::NoiseType *pType);
+
+    void ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
+                 const std::string &prefix = "");
+
+    void FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
+                             std::vector<std::string> &filePaths);
 }

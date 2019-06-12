@@ -51,8 +51,6 @@ private:
 
     void renderCharacter(const Character &character, const glm::vec2 &translation) const;
 
-    std::vector<std::string> getFontPaths();
-
     void renderAlphabet(const glm::vec2 &translation, float zoom) const;
 
     void renderText(std::string &text, const glm::vec2 &translation, float zoom);
@@ -60,7 +58,7 @@ private:
     void setViewMatrix(const glm::vec2 &translation, float zoom) const;
 };
 
-void showSettings(const std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
+void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
                   unsigned int &characterResolution, unsigned int &selectedFontIndex, bool &shouldRenderAlphabet,
                   FT_Face &face);
 

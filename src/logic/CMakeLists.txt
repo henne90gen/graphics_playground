@@ -1,5 +1,6 @@
 
 set(SOURCES
+        util/FileUtils.cpp
         rubiks_cube/RubiksCubeData.cpp
         rubiks_cube/RubiksCubeLogic.cpp
         rubiks_cube/RubiksCube.cpp
@@ -9,6 +10,18 @@ set(SOURCES
 
 add_library(logic ${SOURCES})
 target_link_libraries(logic PRIVATE FastNoise)
+
+set_target_properties(
+        logic PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+else ()
+    target_link_libraries(logic PRIVATE stdc++fs)
+endif ()
+
 target_include_directories(logic PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${GLM_DIR}

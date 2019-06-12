@@ -8,7 +8,7 @@
 #include <iterator>
 #include <regex>
 
-#include "StringUtils.h"
+#include "util/StringUtils.h"
 
 namespace ModelLoader {
 
