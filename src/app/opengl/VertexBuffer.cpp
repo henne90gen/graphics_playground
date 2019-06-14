@@ -16,6 +16,10 @@ VertexBuffer::VertexBuffer(const void *data, unsigned int size) {
 
 VertexBuffer::~VertexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
 
+void VertexBuffer::bind() const { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, id)); }
+
+void VertexBuffer::unbind() const { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, 0)); }
+
 void VertexBuffer::update(const void *data, unsigned int sizeInBytes) {
     bind();
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data, GL_STATIC_DRAW));
@@ -34,6 +38,9 @@ void VertexBuffer::update(const std::vector<glm::vec3> &data) {
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
 }
 
-void VertexBuffer::bind() const { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, id)); }
-
-void VertexBuffer::unbind() const { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, 0)); }
+void VertexBuffer::update(const std::vector<glm::vec2> &data) {
+    bind();
+    int numFloatsPerVec2 = 2;
+    unsigned int sizeInBytes = data.size() * numFloatsPerVec2 * sizeof(float);
+    GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
+}

@@ -4,6 +4,7 @@ set(SOURCES
         util/MainMenu.cpp
         util/ImGuiUtils.cpp
         util/OpenGLUtils.cpp
+        util/ImageUtils.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
         opengl/VertexBufferLayout.cpp
@@ -26,8 +27,7 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    target_compile_options(${PROJECT_NAME} PRIVATE
-            /std:c++17)
+    target_compile_options(${PROJECT_NAME} PRIVATE /std:c++17)
 else ()
     target_compile_options(${PROJECT_NAME} PRIVATE
             -Wall
@@ -36,8 +36,7 @@ else ()
             -Wno-unused-parameter)
 endif ()
 
-set_target_properties(
-        ${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 )
@@ -56,7 +55,9 @@ target_link_libraries(${PROJECT_NAME}
         glfw ${GLFW_LIBRARIES}
         glad
         imgui
+        ${LIBPNG_LIBRARIES}
         logic)
+target_link_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_LIBRARY_DIRS})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_package(OpenGL REQUIRED)
@@ -72,4 +73,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${GLAD_DIR}/include
         ${GLM_DIR}
         ${IMGUI_DIR}
+        ${LIBPNG_INCLUDE_DIRS}
         ${LOGIC_DIR})

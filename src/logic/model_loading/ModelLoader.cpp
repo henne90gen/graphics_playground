@@ -13,9 +13,9 @@
 namespace ModelLoader {
 
     struct FaceVertex {
-        unsigned int vertex;
-        unsigned int textureCoordinate;
-        unsigned int normal;
+        unsigned int vertexIndex;
+        unsigned int textureCoordinateIndex;
+        unsigned int normalIndex;
     };
 
     struct Face {
@@ -31,12 +31,18 @@ namespace ModelLoader {
     void parseFace(const std::string &fileName, unsigned long lineNumber, const std::string &line,
                    std::vector<Face> &faces);
 
-    Model fromFile(const std::string &fileName) {
+    unsigned int fromFile(const std::string &fileName, Model &model) {
+        if (fileName.find(".obj") == std::string::npos) {
+            std::cerr << fileName << " is not an obj file" << std::endl;
+            return 1;
+        }
+
         std::vector<std::string> lines;
         std::ifstream modelStream(fileName, std::ios::in);
 
         if (!modelStream.is_open()) {
             std::cerr << "Could not open " << fileName << std::endl;
+            return 1;
         }
 
         std::string str;
@@ -44,13 +50,23 @@ namespace ModelLoader {
             lines.push_back(str);
         }
 
-        return fromFileContent(fileName, lines);
+        return fromFileContent(fileName, lines, model);
     }
 
-    Model fromFileContent(const std::string &fileName, const std::vector<std::string> &lines) {
+    void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                                 std::vector<glm::vec2> &textureCoordinates);
+
+    void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                          std::map<std::string, Material> &materials);
+
+    unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines, Model &model) {
         if (lines.empty()) {
             return {};
         }
+        std::string meshName;
+        std::map<std::string, Material> materials;
+        bool hasMaterial = false;
+        Material material;
         std::vector<glm::vec3> parsedVertices = {};
         std::vector<glm::vec3> parsedNormals = {};
         std::vector<glm::vec2> parsedTextureCoordinates = {};
@@ -64,48 +80,52 @@ namespace ModelLoader {
 
             if (l[0] == '#') {
                 continue;
-            } else if (l[0] == 'v' && l[1] != 'n') {
-                parseVertex(fileName, lineNumber, l, parsedVertices);
+            } else if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
+                parseMaterialLib(fileName, lineNumber, l, materials);
+            } else if (l[0] == 'o') {
+                meshName = l.substr(2);
             } else if (l[0] == 'v' && l[1] == 'n') {
                 parseNormal(fileName, lineNumber, l, parsedNormals);
+            } else if (l[0] == 'v' && l[1] == 't') {
+                parseTextureCoordinates(fileName, lineNumber, l, parsedTextureCoordinates);
+            } else if (l[0] == 'v') {
+                parseVertex(fileName, lineNumber, l, parsedVertices);
             } else if (l[0] == 'f') {
                 parseFace(fileName, lineNumber, l, faces);
-            } else if (l[0] == 'o' || l[0] == 's') {
+            } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
+                hasMaterial = true;
+                material = materials[l.substr(7)];
+            } else if (l[0] == 's') {
                 // ignore these for now
             } else {
                 std::cout << "Could not parse line in " << fileName << ": " << l << std::endl;
             }
         }
 
-        std::vector<glm::ivec3> indices = {};
-        std::vector<glm::vec3> vertices = {};
-        std::vector<glm::vec3> normals = {};
-        std::vector<glm::vec2> textureCoordinates = {};
+        if (parsedVertices.empty()) {
+            std::cout << "There were no vertices in " << fileName << std::endl;
+            return 1;
+        }
 
-        std::map<std::pair<unsigned int, unsigned int>, unsigned int> vertexNormalMap;
+        std::vector<glm::ivec3> indices = {};
+        std::vector<glm::vec3> vertices;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec2> textureCoordinates;
+
         unsigned int index = 0;
         for (auto &face : faces) {
             glm::ivec3 triangle = {};
             glm::ivec3 triangle2 = {};
             unsigned int faceIndex = 0;
             for (auto &vertex : face.vertices) {
-                const auto &existingIndexItr = vertexNormalMap.find(std::make_pair(vertex.vertex, vertex.normal));
-                if (existingIndexItr != vertexNormalMap.end()) {
-                    unsigned int existingIndex = existingIndexItr->second;
-                    if (faceIndex == 0) {
-                        triangle.x = existingIndex;
-                    } else if (faceIndex == 1) {
-                        triangle.y = existingIndex;
-                    } else if (faceIndex == 2) {
-                        triangle.z = existingIndex;
-                    }
-                    faceIndex++;
-                    continue;
+                vertices.push_back(parsedVertices[vertex.vertexIndex - 1]);
+                if (vertex.textureCoordinateIndex) {
+                    textureCoordinates.push_back(parsedTextureCoordinates[vertex.textureCoordinateIndex - 1]);
+                }
+                if (vertex.normalIndex) {
+                    normals.push_back(parsedNormals[vertex.normalIndex - 1]);
                 }
 
-                vertices.push_back(parsedVertices[vertex.vertex - 1]);
-                normals.push_back(parsedNormals[vertex.normal - 1]);
-                vertexNormalMap[std::make_pair(vertex.vertex, vertex.normal)] = index;
                 if (faceIndex == 0) {
                     triangle.x = index;
                 } else if (faceIndex == 1) {
@@ -119,7 +139,87 @@ namespace ModelLoader {
             indices.push_back(triangle);
         }
 
-        return {vertices, normals, textureCoordinates, indices};
+        Mesh mesh = {meshName, vertices, normals, textureCoordinates, indices, hasMaterial, material};
+        model.meshes.push_back(mesh);
+        return 0;
+    }
+
+    void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                          std::map<std::string, Material> &materials) {
+        // TODO use fileName and lineNumber to tell the user which file the material lib is from
+
+        int lastSlash = fileName.find_last_of('/');
+
+        std::string path = fileName.substr(0, lastSlash + 1);
+        std::string materialFileName = path + line.substr(7);
+        if (materialFileName.find(".mtl") == std::string::npos) {
+            std::cerr << materialFileName << " is not an mtl file" << std::endl;
+            return;
+        }
+
+        std::vector<std::string> lines;
+        std::ifstream modelStream(materialFileName, std::ios::in);
+
+        if (!modelStream.is_open()) {
+            std::cerr << "Could not open " << materialFileName << std::endl;
+            return;
+        }
+
+        std::string str;
+        while (std::getline(modelStream, str)) {
+            lines.push_back(str);
+        }
+
+        Material currentMaterial = {};
+        for (unsigned long materialLineNumber = 1; materialLineNumber <= lines.size(); materialLineNumber++) {
+            std::string l = trim_copy(lines[materialLineNumber - 1]);
+            if (l.empty()) {
+                continue;
+            }
+
+            if (l[0] == '#') {
+                continue;
+            } else if (l[0] == 'n' && l[1] == 'e' && l[2] == 'w') {
+                if (!currentMaterial.name.empty()) {
+                    materials[currentMaterial.name] = currentMaterial;
+                }
+                currentMaterial = {l.substr(7)};
+            } else if (l[0] == 'm' && l[1] == 'a' && l[2] == 'p' && l[4] == 'K' && l[5] == 'd') {
+                currentMaterial.diffuseTextureMap = path + l.substr(7);
+            }
+            // Ns 96.078431
+            // Ka 1.000000 1.000000 1.000000
+            // Kd 0.640000 0.640000 0.640000
+            // Ks 0.500000 0.500000 0.500000
+            // Ke 0.000000 0.000000 0.000000
+            // Ni 1.000000
+            // d 1.000000
+            // illum 2
+            // map_Kd TestTex.png
+        }
+        materials[currentMaterial.name] = currentMaterial;
+    }
+
+    void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                                 std::vector<glm::vec2> &textureCoordinates) {
+        std::string l = line.substr(3);
+
+        std::istringstream iss(l);
+        std::vector<std::string> tokens = {
+                std::istream_iterator<std::string>{iss},
+                std::istream_iterator<std::string>{}
+        };
+
+        if (tokens.size() != 2) {
+            std::cout << "Malformed texture coordinate definition in " << fileName << " on line " << lineNumber
+                      << std::endl;
+            return;
+        }
+
+        glm::vec2 textureCoordinate;
+        textureCoordinate.x = std::strtof(tokens[0].c_str(), nullptr);
+        textureCoordinate.y = std::strtof(tokens[1].c_str(), nullptr);
+        textureCoordinates.push_back(textureCoordinate);
     }
 
     void parseVertex(const std::string &fileName, unsigned long lineNumber, const std::string &line,
@@ -177,6 +277,7 @@ namespace ModelLoader {
         };
         if (tokens.size() != 3) {
             std::cout << "Malformed face definition in " << fileName << " on line " << lineNumber << std::endl;
+            return;
         }
 
         std::vector<FaceVertex> faceVertices = {};
@@ -187,11 +288,12 @@ namespace ModelLoader {
             };
             if (parts.size() != 3) {
                 std::cout << "Could not parse face vertex in " << fileName << " on line " << lineNumber << std::endl;
+                return;
             }
             FaceVertex faceVertex = {};
-            faceVertex.vertex = std::strtoul(parts[0].c_str(), nullptr, 10);
-            faceVertex.textureCoordinate = std::strtoul(parts[1].c_str(), nullptr, 10);
-            faceVertex.normal = std::strtoul(parts[2].c_str(), nullptr, 10);
+            faceVertex.vertexIndex = std::strtoul(parts[0].c_str(), nullptr, 10);
+            faceVertex.textureCoordinateIndex = std::strtoul(parts[1].c_str(), nullptr, 10);
+            faceVertex.normalIndex = std::strtoul(parts[2].c_str(), nullptr, 10);
             faceVertices.push_back(faceVertex);
         }
         faces.push_back({faceVertices});

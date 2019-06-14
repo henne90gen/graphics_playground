@@ -19,6 +19,8 @@ public:
 
     void update(const std::vector<glm::vec3> &data);
 
+    void update(const std::vector<glm::vec2> &data);
+
     void bind() const;
 
     void unbind() const;

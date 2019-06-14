@@ -16,3 +16,6 @@
 [submodule "freetype2"]
 	path = freetype2
 	url = git@github.com:aseprite/freetype2.git
+[submodule "libpng"]
+	path = libpng
+	url = git@github.com:glennrp/libpng.git

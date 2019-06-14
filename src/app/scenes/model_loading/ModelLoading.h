@@ -5,6 +5,7 @@
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
+#include "opengl/Texture.h"
 
 #include <functional>
 #include <model_loading/ModelLoader.h>
@@ -26,11 +27,14 @@ private:
     Shader *shader;
     VertexArray *vertexArray;
     VertexBuffer *vertexBuffer;
+    VertexBuffer *normalBuffer;
+    VertexBuffer *textureCoordinatesBuffer;
     IndexBuffer *indexBuffer;
+    Texture *texture;
 
     glm::mat4 projectionMatrix;
 
-    static void
-    interleaveModelData(ModelLoader::Model &model, std::vector<float> &vertices, bool interleaveNormals = true,
-                        bool interleaveTextureCoordtinates = true);
+    void createCheckerBoard();
+
+    void updateModel(const std::string &modelFileName);
 };

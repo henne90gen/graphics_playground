@@ -49,6 +49,10 @@ add_subdirectory(${FAST_NOISE_DIR})
 set(FREETYPE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2)
 add_subdirectory(${FREETYPE_DIR})
 
+# libpng
+set(LIBPNG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libpng)
+add_subdirectory(${LIBPNG_DIR})
+
 # Catch
 set(CATCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/catch)
 add_subdirectory(${CATCH_DIR})

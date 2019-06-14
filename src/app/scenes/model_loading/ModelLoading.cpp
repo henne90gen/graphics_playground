@@ -1,3 +1,4 @@
+#include <util/ImageUtils.h>
 #include "ModelLoading.h"
 
 #include "model_loading/ModelLoader.h"
@@ -18,12 +19,30 @@ void ModelLoading::setup() {
     vertexArray->bind();
 
     vertexBuffer = new VertexBuffer();
-    VertexBufferLayout bufferLayout;
+    normalBuffer = new VertexBuffer();
+    textureCoordinatesBuffer = new VertexBuffer();
+
+    VertexBufferLayout bufferLayout = {};
     bufferLayout.add<float>(shader, "a_Position", 3);
-//    bufferLayout.add<float>(shader, "a_Normal", 3);
     vertexArray->addBuffer(*vertexBuffer, bufferLayout);
+
+    bufferLayout = {};
+    bufferLayout.add<float>(shader, "a_Normal", 3);
+    vertexArray->addBuffer(*normalBuffer, bufferLayout);
+
+    bufferLayout = {};
+    bufferLayout.add<float>(shader, "a_UV", 2);
+    vertexArray->addBuffer(*textureCoordinatesBuffer, bufferLayout);
+
     indexBuffer = new IndexBuffer();
     indexBuffer->bind();
+
+    texture = new Texture(GL_RGBA);
+    glActiveTexture(GL_TEXTURE0);
+    texture->bind();
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    shader->setUniform("u_TextureSampler", 0);
 }
 
 void ModelLoading::destroy() {}
@@ -62,11 +81,8 @@ void ModelLoading::tick() {
     vertexArray->bind();
 
     if (prevModel != currentModel) {
-        auto model = ModelLoader::fromFile(paths[currentModel]);
-        std::vector<float> vertices = {};
-        interleaveModelData(model, vertices, false);
-        vertexBuffer->update(vertices);
-        indexBuffer->update(model.indices);
+        std::string modelFileName = paths[currentModel];
+        updateModel(modelFileName);
         prevModel = currentModel;
     }
 
@@ -94,31 +110,64 @@ void ModelLoading::tick() {
     shader->unbind();
 }
 
-void ModelLoading::interleaveModelData(ModelLoader::Model &model, std::vector<float> &vertices, bool interleaveNormals,
-                                       bool interleaveTextureCoordtinates) {
-    bool shouldInterleaveNormals = interleaveNormals && !model.normals.empty();
-    bool shouldInterleaveTextureCoordinates = interleaveTextureCoordtinates && !model.textureCoordinates.empty();
-    bool invalidNormals = shouldInterleaveNormals && model.vertices.size() != model.normals.size();
-    bool invalidTextureCoordinates =
-            shouldInterleaveTextureCoordinates && model.vertices.size() != model.textureCoordinates.size();
-    if (invalidNormals || invalidTextureCoordinates) {
-        std::cerr << "Could not interleave model data. Vertices: " << model.vertices.size() << ", Normals: "
-                  << model.normals.size() << ", TextureCoordinates: " << model.textureCoordinates.size() << std::endl;
+void ModelLoading::updateModel(const std::string &modelFileName) {
+    ModelLoader::Model model = {};
+    int error = ModelLoader::fromFile(modelFileName, model);
+    if (error) {
+        std::cout << "Could not load model." << std::endl;
         return;
     }
 
-    for (unsigned long i = 0; i < model.vertices.size(); i++) {
-        vertices.push_back(model.vertices[i].x);
-        vertices.push_back(model.vertices[i].y);
-        vertices.push_back(model.vertices[i].z);
-        if (shouldInterleaveNormals) {
-            vertices.push_back(model.normals[i].x);
-            vertices.push_back(model.normals[i].y);
-            vertices.push_back(model.normals[i].z);
-        }
-        if (shouldInterleaveTextureCoordinates) {
-            vertices.push_back(model.textureCoordinates[i].x);
-            vertices.push_back(model.textureCoordinates[i].y);
-        }
+    ModelLoader::Mesh mesh = model.meshes[0];
+    vertexBuffer->update(mesh.vertices);
+    if (!mesh.normals.empty()) {
+        normalBuffer->update(mesh.normals);
+        shader->setUniform("u_HasNormals", true);
+    } else {
+        shader->setUniform("u_HasNormals", false);
     }
+    if (!mesh.textureCoordinates.empty()) {
+        textureCoordinatesBuffer->update(mesh.textureCoordinates);
+        shader->setUniform("u_HasTexture", true);
+    } else {
+        shader->setUniform("u_HasTexture", false);
+    }
+    indexBuffer->update(mesh.indices);
+
+    if (!mesh.hasMaterial) {
+        createCheckerBoard();
+        return;
+    }
+    Image image = {};
+    error = loadPng(mesh.material.diffuseTextureMap, image);
+    if (error) {
+        createCheckerBoard();
+        return;
+    }
+
+    texture->update(image.pixels.data(), image.width, image.height, image.bitDepth);
+}
+
+void ModelLoading::createCheckerBoard() {
+    unsigned int width = 128;
+    unsigned int height = 128;
+    int numberOfChannels = 4;
+    std::vector<char> data = std::vector<char>(width * height * numberOfChannels);
+    for (unsigned long i = 0; i < data.size() / numberOfChannels; i++) {
+        const float fullBrightness = 255.0F;
+        float r = fullBrightness;
+        float g = fullBrightness;
+        float b = fullBrightness;
+        unsigned int row = i / width;
+        if ((i % 2 == 0 && row % 2 == 0) || (i % 2 == 1 && row % 2 == 1)) {
+            r = 0.0F;
+            g = 0.0F;
+            b = 0.0F;
+        }
+        unsigned int idx = i * numberOfChannels;
+        data[idx] = static_cast<char>(r);
+        data[idx + 1] = static_cast<char>(g);
+        data[idx + 2] = static_cast<char>(b);
+    }
+    texture->update(data.data(), width, height);
 }
