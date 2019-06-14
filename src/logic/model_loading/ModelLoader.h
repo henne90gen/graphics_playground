@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <glm/ext.hpp>
 
 namespace ModelLoader {
@@ -15,7 +16,7 @@ namespace ModelLoader {
     };
 
     struct Mesh {
-        std::string meshName;
+        std::string name;
 
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec3> normals;
@@ -28,6 +29,7 @@ namespace ModelLoader {
 
     struct Model {
         std::vector<Mesh> meshes;
+        std::map<std::string, Material> materials;
     };
 
     unsigned int fromFile(const std::string &fileName, Model &model);

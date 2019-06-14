@@ -32,9 +32,16 @@ private:
     IndexBuffer *indexBuffer;
     Texture *texture;
 
+    ModelLoader::Model model = {};
+
     glm::mat4 projectionMatrix;
 
     void createCheckerBoard();
 
     void updateModel(const std::string &modelFileName);
 };
+
+void
+showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
+             bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
+             ModelLoader::Model &model);

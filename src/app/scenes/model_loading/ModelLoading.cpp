@@ -62,20 +62,8 @@ void ModelLoading::tick() {
         modelRotation.y += rotationSpeed;
     }
 
-    ImGui::Begin("Settings");
     std::vector<std::string> paths = {};
-    ImGui::FileSelector("Models", "../../../src/app/scenes/model_loading/models/", currentModel, paths);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
-    ImGui::Checkbox("Rotate", &rotate);
-    ImGui::Checkbox("Wireframe", &drawWireframe);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    ImGui::DragFloat("Scale", &scale, 0.001F);
-    ImGui::End();
+    showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths, model);
 
     shader->bind();
     vertexArray->bind();
@@ -110,8 +98,41 @@ void ModelLoading::tick() {
     shader->unbind();
 }
 
+void showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation,
+                  float &scale, bool &drawWireframe, unsigned int &currentModel,
+                  std::vector<std::string> &paths, ModelLoader::Model &model) {
+    ImGui::Begin("Settings");
+    ImGui::FileSelector("Models", "../../../src/app/scenes/model_loading/models/", currentModel, paths);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
+    ImGui::Checkbox("Rotate", &rotate);
+    ImGui::Checkbox("Wireframe", &drawWireframe);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    ImGui::DragFloat("Scale", &scale, 0.001F);
+
+    ImGui::Text("Number of meshes: %ld", model.meshes.size());
+    for (auto &mesh : model.meshes) {
+        ImGui::Text("\tName: %s", mesh.name.c_str());
+        ImGui::Text("\t\tNumber of vertices: %ld", mesh.vertices.size());
+        ImGui::Text("\t\tNumber of normals: %ld", mesh.normals.size());
+        ImGui::Text("\t\tNumber of texture coordinates: %ld", mesh.textureCoordinates.size());
+        ImGui::Text("\t\tNumber of indices: %ld", mesh.indices.size());
+    }
+    ImGui::Text("Number of materials: %ld", model.materials.size());
+    for (auto &entry : model.materials) {
+        auto &material = entry.second;
+        ImGui::Text("\tName: %s", material.name.c_str());
+        ImGui::Text("\t\tDiffuse Texture Map: %s", material.diffuseTextureMap.c_str());
+    }
+
+    ImGui::End();
+}
+
 void ModelLoading::updateModel(const std::string &modelFileName) {
-    ModelLoader::Model model = {};
     int error = ModelLoader::fromFile(modelFileName, model);
     if (error) {
         std::cout << "Could not load model." << std::endl;

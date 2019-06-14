@@ -16,14 +16,14 @@ int loadPng(const std::string &file_name, Image &image) {
     // TODO check error messages for string formatting patterns
     FILE *fp = fopen(file_name.c_str(), "rb");
     if (!fp) {
-        std::cout << "[read_png_file] File %s could not be opened for reading" << file_name << std::endl;
+        std::cout << "[read_png_file] File '" << file_name << "' could not be opened for reading" << std::endl;
         return 1;
     }
 
     char header[8];    // 8 is the maximum size that can be checked
     fread(header, 1, 8, fp);
     if (png_sig_cmp(reinterpret_cast<png_bytep>(header), 0, 8)) {
-        std::cout << "[read_png_file] File %s is not recognized as a PNG file" << file_name << std::endl;
+        std::cout << "[read_png_file] File '" << file_name << "' is not recognized as a PNG file" << std::endl;
         return 1;
     }
 

@@ -58,20 +58,27 @@ void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) {
     ImGui::Combo("Noise Algorithm", reinterpret_cast<int *>(pType), items.data(), items.size());
 }
 
+static auto vector_getter = [](void *vec, int idx, const char **out_text) {
+    auto &vector = *static_cast<std::vector<std::string> *>(vec);
+    if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+    *out_text = vector.at(idx).c_str();
+    return true;
+};
+
 void ImGui::ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
                     const std::string &prefix) {
     unsigned long count = items.size();
-    ImGui::ListBoxHeader(label.c_str(), count);
+    std::vector<std::string> fixedItems = {};
     for (unsigned long i = 0; i < count; i++) {
-        auto fileName = items[i].substr(prefix.size());
-        if (ImGui::Selectable(fileName.c_str(), i == currentItem)) {
-            currentItem = i;
-        }
+        fixedItems.push_back(items[i].substr(prefix.size()));
     }
-    ImGui::ListBoxFooter();
+
+    int current = (int) currentItem;
+    ImGui::ListBox(label.c_str(), &current, vector_getter, (void *) &fixedItems, count);
 }
 
-void ImGui::FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem, std::vector<std::string> &filePaths) {
+void ImGui::FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
+                         std::vector<std::string> &filePaths) {
     getFilesInDirectory(path, filePaths);
-    ImGui::ListBox(label,currentItem, filePaths, path);
+    ImGui::ListBox(label, currentItem, filePaths, path);
 }
