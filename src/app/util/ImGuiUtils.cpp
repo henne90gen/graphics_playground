@@ -73,8 +73,8 @@ void ImGui::ListBox(const std::string &label, unsigned int &currentItem, const s
         fixedItems.push_back(items[i].substr(prefix.size()));
     }
 
-    int current = (int) currentItem;
-    ImGui::ListBox(label.c_str(), &current, vector_getter, (void *) &fixedItems, count);
+    int *current = (int *) &currentItem;
+    ImGui::ListBox(label.c_str(), current, vector_getter, (void *) &fixedItems, count);
 }
 
 void ImGui::FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
