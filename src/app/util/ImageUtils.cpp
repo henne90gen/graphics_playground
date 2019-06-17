@@ -50,7 +50,7 @@ int loadPng(const std::string &file_name, Image &image) {
 
     image.width = png_get_image_width(png_ptr, info_ptr);
     image.height = png_get_image_height(png_ptr, info_ptr);
-    image.colorType = png_get_color_type(png_ptr, info_ptr);
+    int colorType = png_get_color_type(png_ptr, info_ptr);
     image.bitDepth = png_get_bit_depth(png_ptr, info_ptr);
 
     png_set_interlace_handling(png_ptr);
@@ -68,32 +68,31 @@ int loadPng(const std::string &file_name, Image &image) {
 
     png_read_image(png_ptr, row_pointers);
 
-    int channels;
-    if (image.colorType == 0) {
-        channels = 1;
-    } else if (image.colorType == PNG_COLOR_TYPE_RGB) {
-        channels = 3;
-    } else if (image.colorType == 4) {
-        channels = 2;
-    } else if (image.colorType == PNG_COLOR_TYPE_RGBA) {
-        channels = 4;
+    if (colorType == 0) {
+        image.channels = 1;
+    } else if (colorType == PNG_COLOR_TYPE_RGB) {
+        image.channels = 3;
+    } else if (colorType == 4) {
+        image.channels = 2;
+    } else if (colorType == PNG_COLOR_TYPE_RGBA) {
+        image.channels = 4;
     } else {
-        std::cout << "Color type " << image.colorType << " not supported." << std::endl;
+        std::cout << "Color type " << colorType << " not supported." << std::endl;
         return 1;
     }
 
     for (unsigned int y = 0; y < image.height; y++) {
         png_bytep row = row_pointers[y];
         for (unsigned int x = 0; x < image.width; x++) {
-            png_bytep px = &(row[x * channels]);
+            png_bytep px = &(row[x * image.channels]);
             image.pixels.push_back(px[0]);
-            if (channels > 1) {
+            if (image.channels > 1) {
                 image.pixels.push_back(px[1]);
             }
-            if (channels > 2) {
+            if (image.channels > 2) {
                 image.pixels.push_back(px[2]);
             }
-            if (channels > 3) {
+            if (image.channels > 3) {
                 image.pixels.push_back(px[3]);
             }
         }

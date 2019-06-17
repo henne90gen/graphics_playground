@@ -6,9 +6,22 @@
 #include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/Texture.h"
+#include "model_loading/ModelLoader.h"
 
 #include <functional>
-#include <model_loading/ModelLoader.h>
+
+struct RenderMesh {
+    VertexArray *vertexArray;
+    VertexBuffer *vertexBuffer;
+    VertexBuffer *normalBuffer;
+    VertexBuffer *textureCoordinatesBuffer;
+    IndexBuffer *indexBuffer;
+    Texture *texture;
+};
+
+struct RenderModel {
+    std::vector<RenderMesh> meshes;
+};
 
 class ModelLoading : public Scene {
 public:
@@ -25,20 +38,17 @@ public:
 
 private:
     Shader *shader;
-    VertexArray *vertexArray;
-    VertexBuffer *vertexBuffer;
-    VertexBuffer *normalBuffer;
-    VertexBuffer *textureCoordinatesBuffer;
-    IndexBuffer *indexBuffer;
-    Texture *texture;
 
+    RenderModel renderModel;
     ModelLoader::Model model = {};
 
     glm::mat4 projectionMatrix;
 
-    void createCheckerBoard();
+    void createCheckerBoard(RenderMesh &mesh);
 
     void updateModel(const std::string &modelFileName);
+
+    void updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh);
 };
 
 void

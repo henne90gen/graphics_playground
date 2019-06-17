@@ -14,35 +14,6 @@ void ModelLoading::setup() {
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-
-    vertexArray = new VertexArray();
-    vertexArray->bind();
-
-    vertexBuffer = new VertexBuffer();
-    normalBuffer = new VertexBuffer();
-    textureCoordinatesBuffer = new VertexBuffer();
-
-    VertexBufferLayout bufferLayout = {};
-    bufferLayout.add<float>(shader, "a_Position", 3);
-    vertexArray->addBuffer(*vertexBuffer, bufferLayout);
-
-    bufferLayout = {};
-    bufferLayout.add<float>(shader, "a_Normal", 3);
-    vertexArray->addBuffer(*normalBuffer, bufferLayout);
-
-    bufferLayout = {};
-    bufferLayout.add<float>(shader, "a_UV", 2);
-    vertexArray->addBuffer(*textureCoordinatesBuffer, bufferLayout);
-
-    indexBuffer = new IndexBuffer();
-    indexBuffer->bind();
-
-    texture = new Texture(GL_RGBA);
-    glActiveTexture(GL_TEXTURE0);
-    texture->bind();
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    shader->setUniform("u_TextureSampler", 0);
 }
 
 void ModelLoading::destroy() {}
@@ -66,7 +37,6 @@ void ModelLoading::tick() {
     showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths, model);
 
     shader->bind();
-    vertexArray->bind();
 
     if (prevModel != currentModel) {
         std::string modelFileName = paths[currentModel];
@@ -74,27 +44,36 @@ void ModelLoading::tick() {
         prevModel = currentModel;
     }
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
-    shader->setUniform("u_Model", modelMatrix);
-    shader->setUniform("u_View", viewMatrix);
-    shader->setUniform("u_Projection", projectionMatrix);
+    for (auto &mesh : renderModel.meshes) {
+        mesh.vertexArray->bind();
 
-    if (drawWireframe) {
-        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+        glm::mat4 modelMatrix = glm::mat4(1.0F);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+        modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+        modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+        modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+        glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
+        shader->setUniform("u_Model", modelMatrix);
+        shader->setUniform("u_View", viewMatrix);
+        shader->setUniform("u_Projection", projectionMatrix);
+
+        glActiveTexture(GL_TEXTURE0);
+        shader->setUniform("u_TextureSampler", 0);
+        mesh.texture->bind();
+
+        if (drawWireframe) {
+            GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+        }
+
+        GL_Call(glDrawElements(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+
+        if (drawWireframe) {
+            GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+        }
+
+        mesh.vertexArray->unbind();
     }
 
-    GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
-
-    if (drawWireframe) {
-        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-    }
-
-    vertexArray->unbind();
     shader->unbind();
 }
 
@@ -139,37 +118,76 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
         return;
     }
 
-    ModelLoader::Mesh mesh = model.meshes[0];
-    vertexBuffer->update(mesh.vertices);
-    if (!mesh.normals.empty()) {
-        normalBuffer->update(mesh.normals);
-        shader->setUniform("u_HasNormals", true);
-    } else {
-        shader->setUniform("u_HasNormals", false);
-    }
-    if (!mesh.textureCoordinates.empty()) {
-        textureCoordinatesBuffer->update(mesh.textureCoordinates);
-        shader->setUniform("u_HasTexture", true);
-    } else {
-        shader->setUniform("u_HasTexture", false);
-    }
-    indexBuffer->update(mesh.indices);
+    renderModel = {};
 
-    if (!mesh.hasMaterial) {
-        createCheckerBoard();
-        return;
-    }
-    Image image = {};
-    error = loadPng(mesh.material.diffuseTextureMap, image);
-    if (error) {
-        createCheckerBoard();
-        return;
-    }
+    for (auto &mesh : model.meshes) {
+        RenderMesh renderMesh = {
+                new VertexArray(),
+                new VertexBuffer(),
+                new VertexBuffer(),
+                new VertexBuffer(),
+                new IndexBuffer(),
+                new Texture(GL_RGBA)
+        };
 
-    texture->update(image.pixels.data(), image.width, image.height, image.bitDepth);
+        renderMesh.vertexArray->bind();
+
+        VertexBufferLayout bufferLayout = {};
+        bufferLayout.add<float>(shader, "a_Position", 3);
+        renderMesh.vertexArray->addBuffer(*renderMesh.vertexBuffer, bufferLayout);
+
+        bufferLayout = {};
+        bufferLayout.add<float>(shader, "a_Normal", 3);
+        renderMesh.vertexArray->addBuffer(*renderMesh.normalBuffer, bufferLayout);
+
+        bufferLayout = {};
+        bufferLayout.add<float>(shader, "a_UV", 2);
+        renderMesh.vertexArray->addBuffer(*renderMesh.textureCoordinatesBuffer, bufferLayout);
+
+        renderMesh.indexBuffer->bind();
+
+        renderMesh.texture->bind();
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+
+        renderMesh.vertexBuffer->update(mesh.vertices);
+
+        bool hasNormals = !mesh.normals.empty();
+        shader->setUniform("u_HasNormals", hasNormals);
+        if (hasNormals) {
+            renderMesh.normalBuffer->update(mesh.normals);
+        }
+
+        bool hasTexture = !mesh.textureCoordinates.empty();
+        shader->setUniform("u_HasTexture", hasTexture);
+        if (hasTexture) {
+            renderMesh.textureCoordinatesBuffer->update(mesh.textureCoordinates);
+        }
+        renderMesh.indexBuffer->update(mesh.indices);
+
+        updateTexture(mesh, renderMesh);
+
+        renderModel.meshes.push_back(renderMesh);
+    }
 }
 
-void ModelLoading::createCheckerBoard() {
+void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh) {
+    if (!mesh.hasMaterial) {
+        createCheckerBoard(renderMesh);
+        return;
+    }
+
+    Image image = {};
+    unsigned int error = loadPng(mesh.material.diffuseTextureMap, image);
+    if (error) {
+        createCheckerBoard(renderMesh);
+        return;
+    }
+
+    renderMesh.texture->update(image.pixels.data(), image.width, image.height);
+}
+
+void ModelLoading::createCheckerBoard(RenderMesh &mesh) {
     unsigned int width = 128;
     unsigned int height = 128;
     int numberOfChannels = 4;
@@ -190,5 +208,5 @@ void ModelLoading::createCheckerBoard() {
         data[idx + 1] = static_cast<char>(g);
         data[idx + 2] = static_cast<char>(b);
     }
-    texture->update(data.data(), width, height);
+    mesh.texture->update(data.data(), width, height);
 }

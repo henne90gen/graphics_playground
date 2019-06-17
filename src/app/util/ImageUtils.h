@@ -6,7 +6,7 @@
 struct Image {
     unsigned int width;
     unsigned int height;
-    char colorType;
+    char channels;
     char bitDepth;
     std::vector<char> pixels;
 };
