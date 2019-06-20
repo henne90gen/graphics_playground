@@ -59,7 +59,7 @@ namespace ModelLoader {
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
                           std::map<std::string, Material> &materials);
 
-    void createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces);
+    Mesh createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces);
 
     unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines, Model &model) {
         if (lines.empty()) {
@@ -68,7 +68,7 @@ namespace ModelLoader {
         model.meshes = {};
         model.materials = {};
 
-        Mesh currentMesh = {};
+        Mesh globalMesh = {};
         std::vector<Face> faces = {};
 
         for (unsigned long lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
@@ -82,24 +82,23 @@ namespace ModelLoader {
             } else if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
                 parseMaterialLib(fileName, lineNumber, l, model.materials);
             } else if (l[0] == 'o') {
-                if (!currentMesh.name.empty()) {
-                    createIndicesFromFaces(currentMesh, faces);
-                    model.meshes.push_back(currentMesh);
-                    currentMesh = {};
-                    faces = {};
+                if (!globalMesh.name.empty()) {
+                    auto mesh = createIndicesFromFaces(globalMesh, faces);
+                    model.meshes.push_back(mesh);
+                    faces.clear();
                 }
-                currentMesh.name = l.substr(2);
+                globalMesh.name = l.substr(2);
             } else if (l[0] == 'v' && l[1] == 'n') {
-                parseNormal(fileName, lineNumber, l, currentMesh.normals);
+                parseNormal(fileName, lineNumber, l, globalMesh.normals);
             } else if (l[0] == 'v' && l[1] == 't') {
-                parseTextureCoordinates(fileName, lineNumber, l, currentMesh.textureCoordinates);
+                parseTextureCoordinates(fileName, lineNumber, l, globalMesh.textureCoordinates);
             } else if (l[0] == 'v') {
-                parseVertex(fileName, lineNumber, l, currentMesh.vertices);
+                parseVertex(fileName, lineNumber, l, globalMesh.vertices);
             } else if (l[0] == 'f') {
                 parseFace(fileName, lineNumber, l, faces);
             } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
-                currentMesh.hasMaterial = true;
-                currentMesh.material = model.materials[l.substr(7)];
+                globalMesh.hasMaterial = true;
+                globalMesh.material = model.materials[l.substr(7)];
             } else if (l[0] == 's') {
                 // ignore this for now
             } else {
@@ -107,12 +106,12 @@ namespace ModelLoader {
             }
         }
 
-        createIndicesFromFaces(currentMesh, faces);
-        model.meshes.push_back(currentMesh);
+        auto mesh = createIndicesFromFaces(globalMesh, faces);
+        model.meshes.push_back(mesh);
         return 0;
     }
 
-    void createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces) {
+    Mesh createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces) {
         std::vector<glm::vec3> vertices = {};
         std::vector<glm::vec3> normals = {};
         std::vector<glm::vec2> textureCoordinates = {};
@@ -121,7 +120,6 @@ namespace ModelLoader {
         unsigned int index = 0;
         for (auto &face : faces) {
             glm::ivec3 triangle = {};
-            glm::ivec3 triangle2 = {};
             unsigned int faceIndex = 0;
             for (auto &vertex : face.vertices) {
                 vertices.push_back(mesh.vertices[vertex.vertexIndex - 1]);
@@ -145,10 +143,7 @@ namespace ModelLoader {
             indices.push_back(triangle);
         }
 
-        mesh.vertices = vertices;
-        mesh.normals = normals;
-        mesh.textureCoordinates = textureCoordinates;
-        mesh.indices = indices;
+        return {mesh.name, vertices, normals, textureCoordinates, indices, mesh.hasMaterial, mesh.material};
     }
 
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,

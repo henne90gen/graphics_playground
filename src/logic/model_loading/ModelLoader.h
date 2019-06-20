@@ -12,9 +12,6 @@ namespace ModelLoader {
         std::string diffuseTextureMap;
     };
 
-    struct Vertex {
-    };
-
     struct Mesh {
         std::string name;
 

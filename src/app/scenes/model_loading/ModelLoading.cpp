@@ -19,7 +19,7 @@ void ModelLoading::setup() {
 void ModelLoading::destroy() {}
 
 void ModelLoading::tick() {
-    static auto translation = glm::vec3(1.7F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto translation = glm::vec3(1.7F, -3.5F, -12.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static float scale = 0.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -34,7 +34,8 @@ void ModelLoading::tick() {
     }
 
     std::vector<std::string> paths = {};
-    showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths, model);
+    showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths, model,
+                 renderModel);
 
     shader->bind();
 
@@ -45,6 +46,10 @@ void ModelLoading::tick() {
     }
 
     for (auto &mesh : renderModel.meshes) {
+        if (!mesh.shouldRender) {
+            continue;
+        }
+
         mesh.vertexArray->bind();
 
         glm::mat4 modelMatrix = glm::mat4(1.0F);
@@ -57,7 +62,7 @@ void ModelLoading::tick() {
         shader->setUniform("u_View", viewMatrix);
         shader->setUniform("u_Projection", projectionMatrix);
 
-        glActiveTexture(GL_TEXTURE0);
+//        glActiveTexture(GL_TEXTURE0);
         shader->setUniform("u_TextureSampler", 0);
         mesh.texture->bind();
 
@@ -77,9 +82,10 @@ void ModelLoading::tick() {
     shader->unbind();
 }
 
-void showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation,
-                  float &scale, bool &drawWireframe, unsigned int &currentModel,
-                  std::vector<std::string> &paths, ModelLoader::Model &model) {
+void
+showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
+             bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
+             ModelLoader::Model &model, RenderModel &renderModel) {
     ImGui::Begin("Settings");
     ImGui::FileSelector("Models", "../../../src/app/scenes/model_loading/models/", currentModel, paths);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
@@ -94,8 +100,10 @@ void showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
     ImGui::Text("Number of meshes: %ld", model.meshes.size());
-    for (auto &mesh : model.meshes) {
-        ImGui::Text("\tName: %s", mesh.name.c_str());
+    for (unsigned long i = 0; i < model.meshes.size(); i++) {
+        auto &mesh = model.meshes[i];
+        auto &renderMesh = renderModel.meshes[i];
+        ImGui::Checkbox(("\tName: " + mesh.name).c_str(), &renderMesh.shouldRender);
         ImGui::Text("\t\tNumber of vertices: %ld", mesh.vertices.size());
         ImGui::Text("\t\tNumber of normals: %ld", mesh.normals.size());
         ImGui::Text("\t\tNumber of texture coordinates: %ld", mesh.textureCoordinates.size());
