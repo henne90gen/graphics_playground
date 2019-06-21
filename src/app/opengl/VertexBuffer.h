@@ -8,11 +8,11 @@ class VertexBuffer {
 public:
     VertexBuffer();
 
-    VertexBuffer(const void *data, unsigned int size);
+    VertexBuffer(const void *data, unsigned int size, const VertexBufferLayout& l);
 
-    explicit VertexBuffer(const std::vector<float> &data);
+    explicit VertexBuffer(const std::vector<float> &data, const VertexBufferLayout& l);
 
-    explicit VertexBuffer(const std::vector<glm::vec3> &data);
+    explicit VertexBuffer(const std::vector<glm::vec3> &data, const VertexBufferLayout& l);
 
     ~VertexBuffer();
 
@@ -24,9 +24,9 @@ public:
 
     void update(const std::vector<glm::vec2> &data);
 
-    void setLayout(std::shared_ptr<VertexBufferLayout> &l) { this->layout = l; };
+    void setLayout(const VertexBufferLayout &l) { this->layout = l; };
 
-    const std::shared_ptr<VertexBufferLayout> &getLayout() const { return layout; }
+    const VertexBufferLayout &getLayout() const { return layout; }
 
     void bind() const;
 
@@ -35,5 +35,5 @@ public:
 private:
     unsigned int id = 0;
 
-    std::shared_ptr<VertexBufferLayout> layout;
+    VertexBufferLayout layout;
 };

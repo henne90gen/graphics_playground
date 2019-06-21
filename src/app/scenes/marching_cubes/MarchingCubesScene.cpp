@@ -19,14 +19,18 @@ void MarchingCubesScene::setup() {
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
-    cubeVertexArray = std::make_shared<VertexArray>();
+    cubeVertexArray = std::make_shared<VertexArray>(shader);
     cubeVertexArray->bind();
 
+    VertexBufferLayout bufferLayout = {
+            {ShaderDataType::Float3, "position"}
+    };
     // FIXME can we just pass in cubeCorners, instead of splitting it up?
-    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCorners.data(), cubeCorners.size() * 3 * sizeof(float));
-    auto bufferLayout = std::make_shared<VertexBufferLayout>();
-    bufferLayout->add<float>(shader, "position", 3);
-    positionBuffer->setLayout(bufferLayout);
+    auto positionBuffer = std::make_shared<VertexBuffer>(
+            cubeCorners.data(),
+            cubeCorners.size() * 3 * sizeof(float),
+            bufferLayout
+    );
     cubeVertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
@@ -44,12 +48,15 @@ void MarchingCubesScene::setup() {
 
     marchingCubes = std::make_shared<MarchingCubes>();
 
-    surfaceVertexArray = std::make_shared<VertexArray>();
+    surfaceVertexArray = std::make_shared<VertexArray>(shader);
+    surfaceVertexArray->bind();
+
     surfaceVertexBuffer = std::make_shared<VertexBuffer>();
     surfaceVertexBuffer->bind();
 
-    auto surfaceBufferLayout = std::make_shared<VertexBufferLayout>();
-    surfaceBufferLayout->add<float>(shader, "position", 3);
+    VertexBufferLayout surfaceBufferLayout = {
+            {ShaderDataType::Float3, "position"}
+    };
     surfaceVertexBuffer->setLayout(surfaceBufferLayout);
     surfaceVertexArray->addVertexBuffer(surfaceVertexBuffer);
 

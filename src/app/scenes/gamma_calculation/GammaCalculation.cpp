@@ -14,7 +14,7 @@ void GammaCalculation::setup() {
                                       "../../../src/app/scenes/gamma_calculation/GammaCalculationFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>();
+    vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -25,10 +25,10 @@ void GammaCalculation::setup() {
             0.0, -1.0, //
             0.0, 1.0   //
     };
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices);
-    auto positionLayout = std::make_shared<VertexBufferLayout>();
-    positionLayout->add<float>(shader, "position", 2);
-    positionBuffer->setLayout(positionLayout);
+    VertexBufferLayout positionLayout = {
+            {ShaderDataType::Float2, "position"}
+    };
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<float> uvCoords = {
@@ -39,10 +39,10 @@ void GammaCalculation::setup() {
             1.0, 0.0, //
             1.0, 1.0  //
     };
-    auto uvBuffer = std::make_shared<VertexBuffer>(uvCoords);
-    auto uvLayout = std::make_shared<VertexBufferLayout>();
-    uvLayout->add<float>(shader, "vertexUV", 2);
-    uvBuffer->setLayout(uvLayout);
+    VertexBufferLayout uvLayout = {
+            {ShaderDataType::Float2, "vertexUV"}
+    };
+    auto uvBuffer = std::make_shared<VertexBuffer>(uvCoords, uvLayout);
     vertexArray->addVertexBuffer(uvBuffer);
 
     checkerBoardTexture = std::make_shared<Texture>();

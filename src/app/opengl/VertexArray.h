@@ -6,13 +6,15 @@
 
 class VertexArray {
 public:
-    VertexArray();
+    VertexArray(std::shared_ptr<Shader> s);
 
     ~VertexArray();
 
-    void addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer);
+    void setShader(const std::shared_ptr<Shader> &s) { this->shader = s; }
 
     void setIndexBuffer(const std::shared_ptr<IndexBuffer> &buffer);
+
+    void addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer);
 
     void bind() const;
 
@@ -20,6 +22,7 @@ public:
 
 private:
     unsigned int id = 0;
-    std::vector<std::shared_ptr<VertexBuffer>> vertexBuffers;
+    std::shared_ptr<Shader> shader;
     std::shared_ptr<IndexBuffer> indexBuffer;
+    std::vector<std::shared_ptr<VertexBuffer>> vertexBuffers;
 };

@@ -206,7 +206,7 @@ void RubiksCubeScene::setup() {
                                       "../../../src/app/scenes/rubiks_cube/RubiksCubeFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>();
+    vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     const unsigned int sideCount = 3;
@@ -245,11 +245,11 @@ void RubiksCubeScene::setup() {
         }
     }
 
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, verticesSize);
-    auto bufferLayout = std::make_shared<VertexBufferLayout>();
-    bufferLayout->add<float>(shader, "position", 3);
-    bufferLayout->add<float>(shader, "color", 3);
-    positionBuffer->setLayout(bufferLayout);
+    VertexBufferLayout bufferLayout = {
+            {ShaderDataType::Float3, "position"},
+            {ShaderDataType::Float3, "color"}
+    };
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, verticesSize, bufferLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);

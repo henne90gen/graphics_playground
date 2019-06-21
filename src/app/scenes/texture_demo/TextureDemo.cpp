@@ -13,7 +13,7 @@ void TextureDemo::setup() {
                                       "../../../src/app/scenes/texture_demo/TextureDemoFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>();
+    vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -24,11 +24,11 @@ void TextureDemo::setup() {
             1.0, -1.0, 1.0, 0.0, //
             1.0, 1.0, 1.0, 1.0  //
     };
-    auto buffer = std::make_shared<VertexBuffer>(vertices);
-    std::shared_ptr<VertexBufferLayout> bufferLayout = std::make_shared<VertexBufferLayout>();
-    bufferLayout->add<float>(shader, "position", 2);
-    bufferLayout->add<float>(shader, "vertexUV", 2);
-    buffer->setLayout(bufferLayout);
+    VertexBufferLayout bufferLayout = {
+                    {ShaderDataType::Float2, "position"},
+                    {ShaderDataType::Float2, "vertexUV"}
+            };
+    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);
 
     texture = std::make_shared<Texture>();

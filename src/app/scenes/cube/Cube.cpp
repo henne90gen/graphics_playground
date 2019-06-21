@@ -17,7 +17,7 @@ void Cube::setup() {
                                       "../../../src/app/scenes/cube/CubeFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>();
+    vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -33,11 +33,11 @@ void Cube::setup() {
             1.0F, 1.0F, 1.0F, 1, 1, 1,   // 6
             -1.0F, 1.0F, 1.0F, 0, 0, 0   // 7
     };
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices);
-    std::shared_ptr<VertexBufferLayout> bufferLayout = std::make_shared<VertexBufferLayout>();
-    bufferLayout->add<float>(shader, "position", 3);
-    bufferLayout->add<float>(shader, "color", 3);
-    positionBuffer->setLayout(bufferLayout);
+    VertexBufferLayout bufferLayout = {
+            {ShaderDataType::Float3, "position"},
+            {ShaderDataType::Float3, "color"}
+    };
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {

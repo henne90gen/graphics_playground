@@ -9,7 +9,7 @@
             __debugbreak()
 #else
 #define ASSERT(x)             \
-        if (!(x))                 \
+        if (!(x))                  \
             __builtin_debugtrap()
 #endif
 

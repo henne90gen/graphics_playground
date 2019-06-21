@@ -22,7 +22,7 @@ void Landscape::setup() {
                                       "../../../src/app/scenes/landscape/LandscapeFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>();
+    vertexArray = std::make_shared<VertexArray>(shader);
     generatePoints(INITIAL_POINT_DENSITY);
 
     noise = new FastNoise();
@@ -45,17 +45,18 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     }
 
     const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize);
-    auto positionLayout = std::make_shared<VertexBufferLayout>();
-    positionLayout->add<float>(shader, "position", 2);
-    positionBuffer->setLayout(positionLayout);
+    VertexBufferLayout positionLayout = {
+            {ShaderDataType::Float2, "position"}
+    };
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     const unsigned int heightMapCount = width * height;
     heightMap = std::vector<float>(heightMapCount);
     heightBuffer = std::make_shared<VertexBuffer>();
-    auto heightLayout = std::make_shared<VertexBufferLayout>();
-    heightLayout->add<float>(shader, "height", 1);
+    VertexBufferLayout heightLayout = {
+            {ShaderDataType::Float, "height"}
+    };
     heightBuffer->setLayout(heightLayout);
     vertexArray->addVertexBuffer(heightBuffer);
 

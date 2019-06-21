@@ -8,7 +8,7 @@ void FontDemo::setup() {
                                       "../../../src/app/scenes/font_demo/FontDemoFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>();
+    vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -19,11 +19,11 @@ void FontDemo::setup() {
             0.5, -0.5, 1.0, 1.0, //
             0.5, 0.5, 1.0, 0.0  //
     };
-    auto buffer = std::make_shared<VertexBuffer>(vertices);
-    auto bufferLayout = std::make_shared<VertexBufferLayout>();
-    bufferLayout->add<float>(shader, "position", 2);
-    bufferLayout->add<float>(shader, "vertexUV", 2);
-    buffer->setLayout(bufferLayout);
+    VertexBufferLayout bufferLayout = {
+            {ShaderDataType::Float2, "position"},
+            {ShaderDataType::Float2, "vertexUV"}
+    };
+    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);
 
     shader->setUniform<int>("textureSampler", 0);

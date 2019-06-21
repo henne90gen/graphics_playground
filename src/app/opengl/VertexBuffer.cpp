@@ -1,20 +1,22 @@
+#include <utility>
+
 #include "VertexBuffer.h"
 
 #include "util/OpenGLUtils.h"
 
 VertexBuffer::VertexBuffer() { GL_Call(glGenBuffers(1, &id)); }
 
-VertexBuffer::VertexBuffer(const std::vector<float> &data) {
+VertexBuffer::VertexBuffer(const std::vector<float> &data, const VertexBufferLayout& l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data);
 }
 
-VertexBuffer::VertexBuffer(const std::vector<glm::vec3> &data) {
+VertexBuffer::VertexBuffer(const std::vector<glm::vec3> &data, const VertexBufferLayout& l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data);
 }
 
-VertexBuffer::VertexBuffer(const void *data, unsigned int size) {
+VertexBuffer::VertexBuffer(const void *data, unsigned int size, const VertexBufferLayout& l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data, size);
 }

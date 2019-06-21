@@ -6,6 +6,18 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 
+enum ShaderDataType {
+    Float = 0,
+    Float2,
+    Float3,
+    Float4,
+    Int,
+    Int2,
+    Int3,
+    Int4,
+    Bool
+};
+
 class Shader {
 private:
     unsigned int id;

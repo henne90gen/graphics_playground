@@ -129,7 +129,7 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
 
     for (auto &mesh : model.meshes) {
         RenderMesh renderMesh = {
-                std::make_shared<VertexArray>(),
+                std::make_shared<VertexArray>(shader),
                 std::make_shared<VertexBuffer>(),
                 std::make_shared<VertexBuffer>(),
                 std::make_shared<VertexBuffer>(),
@@ -139,18 +139,21 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
 
         renderMesh.vertexArray->bind();
 
-        auto positionLayout = std::make_shared<VertexBufferLayout>();
-        positionLayout->add<float>(shader, "a_Position", 3);
+        VertexBufferLayout positionLayout = {
+                {ShaderDataType::Float3, "a_Position"}
+        };
         renderMesh.vertexBuffer->setLayout(positionLayout);
         renderMesh.vertexArray->addVertexBuffer(renderMesh.vertexBuffer);
 
-        auto normalLayout = std::make_shared<VertexBufferLayout>();
-        normalLayout->add<float>(shader, "a_Normal", 3);
+        VertexBufferLayout normalLayout = {
+                {ShaderDataType::Float3, "a_Normal"}
+        };
         renderMesh.normalBuffer->setLayout(normalLayout);
         renderMesh.vertexArray->addVertexBuffer(renderMesh.normalBuffer);
 
-        auto uvLayout = std::make_shared<VertexBufferLayout>();
-        uvLayout->add<float>(shader, "a_UV", 2);
+        VertexBufferLayout uvLayout = {
+                {ShaderDataType::Float2, "a_UV"}
+        };
         renderMesh.textureCoordinatesBuffer->setLayout(uvLayout);
         renderMesh.vertexArray->addVertexBuffer(renderMesh.textureCoordinatesBuffer);
 
