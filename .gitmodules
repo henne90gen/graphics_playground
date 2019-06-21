@@ -16,3 +16,6 @@
 [submodule "vendor/libpng"]
 	path = vendor/libpng
 	url = git@github.com:glennrp/libpng.git
+[submodule "vendor/catch"]
+	path = vendor/catch
+	url = git@github.com:catchorg/Catch2.git
