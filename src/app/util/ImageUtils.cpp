@@ -11,7 +11,7 @@
 #define PNG_DEBUG 3
 
 #include <png.h>
-#include "jpeglib.h"
+#include <jpeglib.h>
 
 int loadPng(const std::string &fileName, Image &image) {
     // TODO check error messages for string formatting patterns
