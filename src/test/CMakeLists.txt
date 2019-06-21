@@ -1,6 +1,6 @@
 
-include("../../catch/contrib/Catch.cmake")
-set(CATCH_INCLUDE_DIR ../../catch/single_include/catch2)
+include("../../vendor/catch/contrib/Catch.cmake")
+set(CATCH_INCLUDE_DIR ../../vendor/catch/single_include/catch2)
 
 set(SOURCES
         main.cpp

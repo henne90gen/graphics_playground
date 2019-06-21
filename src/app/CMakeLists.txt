@@ -39,7 +39,7 @@ endif ()
 set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
-)
+        )
 add_definitions(-std=c++17)
 
 if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
@@ -51,15 +51,14 @@ endif ()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
 
-target_link_libraries(${PROJECT_NAME}
-        glfw ${GLFW_LIBRARIES}
-        glad
-        imgui
-        ${LIBPNG_LIBRARIES}
-        ${JPEG_LIBRARIES}
-        FastNoise
-        freetype
-        logic)
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} glad)
+target_link_libraries(${PROJECT_NAME} imgui)
+target_link_libraries(${PROJECT_NAME} ${LIBPNG_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${JPEG_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} FastNoise)
+target_link_libraries(${PROJECT_NAME} freetype)
+target_link_libraries(${PROJECT_NAME} logic)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_LIBRARY_DIRS})
 
@@ -71,16 +70,15 @@ else ()
     target_link_libraries(${PROJECT_NAME} stdc++fs)
 endif ()
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GLFW_DIR}/include
-        ${GLAD_DIR}/include
-        ${GLM_DIR}
-        ${IMGUI_DIR}
-        ${FAST_NOISE_DIR}
-        ${LIBPNG_INCLUDE_DIRS}
-        ${FREETYPE_DIR}
-        ${JPEG_INCLUDE_DIRS}
-        ${LOGIC_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FAST_NOISE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${JPEG_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
