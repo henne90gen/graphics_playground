@@ -19,7 +19,7 @@ const float Z_FAR = 1000.0F;
 
 void Landscape::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/landscape/LandscapeVert.glsl",
-                        "../../../src/app/scenes/landscape/LandscapeFrag.glsl");
+                                      "../../../src/app/scenes/landscape/LandscapeFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>();
@@ -45,17 +45,19 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     }
 
     const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    auto *positionBuffer = new VertexBuffer(vertices.data(), verticesSize);
-    VertexBufferLayout positionLayout;
-    positionLayout.add<float>(shader, "position", 2);
-    vertexArray->addBuffer(*positionBuffer, positionLayout);
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize);
+    auto positionLayout = std::make_shared<VertexBufferLayout>();
+    positionLayout->add<float>(shader, "position", 2);
+    positionBuffer->setLayout(positionLayout);
+    vertexArray->addVertexBuffer(positionBuffer);
 
     const unsigned int heightMapCount = width * height;
     heightMap = std::vector<float>(heightMapCount);
-    heightBuffer = new VertexBuffer();
-    VertexBufferLayout heightLayout;
-    heightLayout.add<float>(shader, "height", 1);
-    vertexArray->addBuffer(*heightBuffer, heightLayout);
+    heightBuffer = std::make_shared<VertexBuffer>();
+    auto heightLayout = std::make_shared<VertexBufferLayout>();
+    heightLayout->add<float>(shader, "height", 1);
+    heightBuffer->setLayout(heightLayout);
+    vertexArray->addVertexBuffer(heightBuffer);
 
     const unsigned int indicesPerQuad = 6;
     unsigned int indicesCount = width * height * indicesPerQuad;

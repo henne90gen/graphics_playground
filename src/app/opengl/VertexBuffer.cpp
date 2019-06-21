@@ -9,6 +9,11 @@ VertexBuffer::VertexBuffer(const std::vector<float> &data) {
     update(data);
 }
 
+VertexBuffer::VertexBuffer(const std::vector<glm::vec3> &data) {
+    GL_Call(glGenBuffers(1, &id));
+    update(data);
+}
+
 VertexBuffer::VertexBuffer(const void *data, unsigned int size) {
     GL_Call(glGenBuffers(1, &id));
     update(data, size);

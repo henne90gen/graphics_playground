@@ -1,8 +1,8 @@
 #pragma once
 
-// #include "OpenGLUtils.h"
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
+#include "IndexBuffer.h"
 
 class VertexArray {
 public:
@@ -10,7 +10,9 @@ public:
 
     ~VertexArray();
 
-    void addBuffer(const VertexBuffer &vertexBuffer, const VertexBufferLayout &layout);
+    void addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer);
+
+    void setIndexBuffer(const std::shared_ptr<IndexBuffer> &buffer);
 
     void bind() const;
 
@@ -18,4 +20,6 @@ public:
 
 private:
     unsigned int id = 0;
+    std::vector<std::shared_ptr<VertexBuffer>> vertexBuffers;
+    std::shared_ptr<IndexBuffer> indexBuffer;
 };

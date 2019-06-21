@@ -13,11 +13,11 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
 void Cube::setup() {
-    shader = new Shader("../../../src/app/scenes/cube/CubeVert.glsl",
-                        "../../../src/app/scenes/cube/CubeFrag.glsl");
+    shader = std::make_shared<Shader>("../../../src/app/scenes/cube/CubeVert.glsl",
+                                      "../../../src/app/scenes/cube/CubeFrag.glsl");
     shader->bind();
 
-    vertexArray = new VertexArray();
+    vertexArray = std::make_shared<VertexArray>();
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -33,11 +33,12 @@ void Cube::setup() {
             1.0F, 1.0F, 1.0F, 1, 1, 1,   // 6
             -1.0F, 1.0F, 1.0F, 0, 0, 0   // 7
     };
-    auto *positionBuffer = new VertexBuffer(vertices);
-    VertexBufferLayout bufferLayout;
-    bufferLayout.add<float>(shader, "position", 3);
-    bufferLayout.add<float>(shader, "color", 3);
-    vertexArray->addBuffer(*positionBuffer, bufferLayout);
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices);
+    std::shared_ptr<VertexBufferLayout> bufferLayout = std::make_shared<VertexBufferLayout>();
+    bufferLayout->add<float>(shader, "position", 3);
+    bufferLayout->add<float>(shader, "color", 3);
+    positionBuffer->setLayout(bufferLayout);
+    vertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
             // front
@@ -64,7 +65,7 @@ void Cube::setup() {
             4, 5, 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
             4, 1, 0, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     };
-    indexBuffer = new IndexBuffer(indices);
+    indexBuffer = std::make_shared<IndexBuffer>(indices);
 }
 
 void Cube::destroy() {}

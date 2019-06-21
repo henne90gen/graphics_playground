@@ -62,7 +62,6 @@ void ModelLoading::tick() {
         shader->setUniform("u_View", viewMatrix);
         shader->setUniform("u_Projection", projectionMatrix);
 
-//        glActiveTexture(GL_TEXTURE0);
         shader->setUniform("u_TextureSampler", 0);
         mesh.texture->bind();
 
@@ -140,17 +139,20 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
 
         renderMesh.vertexArray->bind();
 
-        VertexBufferLayout bufferLayout = {};
-        bufferLayout.add<float>(shader, "a_Position", 3);
-        renderMesh.vertexArray->addBuffer(*renderMesh.vertexBuffer, bufferLayout);
+        auto positionLayout = std::make_shared<VertexBufferLayout>();
+        positionLayout->add<float>(shader, "a_Position", 3);
+        renderMesh.vertexBuffer->setLayout(positionLayout);
+        renderMesh.vertexArray->addVertexBuffer(renderMesh.vertexBuffer);
 
-        bufferLayout = {};
-        bufferLayout.add<float>(shader, "a_Normal", 3);
-        renderMesh.vertexArray->addBuffer(*renderMesh.normalBuffer, bufferLayout);
+        auto normalLayout = std::make_shared<VertexBufferLayout>();
+        normalLayout->add<float>(shader, "a_Normal", 3);
+        renderMesh.normalBuffer->setLayout(normalLayout);
+        renderMesh.vertexArray->addVertexBuffer(renderMesh.normalBuffer);
 
-        bufferLayout = {};
-        bufferLayout.add<float>(shader, "a_UV", 2);
-        renderMesh.vertexArray->addBuffer(*renderMesh.textureCoordinatesBuffer, bufferLayout);
+        auto uvLayout = std::make_shared<VertexBufferLayout>();
+        uvLayout->add<float>(shader, "a_UV", 2);
+        renderMesh.textureCoordinatesBuffer->setLayout(uvLayout);
+        renderMesh.vertexArray->addVertexBuffer(renderMesh.textureCoordinatesBuffer);
 
         renderMesh.indexBuffer->bind();
 

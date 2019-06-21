@@ -25,10 +25,11 @@ void GammaCalculation::setup() {
             0.0, -1.0, //
             0.0, 1.0   //
     };
-    auto *positionBuffer = new VertexBuffer(vertices);
-    VertexBufferLayout positionLayout;
-    positionLayout.add<float>(shader, "position", 2);
-    vertexArray->addBuffer(*positionBuffer, positionLayout);
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices);
+    auto positionLayout = std::make_shared<VertexBufferLayout>();
+    positionLayout->add<float>(shader, "position", 2);
+    positionBuffer->setLayout(positionLayout);
+    vertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<float> uvCoords = {
             0.0, 1.0, //
@@ -38,10 +39,11 @@ void GammaCalculation::setup() {
             1.0, 0.0, //
             1.0, 1.0  //
     };
-    auto *uvBuffer = new VertexBuffer(uvCoords);
-    VertexBufferLayout uvLayout;
-    uvLayout.add<float>(shader, "vertexUV", 2);
-    vertexArray->addBuffer(*uvBuffer, uvLayout);
+    auto uvBuffer = std::make_shared<VertexBuffer>(uvCoords);
+    auto uvLayout = std::make_shared<VertexBufferLayout>();
+    uvLayout->add<float>(shader, "vertexUV", 2);
+    uvBuffer->setLayout(uvLayout);
+    vertexArray->addVertexBuffer(uvBuffer);
 
     checkerBoardTexture = std::make_shared<Texture>();
     glActiveTexture(GL_TEXTURE0);

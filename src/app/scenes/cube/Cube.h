@@ -24,7 +24,7 @@ public:
     void destroy() override;
 
 private:
-    VertexArray *vertexArray;
-    Shader *shader;
-    IndexBuffer *indexBuffer;
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<IndexBuffer> indexBuffer;
 };

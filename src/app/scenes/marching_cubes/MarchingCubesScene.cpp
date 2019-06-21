@@ -22,10 +22,12 @@ void MarchingCubesScene::setup() {
     cubeVertexArray = std::make_shared<VertexArray>();
     cubeVertexArray->bind();
 
-    auto positionBuffer = VertexBuffer(cubeCorners.data(), cubeCorners.size() * 3 * sizeof(float));
-    VertexBufferLayout bufferLayout;
-    bufferLayout.add<float>(shader, "position", 3);
-    cubeVertexArray->addBuffer(positionBuffer, bufferLayout);
+    // FIXME can we just pass in cubeCorners, instead of splitting it up?
+    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCorners.data(), cubeCorners.size() * 3 * sizeof(float));
+    auto bufferLayout = std::make_shared<VertexBufferLayout>();
+    bufferLayout->add<float>(shader, "position", 3);
+    positionBuffer->setLayout(bufferLayout);
+    cubeVertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
             // bottom
@@ -45,9 +47,12 @@ void MarchingCubesScene::setup() {
     surfaceVertexArray = std::make_shared<VertexArray>();
     surfaceVertexBuffer = std::make_shared<VertexBuffer>();
     surfaceVertexBuffer->bind();
-    bufferLayout = VertexBufferLayout();
-    bufferLayout.add<float>(shader, "position", 3);
-    surfaceVertexArray->addBuffer(*surfaceVertexBuffer, bufferLayout);
+
+    auto surfaceBufferLayout = std::make_shared<VertexBufferLayout>();
+    surfaceBufferLayout->add<float>(shader, "position", 3);
+    surfaceVertexBuffer->setLayout(surfaceBufferLayout);
+    surfaceVertexArray->addVertexBuffer(surfaceVertexBuffer);
+
     surfaceIndexBuffer = std::make_shared<IndexBuffer>();
     surfaceIndexBuffer->bind();
 }

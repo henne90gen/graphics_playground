@@ -245,11 +245,12 @@ void RubiksCubeScene::setup() {
         }
     }
 
-    auto *positionBuffer = new VertexBuffer(vertices, verticesSize);
-    VertexBufferLayout bufferLayout;
-    bufferLayout.add<float>(shader, "position", 3);
-    bufferLayout.add<float>(shader, "color", 3);
-    vertexArray->addBuffer(*positionBuffer, bufferLayout);
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, verticesSize);
+    auto bufferLayout = std::make_shared<VertexBufferLayout>();
+    bufferLayout->add<float>(shader, "position", 3);
+    bufferLayout->add<float>(shader, "color", 3);
+    positionBuffer->setLayout(bufferLayout);
+    vertexArray->addVertexBuffer(positionBuffer);
 
     indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);
 

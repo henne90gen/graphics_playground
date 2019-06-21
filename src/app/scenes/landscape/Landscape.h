@@ -30,7 +30,7 @@ private:
     std::shared_ptr<IndexBuffer> indexBuffer;
     std::vector<float> heightMap = std::vector<float>();
 
-    VertexBuffer *heightBuffer;
+    std::shared_ptr<VertexBuffer> heightBuffer;
     FastNoise *noise;
 
     void generatePoints(unsigned int pointDensity);

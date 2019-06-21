@@ -24,12 +24,12 @@ void TextureDemo::setup() {
             1.0, -1.0, 1.0, 0.0, //
             1.0, 1.0, 1.0, 1.0  //
     };
-    auto *buffer = new VertexBuffer(vertices);
-    VertexBufferLayout bufferLayout;
-    bufferLayout.add<float>(shader, "position", 2);
-    bufferLayout.add<float>(shader, "vertexUV", 2);
-    vertexArray->addBuffer(*buffer, bufferLayout);
-
+    auto buffer = std::make_shared<VertexBuffer>(vertices);
+    std::shared_ptr<VertexBufferLayout> bufferLayout = std::make_shared<VertexBufferLayout>();
+    bufferLayout->add<float>(shader, "position", 2);
+    bufferLayout->add<float>(shader, "vertexUV", 2);
+    buffer->setLayout(bufferLayout);
+    vertexArray->addVertexBuffer(buffer);
 
     texture = std::make_shared<Texture>();
     glActiveTexture(GL_TEXTURE0);
