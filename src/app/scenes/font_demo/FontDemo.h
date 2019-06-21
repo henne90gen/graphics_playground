@@ -35,8 +35,8 @@ public:
     void destroy() override;
 
 private:
-    VertexArray *vertexArray;
-    Shader *shader;
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<VertexArray> vertexArray;
 
     std::vector<Character> characters = {};
 

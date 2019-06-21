@@ -10,11 +10,11 @@
 #include "util/ImGuiUtils.h"
 
 void GammaCalculation::setup() {
-    shader = new Shader("../../../src/app/scenes/gamma_calculation/GammaCalculationVert.glsl",
-                        "../../../src/app/scenes/gamma_calculation/GammaCalculationFrag.glsl");
+    shader = std::make_shared<Shader>("../../../src/app/scenes/gamma_calculation/GammaCalculationVert.glsl",
+                                      "../../../src/app/scenes/gamma_calculation/GammaCalculationFrag.glsl");
     shader->bind();
 
-    vertexArray = new VertexArray();
+    vertexArray = std::make_shared<VertexArray>();
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -43,7 +43,7 @@ void GammaCalculation::setup() {
     uvLayout.add<float>(shader, "vertexUV", 2);
     vertexArray->addBuffer(*uvBuffer, uvLayout);
 
-    checkerBoardTexture = new Texture();
+    checkerBoardTexture = std::make_shared<Texture>();
     glActiveTexture(GL_TEXTURE0);
     checkerBoardTexture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));

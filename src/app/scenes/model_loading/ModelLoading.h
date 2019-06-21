@@ -9,14 +9,15 @@
 #include "model_loading/ModelLoader.h"
 
 #include <functional>
+#include <memory>
 
 struct RenderMesh {
-    VertexArray *vertexArray;
-    VertexBuffer *vertexBuffer;
-    VertexBuffer *normalBuffer;
-    VertexBuffer *textureCoordinatesBuffer;
-    IndexBuffer *indexBuffer;
-    Texture *texture;
+    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<VertexBuffer> vertexBuffer;
+    std::shared_ptr<VertexBuffer> normalBuffer;
+    std::shared_ptr<VertexBuffer> textureCoordinatesBuffer;
+    std::shared_ptr<IndexBuffer> indexBuffer;
+    std::shared_ptr<Texture> texture;
     bool shouldRender = true;
 };
 
@@ -38,7 +39,7 @@ public:
     void destroy() override;
 
 private:
-    Shader *shader;
+    std::shared_ptr<Shader> shader;
 
     RenderModel renderModel;
     ModelLoader::Model model = {};

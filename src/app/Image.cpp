@@ -10,7 +10,12 @@
 #include <string.h>
 #include <stdarg.h>
 #include <png.h>
+
+#if JPEG_FOUND
+
 #include <jpeglib.h>
+
+#endif
 
 int Image::loadPng() {
     FILE *fp = fopen(fileName.c_str(), "rb");
@@ -108,6 +113,10 @@ int Image::loadPng() {
 }
 
 int Image::loadJpg() {
+#if !JPEG_FOUND
+    std::cout << "JPEG file format is not supported." << std::endl;
+return 1;
+#else
     FILE *infile = fopen(fileName.c_str(), "rb");
     if (infile == nullptr) {
         std::cout << "File '" << fileName << "' could not be opened for reading" << std::endl;
@@ -153,6 +162,7 @@ int Image::loadJpg() {
     (void) jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
     return 0;
+#endif
 }
 
 int loadImage(const std::string &fileName, Image &image) {

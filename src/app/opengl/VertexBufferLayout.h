@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "Shader.h"
 
@@ -35,26 +36,26 @@ public:
     ~VertexBufferLayout() {}
 
     template<typename T>
-    void add(Shader *shader, const std::string &name, unsigned int count) {
+    void add(std::shared_ptr<Shader> &shader, const std::string &name, unsigned int count) {
         // static_assert(false, "Please use one of the specialized templates");
     }
 
     template<>
-    void add<float>(Shader *shader, const std::string &name, unsigned int count) {
+    void add<float>(std::shared_ptr<Shader> &shader, const std::string &name, unsigned int count) {
         int location = getLocation(shader, name);
         elements.push_back({GL_FLOAT, count, GL_FALSE, location});
         stride += count * sizeof(GLfloat);
     }
 
     template<>
-    void add<unsigned int>(Shader *shader, const std::string &name, unsigned int count) {
+    void add<unsigned int>(std::shared_ptr<Shader> &shader, const std::string &name, unsigned int count) {
         int location = getLocation(shader, name);
         elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE, location});
         stride += count * sizeof(GLuint);
     }
 
     template<>
-    void add<unsigned char>(Shader *shader, const std::string &name, unsigned int count) {
+    void add<unsigned char>(std::shared_ptr<Shader> &shader, const std::string &name, unsigned int count) {
         int location = getLocation(shader, name);
         elements.push_back({GL_UNSIGNED_BYTE, count, GL_TRUE, location});
         stride += count * sizeof(GLbyte);
@@ -68,7 +69,7 @@ private:
     std::vector<LayoutElement> elements;
     unsigned int stride;
 
-    int getLocation(Shader *shader, const std::string &name) {
+    int getLocation(std::shared_ptr<Shader> &shader, const std::string &name) {
         GL_Call(int location = glGetAttribLocation(shader->getId(), name.c_str()));
         if (location == -1) {
             std::cout << "Warning: could not find attribute '" << name << "'" << std::endl;

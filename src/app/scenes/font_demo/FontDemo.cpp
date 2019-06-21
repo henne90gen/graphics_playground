@@ -4,11 +4,11 @@
 #include "util/FileUtils.h"
 
 void FontDemo::setup() {
-    shader = new Shader("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
+    shader = std::make_shared<Shader>("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
                         "../../../src/app/scenes/font_demo/FontDemoFrag.glsl");
     shader->bind();
 
-    vertexArray = new VertexArray();
+    vertexArray = std::make_shared<VertexArray>();
     vertexArray->bind();
 
     std::vector<float> vertices = {

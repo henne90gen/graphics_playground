@@ -24,10 +24,10 @@ public:
     void destroy() override;
 
 private:
-    VertexArray *vertexArray;
+    std::shared_ptr<Shader> shader;
 
-    Shader *shader;
-    IndexBuffer *indexBuffer;
+    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<IndexBuffer> indexBuffer;
     std::vector<float> heightMap = std::vector<float>();
 
     VertexBuffer *heightBuffer;
@@ -35,6 +35,6 @@ private:
 
     void generatePoints(unsigned int pointDensity);
 
-    void updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
+    void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
                             FastNoise::NoiseType &noiseType);
 };

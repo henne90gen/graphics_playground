@@ -3,6 +3,7 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <memory>
 #include <glad/glad.h>
 
 #include "opengl/VertexArray.h"
@@ -24,9 +25,9 @@ public:
     void destroy() override;
 
 private:
-    VertexArray *vertexArray;
-    Texture *checkerBoardTexture;
-    Shader *shader;
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<Texture> checkerBoardTexture;
 
     void createCheckerBoard();
 

@@ -202,11 +202,11 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCubeScene::setup() {
-    shader = new Shader("../../../src/app/scenes/rubiks_cube/RubiksCubeVert.glsl",
-                        "../../../src/app/scenes/rubiks_cube/RubiksCubeFrag.glsl");
+    shader = std::make_shared<Shader>("../../../src/app/scenes/rubiks_cube/RubiksCubeVert.glsl",
+                                      "../../../src/app/scenes/rubiks_cube/RubiksCubeFrag.glsl");
     shader->bind();
 
-    vertexArray = new VertexArray();
+    vertexArray = std::make_shared<VertexArray>();
     vertexArray->bind();
 
     const unsigned int sideCount = 3;
@@ -251,12 +251,14 @@ void RubiksCubeScene::setup() {
     bufferLayout.add<float>(shader, "color", 3);
     vertexArray->addBuffer(*positionBuffer, bufferLayout);
 
-    indexBuffer = new IndexBuffer(indices, indicesCount);
+    indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);
 
-    rubiksCube = RubiksCube({
-                                    R_F, R_L, R_RI, R_LI, R_R, R_F, R_F, R_BOI, R_TI, R_BAI, R_L, R_FI, R_FI, R_L, R_L,
-                                    R_BO, R_BOI, R_BAI, R_TI, R_BOI
-                            });
+    rubiksCube.reset(new RubiksCube(
+            {
+                    R_F, R_L, R_RI, R_LI, R_R, R_F, R_F, R_BOI, R_TI, R_BAI, R_L, R_FI, R_FI,
+                    R_L, R_L, R_BO, R_BOI, R_BAI, R_TI, R_BOI
+            }
+    ));
 }
 
 void RubiksCubeScene::destroy() {
@@ -291,27 +293,27 @@ void RubiksCubeScene::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     ImGui::DragFloat("Animation Speed", &rotationSpeed, 0.001F, 0.001F, 1.0F);
 
-    ImGui::Checkbox("Loop Commands", &rubiksCube.loop);
+    ImGui::Checkbox("Loop Commands", &rubiksCube->loop);
     if (ImGui::Button("Shuffle")) {
-        rubiksCube.shuffle();
+        rubiksCube->shuffle();
     }
     if (ImGui::Button("Solve")) {
-        rubiksCube.startSolving();
+        rubiksCube->startSolving();
     }
-    ImGui::Text("Executed Rotation Commands: %d", rubiksCube.executedRotationCommands);
+    ImGui::Text("Executed Rotation Commands: %d", rubiksCube->executedRotationCommands);
 
-    unsigned int averageLength = rubiksCube.getAverageRotationListLength();
+    unsigned int averageLength = rubiksCube->getAverageRotationListLength();
     float averageLengthPerRotationCommand =
-            static_cast<float>(averageLength) / static_cast<float>(rubiksCube.executedRotationCommands);
+            static_cast<float>(averageLength) / static_cast<float>(rubiksCube->executedRotationCommands);
     ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
 
-    unsigned int maximumLength = rubiksCube.getMaximumRotationListLength();
+    unsigned int maximumLength = rubiksCube->getMaximumRotationListLength();
     float maximumLengthPerRotationCommand =
-            static_cast<float>(maximumLength) / static_cast<float>(rubiksCube.executedRotationCommands);
+            static_cast<float>(maximumLength) / static_cast<float>(rubiksCube->executedRotationCommands);
     ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
 
-    ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube.getTotalRotationListEntriesCount());
-    ImGui::Text("Squashed Rotations: %d", rubiksCube.squashedRotations);
+    ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube->getTotalRotationListEntriesCount());
+    ImGui::Text("Squashed Rotations: %d", rubiksCube->squashedRotations);
     ImGui::End();
 
     shader->bind();
@@ -328,11 +330,11 @@ void RubiksCubeScene::tick() {
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
-    rubiksCube.solve();
-    rubiksCube.rotate(rotationSpeed);
+    rubiksCube->solve();
+    rubiksCube->rotate(rotationSpeed);
 
     for (unsigned int i = 0; i < NUMBER_OF_SMALL_CUBES; i++) {
-        shader->setUniform("cubeMatrix", rubiksCube.getRotationMatrix(i));
+        shader->setUniform("cubeMatrix", rubiksCube->getRotationMatrix(i));
         const unsigned int vertexCountPerSmallCube = 36;
         unsigned int count = i * vertexCountPerSmallCube * sizeof(unsigned int);
         GL_Call(glDrawElements(GL_TRIANGLES, vertexCountPerSmallCube, GL_UNSIGNED_INT,

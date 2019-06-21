@@ -18,11 +18,11 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
 void Landscape::setup() {
-    shader = new Shader("../../../src/app/scenes/landscape/LandscapeVert.glsl",
+    shader = std::make_shared<Shader>("../../../src/app/scenes/landscape/LandscapeVert.glsl",
                         "../../../src/app/scenes/landscape/LandscapeFrag.glsl");
     shader->bind();
 
-    vertexArray = new VertexArray();
+    vertexArray = std::make_shared<VertexArray>();
     generatePoints(INITIAL_POINT_DENSITY);
 
     noise = new FastNoise();
@@ -71,7 +71,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
             indices[counter++] = y * width + (x + 1);
         }
     }
-    indexBuffer = new IndexBuffer(indices.data(), indices.size());
+    indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
 }
 
 void Landscape::destroy() {

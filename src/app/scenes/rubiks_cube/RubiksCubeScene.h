@@ -5,6 +5,7 @@
 #include "rubiks_cube/RubiksCubeLogic.h"
 
 #include <functional>
+#include <memory>
 
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
@@ -26,12 +27,12 @@ public:
     void destroy() override;
 
 private:
-    VertexArray *vertexArray;
-    Shader *shader;
-    IndexBuffer *indexBuffer;
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<IndexBuffer> indexBuffer;
 
     float *vertices;
     unsigned int *indices;
 
-    RubiksCube rubiksCube;
+    std::shared_ptr<RubiksCube> rubiksCube;
 };

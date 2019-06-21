@@ -13,13 +13,13 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void MarchingCubesScene::setup() {
-    shader = new Shader("../../../src/app/scenes/marching_cubes/MarchingCubesVert.glsl",
-                        "../../../src/app/scenes/marching_cubes/MarchingCubesFrag.glsl");
+    shader = std::make_shared<Shader>("../../../src/app/scenes/marching_cubes/MarchingCubesVert.glsl",
+                                      "../../../src/app/scenes/marching_cubes/MarchingCubesFrag.glsl");
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
-    cubeVertexArray = new VertexArray();
+    cubeVertexArray = std::make_shared<VertexArray>();
     cubeVertexArray->bind();
 
     auto positionBuffer = VertexBuffer(cubeCorners.data(), cubeCorners.size() * 3 * sizeof(float));
@@ -37,23 +37,22 @@ void MarchingCubesScene::setup() {
             // edges
             6, 5, 1, 2, 3, 0 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
-    cubeIndexBuffer = new IndexBuffer(indices);
+    cubeIndexBuffer = std::make_shared<IndexBuffer>(indices);
     cubeIndexBuffer->bind();
 
-    marchingCubes = new MarchingCubes();
+    marchingCubes = std::make_shared<MarchingCubes>();
 
-    surfaceVertexArray = new VertexArray();
-    surfaceVertexBuffer = new VertexBuffer();
+    surfaceVertexArray = std::make_shared<VertexArray>();
+    surfaceVertexBuffer = std::make_shared<VertexBuffer>();
     surfaceVertexBuffer->bind();
     bufferLayout = VertexBufferLayout();
     bufferLayout.add<float>(shader, "position", 3);
     surfaceVertexArray->addBuffer(*surfaceVertexBuffer, bufferLayout);
-    surfaceIndexBuffer = new IndexBuffer();
+    surfaceIndexBuffer = std::make_shared<IndexBuffer>();
     surfaceIndexBuffer->bind();
 }
 
 void MarchingCubesScene::destroy() {
-    delete marchingCubes;
 }
 
 void MarchingCubesScene::tick() {

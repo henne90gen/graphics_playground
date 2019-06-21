@@ -3,6 +3,7 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <memory>
 #include <glad/glad.h>
 
 #include "opengl/Shader.h"
@@ -26,16 +27,16 @@ public:
     void destroy() override;
 
 public:
-    Shader *shader;
+    std::shared_ptr<Shader> shader;
 
-    VertexArray *cubeVertexArray;
-    IndexBuffer *cubeIndexBuffer;
+    std::shared_ptr<VertexArray> cubeVertexArray;
+    std::shared_ptr<IndexBuffer> cubeIndexBuffer;
 
-    VertexArray *surfaceVertexArray;
-    VertexBuffer *surfaceVertexBuffer;
-    IndexBuffer *surfaceIndexBuffer;
+    std::shared_ptr<VertexArray> surfaceVertexArray;
+    std::shared_ptr<VertexBuffer> surfaceVertexBuffer;
+    std::shared_ptr<IndexBuffer> surfaceIndexBuffer;
 
-    MarchingCubes *marchingCubes;
+    std::shared_ptr<MarchingCubes> marchingCubes;
 
     glm::mat4 projectionMatrix;
 

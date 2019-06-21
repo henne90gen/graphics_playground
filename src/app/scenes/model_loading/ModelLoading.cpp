@@ -9,8 +9,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void ModelLoading::setup() {
-    shader = new Shader("../../../src/app/scenes/model_loading/ModelLoadingVert.glsl",
-                        "../../../src/app/scenes/model_loading/ModelLoadingFrag.glsl");
+    shader = std::make_shared<Shader>("../../../src/app/scenes/model_loading/ModelLoadingVert.glsl",
+                                      "../../../src/app/scenes/model_loading/ModelLoadingFrag.glsl");
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
@@ -130,12 +130,12 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
 
     for (auto &mesh : model.meshes) {
         RenderMesh renderMesh = {
-                new VertexArray(),
-                new VertexBuffer(),
-                new VertexBuffer(),
-                new VertexBuffer(),
-                new IndexBuffer(),
-                new Texture(GL_RGBA)
+                std::make_shared<VertexArray>(),
+                std::make_shared<VertexBuffer>(),
+                std::make_shared<VertexBuffer>(),
+                std::make_shared<VertexBuffer>(),
+                std::make_shared<IndexBuffer>(),
+                std::make_shared<Texture>(GL_RGBA)
         };
 
         renderMesh.vertexArray->bind();

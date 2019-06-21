@@ -9,11 +9,11 @@
 #include "util/ImGuiUtils.h"
 
 void TextureDemo::setup() {
-    shader = new Shader("../../../src/app/scenes/texture_demo/TextureDemoVert.glsl",
-                        "../../../src/app/scenes/texture_demo/TextureDemoFrag.glsl");
+    shader = std::make_shared<Shader>("../../../src/app/scenes/texture_demo/TextureDemoVert.glsl",
+                                      "../../../src/app/scenes/texture_demo/TextureDemoFrag.glsl");
     shader->bind();
 
-    vertexArray = new VertexArray();
+    vertexArray = std::make_shared<VertexArray>();
     vertexArray->bind();
 
     std::vector<float> vertices = {
@@ -31,7 +31,7 @@ void TextureDemo::setup() {
     vertexArray->addBuffer(*buffer, bufferLayout);
 
 
-    texture = new Texture();
+    texture = std::make_shared<Texture>();
     glActiveTexture(GL_TEXTURE0);
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
