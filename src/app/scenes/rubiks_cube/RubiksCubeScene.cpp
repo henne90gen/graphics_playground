@@ -245,7 +245,7 @@ void RubiksCubeScene::setup() {
         }
     }
 
-    VertexBufferLayout bufferLayout = {
+    BufferLayout bufferLayout = {
             {ShaderDataType::Float3, "position"},
             {ShaderDataType::Float3, "color"}
     };

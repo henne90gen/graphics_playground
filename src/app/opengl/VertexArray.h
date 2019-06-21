@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VertexBuffer.h"
-#include "VertexBufferLayout.h"
+#include "BufferLayout.h"
 #include "IndexBuffer.h"
 
 class VertexArray {
@@ -9,8 +9,6 @@ public:
     VertexArray(std::shared_ptr<Shader> s);
 
     ~VertexArray();
-
-    void setShader(const std::shared_ptr<Shader> &s) { this->shader = s; }
 
     void setIndexBuffer(const std::shared_ptr<IndexBuffer> &buffer);
 

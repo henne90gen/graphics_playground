@@ -19,7 +19,7 @@ void FontDemo::setup() {
             0.5, -0.5, 1.0, 1.0, //
             0.5, 0.5, 1.0, 0.0  //
     };
-    VertexBufferLayout bufferLayout = {
+    BufferLayout bufferLayout = {
             {ShaderDataType::Float2, "position"},
             {ShaderDataType::Float2, "vertexUV"}
     };

@@ -7,7 +7,8 @@ set(SOURCES
         Image.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
-        opengl/VertexBufferLayout.cpp
+        opengl/BufferLayout.cpp
+        opengl/BufferLayoutElement.cpp
         opengl/VertexArray.cpp
         opengl/Texture.cpp
         opengl/Shader.cpp

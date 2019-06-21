@@ -139,19 +139,19 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
 
         renderMesh.vertexArray->bind();
 
-        VertexBufferLayout positionLayout = {
+        BufferLayout positionLayout = {
                 {ShaderDataType::Float3, "a_Position"}
         };
         renderMesh.vertexBuffer->setLayout(positionLayout);
         renderMesh.vertexArray->addVertexBuffer(renderMesh.vertexBuffer);
 
-        VertexBufferLayout normalLayout = {
+        BufferLayout normalLayout = {
                 {ShaderDataType::Float3, "a_Normal"}
         };
         renderMesh.normalBuffer->setLayout(normalLayout);
         renderMesh.vertexArray->addVertexBuffer(renderMesh.normalBuffer);
 
-        VertexBufferLayout uvLayout = {
+        BufferLayout uvLayout = {
                 {ShaderDataType::Float2, "a_UV"}
         };
         renderMesh.textureCoordinatesBuffer->setLayout(uvLayout);

@@ -24,7 +24,7 @@ void TextureDemo::setup() {
             1.0, -1.0, 1.0, 0.0, //
             1.0, 1.0, 1.0, 1.0  //
     };
-    VertexBufferLayout bufferLayout = {
+    BufferLayout bufferLayout = {
                     {ShaderDataType::Float2, "position"},
                     {ShaderDataType::Float2, "vertexUV"}
             };

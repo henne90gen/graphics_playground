@@ -33,7 +33,7 @@ void Cube::setup() {
             1.0F, 1.0F, 1.0F, 1, 1, 1,   // 6
             -1.0F, 1.0F, 1.0F, 0, 0, 0   // 7
     };
-    VertexBufferLayout bufferLayout = {
+    BufferLayout bufferLayout = {
             {ShaderDataType::Float3, "position"},
             {ShaderDataType::Float3, "color"}
     };

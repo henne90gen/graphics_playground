@@ -45,7 +45,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     }
 
     const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    VertexBufferLayout positionLayout = {
+    BufferLayout positionLayout = {
             {ShaderDataType::Float2, "position"}
     };
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
@@ -54,7 +54,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     const unsigned int heightMapCount = width * height;
     heightMap = std::vector<float>(heightMapCount);
     heightBuffer = std::make_shared<VertexBuffer>();
-    VertexBufferLayout heightLayout = {
+    BufferLayout heightLayout = {
             {ShaderDataType::Float, "height"}
     };
     heightBuffer->setLayout(heightLayout);

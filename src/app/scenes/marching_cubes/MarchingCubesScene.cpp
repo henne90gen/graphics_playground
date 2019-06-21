@@ -22,7 +22,7 @@ void MarchingCubesScene::setup() {
     cubeVertexArray = std::make_shared<VertexArray>(shader);
     cubeVertexArray->bind();
 
-    VertexBufferLayout bufferLayout = {
+    BufferLayout bufferLayout = {
             {ShaderDataType::Float3, "position"}
     };
     // FIXME can we just pass in cubeCorners, instead of splitting it up?
@@ -54,7 +54,7 @@ void MarchingCubesScene::setup() {
     surfaceVertexBuffer = std::make_shared<VertexBuffer>();
     surfaceVertexBuffer->bind();
 
-    VertexBufferLayout surfaceBufferLayout = {
+    BufferLayout surfaceBufferLayout = {
             {ShaderDataType::Float3, "position"}
     };
     surfaceVertexBuffer->setLayout(surfaceBufferLayout);

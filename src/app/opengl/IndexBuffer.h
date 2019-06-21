@@ -11,6 +11,8 @@ public:
 
     explicit IndexBuffer(const std::vector<unsigned int> &data);
 
+    explicit IndexBuffer(const std::vector<glm::ivec3> &data);
+
     ~IndexBuffer();
 
     void bind() const;

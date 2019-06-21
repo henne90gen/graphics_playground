@@ -37,7 +37,7 @@ void VertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuf
                 location,
                 element.getCount(),
                 element.getDataType(),
-                element.getNormalied(),
+                element.getNormalized(),
                 layout.getStride(),
                 reinterpret_cast<GLvoid *>(offset) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         ));

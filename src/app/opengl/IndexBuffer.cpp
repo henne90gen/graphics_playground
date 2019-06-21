@@ -14,6 +14,11 @@ IndexBuffer::IndexBuffer(const std::vector<unsigned int> &data) {
     update(data);
 }
 
+IndexBuffer::IndexBuffer(const std::vector<glm::ivec3> &data) {
+    GL_Call(glGenBuffers(1, &id));
+    update(data);
+}
+
 IndexBuffer::~IndexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
 
 void IndexBuffer::bind() const { GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); }

@@ -2,17 +2,17 @@
 
 #include <vector>
 #include <glm/ext.hpp>
-#include "VertexBufferLayout.h"
+#include "BufferLayout.h"
 
 class VertexBuffer {
 public:
     VertexBuffer();
 
-    VertexBuffer(const void *data, unsigned int size, const VertexBufferLayout& l);
+    VertexBuffer(const void *data, unsigned int size, const BufferLayout& l);
 
-    explicit VertexBuffer(const std::vector<float> &data, const VertexBufferLayout& l);
+    explicit VertexBuffer(const std::vector<float> &data, const BufferLayout& l);
 
-    explicit VertexBuffer(const std::vector<glm::vec3> &data, const VertexBufferLayout& l);
+    explicit VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout& l);
 
     ~VertexBuffer();
 
@@ -24,9 +24,9 @@ public:
 
     void update(const std::vector<glm::vec2> &data);
 
-    void setLayout(const VertexBufferLayout &l) { this->layout = l; };
+    void setLayout(const BufferLayout &l) { this->layout = l; };
 
-    const VertexBufferLayout &getLayout() const { return layout; }
+    const BufferLayout &getLayout() const { return layout; }
 
     void bind() const;
 
@@ -34,6 +34,5 @@ public:
 
 private:
     unsigned int id = 0;
-
-    VertexBufferLayout layout;
+    BufferLayout layout;
 };
