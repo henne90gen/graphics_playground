@@ -19,6 +19,3 @@
 [submodule "vendor/catch"]
 	path = vendor/catch
 	url = git@github.com:catchorg/Catch2.git
-[submodule "vendor/libjpeg"]
-	path = vendor/libjpeg
-	url = git@github.com:LuaDist/libjpeg.git
