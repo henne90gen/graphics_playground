@@ -4,7 +4,7 @@ Texture::Texture(unsigned int dataType) : dataType(dataType) { GL_Call(glGenText
 
 Texture::~Texture() = default;
 
-void Texture::update(const char *data, unsigned int width, unsigned int height, unsigned int unpackAlignment) {
+void Texture::update(const unsigned char *data, unsigned int width, unsigned int height, unsigned int unpackAlignment) {
     bind();
     if (unpackAlignment != 4) {
         ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 8);

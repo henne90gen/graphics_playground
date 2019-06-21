@@ -86,7 +86,7 @@ void GammaCalculation::tick() {
 
 void GammaCalculation::createCheckerBoard() {
     unsigned int width = getWidth() / 2;
-    std::vector<char> data = std::vector<char>(width * getHeight() * 3);
+    std::vector<unsigned char> data = std::vector<unsigned char>(width * getHeight() * 3);
     for (unsigned long i = 0; i < data.size() / 3; i++) {
         const float fullBrightness = 255.0F;
         float r = fullBrightness;

@@ -56,7 +56,11 @@ target_link_libraries(${PROJECT_NAME}
         glad
         imgui
         ${LIBPNG_LIBRARIES}
+        ${JPEG_LIBRARIES}
+        FastNoise
+        freetype
         logic)
+
 target_link_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_LIBRARY_DIRS})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -73,5 +77,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${GLAD_DIR}/include
         ${GLM_DIR}
         ${IMGUI_DIR}
+        ${FAST_NOISE_DIR}
         ${LIBPNG_INCLUDE_DIRS}
+        ${FREETYPE_DIR}
+        ${JPEG_INCLUDE_DIRS}
         ${LOGIC_DIR})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)

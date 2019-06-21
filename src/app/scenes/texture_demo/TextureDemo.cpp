@@ -73,7 +73,7 @@ void TextureDemo::tick() {
 }
 
 void TextureDemo::updateTexture(const std::array<float, 3> color, bool checkerBoard) {
-    std::vector<char> data = std::vector<char>(getWidth() * getHeight() * 3);
+    std::vector<unsigned char> data = std::vector<unsigned char>(getWidth() * getHeight() * 3);
     for (unsigned long i = 0; i < data.size() / 3; i++) {
         const float colorScaleFactor = 255.0F;
         float r = color[0] * colorScaleFactor;

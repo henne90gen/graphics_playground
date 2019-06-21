@@ -63,8 +63,9 @@ namespace ModelLoader {
 
     unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines, Model &model) {
         if (lines.empty()) {
-            return {};
+            return 1;
         }
+
         model.meshes = {};
         model.materials = {};
 
@@ -155,7 +156,7 @@ namespace ModelLoader {
         std::string path = fileName.substr(0, lastSlash + 1);
         std::string materialFileName = path + line.substr(7);
         if (materialFileName.find(".mtl") == std::string::npos) {
-            std::cerr << materialFileName << " is not an mtl file" << std::endl;
+            std::cerr << materialFileName << " from line " << lineNumber << " is not an mtl file" << std::endl;
             return;
         }
 

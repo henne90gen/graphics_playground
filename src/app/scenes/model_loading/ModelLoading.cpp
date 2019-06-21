@@ -186,7 +186,7 @@ void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh
     }
 
     Image image = {};
-    unsigned int error = loadPng(mesh.material.diffuseTextureMap, image);
+    unsigned int error = loadImage(mesh.material.diffuseTextureMap, image);
     if (error) {
         createCheckerBoard(renderMesh);
         return;
@@ -199,7 +199,7 @@ void ModelLoading::createCheckerBoard(RenderMesh &mesh) {
     unsigned int width = 128;
     unsigned int height = 128;
     int numberOfChannels = 4;
-    std::vector<char> data = std::vector<char>(width * height * numberOfChannels);
+    std::vector<unsigned char> data = std::vector<unsigned char>(width * height * numberOfChannels);
     for (unsigned long i = 0; i < data.size() / numberOfChannels; i++) {
         const float fullBrightness = 255.0F;
         float r = fullBrightness;

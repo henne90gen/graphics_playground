@@ -53,6 +53,9 @@ add_subdirectory(${FREETYPE_DIR})
 set(LIBPNG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libpng)
 add_subdirectory(${LIBPNG_DIR})
 
+# libjpeg
+find_package(JPEG)
+
 # Catch
 set(CATCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/catch)
 add_subdirectory(${CATCH_DIR})
@@ -62,16 +65,15 @@ add_subdirectory(src)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
-target_link_libraries(${PROJECT_NAME} glfw "${GLFW_LIBRARIES}")
-target_link_libraries(${PROJECT_NAME} glad)
-target_link_libraries(${PROJECT_NAME} imgui)
-target_link_libraries(${PROJECT_NAME} FastNoise)
-target_link_libraries(${PROJECT_NAME} freetype)
-target_link_libraries(${PROJECT_NAME} logic)
+#target_link_libraries(${PROJECT_NAME} glfw "${GLFW_LIBRARIES}")
+#target_link_libraries(${PROJECT_NAME} glad)
+#target_link_libraries(${PROJECT_NAME} imgui)
+#target_link_libraries(${PROJECT_NAME} FastNoise)
+#target_link_libraries(${PROJECT_NAME} freetype)
+#target_link_libraries(${PROJECT_NAME} logic)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_DIR}/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_DIR}/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${FAST_NOISE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
+#target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_DIR}/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_DIR}/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_DIR})
+#target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR})
+#target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})

@@ -8,7 +8,11 @@ struct Image {
     unsigned int height;
     char channels;
     char bitDepth;
-    std::vector<char> pixels;
+    std::vector<unsigned char> pixels;
 };
 
-int loadPng(const std::string &file_name, Image &image);
+int loadPng(const std::string &fileName, Image &image);
+
+int loadJpg(const std::string &fileName, Image &image);
+
+int loadImage(const std::string &fileName, Image &image);

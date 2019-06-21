@@ -184,7 +184,7 @@ Character FontDemo::loadCharacter(const char character, const int characterHeigh
 
     FT_GlyphSlot glyph = face->glyph;
     FT_Bitmap bitmap = glyph->bitmap;
-    texture.update(reinterpret_cast<const char *>(bitmap.buffer), bitmap.width, bitmap.rows, 1);
+    texture.update(reinterpret_cast<const unsigned char *>(bitmap.buffer), bitmap.width, bitmap.rows, 1);
 
     return {
             character,
