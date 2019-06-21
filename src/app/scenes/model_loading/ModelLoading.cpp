@@ -1,4 +1,4 @@
-#include <util/ImageUtils.h>
+#include <Image.h>
 #include "ModelLoading.h"
 
 #include "model_loading/ModelLoader.h"
@@ -185,14 +185,14 @@ void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh
         return;
     }
 
-    Image image = {};
-    unsigned int error = loadImage(mesh.material.diffuseTextureMap, image);
-    if (error) {
+    Image image(mesh.material.diffuseTextureMap);
+    image.load();
+    if (!image.isLoaded()) {
         createCheckerBoard(renderMesh);
         return;
     }
 
-    renderMesh.texture->update(image.pixels.data(), image.width, image.height);
+    renderMesh.texture->update(image.getPixels().data(), image.getWidth(), image.getHeight());
 }
 
 void ModelLoading::createCheckerBoard(RenderMesh &mesh) {
