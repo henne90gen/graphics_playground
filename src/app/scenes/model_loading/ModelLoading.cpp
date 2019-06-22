@@ -34,8 +34,18 @@ void ModelLoading::tick() {
     }
 
     std::vector<std::string> paths = {};
-    showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths, model,
-                 openGLModel);
+    showSettings(
+            rotate,
+            translation,
+            modelRotation,
+            cameraRotation,
+            scale,
+            drawWireframe,
+            currentModel,
+            paths,
+            model,
+            openGLModel
+    );
 
     shader->bind();
 
@@ -45,15 +55,17 @@ void ModelLoading::tick() {
         prevModel = currentModel;
     }
 
-    if (openGLModel) {
-        drawModel(translation, modelRotation, cameraRotation, scale, drawWireframe);
-    }
+    drawModel(translation, modelRotation, cameraRotation, scale, drawWireframe);
 
     shader->unbind();
 }
 
 void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
                              const glm::vec3 &cameraRotation, float scale, bool drawWireframe) const {
+    if (!openGLModel) {
+        return;
+    }
+
     for (auto &mesh : openGLModel->getMeshes()) {
         if (!mesh->visible) {
             continue;
