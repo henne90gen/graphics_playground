@@ -6,7 +6,7 @@
 #include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/Texture.h"
-#include "opengl/OpenGLModel.h"
+#include "opengl/Model.h"
 #include "model_loading/ModelLoader.h"
 
 #include <functional>
@@ -28,24 +28,16 @@ public:
 private:
     std::shared_ptr<Shader> shader;
 
-    std::unique_ptr<OpenGLModel> openGLModel;
-    ModelLoader::Model model = {};
+    std::shared_ptr<Model> glModel;
 
     glm::mat4 projectionMatrix;
 
-    void createCheckerBoard(OpenGLMesh &mesh);
-
-    void updateModel(const std::string &modelFileName);
-
-    void updateTexture(ModelLoader::Mesh &mesh, OpenGLMesh &renderMesh);
 
     void drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
                    const glm::vec3 &cameraRotation, float scale, bool drawWireframe) const;
-
-    void updateVertices(const ModelLoader::Mesh &mesh, const OpenGLMesh &renderMesh) const;
 };
 
 void
 showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
              bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
-             ModelLoader::Model &model, std::unique_ptr<OpenGLModel> &renderModel);
+             std::shared_ptr<Model> &renderModel);

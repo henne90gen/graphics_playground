@@ -7,13 +7,13 @@
 #include <glm/ext.hpp>
 
 namespace ModelLoader {
-    struct Material {
+    struct RawMaterial {
         std::string name;
 
         std::string diffuseTextureMap;
     };
 
-    struct Mesh {
+    struct RawMesh {
         std::string name;
 
         std::vector<glm::vec3> vertices;
@@ -21,15 +21,16 @@ namespace ModelLoader {
         std::vector<glm::vec2> textureCoordinates;
         std::vector<glm::ivec3> indices;
 
-        std::shared_ptr<Material> material;
+        std::shared_ptr<RawMaterial> material;
     };
 
-    struct Model {
-        std::vector<Mesh> meshes;
-        std::map<std::string, std::shared_ptr<Material>> materials;
+    struct RawModel {
+        std::vector<RawMesh> meshes;
+        std::map<std::string, std::shared_ptr<RawMaterial>> materials;
     };
 
-    unsigned int fromFile(const std::string &fileName, Model &model);
+    unsigned int fromFile(const std::string &fileName, std::shared_ptr<RawModel> &model);
 
-    unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines, Model &model);
+    unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines,
+                                 std::shared_ptr<RawModel> &model);
 }

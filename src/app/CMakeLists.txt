@@ -12,7 +12,7 @@ set(SOURCES
         opengl/VertexArray.cpp
         opengl/Texture.cpp
         opengl/Shader.cpp
-        opengl/OpenGLModel.cpp
+        opengl/Model.cpp
         scenes/Scene.cpp
         scenes/test_scene/TestScene.cpp
         scenes/legacy_triangle/LegacyTriangle.cpp

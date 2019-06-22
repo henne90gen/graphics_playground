@@ -31,7 +31,7 @@ namespace ModelLoader {
     void parseFace(const std::string &fileName, unsigned long lineNumber, const std::string &line,
                    std::vector<Face> &faces);
 
-    unsigned int fromFile(const std::string &fileName, Model &model) {
+    unsigned int fromFile(const std::string &fileName, std::shared_ptr<RawModel> &model) {
         if (fileName.find(".obj") == std::string::npos) {
             std::cerr << fileName << " is not an obj file" << std::endl;
             return 1;
@@ -57,19 +57,20 @@ namespace ModelLoader {
                                  std::vector<glm::vec2> &textureCoordinates);
 
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                          std::map<std::string, std::shared_ptr<Material>> &materials);
+                          std::map<std::string, std::shared_ptr<RawMaterial>> &materials);
 
-    Mesh createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces);
+    RawMesh createIndicesFromFaces(RawMesh &mesh, const std::vector<Face> &faces);
 
-    unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines, Model &model) {
+    unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines,
+                                 std::shared_ptr<RawModel> &model) {
         if (lines.empty()) {
             return 1;
         }
 
-        model.meshes = {};
-        model.materials = {};
+        model->meshes = {};
+        model->materials = {};
 
-        Mesh globalMesh = {};
+        RawMesh globalMesh = {};
         std::vector<Face> faces = {};
 
         for (unsigned long lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
@@ -81,11 +82,11 @@ namespace ModelLoader {
             if (l[0] == '#') {
                 continue;
             } else if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
-                parseMaterialLib(fileName, lineNumber, l, model.materials);
+                parseMaterialLib(fileName, lineNumber, l, model->materials);
             } else if (l[0] == 'o') {
                 if (!globalMesh.name.empty()) {
                     auto mesh = createIndicesFromFaces(globalMesh, faces);
-                    model.meshes.push_back(mesh);
+                    model->meshes.push_back(mesh);
                     faces.clear();
                 }
                 globalMesh.name = l.substr(2);
@@ -98,7 +99,7 @@ namespace ModelLoader {
             } else if (l[0] == 'f') {
                 parseFace(fileName, lineNumber, l, faces);
             } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
-                globalMesh.material = model.materials[l.substr(7)];
+                globalMesh.material = model->materials[l.substr(7)];
             } else if (l[0] == 's') {
                 // ignore this for now
             } else {
@@ -107,11 +108,11 @@ namespace ModelLoader {
         }
 
         auto mesh = createIndicesFromFaces(globalMesh, faces);
-        model.meshes.push_back(mesh);
+        model->meshes.push_back(mesh);
         return 0;
     }
 
-    Mesh createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces) {
+    RawMesh createIndicesFromFaces(RawMesh &mesh, const std::vector<Face> &faces) {
         std::vector<glm::vec3> vertices = {};
         std::vector<glm::vec3> normals = {};
         std::vector<glm::vec2> textureCoordinates = {};
@@ -147,7 +148,7 @@ namespace ModelLoader {
     }
 
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                          std::map<std::string, std::shared_ptr<Material>> &materials) {
+                          std::map<std::string, std::shared_ptr<RawMaterial>> &materials) {
         // TODO use fileName and lineNumber to tell the user which file the material lib is from
         int lastSlash = fileName.find_last_of('/');
 
@@ -171,7 +172,7 @@ namespace ModelLoader {
             lines.push_back(str);
         }
 
-        Material currentMaterial = {};
+        RawMaterial currentMaterial = {};
         for (unsigned long materialLineNumber = 1; materialLineNumber <= lines.size(); materialLineNumber++) {
             std::string l = trim_copy(lines[materialLineNumber - 1]);
             if (l.empty()) {
@@ -182,7 +183,7 @@ namespace ModelLoader {
                 continue;
             } else if (l[0] == 'n' && l[1] == 'e' && l[2] == 'w') {
                 if (!currentMaterial.name.empty()) {
-                    materials[currentMaterial.name] = std::make_shared<Material>(currentMaterial);
+                    materials[currentMaterial.name] = std::make_shared<RawMaterial>(currentMaterial);
                 }
                 currentMaterial = {l.substr(7)};
             } else if (l[0] == 'm' && l[1] == 'a' && l[2] == 'p' && l[4] == 'K' && l[5] == 'd') {
@@ -198,7 +199,7 @@ namespace ModelLoader {
             // illum 2
             // map_Kd TestTex.png
         }
-        materials[currentMaterial.name] = std::make_shared<Material>(currentMaterial);
+        materials[currentMaterial.name] = std::make_shared<RawMaterial>(currentMaterial);
     }
 
     void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,
