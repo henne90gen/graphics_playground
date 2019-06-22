@@ -6,24 +6,11 @@
 #include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/Texture.h"
+#include "opengl/OpenGLModel.h"
 #include "model_loading/ModelLoader.h"
 
 #include <functional>
 #include <memory>
-
-struct RenderMesh {
-    std::shared_ptr<VertexArray> vertexArray;
-    std::shared_ptr<VertexBuffer> vertexBuffer;
-    std::shared_ptr<VertexBuffer> normalBuffer;
-    std::shared_ptr<VertexBuffer> textureCoordinatesBuffer;
-    std::shared_ptr<IndexBuffer> indexBuffer;
-    std::shared_ptr<Texture> texture;
-    bool shouldRender = true;
-};
-
-struct RenderModel {
-    std::vector<RenderMesh> meshes;
-};
 
 class ModelLoading : public Scene {
 public:
@@ -41,19 +28,22 @@ public:
 private:
     std::shared_ptr<Shader> shader;
 
-    RenderModel renderModel;
+    std::unique_ptr<OpenGLModel> openGLModel;
     ModelLoader::Model model = {};
 
     glm::mat4 projectionMatrix;
 
-    void createCheckerBoard(RenderMesh &mesh);
+    void createCheckerBoard(OpenGLMesh &mesh);
 
     void updateModel(const std::string &modelFileName);
 
-    void updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh);
+    void updateTexture(ModelLoader::Mesh &mesh, OpenGLMesh &renderMesh);
+
+    void drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
+                   const glm::vec3 &cameraRotation, float scale, bool drawWireframe) const;
 };
 
 void
 showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
              bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
-             ModelLoader::Model &model, RenderModel &renderModel);
+             ModelLoader::Model &model, std::unique_ptr<OpenGLModel> &renderModel);

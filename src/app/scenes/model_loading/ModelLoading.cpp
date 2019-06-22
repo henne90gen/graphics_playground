@@ -1,4 +1,4 @@
-#include <Image.h>
+#include <shared/Image.h>
 #include "ModelLoading.h"
 
 #include "model_loading/ModelLoader.h"
@@ -35,7 +35,7 @@ void ModelLoading::tick() {
 
     std::vector<std::string> paths = {};
     showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths, model,
-                 renderModel);
+                 openGLModel);
 
     shader->bind();
 
@@ -45,12 +45,21 @@ void ModelLoading::tick() {
         prevModel = currentModel;
     }
 
-    for (auto &mesh : renderModel.meshes) {
-        if (!mesh.shouldRender) {
+    if (openGLModel) {
+        drawModel(translation, modelRotation, cameraRotation, scale, drawWireframe);
+    }
+
+    shader->unbind();
+}
+
+void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
+                             const glm::vec3 &cameraRotation, float scale, bool drawWireframe) const {
+    for (auto &mesh : openGLModel->getMeshes()) {
+        if (!mesh->visible) {
             continue;
         }
 
-        mesh.vertexArray->bind();
+        mesh->vertexArray->bind();
 
         glm::mat4 modelMatrix = glm::mat4(1.0F);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
@@ -63,28 +72,26 @@ void ModelLoading::tick() {
         shader->setUniform("u_Projection", projectionMatrix);
 
         shader->setUniform("u_TextureSampler", 0);
-        mesh.texture->bind();
+        mesh->texture->bind();
 
         if (drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
         }
 
-        GL_Call(glDrawElements(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 
         if (drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
         }
 
-        mesh.vertexArray->unbind();
+        mesh->vertexArray->unbind();
     }
-
-    shader->unbind();
 }
 
 void
 showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
              bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
-             ModelLoader::Model &model, RenderModel &renderModel) {
+             ModelLoader::Model &model, std::unique_ptr<OpenGLModel> &renderModel) {
     ImGui::Begin("Settings");
     ImGui::FileSelector("Models", "../../../src/app/scenes/model_loading/models/", currentModel, paths);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
@@ -101,8 +108,8 @@ showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm
     ImGui::Text("Number of meshes: %ld", model.meshes.size());
     for (unsigned long i = 0; i < model.meshes.size(); i++) {
         auto &mesh = model.meshes[i];
-        auto &renderMesh = renderModel.meshes[i];
-        ImGui::Checkbox(("\tName: " + mesh.name).c_str(), &renderMesh.shouldRender);
+        auto &renderMesh = renderModel->getMeshes()[i];
+        ImGui::Checkbox(("\tName: " + mesh.name).c_str(), &renderMesh->visible);
         ImGui::Text("\t\tNumber of vertices: %ld", mesh.vertices.size());
         ImGui::Text("\t\tNumber of normals: %ld", mesh.normals.size());
         ImGui::Text("\t\tNumber of texture coordinates: %ld", mesh.textureCoordinates.size());
@@ -111,8 +118,8 @@ showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm
     ImGui::Text("Number of materials: %ld", model.materials.size());
     for (auto &entry : model.materials) {
         auto &material = entry.second;
-        ImGui::Text("\tName: %s", material.name.c_str());
-        ImGui::Text("\t\tDiffuse Texture Map: %s", material.diffuseTextureMap.c_str());
+        ImGui::Text("\tName: %s", material->name.c_str());
+        ImGui::Text("\t\tDiffuse Texture Map: %s", material->diffuseTextureMap.c_str());
     }
 
     ImGui::End();
@@ -125,13 +132,11 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
         return;
     }
 
-    renderModel = {};
+    openGLModel = std::make_unique<OpenGLModel>();
 
     for (auto &mesh : model.meshes) {
-        RenderMesh renderMesh = {
+        OpenGLMesh renderMesh = {
                 std::make_shared<VertexArray>(shader),
-                std::make_shared<VertexBuffer>(),
-                std::make_shared<VertexBuffer>(),
                 std::make_shared<VertexBuffer>(),
                 std::make_shared<IndexBuffer>(),
                 std::make_shared<Texture>(GL_RGBA)
@@ -140,22 +145,12 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
         renderMesh.vertexArray->bind();
 
         BufferLayout positionLayout = {
-                {ShaderDataType::Float3, "a_Position"}
+                {ShaderDataType::Float3, "a_Position"},
+                {ShaderDataType::Float3, "a_Normal"},
+                {ShaderDataType::Float2, "a_UV"}
         };
         renderMesh.vertexBuffer->setLayout(positionLayout);
         renderMesh.vertexArray->addVertexBuffer(renderMesh.vertexBuffer);
-
-        BufferLayout normalLayout = {
-                {ShaderDataType::Float3, "a_Normal"}
-        };
-        renderMesh.normalBuffer->setLayout(normalLayout);
-        renderMesh.vertexArray->addVertexBuffer(renderMesh.normalBuffer);
-
-        BufferLayout uvLayout = {
-                {ShaderDataType::Float2, "a_UV"}
-        };
-        renderMesh.textureCoordinatesBuffer->setLayout(uvLayout);
-        renderMesh.vertexArray->addVertexBuffer(renderMesh.textureCoordinatesBuffer);
 
         renderMesh.indexBuffer->bind();
 
@@ -163,34 +158,51 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
         GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
 
-        renderMesh.vertexBuffer->update(mesh.vertices);
-
+        std::vector<float> vertices;
         bool hasNormals = !mesh.normals.empty();
         shader->setUniform("u_HasNormals", hasNormals);
-        if (hasNormals) {
-            renderMesh.normalBuffer->update(mesh.normals);
-        }
-
         bool hasTexture = !mesh.textureCoordinates.empty();
         shader->setUniform("u_HasTexture", hasTexture);
-        if (hasTexture) {
-            renderMesh.textureCoordinatesBuffer->update(mesh.textureCoordinates);
+
+        for (unsigned long i = 0; i < mesh.vertices.size(); i++) {
+            vertices.push_back(mesh.vertices[i].x);
+            vertices.push_back(mesh.vertices[i].y);
+            vertices.push_back(mesh.vertices[i].z);
+
+            if (hasNormals) {
+                vertices.push_back(mesh.normals[i].x);
+                vertices.push_back(mesh.normals[i].y);
+                vertices.push_back(mesh.normals[i].z);
+            } else {
+                vertices.push_back(0);
+                vertices.push_back(0);
+                vertices.push_back(0);
+            }
+            if (hasTexture) {
+                vertices.push_back(mesh.textureCoordinates[i].x);
+                vertices.push_back(mesh.textureCoordinates[i].y);
+            } else {
+                vertices.push_back(0);
+                vertices.push_back(0);
+            }
         }
+
+        renderMesh.vertexBuffer->update(vertices);
         renderMesh.indexBuffer->update(mesh.indices);
 
         updateTexture(mesh, renderMesh);
 
-        renderModel.meshes.push_back(renderMesh);
+        openGLModel->addMesh(std::make_shared<OpenGLMesh>(renderMesh));
     }
 }
 
-void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh) {
-    if (!mesh.hasMaterial) {
+void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, OpenGLMesh &renderMesh) {
+    if (!mesh.material) {
         createCheckerBoard(renderMesh);
         return;
     }
 
-    Image image(mesh.material.diffuseTextureMap);
+    Image image(mesh.material->diffuseTextureMap);
     image.load();
     if (!image.isLoaded()) {
         createCheckerBoard(renderMesh);
@@ -200,7 +212,7 @@ void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, RenderMesh &renderMesh
     renderMesh.texture->update(image.getPixels().data(), image.getWidth(), image.getHeight());
 }
 
-void ModelLoading::createCheckerBoard(RenderMesh &mesh) {
+void ModelLoading::createCheckerBoard(OpenGLMesh &mesh) {
     unsigned int width = 128;
     unsigned int height = 128;
     int numberOfChannels = 4;

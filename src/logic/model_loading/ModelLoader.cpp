@@ -57,7 +57,7 @@ namespace ModelLoader {
                                  std::vector<glm::vec2> &textureCoordinates);
 
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                          std::map<std::string, Material> &materials);
+                          std::map<std::string, std::shared_ptr<Material>> &materials);
 
     Mesh createIndicesFromFaces(Mesh &mesh, const std::vector<Face> &faces);
 
@@ -98,7 +98,6 @@ namespace ModelLoader {
             } else if (l[0] == 'f') {
                 parseFace(fileName, lineNumber, l, faces);
             } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
-                globalMesh.hasMaterial = true;
                 globalMesh.material = model.materials[l.substr(7)];
             } else if (l[0] == 's') {
                 // ignore this for now
@@ -144,13 +143,12 @@ namespace ModelLoader {
             indices.push_back(triangle);
         }
 
-        return {mesh.name, vertices, normals, textureCoordinates, indices, mesh.hasMaterial, mesh.material};
+        return {mesh.name, vertices, normals, textureCoordinates, indices, mesh.material};
     }
 
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                          std::map<std::string, Material> &materials) {
+                          std::map<std::string, std::shared_ptr<Material>> &materials) {
         // TODO use fileName and lineNumber to tell the user which file the material lib is from
-
         int lastSlash = fileName.find_last_of('/');
 
         std::string path = fileName.substr(0, lastSlash + 1);
@@ -184,7 +182,7 @@ namespace ModelLoader {
                 continue;
             } else if (l[0] == 'n' && l[1] == 'e' && l[2] == 'w') {
                 if (!currentMaterial.name.empty()) {
-                    materials[currentMaterial.name] = currentMaterial;
+                    materials[currentMaterial.name] = std::make_shared<Material>(currentMaterial);
                 }
                 currentMaterial = {l.substr(7)};
             } else if (l[0] == 'm' && l[1] == 'a' && l[2] == 'p' && l[4] == 'K' && l[5] == 'd') {
@@ -200,7 +198,7 @@ namespace ModelLoader {
             // illum 2
             // map_Kd TestTex.png
         }
-        materials[currentMaterial.name] = currentMaterial;
+        materials[currentMaterial.name] = std::make_shared<Material>(currentMaterial);
     }
 
     void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,

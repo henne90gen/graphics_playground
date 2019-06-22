@@ -4,7 +4,7 @@ set(SOURCES
         util/MainMenu.cpp
         util/ImGuiUtils.cpp
         util/OpenGLUtils.cpp
-        Image.cpp
+        shared/Image.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
         opengl/BufferLayout.cpp
@@ -12,6 +12,7 @@ set(SOURCES
         opengl/VertexArray.cpp
         opengl/Texture.cpp
         opengl/Shader.cpp
+        opengl/OpenGLModel.cpp
         scenes/Scene.cpp
         scenes/test_scene/TestScene.cpp
         scenes/legacy_triangle/LegacyTriangle.cpp

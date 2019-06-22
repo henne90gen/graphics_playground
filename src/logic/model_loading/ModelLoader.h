@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 #include <glm/ext.hpp>
 
 namespace ModelLoader {
@@ -20,13 +21,12 @@ namespace ModelLoader {
         std::vector<glm::vec2> textureCoordinates;
         std::vector<glm::ivec3> indices;
 
-        bool hasMaterial;
-        Material material;
+        std::shared_ptr<Material> material;
     };
 
     struct Model {
         std::vector<Mesh> meshes;
-        std::map<std::string, Material> materials;
+        std::map<std::string, std::shared_ptr<Material>> materials;
     };
 
     unsigned int fromFile(const std::string &fileName, Model &model);
