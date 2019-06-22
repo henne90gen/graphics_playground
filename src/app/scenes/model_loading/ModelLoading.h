@@ -41,6 +41,8 @@ private:
 
     void drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
                    const glm::vec3 &cameraRotation, float scale, bool drawWireframe) const;
+
+    void updateVertices(const ModelLoader::Mesh &mesh, const OpenGLMesh &renderMesh) const;
 };
 
 void

@@ -156,56 +156,59 @@ void ModelLoading::updateModel(const std::string &modelFileName) {
 
         renderMesh.vertexArray->bind();
 
-        BufferLayout positionLayout = {
-                {ShaderDataType::Float3, "a_Position"},
-                {ShaderDataType::Float3, "a_Normal"},
-                {ShaderDataType::Float2, "a_UV"}
-        };
-        renderMesh.vertexBuffer->setLayout(positionLayout);
-        renderMesh.vertexArray->addVertexBuffer(renderMesh.vertexBuffer);
+        updateVertices(mesh, renderMesh);
 
         renderMesh.indexBuffer->bind();
+        renderMesh.indexBuffer->update(mesh.indices);
 
         renderMesh.texture->bind();
         GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
 
-        std::vector<float> vertices;
-        bool hasNormals = !mesh.normals.empty();
-        shader->setUniform("u_HasNormals", hasNormals);
-        bool hasTexture = !mesh.textureCoordinates.empty();
-        shader->setUniform("u_HasTexture", hasTexture);
-
-        for (unsigned long i = 0; i < mesh.vertices.size(); i++) {
-            vertices.push_back(mesh.vertices[i].x);
-            vertices.push_back(mesh.vertices[i].y);
-            vertices.push_back(mesh.vertices[i].z);
-
-            if (hasNormals) {
-                vertices.push_back(mesh.normals[i].x);
-                vertices.push_back(mesh.normals[i].y);
-                vertices.push_back(mesh.normals[i].z);
-            } else {
-                vertices.push_back(0);
-                vertices.push_back(0);
-                vertices.push_back(0);
-            }
-            if (hasTexture) {
-                vertices.push_back(mesh.textureCoordinates[i].x);
-                vertices.push_back(mesh.textureCoordinates[i].y);
-            } else {
-                vertices.push_back(0);
-                vertices.push_back(0);
-            }
-        }
-
-        renderMesh.vertexBuffer->update(vertices);
-        renderMesh.indexBuffer->update(mesh.indices);
-
         updateTexture(mesh, renderMesh);
 
         openGLModel->addMesh(std::make_shared<OpenGLMesh>(renderMesh));
     }
+}
+
+void ModelLoading::updateVertices(const ModelLoader::Mesh &mesh, const OpenGLMesh &renderMesh) const {
+    bool hasNormals = !mesh.normals.empty();
+    shader->setUniform("u_HasNormals", hasNormals);
+    bool hasTexture = !mesh.textureCoordinates.empty();
+    shader->setUniform("u_HasTexture", hasTexture);
+
+    std::vector<float> vertices;
+    for (unsigned long i = 0; i < mesh.vertices.size(); i++) {
+        vertices.push_back(mesh.vertices[i].x);
+        vertices.push_back(mesh.vertices[i].y);
+        vertices.push_back(mesh.vertices[i].z);
+
+        if (hasNormals) {
+            vertices.push_back(mesh.normals[i].x);
+            vertices.push_back(mesh.normals[i].y);
+            vertices.push_back(mesh.normals[i].z);
+        } else {
+            vertices.push_back(0);
+            vertices.push_back(0);
+            vertices.push_back(0);
+        }
+        if (hasTexture) {
+            vertices.push_back(mesh.textureCoordinates[i].x);
+            vertices.push_back(mesh.textureCoordinates[i].y);
+        } else {
+            vertices.push_back(0);
+            vertices.push_back(0);
+        }
+    }
+
+    BufferLayout positionLayout = {
+            {Float3, "a_Position"},
+            {Float3, "a_Normal"},
+            {Float2, "a_UV"}
+    };
+    renderMesh.vertexBuffer->setLayout(positionLayout);
+    renderMesh.vertexBuffer->update(vertices);
+    renderMesh.vertexArray->addVertexBuffer(renderMesh.vertexBuffer);
 }
 
 void ModelLoading::updateTexture(ModelLoader::Mesh &mesh, OpenGLMesh &renderMesh) {
