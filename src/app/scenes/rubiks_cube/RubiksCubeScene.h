@@ -31,6 +31,8 @@ private:
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<IndexBuffer> indexBuffer;
 
+    glm::mat4 projectionMatrix;
+
     float *vertices;
     unsigned int *indices;
 

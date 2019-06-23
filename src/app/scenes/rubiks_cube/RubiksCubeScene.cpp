@@ -206,6 +206,8 @@ void RubiksCubeScene::setup() {
                                       "../../../src/app/scenes/rubiks_cube/RubiksCubeFrag.glsl");
     shader->bind();
 
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
@@ -326,7 +328,6 @@ void RubiksCubeScene::tick() {
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
