@@ -12,12 +12,12 @@ void FontDemo::setup() {
     vertexArray->bind();
 
     std::vector<float> vertices = {
-            -0.5, 0.5, 0.0, 0.0,  //
-            -0.5, -0.5, 0.0, 1.0,  //
-            0.5, -0.5, 1.0, 1.0, //
-            -0.5, 0.5, 0.0, 0.0,  //
-            0.5, -0.5, 1.0, 1.0, //
-            0.5, 0.5, 1.0, 0.0  //
+            -0.5, 0.5, 0.0, 0.0,  // NOLINT
+            -0.5, -0.5, 0.0, 1.0,  // NOLINT
+            0.5, -0.5, 1.0, 1.0, // NOLINT
+            -0.5, 0.5, 0.0, 0.0,  // NOLINT
+            0.5, -0.5, 1.0, 1.0, // NOLINT
+            0.5, 0.5, 1.0, 0.0  // NOLINT
     };
     BufferLayout bufferLayout = {
             {ShaderDataType::Float2, "position"},
@@ -38,11 +38,11 @@ void FontDemo::destroy() {
 
 void FontDemo::tick() {
     std::string text = "Jeb quickly drove a few extra miles on the glazed pavement";
-    static auto color = glm::vec3(1.0F, 1.0F, 1.0F);
-    static auto translation = glm::vec2(-0.16, 0.11);
-    static float zoom = 0.112F;
-    static unsigned int characterResolution = 512;
-    static unsigned int selectedFontIndex = 3;
+    static auto color = glm::vec3(1.0F, 1.0F, 1.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto translation = glm::vec2(-0.16, 0.11); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float zoom = 0.112F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static unsigned int characterResolution = 512; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static unsigned int selectedFontIndex = 3; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool shouldRenderAlphabet = true;
 
     std::vector<std::string> fontPaths = {};
@@ -76,7 +76,7 @@ void FontDemo::renderAlphabet(const glm::vec2 &translation, float zoom) const {
     for (unsigned long i = 0; i < characters.size(); i++) {
         const unsigned int row = i / numColumns;
         const unsigned int column = i % numColumns;
-        glm::vec2 offset = glm::vec2(1.0F * column, -1.0F * row);
+        glm::vec2 offset = glm::vec2(1.0F * static_cast<float>(column), -1.0F * static_cast<float>(row));
         renderCharacter(characters[i], offset);
     }
 }
@@ -93,10 +93,12 @@ void FontDemo::renderText(std::string &text, const glm::vec2 &translation, float
 
     glm::vec2 nextCharacterPosition = glm::vec2();
     for (char c : text) {
-        Character &character = characters[static_cast<int>(c) - 32];
+        const unsigned int characterOffset = 32;
+        Character &character = characters[static_cast<int>(c) - characterOffset];
         renderCharacter(character, nextCharacterPosition);
+        const float characterToPixelSpace = 64.0F;
         auto scaledAdvance =
-                static_cast<float>(character.advance) / 64.0F / static_cast<float>(character.maxHeight);
+                static_cast<float>(character.advance) / characterToPixelSpace / static_cast<float>(character.maxHeight);
         nextCharacterPosition += glm::vec2(scaledAdvance, 0.0F);
     }
 }
@@ -108,9 +110,10 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
 
     auto offset = glm::vec2();
     offset.x = static_cast<float>(character.offset.x);
-    offset.x -= (static_cast<float>(character.maxHeight) - static_cast<float>(character.dimension.x)) / 2.0F;
+    const float scale = 2.0F;
+    offset.x -= (static_cast<float>(character.maxHeight) - static_cast<float>(character.dimension.x)) / scale;
     offset.y = static_cast<float>(character.dimension.y) - static_cast<float>(character.offset.y);
-    offset.y += (static_cast<float>(character.maxHeight) - static_cast<float>(character.dimension.y)) / 2.0F;
+    offset.y += (static_cast<float>(character.maxHeight) - static_cast<float>(character.dimension.y)) / scale;
     offset.y *= -1.0F;
     offset /= character.maxHeight;
     glm::vec2 finalTranslation = translation + offset;
@@ -135,7 +138,7 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
     character.texture.unbind();
 }
 
-void FontDemo::loadFont(std::string &fontPath, int characterHeight) {
+void FontDemo::loadFont(std::string &fontPath, const unsigned int characterHeight) {
     if (library == nullptr) {
         const int error = FT_Init_FreeType(&library);
         if (error != 0) {
@@ -160,16 +163,19 @@ void FontDemo::loadFont(std::string &fontPath, int characterHeight) {
     loadAlphabet(characterHeight);
 }
 
-void FontDemo::loadAlphabet(int characterHeight) {
+void FontDemo::loadAlphabet(const unsigned int characterHeight) {
     characters.clear();
-    for (unsigned int i = 32; i < 127; i++) {
-        Character character = loadCharacter(i, characterHeight);
+    const unsigned int firstCharacter = 32;
+    const unsigned int lastCharacter = 127;
+    for (unsigned int i = firstCharacter; i < lastCharacter; i++) {
+        Character character = loadCharacter(i,
+                                            characterHeight); // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         characters.push_back(character);
     }
 }
 
-Character FontDemo::loadCharacter(const char character, const int characterHeight) {
-    int error = FT_Load_Char(face, character, FT_LOAD_RENDER);
+Character FontDemo::loadCharacter(const char character, const unsigned int characterHeight) {
+    int error = FT_Load_Char(face, character, FT_LOAD_RENDER); // NOLINT(hicpp-signed-bitwise)
     if (error != 0) {
         std::cerr << "Could not load glyph" << std::endl;
     }
@@ -185,6 +191,7 @@ Character FontDemo::loadCharacter(const char character, const int characterHeigh
 
     FT_GlyphSlot glyph = face->glyph;
     FT_Bitmap bitmap = glyph->bitmap;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     texture.update(reinterpret_cast<const unsigned char *>(bitmap.buffer), bitmap.width, bitmap.rows, 1);
 
     return {
@@ -202,12 +209,20 @@ void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::ve
                   FT_Face &face) {
     const float translationDragSpeed = 0.01;
     const float scaleDragSpeed = 0.001;
+    const float minZoom = 0.001F;
+    const float maxZoom = 10.0F;
+    const int minResolution = 1;
+    const int maxResolution = 1000;
 
     ImGui::Begin("Settings");
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&color));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat2("Translation", reinterpret_cast<float *>(&translation), translationDragSpeed);
-    ImGui::DragFloat("Zoom", &zoom, scaleDragSpeed, 0.001F, 10.0F);
-    ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), 1, 1000);
+    ImGui::DragFloat("Zoom", &zoom, scaleDragSpeed, minZoom, maxZoom);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::SliderInt("Character Resolution", reinterpret_cast<int *>(&characterResolution), minResolution,
+                     maxResolution);
     ImGui::Checkbox("Show Alphabet", &shouldRenderAlphabet);
 
     std::string prefix = "../../../src/app/scenes/font_demo/fonts/";
@@ -243,10 +258,10 @@ void showFontInfo(FT_Face &f) {
     ImGui::Text("\tHeight: %ld", metrics.height);
 }
 
-bool settingsHaveChanged(int characterHeight, int selectedFontIndex) {
+bool settingsHaveChanged(unsigned int characterHeight, unsigned int selectedFontIndex) {
     static bool initialized = false;
-    static int lastCharacterHeight = 0;
-    static int lastSelectedFontIndex = 0;
+    static unsigned int lastCharacterHeight = 0;
+    static unsigned int lastSelectedFontIndex = 0;
     if (!initialized) {
         initialized = true;
         lastCharacterHeight = characterHeight;
@@ -266,6 +281,7 @@ bool settingsHaveChanged(int characterHeight, int selectedFontIndex) {
 std::string toBits(long number) {
     std::string r;
     while (number != 0) {
+        // NOLINTNEXTLINE(performance-inefficient-string-concatenation,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         r = (number % 2 == 0 ? "0" : "1") + r;
         number /= 2;
     }
