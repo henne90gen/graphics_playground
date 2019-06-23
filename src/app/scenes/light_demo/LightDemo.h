@@ -6,9 +6,10 @@
 #include <memory>
 
 #include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
-#include "opengl/VertexBuffer.h"
-#include "opengl/IndexBuffer.h"
+#include "opengl/Model.h"
+//#include "opengl/VertexArray.h"
+//#include "opengl/VertexBuffer.h"
+//#include "opengl/IndexBuffer.h"
 
 class LightDemo : public Scene {
 public:
@@ -25,7 +26,15 @@ public:
 
 private:
     std::shared_ptr<Shader> shader;
-    std::shared_ptr<VertexArray> vertexArray;
-    std::shared_ptr<VertexBuffer> vertexBuffer;
-    std::shared_ptr<IndexBuffer> indexBuffer;
+    std::unique_ptr<Model> model = {};
+
+    bool drawWireframe = false;
+    glm::mat4 projectionMatrix;
+
+    void
+    drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
+              const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation) const;
+
+    void showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
+                      glm::vec3 &modelRotation, float &scale, glm::vec3 &lightPosition, glm::vec3 &lightColor) const;
 };
