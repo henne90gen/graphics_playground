@@ -24,10 +24,17 @@ void LightDemo::tick() {
     static auto modelTranslation = glm::vec3();
     static auto modelRotation = glm::vec3();
     static float scale = 1.0F;
-    static auto lightPosition = glm::vec3();
+    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.2F);
     static auto lightColor = glm::vec3(1.0F);
+    static bool rotate = true;
+    const float rotationSpeed = 0.01F;
 
-    showSettings(cameraTranslation, cameraRotation, modelTranslation, modelRotation, scale, lightPosition, lightColor);
+    if (rotate) {
+        modelRotation.y += rotationSpeed;
+    }
+
+    showSettings(cameraTranslation, cameraRotation, modelTranslation, modelRotation, scale, lightPosition, lightColor,
+                 rotate);
 
     shader->bind();
     shader->setUniform("u_Light.position", lightPosition);
@@ -37,7 +44,8 @@ void LightDemo::tick() {
 
 void
 LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
-                        glm::vec3 &modelRotation, float &scale, glm::vec3 &lightPosition, glm::vec3 &lightColor) const {
+                        glm::vec3 &modelRotation, float &scale, glm::vec3 &lightPosition, glm::vec3 &lightColor,
+                        bool &rotate) const {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Camera Translation", reinterpret_cast<float *>(&cameraTranslation), dragSpeed);
@@ -47,6 +55,7 @@ LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation,
     ImGui::DragFloat("Model Scale", &scale, dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
     ImGui::DragFloat3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
+    ImGui::Checkbox("Rotate", &rotate);
     ImGui::End();
 }
 

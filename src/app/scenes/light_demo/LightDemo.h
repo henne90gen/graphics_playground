@@ -36,5 +36,6 @@ private:
               const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation) const;
 
     void showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
-                      glm::vec3 &modelRotation, float &scale, glm::vec3 &lightPosition, glm::vec3 &lightColor) const;
+                      glm::vec3 &modelRotation, float &scale, glm::vec3 &lightPosition, glm::vec3 &lightColor,
+                      bool &rotate) const;
 };
