@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <iostream>
 
 enum ShaderDataType {
     Float = 0,
@@ -37,7 +38,10 @@ public:
     inline unsigned int getId() { return id; }
 
     template<typename T>
-    void setUniform(const std::string &name, T f) { ASSERT(false); }
+    void setUniform(const std::string &name, T f) {
+        std::cerr << "Can't set uniform of this type." << std::endl;
+        ASSERT(false);
+    }
 
     template<>
     void setUniform<float>(const std::string &name, float f) { GL_Call(glUniform1f(getUniformLocation(name), f)); }
@@ -56,6 +60,11 @@ public:
     template<>
     void setUniform<glm::mat4>(const std::string &name, glm::mat4 m) {
         GL_Call(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, (float *) &m));
+    }
+
+    template<>
+    void setUniform<glm::mat3>(const std::string &name, glm::mat3 m) {
+        GL_Call(glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, (float *) &m));
     }
 
 private:
