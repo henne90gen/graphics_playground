@@ -52,6 +52,8 @@ add_subdirectory(${FREETYPE_DIR})
 
 # libpng
 set(LIBPNG_DIR ${VENDOR_DIR}/libpng)
+set(PNG_SHARED OFF CACHE INTERNAL "")
+set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
 
 # libjpeg
