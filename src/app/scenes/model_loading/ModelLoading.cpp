@@ -66,6 +66,18 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
         return;
     }
 
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
+    shader->setUniform("u_Model", modelMatrix);
+    shader->setUniform("u_View", viewMatrix);
+    shader->setUniform("u_Projection", projectionMatrix);
+
+    shader->setUniform("u_TextureSampler", 0);
+
     for (auto &mesh : glModel->getMeshes()) {
         if (!mesh->visible) {
             continue;
@@ -73,17 +85,6 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
 
         mesh->vertexArray->bind();
 
-        glm::mat4 modelMatrix = glm::mat4(1.0F);
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
-        modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-        modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-        modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-        glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
-        shader->setUniform("u_Model", modelMatrix);
-        shader->setUniform("u_View", viewMatrix);
-        shader->setUniform("u_Projection", projectionMatrix);
-
-        shader->setUniform("u_TextureSampler", 0);
         mesh->texture->bind();
 
         if (drawWireframe) {
