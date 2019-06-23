@@ -14,7 +14,7 @@ void GL_ClearError() {
 bool GL_LogCall(const char *function, const char *file, int line) {
     bool noErrors = true;
     while (GLenum error = glGetError() != GL_NO_ERROR) {
-        std::cout << "OpenGL error [" << error << "]: " << file << "/" << function << ":" << line << std::endl;
+        std::cout << "OpenGL error [0x" << std::hex << error << "]: " << file << "/" << function << ":" << line << std::endl;
         noErrors = false;
     }
     return noErrors;
