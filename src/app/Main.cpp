@@ -10,13 +10,13 @@
 #include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/legacy_triangle/LegacyTriangle.h"
+#include "scenes/light_demo/LightDemo.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
+#include "scenes/model_loading/ModelLoading.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
-#include "scenes/model_loading/ModelLoading.h"
-#include "scenes/light_demo/LightDemo.h"
 #include "util/ImGuiUtils.h"
 #include "util/MainMenu.h"
 
@@ -134,13 +134,13 @@ int main() {
 }
 
 void GLAPIENTRY
-MessageCallback(GLenum source,
+MessageCallback(GLenum  /*source*/,
                 GLenum type,
-                GLuint id,
+                GLuint  /*id*/,
                 GLenum severity,
-                GLsizei length,
+                GLsizei  /*length*/,
                 const GLchar *message,
-                const void *userParam) {
+                const void * /*userParam*/) {
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
             (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
             type, severity, message);
@@ -148,5 +148,5 @@ MessageCallback(GLenum source,
 
 void enableOpenGLDebugging() {
     GL_Call(glEnable(GL_DEBUG_OUTPUT));
-    GL_Call(glDebugMessageCallback(MessageCallback, 0));
+    GL_Call(glDebugMessageCallback(MessageCallback, nullptr));
 }

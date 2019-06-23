@@ -2,14 +2,14 @@
 
 #define PNG_DEBUG 3
 
+#include <cstring>
 #include <iostream>
-#include <utility>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
 #include <png.h>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <unistd.h>
+#include <utility>
 
 #if JPEG_FOUND
 
@@ -18,28 +18,28 @@
 #endif
 
 int Image::loadPng() {
-    FILE *fp = fopen(fileName.c_str(), "rb");
-    if (!fp) {
+    FILE *fp = fopen(fileName.c_str(), "rbe");
+    if (fp == nullptr) {
         std::cout << "File '" << fileName << "' could not be opened for reading" << std::endl;
         return 1;
     }
 
     char header[8];    // 8 is the maximum size that can be checked
     fread(header, 1, 8, fp);
-    if (png_sig_cmp(reinterpret_cast<png_bytep>(header), 0, 8)) {
+    if (png_sig_cmp(reinterpret_cast<png_bytep>(header), 0, 8) != 0) {
         std::cout << "File '" << fileName << "' is not recognized as a PNG file" << std::endl;
         return 1;
     }
 
     png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 
-    if (!png_ptr) {
+    if (png_ptr == nullptr) {
         std::cout << "png_create_read_struct failed" << std::endl;
         return 1;
     }
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
+    if (info_ptr == nullptr) {
         std::cout << "png_create_info_struct failed" << std::endl;
         return 1;
     }
@@ -67,9 +67,9 @@ int Image::loadPng() {
         return 1;
     }
 
-    auto row_pointers = (png_bytep *) malloc(sizeof(png_bytep) * height);
+    auto row_pointers = static_cast<png_bytep *>(malloc(sizeof(png_bytep) * height));
     for (unsigned int y = 0; y < height; y++) {
-        row_pointers[y] = (png_byte *) malloc(png_get_rowbytes(png_ptr, info_ptr));
+        row_pointers[y] = static_cast<png_byte *>(malloc(png_get_rowbytes(png_ptr, info_ptr)));
     }
 
     png_read_image(png_ptr, row_pointers);
@@ -117,7 +117,7 @@ int Image::loadJpg() {
     std::cout << "JPEG file format is not supported." << std::endl;
 return 1;
 #else
-    FILE *infile = fopen(fileName.c_str(), "rb");
+    FILE *infile = fopen(fileName.c_str(), "rbe");
     if (infile == nullptr) {
         std::cout << "File '" << fileName << "' could not be opened for reading" << std::endl;
         return 1;
@@ -136,11 +136,13 @@ return 1;
     channels = cinfo.actual_number_of_colors;
 
     int row_stride = width * cinfo.output_components; /* physical row width in output buffer */
-    JSAMPARRAY pJpegBuffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride,
+    JSAMPARRAY pJpegBuffer = (*cinfo.mem->alloc_sarray)(reinterpret_cast<j_common_ptr>(&cinfo), JPOOL_IMAGE, row_stride,
                                                         1); /* Output row buffer */
 
     channels = 4;
-    char r, g, b;
+    char r;
+    char g;
+    char b;
     while (cinfo.output_scanline < cinfo.output_height) {
         (void) jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
         for (unsigned int x = 0; x < width; x++) {
@@ -165,7 +167,7 @@ return 1;
 #endif
 }
 
-int loadImage(const std::string &fileName, Image &image) {
+int loadImage(const std::string & /*fileName*/, Image & /*image*/) {
     return 0;
 }
 

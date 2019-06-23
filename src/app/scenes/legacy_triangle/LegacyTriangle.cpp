@@ -3,8 +3,8 @@
 #include <array>
 #include <glad/glad.h>
 
-#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
+#include "util/OpenGLUtils.h"
 
 void LegacyTriangle::setup() {}
 

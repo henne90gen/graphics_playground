@@ -5,8 +5,8 @@
 
 #include <glad/glad.h>
 
-#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
+#include "util/OpenGLUtils.h"
 
 void TextureDemo::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/texture_demo/TextureDemoVert.glsl",

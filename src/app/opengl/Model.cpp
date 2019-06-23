@@ -1,12 +1,12 @@
-#include <shared/Image.h>
 #include "Model.h"
+#include <shared/Image.h>
 
 void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader) {
     meshes.clear();
 
     model = std::make_shared<ModelLoader::RawModel>();
     int error = ModelLoader::fromFile(fileName, model);
-    if (error) {
+    if (error != 0) {
         std::cout << "Could not load model." << std::endl;
         return;
     }

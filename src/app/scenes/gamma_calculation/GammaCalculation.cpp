@@ -6,8 +6,8 @@
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
-#include "util/OpenGLUtils.h"
 #include "util/ImGuiUtils.h"
+#include "util/OpenGLUtils.h"
 
 void GammaCalculation::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/gamma_calculation/GammaCalculationVert.glsl",

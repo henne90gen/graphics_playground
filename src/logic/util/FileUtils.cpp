@@ -1,7 +1,7 @@
 #include "FileUtils.h"
 
-#include <filesystem>
 #include <algorithm>
+#include <filesystem>
 
 void getFilesInDirectory(const std::string &directoryPath, std::vector<std::string> &filePaths) {
     for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {

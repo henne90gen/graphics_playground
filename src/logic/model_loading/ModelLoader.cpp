@@ -1,12 +1,12 @@
 #include "ModelLoader.h"
 
-#include <sstream>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <algorithm>
 #include <iterator>
 #include <regex>
+#include <sstream>
+#include <string>
 
 #include "util/StringUtils.h"
 
@@ -81,7 +81,9 @@ namespace ModelLoader {
 
             if (l[0] == '#') {
                 continue;
-            } else if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
+            }
+
+            if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
                 parseMaterialLib(fileName, lineNumber, l, model->materials);
             } else if (l[0] == 'o') {
                 if (!globalMesh.name.empty()) {
@@ -124,10 +126,10 @@ namespace ModelLoader {
             unsigned int faceIndex = 0;
             for (auto &vertex : face.vertices) {
                 vertices.push_back(mesh.vertices[vertex.vertexIndex - 1]);
-                if (vertex.textureCoordinateIndex) {
+                if (vertex.textureCoordinateIndex != 0U) {
                     textureCoordinates.push_back(mesh.textureCoordinates[vertex.textureCoordinateIndex - 1]);
                 }
-                if (vertex.normalIndex) {
+                if (vertex.normalIndex != 0U) {
                     normals.push_back(mesh.normals[vertex.normalIndex - 1]);
                 }
 
@@ -149,7 +151,7 @@ namespace ModelLoader {
 
     void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
                           std::map<std::string, std::shared_ptr<RawMaterial>> &materials) {
-        // TODO use fileName and lineNumber to tell the user which file the material lib is from
+        // TODO(henne): use fileName and lineNumber to tell the user which file the material lib is from
         int lastSlash = fileName.find_last_of('/');
 
         std::string path = fileName.substr(0, lastSlash + 1);
@@ -181,7 +183,9 @@ namespace ModelLoader {
 
             if (l[0] == '#') {
                 continue;
-            } else if (l[0] == 'n' && l[1] == 'e' && l[2] == 'w') {
+            }
+
+            if (l[0] == 'n' && l[1] == 'e' && l[2] == 'w') {
                 if (!currentMaterial.name.empty()) {
                     materials[currentMaterial.name] = std::make_shared<RawMaterial>(currentMaterial);
                 }
@@ -300,4 +304,4 @@ namespace ModelLoader {
         }
         faces.push_back({faceVertices});
     }
-}
+} // namespace ModelLoader

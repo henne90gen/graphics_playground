@@ -1,7 +1,7 @@
 #include "FontDemo.h"
 
-#include "util/ImGuiUtils.h"
 #include "util/FileUtils.h"
+#include "util/ImGuiUtils.h"
 
 void FontDemo::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
