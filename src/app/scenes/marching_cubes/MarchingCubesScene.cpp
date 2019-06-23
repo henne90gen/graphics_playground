@@ -25,12 +25,7 @@ void MarchingCubesScene::setup() {
     BufferLayout bufferLayout = {
             {ShaderDataType::Float3, "position"}
     };
-    // FIXME can we just pass in cubeCorners, instead of splitting it up?
-    auto positionBuffer = std::make_shared<VertexBuffer>(
-            cubeCorners.data(),
-            cubeCorners.size() * 3 * sizeof(float),
-            bufferLayout
-    );
+    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCorners, bufferLayout);
     cubeVertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
