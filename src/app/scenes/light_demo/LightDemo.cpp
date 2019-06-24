@@ -24,28 +24,39 @@ void LightDemo::tick() {
     static auto modelTranslation = glm::vec3();
     static auto modelRotation = glm::vec3();
     static float scale = 1.0F;
-    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.2F);
+    static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F);
+    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);
+    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);
     static auto lightColor = glm::vec3(1.0F);
     static bool rotate = true;
-    const float rotationSpeed = 0.01F;
+    static bool useAmbient = true;
+    static bool useDiffuse = true;
+    static bool useSpecular = true;
 
+    static const float rotationSpeed = 0.01F;
     if (rotate) {
         modelRotation.y += rotationSpeed;
     }
 
-    showSettings(cameraTranslation, cameraRotation, modelTranslation, modelRotation, scale, lightPosition, lightColor,
-                 rotate);
+    showSettings(cameraTranslation, cameraRotation, modelTranslation, modelRotation, scale, ambientColor, specularColor,
+                 lightPosition,
+                 lightColor, rotate, useAmbient, useDiffuse, useSpecular);
 
     shader->bind();
+    shader->setUniform("u_AmbientColor", ambientColor);
+    shader->setUniform("u_SpecularColor", specularColor);
     shader->setUniform("u_Light.position", lightPosition);
     shader->setUniform("u_Light.color", lightColor);
+    shader->setUniform("u_UseAmbient", useAmbient);
+    shader->setUniform("u_UseDiffuse", useDiffuse);
+    shader->setUniform("u_UseSpecular", useSpecular);
     drawModel(scale, modelTranslation, modelRotation, cameraRotation, cameraTranslation);
 }
 
-void
-LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
-                        glm::vec3 &modelRotation, float &scale, glm::vec3 &lightPosition, glm::vec3 &lightColor,
-                        bool &rotate) const {
+void LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
+                             glm::vec3 &modelRotation, float &scale, glm::vec3 &ambientColor, glm::vec3 &specularColor,
+                             glm::vec3 &lightPosition, glm::vec3 &lightColor, bool &rotate, bool &useAmbient,
+                             bool &useDiffuse, bool &useSpecular) const {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Camera Translation", reinterpret_cast<float *>(&cameraTranslation), dragSpeed);
@@ -53,9 +64,14 @@ LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation,
     ImGui::DragFloat3("Model Translation", reinterpret_cast<float *>(&modelTranslation), dragSpeed);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
     ImGui::DragFloat("Model Scale", &scale, dragSpeed);
+    ImGui::ColorEdit3("Ambient Color", reinterpret_cast<float *>(&ambientColor));
+    ImGui::ColorEdit3("Specular Color", reinterpret_cast<float *>(&specularColor));
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
-    ImGui::DragFloat3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
+    ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
     ImGui::Checkbox("Rotate", &rotate);
+    ImGui::Checkbox("Ambient", &useAmbient);
+    ImGui::Checkbox("Diffuse", &useDiffuse);
+    ImGui::Checkbox("Specular", &useSpecular);
     ImGui::End();
 }
 
