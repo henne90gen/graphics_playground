@@ -13,6 +13,11 @@
             __builtin_debugtrap()
 #endif
 
+#define GL_UnsafeCall(x, error)                                                                                                     \
+    GL_ClearError();                                                                                                   \
+    x;                                                                                                                 \
+    error = !GL_LogCall(#x, __FILE__, __LINE__)
+
 #define GL_Call(x)                                                                                                     \
     GL_ClearError();                                                                                                   \
     x;                                                                                                                 \

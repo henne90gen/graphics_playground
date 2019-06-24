@@ -24,6 +24,9 @@ private:
     unsigned int id;
     std::string vertexPath;
     std::string fragmentPath;
+
+    long lastModTimeVertex;
+    long lastModTimeFragment;
     std::unordered_map<std::string, int> uniformLocations;
 
 public:
@@ -31,7 +34,7 @@ public:
 
     ~Shader() {}
 
-    void bind() const;
+    void bind();
 
     void unbind() const;
 
@@ -73,4 +76,6 @@ private:
     GLuint load(GLuint shaderType, std::string &filePath);
 
     int getUniformLocation(const std::string &name);
+
+    bool hasBeenModified();
 };

@@ -20,7 +20,7 @@ uniform bool u_UseSpecular;
 
 void main() {
     vec3 surfaceToLight = u_Light.position - v_Position;
-    float distanceToLight =    length(surfaceToLight);
+    float distanceToLight = length(surfaceToLight);
 
     float brightness = dot(v_Normal, surfaceToLight) / (distanceToLight * distanceToLight);
     brightness = clamp(brightness, 0, 1);

@@ -7,3 +7,4 @@ void getFilesInDirectory(const std::string &directoryPath, std::vector<std::stri
 
 std::vector<std::string> getFilesInDirectory(const std::string &directoryPath);
 
+long getLastModifiedTime(const std::string &filePath);

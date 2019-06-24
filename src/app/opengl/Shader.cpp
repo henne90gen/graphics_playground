@@ -6,36 +6,50 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <util/FileUtils.h>
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
-        : id(0), vertexPath(std::move(vertexPath)), fragmentPath(std::move(fragmentPath)) {
-    compile();
+        : id(0), vertexPath(std::move(vertexPath)), fragmentPath(std::move(fragmentPath)), lastModTimeVertex(0),
+          lastModTimeFragment(0) {
 }
 
 void Shader::compile() {
-    GL_Call(id = glCreateProgram());
+    lastModTimeVertex = getLastModifiedTime(vertexPath);
+    lastModTimeFragment = getLastModifiedTime(fragmentPath);
+    uniformLocations.clear();
+
+    GLuint newProgramId;
+    GL_Call(newProgramId = glCreateProgram());
     GLuint vertexShaderId = load(GL_VERTEX_SHADER, vertexPath);
     GLuint fragmentShaderId = load(GL_FRAGMENT_SHADER, fragmentPath);
-    GL_Call(glAttachShader(id, vertexShaderId));
-    GL_Call(glAttachShader(id, fragmentShaderId));
+    if (!vertexShaderId || !fragmentShaderId) {
+        return;
+    }
+    GL_Call(glAttachShader(newProgramId, vertexShaderId));
+    GL_Call(glAttachShader(newProgramId, fragmentShaderId));
 
-    GL_Call(glLinkProgram(id));
+    GL_Call(glLinkProgram(newProgramId));
 
-    int error;
+    int success;
     int infoLogLength;
-    GL_Call(glGetProgramiv(id, GL_LINK_STATUS, &error));
-    GL_Call(glGetProgramiv(id, GL_INFO_LOG_LENGTH, &infoLogLength));
+    GL_Call(glGetProgramiv(newProgramId, GL_LINK_STATUS, &success));
+    GL_Call(glGetProgramiv(newProgramId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
         std::vector<char> programErrorMessage(infoLogLength + 1);
-        GL_Call(glGetProgramInfoLog(id, infoLogLength, nullptr, &programErrorMessage[0]));
+        GL_Call(glGetProgramInfoLog(newProgramId, infoLogLength, nullptr, &programErrorMessage[0]));
         std::cout << &programErrorMessage[0] << std::endl;
     }
 
-    GL_Call(glDetachShader(id, vertexShaderId));
-    GL_Call(glDetachShader(id, fragmentShaderId));
+    GL_Call(glDetachShader(newProgramId, vertexShaderId));
+    GL_Call(glDetachShader(newProgramId, fragmentShaderId));
 
     GL_Call(glDeleteShader(vertexShaderId));
     GL_Call(glDeleteShader(fragmentShaderId));
+
+    if (success) {
+        // assign new id at the very end to be able to tolerate failed compilation and linking
+        id = newProgramId;
+    }
 }
 
 GLuint Shader::load(GLuint shaderType, std::string &filePath) {
@@ -51,20 +65,25 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
         return GL_INVALID_VALUE;
     }
 
-    GL_Call(GLuint shaderId = glCreateShader(shaderType));
+    GLuint shaderId;
+    GL_Call(shaderId = glCreateShader(shaderType));
 
     char const *sourcePointer = shaderCode.c_str();
     GL_Call(glShaderSource(shaderId, 1, &sourcePointer, nullptr));
     GL_Call(glCompileShader(shaderId));
 
-    int error;
+    int success;
     int infoLogLength;
-    GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &error));
+    GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
     GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
         std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
         GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &vertexShaderErrorMessage[0]));
         std::cout << &vertexShaderErrorMessage[0] << std::endl;
+    }
+
+    if (!success) {
+        return 0;
     }
 
     return shaderId;
@@ -76,7 +95,8 @@ int Shader::getUniformLocation(const std::string &name) {
         return locationItr->second;
     }
 
-    GL_Call(int location = glGetUniformLocation(id, name.c_str()));
+    int location;
+    GL_Call(location = glGetUniformLocation(id, name.c_str()));
     if (location == -1) {
         std::cout << "Warning: uniform '" << name << "' doesn't exist." << std::endl;
     }
@@ -85,6 +105,16 @@ int Shader::getUniformLocation(const std::string &name) {
     return location;
 }
 
-void Shader::bind() const { GL_Call(glUseProgram(id)); }
+void Shader::bind() {
+    if (hasBeenModified()) {
+        compile();
+    }
+    GL_Call(glUseProgram(id));
+}
 
 void Shader::unbind() const { GL_Call(glUseProgram(0)); }
+
+bool Shader::hasBeenModified() {
+    return getLastModifiedTime(vertexPath) > lastModTimeVertex ||
+           getLastModifiedTime(fragmentPath) > lastModTimeFragment;
+}
