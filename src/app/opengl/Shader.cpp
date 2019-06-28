@@ -6,7 +6,8 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <util/FileUtils.h>
+
+#include "util/FileUtils.h"
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
         : id(0), vertexPath(std::move(vertexPath)), fragmentPath(std::move(fragmentPath)), lastModTimeVertex(0),
@@ -22,7 +23,7 @@ void Shader::compile() {
     GL_Call(newProgramId = glCreateProgram());
     GLuint vertexShaderId = load(GL_VERTEX_SHADER, vertexPath);
     GLuint fragmentShaderId = load(GL_FRAGMENT_SHADER, fragmentPath);
-    if (!vertexShaderId || !fragmentShaderId) {
+    if ((vertexShaderId == 0U) || (fragmentShaderId == 0U)) {
         return;
     }
     GL_Call(glAttachShader(newProgramId, vertexShaderId));
@@ -46,8 +47,8 @@ void Shader::compile() {
     GL_Call(glDeleteShader(vertexShaderId));
     GL_Call(glDeleteShader(fragmentShaderId));
 
-    if (success) {
-        // assign new id at the very end to be able to tolerate failed compilation and linking
+    if (success != 0) {
+        // assign new id at the very end to be able to tolerate failed compilation or failed linking
         id = newProgramId;
     }
 }
@@ -82,7 +83,7 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
         std::cout << &vertexShaderErrorMessage[0] << std::endl;
     }
 
-    if (!success) {
+    if (success == 0) {
         return 0;
     }
 

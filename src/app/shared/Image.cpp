@@ -114,8 +114,8 @@ int Image::loadPng() {
 
 int Image::loadJpg() {
 #if !JPEG_FOUND
-    std::cout << "JPEG file format is not supported." << std::endl;
-return 1;
+    std::cerr << "JPEG file format is not supported." << std::endl;
+    return 1;
 #else
     FILE *infile = fopen(fileName.c_str(), "rbe");
     if (infile == nullptr) {
@@ -165,10 +165,6 @@ return 1;
     jpeg_destroy_decompress(&cinfo);
     return 0;
 #endif
-}
-
-int loadImage(const std::string & /*fileName*/, Image & /*image*/) {
-    return 0;
 }
 
 void Image::load() {

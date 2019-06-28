@@ -19,14 +19,14 @@ void LightDemo::setup() {
 void LightDemo::destroy() {}
 
 void LightDemo::tick() {
-    static auto cameraTranslation = glm::vec3(1.5F, 0.0F, -5.0F);
+    static auto cameraTranslation = glm::vec3(1.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3();
     static auto modelTranslation = glm::vec3();
     static auto modelRotation = glm::vec3();
     static float scale = 1.0F;
-    static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F);
-    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);
-    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);
+    static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto lightColor = glm::vec3(1.0F);
     static bool rotate = true;
     static bool useAmbient = true;
@@ -59,14 +59,22 @@ void LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRota
                              bool &useDiffuse, bool &useSpecular) const {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Translation", reinterpret_cast<float *>(&cameraTranslation), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Translation", reinterpret_cast<float *>(&modelTranslation), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
     ImGui::DragFloat("Model Scale", &scale, dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Ambient Color", reinterpret_cast<float *>(&ambientColor));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Specular Color", reinterpret_cast<float *>(&specularColor));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
     ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Ambient", &useAmbient);
