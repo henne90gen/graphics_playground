@@ -1,5 +1,5 @@
 #include "ModelLoading.h"
-#include <shared/Image.h>
+#include <util/Image.h>
 
 #include "model_loading/ModelLoader.h"
 #include "util/ImGuiUtils.h"

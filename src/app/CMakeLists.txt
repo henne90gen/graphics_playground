@@ -4,7 +4,7 @@ set(SOURCES
         util/MainMenu.cpp
         util/ImGuiUtils.cpp
         util/OpenGLUtils.cpp
-        shared/Image.cpp
+        util/Image.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
         opengl/BufferLayout.cpp
