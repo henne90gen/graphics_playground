@@ -168,8 +168,8 @@ void FontDemo::loadAlphabet(const unsigned int characterHeight) {
     const unsigned int firstCharacter = 32;
     const unsigned int lastCharacter = 127;
     for (unsigned int i = firstCharacter; i < lastCharacter; i++) {
-        Character character = loadCharacter(i,
-                                            characterHeight); // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        Character character = loadCharacter(i, characterHeight);
         characters.push_back(character);
     }
 }

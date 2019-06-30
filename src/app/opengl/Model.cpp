@@ -5,7 +5,7 @@ void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shad
     meshes.clear();
 
     model = std::make_shared<ModelLoader::RawModel>();
-    int error = ModelLoader::fromFile(fileName, model);
+    unsigned int error = ModelLoader::fromFile(fileName, model);
     if (error != 0) {
         std::cout << "Could not load model." << std::endl;
         return;
@@ -94,8 +94,8 @@ void OpenGLMesh::updateTexture(ModelLoader::RawMesh &mesh) {
 }
 
 void OpenGLMesh::createCheckerBoardTexture() {
-    unsigned int width = 128;
-    unsigned int height = 128;
+    const unsigned int width = 128;
+    const unsigned int height = 128;
     int numberOfChannels = 4;
     std::vector<unsigned char> data = std::vector<unsigned char>(width * height * numberOfChannels);
     for (unsigned long i = 0; i < data.size() / numberOfChannels; i++) {

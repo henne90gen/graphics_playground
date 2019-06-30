@@ -73,7 +73,8 @@ void ImGui::ListBox(const std::string &label, unsigned int &currentItem, const s
         fixedItems.push_back(items[i].substr(prefix.size()));
     }
 
-    int *current = reinterpret_cast<int *>(&currentItem);
+    int *current = reinterpret_cast<int *>(&currentItem); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(google-readability-casting,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
     ImGui::ListBox(label.c_str(), current, vector_getter, (void *) &fixedItems, count);
 }
 

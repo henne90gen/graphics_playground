@@ -87,7 +87,8 @@ void MarchingCubesScene::tick() {
             static_cast<float>(marchingCubes->height),
             static_cast<float>(marchingCubes->depth)
     );
-    glm::vec3 modelCenter = dimensions * -0.5F;
+    const float halfScale = -0.5F;
+    glm::vec3 modelCenter = dimensions * halfScale;
 
     shader->bind();
     glm::mat4 modelMatrix = glm::mat4(1.0F);
