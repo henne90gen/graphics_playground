@@ -16,6 +16,10 @@ void LightDemo::setup() {
     model->loadFromFile("../../../src/app/scenes/light_demo/models/monkey.obj", shader);
 }
 
+void LightDemo::onAspectRatioChange() {
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+}
+
 void LightDemo::destroy() {}
 
 void LightDemo::tick() {

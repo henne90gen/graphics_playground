@@ -101,6 +101,10 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
     }
 }
 
+void ModelLoading::onAspectRatioChange() {
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+}
+
 void
 showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
              bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,

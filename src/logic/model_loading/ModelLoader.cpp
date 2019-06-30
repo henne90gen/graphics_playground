@@ -23,13 +23,21 @@ namespace ModelLoader {
     };
 
     void parseVertex(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                     std::vector<glm::vec3> &vertices);
+                     std::vector<glm::vec3> &vertices); // NOLINT(google-runtime-references)
 
     void parseNormal(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                     std::vector<glm::vec3> &normals);
+                     std::vector<glm::vec3> &normals); // NOLINT(google-runtime-references)
 
     void parseFace(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                   std::vector<Face> &faces);
+                   std::vector<Face> &faces); // NOLINT(google-runtime-references)
+
+    void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                                 std::vector<glm::vec2> &textureCoordinates); // NOLINT(google-runtime-references)
+
+    void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                          std::map<std::string, std::shared_ptr<RawMaterial>> &materials); // NOLINT(google-runtime-references)
+
+    RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &faces);
 
     unsigned int fromFile(const std::string &fileName, std::shared_ptr<RawModel> &model) {
         if (fileName.find(".obj") == std::string::npos) {
@@ -52,14 +60,6 @@ namespace ModelLoader {
 
         return fromFileContent(fileName, lines, model);
     }
-
-    void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                                 std::vector<glm::vec2> &textureCoordinates);
-
-    void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                          std::map<std::string, std::shared_ptr<RawMaterial>> &materials);
-
-    RawMesh createIndicesFromFaces(RawMesh &mesh, const std::vector<Face> &faces);
 
     unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines,
                                  std::shared_ptr<RawModel> &model) {
@@ -101,7 +101,8 @@ namespace ModelLoader {
             } else if (l[0] == 'f') {
                 parseFace(fileName, lineNumber, l, faces);
             } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
-                globalMesh.material = model->materials[l.substr(7)];
+                const int materialNameOffset = 7;
+                globalMesh.material = model->materials[l.substr(materialNameOffset)];
             } else if (l[0] == 's') {
                 // ignore this for now
             } else {
@@ -114,7 +115,7 @@ namespace ModelLoader {
         return 0;
     }
 
-    RawMesh createIndicesFromFaces(RawMesh &mesh, const std::vector<Face> &faces) {
+    RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &faces) {
         std::vector<glm::vec3> vertices = {};
         std::vector<glm::vec3> normals = {};
         std::vector<glm::vec2> textureCoordinates = {};
@@ -155,7 +156,8 @@ namespace ModelLoader {
         int lastSlash = fileName.find_last_of('/');
 
         std::string path = fileName.substr(0, lastSlash + 1);
-        std::string materialFileName = path + line.substr(7);
+        const int materialLibNameOffset = 7;
+        std::string materialFileName = path + line.substr(materialLibNameOffset);
         if (materialFileName.find(".mtl") == std::string::npos) {
             std::cerr << materialFileName << " from line " << lineNumber << " is not an mtl file" << std::endl;
             return;
@@ -189,9 +191,12 @@ namespace ModelLoader {
                 if (!currentMaterial.name.empty()) {
                     materials[currentMaterial.name] = std::make_shared<RawMaterial>(currentMaterial);
                 }
-                currentMaterial = {l.substr(7)};
+                const int materialNameOffset = 7;
+                currentMaterial = {l.substr(materialNameOffset)};
+                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
             } else if (l[0] == 'm' && l[1] == 'a' && l[2] == 'p' && l[4] == 'K' && l[5] == 'd') {
-                currentMaterial.diffuseTextureMap = path + l.substr(7);
+                const int diffuseTextureNameOffset = 7;
+                currentMaterial.diffuseTextureMap = path + l.substr(diffuseTextureNameOffset);
             }
             // Ns 96.078431
             // Ka 1.000000 1.000000 1.000000
@@ -297,9 +302,10 @@ namespace ModelLoader {
                 return;
             }
             FaceVertex faceVertex = {};
-            faceVertex.vertexIndex = std::strtoul(parts[0].c_str(), nullptr, 10);
-            faceVertex.textureCoordinateIndex = std::strtoul(parts[1].c_str(), nullptr, 10);
-            faceVertex.normalIndex = std::strtoul(parts[2].c_str(), nullptr, 10);
+            const int base = 10;
+            faceVertex.vertexIndex = std::strtoul(parts[0].c_str(), nullptr, base);
+            faceVertex.textureCoordinateIndex = std::strtoul(parts[1].c_str(), nullptr, base);
+            faceVertex.normalIndex = std::strtoul(parts[2].c_str(), nullptr, base);
             faceVertices.push_back(faceVertex);
         }
         faces.push_back({faceVertices});

@@ -264,6 +264,10 @@ void RubiksCubeScene::setup() {
     ));
 }
 
+void RubiksCubeScene::onAspectRatioChange() {
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+}
+
 void RubiksCubeScene::destroy() {
     free(vertices); // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
     free(indices); // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
@@ -279,7 +283,7 @@ std::string to_string(unsigned int input) {
 
 void RubiksCubeScene::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    static auto translation = glm::vec3(-2.0F, 0.0F, -12.0F);
+    static auto translation = glm::vec3(3.0F, 0.0F, -12.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     static auto modelRotation = glm::vec3(-0.56F, -0.68F, 0.0F);
     static auto cameraRotation = glm::vec3(0.0F);

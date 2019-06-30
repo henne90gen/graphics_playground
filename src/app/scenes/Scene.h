@@ -21,16 +21,19 @@ public:
 
     const char *getName() { return name; }
 
-    void setDimensions(const unsigned int width, const unsigned int height) {
-        this->width = width;
-        this->height = height;
-        setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+    void setDimensions(const unsigned int _width, const unsigned int _height) {
+        this->width = _width;
+        this->height = _height;
+        this->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+        onAspectRatioChange();
     }
 
 protected:
     GLFWwindow *window;
 
     inline float getAspectRatio() { return aspectRatio; }
+
+    virtual void onAspectRatioChange() {};
 
     inline unsigned int getWidth() { return width; }
 
@@ -42,6 +45,4 @@ private:
     unsigned int height = 0;
     float aspectRatio = 16.0f / 9.0f;
     std::function<void(void)> &backToMainMenu;
-
-    void setAspectRatio(const float ratio) { this->aspectRatio = ratio; }
 };

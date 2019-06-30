@@ -26,6 +26,9 @@ public:
 
     void destroy() override;
 
+protected:
+    void onAspectRatioChange() override;
+
 public:
     std::shared_ptr<Shader> shader;
 

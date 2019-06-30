@@ -16,7 +16,6 @@ void MarchingCubesScene::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/marching_cubes/MarchingCubesVert.glsl",
                                       "../../../src/app/scenes/marching_cubes/MarchingCubesFrag.glsl");
     shader->bind();
-
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     cubeVertexArray = std::make_shared<VertexArray>(shader);
@@ -57,6 +56,10 @@ void MarchingCubesScene::setup() {
 
     surfaceIndexBuffer = std::make_shared<IndexBuffer>();
     surfaceIndexBuffer->bind();
+}
+
+void MarchingCubesScene::onAspectRatioChange() {
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
 void MarchingCubesScene::destroy() {

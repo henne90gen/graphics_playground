@@ -7,9 +7,6 @@
 
 #include "opengl/Shader.h"
 #include "opengl/Model.h"
-//#include "opengl/VertexArray.h"
-//#include "opengl/VertexBuffer.h"
-//#include "opengl/IndexBuffer.h"
 
 class LightDemo : public Scene {
 public:
@@ -23,6 +20,9 @@ public:
     void tick() override;
 
     void destroy() override;
+
+protected:
+    void onAspectRatioChange() override;
 
 private:
     std::shared_ptr<Shader> shader;
