@@ -50,16 +50,9 @@ add_subdirectory(${FAST_NOISE_DIR})
 set(FREETYPE_DIR ${VENDOR_DIR}/freetype2)
 add_subdirectory(${FREETYPE_DIR})
 
-# zlib
-set(ZLIB_DIR ${VENDOR_DIR}/zlib)
-add_subdirectory(${ZLIB_DIR})
-set(ZLIB_INCLUDE_DIR ${ZLIB_DIR})
-set(ZLIB_LIBRARY zlib)
-
 # libpng
 set(LIBPNG_DIR ${VENDOR_DIR}/libpng)
-set(PNG_SHARED ON CACHE INTERNAL "")
-set(PNG_BUILD_ZLIB ON CACHE INTERNAL "")
+set(PNG_SHARED OFF CACHE INTERNAL "")
 set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
 
