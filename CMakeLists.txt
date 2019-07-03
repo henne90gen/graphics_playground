@@ -61,12 +61,7 @@ set(PNG_BUILD_ZLIB ${ZLIB_DIR} CACHE INTERNAL "")
 set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
 set(LIBPNG_INCLUDE_DIR ${libpng_BINARY_DIR} ${libpng_SOURCE_DIR})
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-
+set(LIBPNG_LIBRARIES png_static)
 
 # libjpeg
 message(STATUS "Looking for libjpeg")
