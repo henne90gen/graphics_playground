@@ -50,11 +50,23 @@ add_subdirectory(${FAST_NOISE_DIR})
 set(FREETYPE_DIR ${VENDOR_DIR}/freetype2)
 add_subdirectory(${FREETYPE_DIR})
 
+set(ZLIB_DIR ${VENDOR_DIR}/zlib)
+add_subdirectory(${ZLIB_DIR})
+set(ZLIB_INCLUDE_DIR ${zlib_BINARY_DIR} ${zlib_SOURCE_DIR})
+
 # libpng
 set(LIBPNG_DIR ${VENDOR_DIR}/libpng)
 set(PNG_SHARED OFF CACHE INTERNAL "")
+set(PNG_BUILD_ZLIB ${ZLIB_DIR} CACHE INTERNAL "")
 set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
+set(LIBPNG_INCLUDE_DIR ${libpng_BINARY_DIR} ${libpng_SOURCE_DIR})
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
 
 # libjpeg
 message(STATUS "Looking for libjpeg")
