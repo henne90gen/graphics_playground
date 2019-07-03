@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Playground)
 
+# zlib/png integration hack - removes all the errors related to export
+# (zlib doesn't export; libpng wants to; in this case we don't care).
+set(SKIP_INSTALL_EXPORT TRUE)
+
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
 find_program(
@@ -50,18 +54,67 @@ add_subdirectory(${FAST_NOISE_DIR})
 set(FREETYPE_DIR ${VENDOR_DIR}/freetype2)
 add_subdirectory(${FREETYPE_DIR})
 
+# zlib
 set(ZLIB_DIR ${VENDOR_DIR}/zlib)
 add_subdirectory(${ZLIB_DIR})
-set(ZLIB_INCLUDE_DIR ${zlib_BINARY_DIR} ${zlib_SOURCE_DIR})
+GET_DIRECTORY_PROPERTY(
+	ZLIB_BUILD_DIRECTORY
+	DIRECTORY
+	${ZLIB_DIR}
+	DEFINITION
+	CMAKE_CURRENT_BINARY_DIR
+)
+GET_DIRECTORY_PROPERTY(
+	ZLIB_SHARED
+	DIRECTORY
+	${ZLIB_DIR}
+	DEFINITION
+	zlib
+)
+GET_DIRECTORY_PROPERTY(
+	ZLIB_STATIC
+	DIRECTORY
+	${ZLIB_DIR}
+	DEFINITION
+	zlibstatic
+)
+SET(ZLIB_LIBRARY zlibstatic)
+set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
 
 # libpng
 set(LIBPNG_DIR ${VENDOR_DIR}/libpng)
 set(PNG_SHARED OFF CACHE INTERNAL "")
-set(PNG_BUILD_ZLIB ${ZLIB_DIR} CACHE INTERNAL "")
+set(PNG_BUILD_ZLIB ON CACHE INTERNAL "")
 set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
-set(LIBPNG_INCLUDE_DIR ${libpng_BINARY_DIR} ${libpng_SOURCE_DIR})
-set(LIBPNG_LIBRARIES png_static)
+GET_DIRECTORY_PROPERTY(
+	LIBPNG_BUILD_DIR
+	DIRECTORY
+	${LIBPNG_DIR}
+	DEFINITION
+	CMAKE_CURRENT_BINARY_DIR
+)
+GET_DIRECTORY_PROPERTY(
+	LIBPNG_STATIC
+	DIRECTORY
+	${LIBPNG_DIR}
+	DEFINITION
+	PNG_LIB_NAME_STATIC
+)
+GET_DIRECTORY_PROPERTY(
+	LIBPNG_SHARED
+	DIRECTORY
+	${LIBPNG_DIR}
+	DEFINITION
+	PNG_LIB_NAME
+)
+set(LIBPNG_INCLUDE_DIR ${LIBPNG_DIR} ${LIBPNG_BUILD_DIR})
+
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
 # libjpeg
 message(STATUS "Looking for libjpeg")
