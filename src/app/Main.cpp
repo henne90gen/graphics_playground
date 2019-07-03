@@ -17,6 +17,7 @@
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
+#include "scenes/fourier_transform/FourierTransform.h"
 #include "util/ImGuiUtils.h"
 #include "util/MainMenu.h"
 
@@ -50,6 +51,7 @@ void resizeCallback(GLFWwindow * /*window*/, int width, int height) {
 
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
+//    glfwSetCursorPosCallback(window, cursorPosCallback);
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCharCallback(window, charCallback);
@@ -98,6 +100,7 @@ int main() {
     scenes.push_back(new FontDemo(window, backToMainMenu)); // 9
     scenes.push_back(new ModelLoading(window, backToMainMenu)); // 10
     scenes.push_back(new LightDemo(window, backToMainMenu)); // 11
+    scenes.push_back(new FourierTransform(window, backToMainMenu)); // 12
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(9);

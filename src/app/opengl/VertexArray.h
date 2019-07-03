@@ -18,6 +18,8 @@ public:
 
     void unbind() const;
 
+    std::shared_ptr<IndexBuffer> getIndexBuffer() const { return indexBuffer; }
+
 private:
     unsigned int id = 0;
     std::shared_ptr<Shader> shader;
