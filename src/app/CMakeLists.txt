@@ -43,7 +43,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
         )
-add_definitions(-std=c++17)
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+else ()
+	add_definitions(-std=c++17)
+endif ()
 
 if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
     set_target_properties(
@@ -58,10 +61,12 @@ target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} glad)
 target_link_libraries(${PROJECT_NAME} imgui)
 target_link_libraries(${PROJECT_NAME} ${LIBPNG_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${JPEG_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} FastNoise)
 target_link_libraries(${PROJECT_NAME} freetype)
 target_link_libraries(${PROJECT_NAME} logic)
+if (JPEG_FOUND)
+	target_link_libraries(${PROJECT_NAME} ${JPEG_LIBRARIES})
+endif ()
 
 target_link_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_LIBRARY_DIRS})
 
@@ -79,9 +84,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_DIR}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FAST_NOISE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${JPEG_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
+if (JPEG_FOUND)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${JPEG_INCLUDE_DIRS})
+endif ()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)

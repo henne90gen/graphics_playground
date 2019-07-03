@@ -200,7 +200,7 @@ Character FontDemo::loadCharacter(const char character, const unsigned int chara
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
             face->glyph->advance.x,
-            characterHeight
+            static_cast<long>(characterHeight)
     };
 }
 

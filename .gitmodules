@@ -19,3 +19,6 @@
 [submodule "vendor/catch"]
 	path = vendor/catch
 	url = git@github.com:catchorg/Catch2.git
+[submodule "vendor/zlib"]
+	path = vendor/zlib
+	url = git@github.com:madler/zlib.git

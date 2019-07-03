@@ -8,7 +8,6 @@
 #include <cstring>
 #include <iostream>
 #include <png.h>
-#include <unistd.h>
 #include <utility>
 
 #if JPEG_FOUND
