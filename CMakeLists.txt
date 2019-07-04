@@ -78,7 +78,7 @@ GET_DIRECTORY_PROPERTY(
 	DEFINITION
 	zlibstatic
 )
-SET(ZLIB_LIBRARY zlibstatic)
+set(ZLIB_LIBRARY ${ZLIB_STATIC})
 set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
 
 # libpng
@@ -87,44 +87,56 @@ set(PNG_SHARED OFF CACHE INTERNAL "")
 set(PNG_BUILD_ZLIB ON CACHE INTERNAL "")
 set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
-GET_DIRECTORY_PROPERTY(
+get_directory_property(
 	LIBPNG_BUILD_DIR
 	DIRECTORY
 	${LIBPNG_DIR}
 	DEFINITION
 	CMAKE_CURRENT_BINARY_DIR
 )
-GET_DIRECTORY_PROPERTY(
+get_directory_property(
 	LIBPNG_STATIC
 	DIRECTORY
 	${LIBPNG_DIR}
 	DEFINITION
 	PNG_LIB_NAME_STATIC
 )
-GET_DIRECTORY_PROPERTY(
+get_directory_property(
 	LIBPNG_SHARED
 	DIRECTORY
 	${LIBPNG_DIR}
 	DEFINITION
 	PNG_LIB_NAME
 )
+set(LIBPNG_LIBRARY ${LIBPNG_STATIC})
 set(LIBPNG_INCLUDE_DIR ${LIBPNG_DIR} ${LIBPNG_BUILD_DIR})
 
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
-
 # libjpeg
-message(STATUS "Looking for libjpeg")
-find_package(JPEG)
-if (JPEG_FOUND)
-    message(STATUS "Looking for libjpeg - found")
-    add_compile_definitions(JPEG_FOUND)
-else ()
-    message(STATUS "Looking for libjpeg - not found")
-endif ()
+set(LIBJPEG_DIR ${VENDOR_DIR}/libjpeg)
+add_subdirectory(${LIBJPEG_DIR})
+get_directory_property(
+		LIBJPEG_BUILD_DIR
+		DIRECTORY
+		${LIBJPEG_DIR}
+		DEFINITION
+		CMAKE_CURRENT_BINARY_DIR
+)
+get_directory_property(
+		LIBJPEG_STATIC
+		DIRECTORY
+		${LIBJPEG_DIR}
+		DEFINITION
+		JPEG_LIB_NAME_STATIC
+)
+get_directory_property(
+		LIBJPEG_SHARED
+		DIRECTORY
+		${LIBJPEG_DIR}
+		DEFINITION
+		JPEG_LIB_NAME
+)
+set(LIBJPEG_LIBRARY ${LIBJPEG_STATIC})
+set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
 
 # Catch
 set(CATCH_DIR ${VENDOR_DIR}/catch)

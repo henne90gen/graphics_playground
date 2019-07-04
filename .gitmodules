@@ -22,3 +22,6 @@
 [submodule "vendor/zlib"]
 	path = vendor/zlib
 	url = git@github.com:madler/zlib.git
+[submodule "vendor/libjpeg"]
+	path = vendor/libjpeg
+	url = git@github.com:henne90gen/libjpeg.git
