@@ -20,14 +20,28 @@
 #include "scenes/fourier_transform/FourierTransform.h"
 #include "util/ImGuiUtils.h"
 #include "util/MainMenu.h"
+#include "util/InputData.h"
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
+
+InputData input = {};
 
 void enableOpenGLDebugging();
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
+    input.mouse = {};
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        input.mouse.left = true;
+    } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        input.mouse.right = true;
+    }
+}
+
+void cursorPosCallback(GLFWwindow *window, double xpos, double ypos) {
+    input.mouse.pos.x = xpos;
+    input.mouse.pos.y = ypos;
 }
 
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
@@ -51,7 +65,7 @@ void resizeCallback(GLFWwindow * /*window*/, int width, int height) {
 
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
-//    glfwSetCursorPosCallback(window, cursorPosCallback);
+    glfwSetCursorPosCallback(window, cursorPosCallback);
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCharCallback(window, charCallback);
@@ -122,6 +136,7 @@ int main() {
             int windowHeight;
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
             scenes[currentSceneIndex]->setDimensions(windowWidth, windowHeight);
+            scenes[currentSceneIndex]->setInputData(&input);
             scenes[currentSceneIndex]->renderBackMenu();
             scenes[currentSceneIndex]->tick();
         }

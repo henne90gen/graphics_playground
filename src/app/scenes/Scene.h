@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 #include <imgui.h>
+#include "util/InputData.h"
 
 class Scene {
 public:
@@ -28,6 +29,10 @@ public:
         onAspectRatioChange();
     }
 
+    void setInputData(InputData *_input) {
+        this->input = _input;
+    }
+
 protected:
     GLFWwindow *window;
 
@@ -39,10 +44,13 @@ protected:
 
     inline unsigned int getHeight() { return height; }
 
+    inline InputData *getInput() { return input; }
+
 private:
     const char *name;
     unsigned int width = 0;
     unsigned int height = 0;
+    InputData *input;
     float aspectRatio = 16.0f / 9.0f;
     std::function<void(void)> &backToMainMenu;
 };

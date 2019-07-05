@@ -9,14 +9,14 @@ void FourierTransform::setup() {
     vertexArray->bind();
 
     std::vector<glm::vec2> vertices = {
-            {0.0, 0.0},
-            {0.0, 0.0},
-            {1.0, 0.0},
-            {1.0, 0.0},
-            {1.0, 1.0},
-            {1.0, 1.0},
-            {0.0, 1.0},
-            {0.0, 1.0}
+            {-1.0, -1.0},
+            {0.0,  0.0},
+            {1.0,  -1.0},
+            {1.0,  0.0},
+            {1.0,  1.0},
+            {1.0,  1.0},
+            {-1.0, 1.0},
+            {0.0,  1.0}
     };
     BufferLayout layout = {
             {ShaderDataType::Float2, "a_Position"},
@@ -32,24 +32,12 @@ void FourierTransform::setup() {
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     vertexArray->setIndexBuffer(indexBuffer);
 
-    texture = std::make_shared<Texture>();
+    texture = std::make_shared<Texture>(GL_RGBA);
     glActiveTexture(GL_TEXTURE0);
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform<int>("u_TextureSampler", 0);
-
-    const unsigned int width = 128;
-    const unsigned int height = 128;
-    const unsigned int channels = 4;
-    auto colors = std::vector<unsigned char>(width * height * channels);
-    for (unsigned long i = 0; i < colors.size(); i += 4) {
-        colors[i] = 255;
-        colors[i + 1] = 255;
-        colors[i + 2] = 255;
-        colors[i + 3] = 255;
-    }
-    texture->update(colors.data(), width, height);
 }
 
 void FourierTransform::destroy() {
@@ -57,9 +45,28 @@ void FourierTransform::destroy() {
 }
 
 void FourierTransform::tick() {
+    static std::vector<glm::vec2> mousePositions = {};
+    ImGui::Begin("Settings");
+    ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
+    float mouseX = getInput()->mouse.pos.x / getWidth();
+    mouseX = mouseX * 2.0F - 1.0F;
+    float mouseY = (getHeight() - getInput()->mouse.pos.y) / getHeight();
+    mouseY = mouseY * 2.0F - 1.0F;
+    ImGui::Text("Relative Mouse: (%f, %f)", mouseX, mouseY);
+    ImGui::Text("Num of Positions: %zu", mousePositions.size());
+    ImGui::End();
+
     shader->bind();
     vertexArray->bind();
     texture->bind();
+
+    const unsigned int width = getWidth();
+    const unsigned int height = getHeight();
+    static auto colors = std::vector<glm::vec4>(width * height);
+    unsigned int i = (height - (unsigned int) getInput()->mouse.pos.y) * width + (unsigned int) getInput()->mouse.pos.x;
+    colors[i] = {1.0, 1.0, 1.0, 1.0};
+    mousePositions.emplace_back(getInput()->mouse.pos.x, getInput()->mouse.pos.y);
+    texture->update(colors.data(), width, height);
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
