@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Playground)
 
-# zlib/png integration hack - removes all the errors related to export
-# (zlib doesn't export; libpng wants to; in this case we don't care).
-set(SKIP_INSTALL_EXPORT TRUE)
-
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
 find_program(
@@ -55,6 +51,9 @@ set(FREETYPE_DIR ${VENDOR_DIR}/freetype2)
 add_subdirectory(${FREETYPE_DIR})
 
 # zlib
+# zlib/png integration hack - removes all the errors related to export
+# (zlib doesn't export; libpng wants to; in this case we don't care).
+set(SKIP_INSTALL_EXPORT TRUE)
 set(ZLIB_DIR ${VENDOR_DIR}/zlib)
 add_subdirectory(${ZLIB_DIR})
 GET_DIRECTORY_PROPERTY(

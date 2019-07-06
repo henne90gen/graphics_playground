@@ -1,11 +1,11 @@
-FROM debian:stable
+FROM ubuntu:18.04
 
 # Install dependencies
 RUN apt-get -qq update; \
     apt-get install -qqy --no-install-recommends \
         autoconf automake cmake dpkg-dev file git make patch \
-        libc-dev libc++-dev libgcc-6-dev libstdc++-6-dev  \
-        dirmngr gnupg2 lbzip2 wget xz-utils; \
+        libc6-dev libc++-7-dev libgcc-8-dev libstdc++-8-dev  \
+        dirmngr gnupg2 lbzip2 wget xz-utils xorg-dev; \
     rm -rf /var/lib/apt/lists/*
 
 # Signing keys
@@ -17,12 +17,14 @@ RUN gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys $GPG_KEYS
 # Version info
 ENV LLVM_RELEASE 8
 ENV LLVM_VERSION 8.0.0
-ENV CMAKE_VERSION 3.14
-ENV CMAKE_BUILD 5
 
 # Install Clang and LLVM
 COPY scripts/install_llvm.sh .
 RUN ./install_llvm.sh
+
+# Version info
+ENV CMAKE_VERSION 3.14
+ENV CMAKE_BUILD 5
 
 # Install CMake
 COPY scripts/install_cmake.sh .
