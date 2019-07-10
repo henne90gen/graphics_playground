@@ -31,7 +31,8 @@ private:
 
     void drawCanvas(std::vector<glm::vec2> &mousePositions);
 
-    void drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints, float t);
+    void drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints, float t,
+                     unsigned int drawResolution);
 
     void drawConnectedPoints(const std::vector<glm::vec2> &drawnPoints);
 };

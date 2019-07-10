@@ -52,9 +52,11 @@ void FourierTransform::destroy() {
 void FourierTransform::tick() {
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};
-    static float zoom = 1.0F;
+    static float zoom = 0.5F;
     static float rotationAngle = 0.0F;
     static float animationSpeed = 0.01F;
+    static int drawResolution = 200;
+    auto coefficients = Fourier::calculate(mousePositions, 0);
 
     ImGui::Begin("Settings");
     ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
@@ -63,10 +65,13 @@ void FourierTransform::tick() {
     float mouseY = (getHeight() - getInput()->mouse.pos.y) / getHeight();
     mouseY = mouseY * 2.0F - 1.0F;
     ImGui::Text("Relative Mouse: (%f, %f)", mouseX, mouseY);
-    ImGui::Text("Num of Positions: %zu", mousePositions.size());
+    ImGui::Text("Num of Coefficients: %zu", coefficients.size());
+    ImGui::Text("Num of Mouse Positions: %zu", mousePositions.size());
+    ImGui::Text("Num of Drawn Points: %zu", drawnPoints.size());
     ImGui::Text("Rotation Angle: %f", rotationAngle);
     ImGui::DragFloat("Animation speed", &animationSpeed, 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.01F);
+    ImGui::DragInt("Draw Resolution", &drawResolution);
     ImGui::End();
 
     rotationAngle += animationSpeed;
@@ -75,25 +80,32 @@ void FourierTransform::tick() {
         drawnPoints = {};
     }
 
+    GL_Call(glDisable(GL_DEPTH_TEST));
+
     shader->bind();
     auto viewMatrix = glm::scale(glm::mat4(1.0F), glm::vec3(zoom));
     shader->setUniform("u_View", viewMatrix);
 
 //    drawCanvas(mousePositions);
 
-    auto coefficients = Fourier::calculate(mousePositions, 0);
     coefficients = {
-            {0.0, 0.5},
-            {0.5, 0.0},
-            {0.0, -0.5},
+            {0.0,  0.5},
+            {0.5,  0.0},
+            {0.0,  -0.5},
+            {0.25, 0.0},
+            {0.0,  -0.25},
+            {0.1,  0.0},
+            {0.0,  -0.1},
+            {0.05, 0.0},
+            {0.0,  -0.05},
     };
-    drawFourier(coefficients, drawnPoints, rotationAngle);
+    drawFourier(coefficients, drawnPoints, rotationAngle, drawResolution);
 
     drawConnectedPoints(drawnPoints);
 }
 
 void FourierTransform::drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints,
-                                   float t) {
+                                   float t, unsigned int drawResolution) {
     shader->bind();
     shader->setUniform("u_RenderCanvas", false);
     fourierVertexArray->bind();
@@ -108,7 +120,10 @@ void FourierTransform::drawFourier(const std::vector<glm::vec2> &coefficients, s
         currentHead += glm::vec2(rotatedCoefficient.x, rotatedCoefficient.y);
         vertices.push_back(currentHead);
     }
-    drawnPoints.push_back(currentHead);
+
+    if (glm::degrees(t) / 360.0 * (float) drawResolution >= drawnPoints.size()) {
+        drawnPoints.push_back(currentHead);
+    }
 
     BufferLayout layout = {
             {ShaderDataType::Float2, "a_Position"}
