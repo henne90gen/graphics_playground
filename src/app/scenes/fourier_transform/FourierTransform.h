@@ -26,5 +26,12 @@ public:
 private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<VertexArray> fourierVertexArray;
     std::shared_ptr<Texture> texture;
+
+    void drawCanvas(std::vector<glm::vec2> &mousePositions);
+
+    void drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints, float t);
+
+    void drawConnectedPoints(const std::vector<glm::vec2> &drawnPoints);
 };

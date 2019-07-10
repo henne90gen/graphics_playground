@@ -6,7 +6,8 @@ set(SOURCES
         rubiks_cube/RubiksCube.cpp
         rubiks_cube/RotationCommandStack.cpp
         marching_cubes/MarchingCubes.cpp
-        model_loading/ModelLoader.cpp)
+        model_loading/ModelLoader.cpp
+        fourier_transform/Fourier.cpp)
 
 add_library(logic ${SOURCES})
 target_link_libraries(logic PRIVATE FastNoise)

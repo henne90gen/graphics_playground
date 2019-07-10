@@ -1,5 +1,7 @@
 #include "FourierTransform.h"
 
+#include "fourier_transform/Fourier.h"
+
 void FourierTransform::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/fourier_transform/FourierTransformVert.glsl",
                                       "../../../src/app/scenes/fourier_transform/FourierTransformFrag.glsl");
@@ -38,6 +40,9 @@ void FourierTransform::setup() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform<int>("u_TextureSampler", 0);
+
+    fourierVertexArray = std::make_shared<VertexArray>(shader);
+    fourierVertexArray->bind();
 }
 
 void FourierTransform::destroy() {
@@ -46,6 +51,10 @@ void FourierTransform::destroy() {
 
 void FourierTransform::tick() {
     static std::vector<glm::vec2> mousePositions = {};
+    static std::vector<glm::vec2> drawnPoints = {};
+    static float rotationAngle = 0.0F;
+    static float animationSpeed = 0.01F;
+
     ImGui::Begin("Settings");
     ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
     float mouseX = getInput()->mouse.pos.x / getWidth();
@@ -54,9 +63,89 @@ void FourierTransform::tick() {
     mouseY = mouseY * 2.0F - 1.0F;
     ImGui::Text("Relative Mouse: (%f, %f)", mouseX, mouseY);
     ImGui::Text("Num of Positions: %zu", mousePositions.size());
+    ImGui::Text("Rotation Angle: %f", rotationAngle);
+    ImGui::DragFloat("Animation speed", &animationSpeed, 0.001F);
     ImGui::End();
 
+    rotationAngle += animationSpeed;
+    if (rotationAngle >= glm::two_pi<float>()) {
+        rotationAngle = 0.0F;
+        drawnPoints = {};
+    }
+
+//    drawCanvas(mousePositions);
+
+    auto coefficients = Fourier::calculate(mousePositions, 0);
+    coefficients = {
+            {0,   0.5},
+            {0.5, 0},
+            {0,   -0.5},
+    };
+    drawFourier(coefficients, drawnPoints, rotationAngle);
+
+    drawConnectedPoints(drawnPoints);
+}
+
+void FourierTransform::drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints,
+                                   float t) {
     shader->bind();
+    shader->setUniform("u_RenderCanvas", false);
+    fourierVertexArray->bind();
+
+    std::vector<glm::vec2> vertices = {};
+    glm::vec2 currentHead = {0, 0};
+    vertices.emplace_back(0, 0);
+    for (unsigned long i = 0; i < coefficients.size(); i++) {
+        auto coefficient = coefficients[i];
+        glm::mat4 rotation = glm::rotate(glm::identity<glm::mat4>(), (float) i * t, {0.0, 0.0, 1.0});
+        auto rotatedCoefficient = rotation * glm::vec4(coefficient, 0.0, 1.0);
+        currentHead += glm::vec2(rotatedCoefficient.x, rotatedCoefficient.y);
+        vertices.push_back(currentHead);
+    }
+    drawnPoints.push_back(currentHead);
+
+    BufferLayout layout = {
+            {ShaderDataType::Float2, "a_Position"}
+    };
+    auto vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
+    fourierVertexArray->addVertexBuffer(vertexBuffer);
+
+    std::vector<unsigned int> indices = {};
+    for (unsigned long i = 0; i < coefficients.size(); i++) {
+        indices.push_back(i);
+        indices.push_back(i + 1);
+    }
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    fourierVertexArray->setIndexBuffer(indexBuffer);
+
+    GL_Call(glDrawElements(GL_LINES, fourierVertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void FourierTransform::drawConnectedPoints(const std::vector<glm::vec2> &drawnPoints) {
+    shader->bind();
+    shader->setUniform("u_RenderCanvas", false);
+    fourierVertexArray->bind();
+
+    BufferLayout layout = {
+            {ShaderDataType::Float2, "a_Position"}
+    };
+    auto vertexBuffer = std::make_shared<VertexBuffer>(drawnPoints, layout);
+    fourierVertexArray->addVertexBuffer(vertexBuffer);
+
+    std::vector<unsigned int> indices = {};
+    for (unsigned long i = 0; i < drawnPoints.size() - 1; i++) {
+        indices.push_back(i);
+        indices.push_back(i + 1);
+    }
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    fourierVertexArray->setIndexBuffer(indexBuffer);
+
+    GL_Call(glDrawElements(GL_LINES, fourierVertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void FourierTransform::drawCanvas(std::vector<glm::vec2> &mousePositions) {
+    shader->bind();
+    shader->setUniform("u_RenderCanvas", true);
     vertexArray->bind();
     texture->bind();
 
