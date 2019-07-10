@@ -52,6 +52,7 @@ void FourierTransform::destroy() {
 void FourierTransform::tick() {
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};
+    static float zoom = 1.0F;
     static float rotationAngle = 0.0F;
     static float animationSpeed = 0.01F;
 
@@ -65,6 +66,7 @@ void FourierTransform::tick() {
     ImGui::Text("Num of Positions: %zu", mousePositions.size());
     ImGui::Text("Rotation Angle: %f", rotationAngle);
     ImGui::DragFloat("Animation speed", &animationSpeed, 0.001F);
+    ImGui::DragFloat("Zoom", &zoom, 0.01F);
     ImGui::End();
 
     rotationAngle += animationSpeed;
@@ -73,13 +75,17 @@ void FourierTransform::tick() {
         drawnPoints = {};
     }
 
+    shader->bind();
+    auto viewMatrix = glm::scale(glm::mat4(1.0F), glm::vec3(zoom));
+    shader->setUniform("u_View", viewMatrix);
+
 //    drawCanvas(mousePositions);
 
     auto coefficients = Fourier::calculate(mousePositions, 0);
     coefficients = {
-            {0,   0.5},
-            {0.5, 0},
-            {0,   -0.5},
+            {0.0, 0.5},
+            {0.5, 0.0},
+            {0.0, -0.5},
     };
     drawFourier(coefficients, drawnPoints, rotationAngle);
 
