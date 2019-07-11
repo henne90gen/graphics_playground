@@ -29,7 +29,7 @@ private:
     std::shared_ptr<VertexArray> fourierVertexArray;
     std::shared_ptr<Texture> texture;
 
-    void drawCanvas(std::vector<glm::vec2> &mousePositions);
+    void drawCanvas(std::vector<glm::vec2> &mousePositions, const glm::mat4 &viewMatrix);
 
     void drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints, float t,
                      unsigned int drawResolution);

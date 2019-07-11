@@ -31,11 +31,10 @@ void enableOpenGLDebugging();
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     // std::cout << "Mouse " << button << std::endl;
-    input.mouse = {};
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        input.mouse.left = true;
+        input.mouse.left = action == GLFW_PRESS;
     } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        input.mouse.right = true;
+        input.mouse.right = action == GLFW_PRESS;
     }
 }
 

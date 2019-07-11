@@ -86,7 +86,7 @@ void FourierTransform::tick() {
     auto viewMatrix = glm::scale(glm::mat4(1.0F), glm::vec3(zoom));
     shader->setUniform("u_View", viewMatrix);
 
-//    drawCanvas(mousePositions);
+    drawCanvas(mousePositions, viewMatrix);
 
     coefficients = {
             {0.0,  0.5},
@@ -115,7 +115,12 @@ void FourierTransform::drawFourier(const std::vector<glm::vec2> &coefficients, s
     vertices.emplace_back(0, 0);
     for (unsigned long i = 0; i < coefficients.size(); i++) {
         auto coefficient = coefficients[i];
-        glm::mat4 rotation = glm::rotate(glm::identity<glm::mat4>(), (float) i * t, {0.0, 0.0, 1.0});
+        float angle = roundf((float) i / 2) * t;
+        if (i % 2 == 0) {
+            angle *= -1.0f;
+        }
+        glm::mat4 rotation = glm::rotate(glm::identity<glm::mat4>(), angle, {0.0, 0.0, 1.0});
+
         auto rotatedCoefficient = rotation * glm::vec4(coefficient, 0.0, 1.0);
         currentHead += glm::vec2(rotatedCoefficient.x, rotatedCoefficient.y);
         vertices.push_back(currentHead);
@@ -164,7 +169,7 @@ void FourierTransform::drawConnectedPoints(const std::vector<glm::vec2> &drawnPo
     GL_Call(glDrawElements(GL_LINES, fourierVertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void FourierTransform::drawCanvas(std::vector<glm::vec2> &mousePositions) {
+void FourierTransform::drawCanvas(std::vector<glm::vec2> &mousePositions, const glm::mat4 &viewMatrix) {
     shader->bind();
     shader->setUniform("u_RenderCanvas", true);
     vertexArray->bind();
@@ -173,9 +178,24 @@ void FourierTransform::drawCanvas(std::vector<glm::vec2> &mousePositions) {
     const unsigned int width = getWidth();
     const unsigned int height = getHeight();
     static auto colors = std::vector<glm::vec4>(width * height);
-    unsigned int i = (height - (unsigned int) getInput()->mouse.pos.y) * width + (unsigned int) getInput()->mouse.pos.x;
-    colors[i] = {1.0, 1.0, 1.0, 1.0};
-    mousePositions.emplace_back(getInput()->mouse.pos.x, getInput()->mouse.pos.y);
+    InputData *input = getInput();
+    if (input->mouse.left) {
+        auto &mousePos = input->mouse.pos;
+
+        auto mouseDisplaySpace = glm::vec2(mousePos.x / width, (height - mousePos.y) / height);
+        mouseDisplaySpace = mouseDisplaySpace * 2.0F - glm::vec2(1.0F, 1.0F);
+
+        auto adjustedDisplayPos = glm::inverse(viewMatrix) * glm::vec4(mouseDisplaySpace, 0.0, 0.0);
+        auto canvasPos = (glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y) + glm::vec2(1.0F, 1.0F)) / 2.0F;
+        canvasPos = glm::vec2(canvasPos.x * width, height - (canvasPos.y * height));
+
+        if ((canvasPos.x >= 0 && canvasPos.x < width) && (canvasPos.y >= 0 && canvasPos.y < height)) {
+            unsigned int i =
+                    (height - (unsigned int) canvasPos.y) * width + (unsigned int) canvasPos.x;
+            colors[i] = {1.0, 1.0, 1.0, 1.0};
+            mousePositions.emplace_back(adjustedDisplayPos.x, adjustedDisplayPos.y);
+        }
+    }
     texture->update(colors.data(), width, height);
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));

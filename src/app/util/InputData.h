@@ -3,9 +3,9 @@
 #include <glm/glm.hpp>
 
 struct MouseData {
-    bool left;
-    bool right;
-    glm::vec2 pos;
+    bool left = false;
+    bool right = false;
+    glm::vec2 pos = {0.0F, 0.0F};
 };
 
 struct KeyboardData {
