@@ -10,6 +10,8 @@
 #include <functional>
 #include <memory>
 
+#include "fourier_transform/Fourier.h"
+
 class FourierTransform : public Scene {
 public:
     FourierTransform(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
@@ -29,10 +31,13 @@ private:
     std::shared_ptr<VertexArray> fourierVertexArray;
     std::shared_ptr<Texture> texture;
 
-    void drawCanvas(std::vector<glm::vec2> &mousePositions, const glm::mat4 &viewMatrix);
+    void
+    drawCanvas(std::vector<glm::vec4> &colors, std::vector<glm::vec2> &mousePositions, const glm::mat4 &viewMatrix);
 
-    void drawFourier(const std::vector<glm::vec2> &coefficients, std::vector<glm::vec2> &drawnPoints, float t,
+    void drawFourier(const std::vector<fourier_result> &coefficients, std::vector<glm::vec2> &drawnPoints, float t,
                      unsigned int drawResolution);
 
     void drawConnectedPoints(const std::vector<glm::vec2> &drawnPoints);
+
+    std::vector<fourier_result> coefficients;
 };

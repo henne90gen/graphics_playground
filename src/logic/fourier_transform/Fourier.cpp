@@ -1,27 +1,27 @@
-#include <glm/ext.hpp>
 #include "Fourier.h"
 
-std::vector<glm::vec2> Fourier::calculate(const std::vector<glm::vec2> &points, unsigned int resolution) {
-    auto coefficients = std::vector<glm::vec2>(2 * resolution + 1);
-    coefficients[0] = average(points);
-    for (unsigned int i = 1; i <= 2 * resolution; i += 2) {
-        coefficients[i] = average(points, i);
-        coefficients[i + 1] = average(points, -1 * (int) i);
+#include <glm/ext.hpp>
+#include <algorithm>
+
+std::vector<fourier_result> Fourier::dft(const std::vector<glm::vec2> &x) {
+    const unsigned long N = x.size();
+    auto X = std::vector<fourier_result>();
+
+    for (unsigned long k = 0; k < N; k++) {
+        std::complex<double> sum = {0, 0};
+        for (unsigned long n = 0; n < N; n++) {
+            double angle = (glm::two_pi<double>() * k * n) / (double) N;
+            sum += std::complex<double>(x[n].x, x[n].y) * std::complex<double>(cos(angle), -1 * sin(angle));
+        }
+        double re = sum.real() / (double) N;
+        double im = sum.imag() / (double) N;
+        double amp = glm::length(glm::vec2(re, im));
+        double phase = atan2(im, re);
+        X.push_back({(int) k, amp, phase});
     }
-    return coefficients;
-}
 
-void Fourier::step() {
-
-}
-
-glm::vec2 Fourier::average(const std::vector<glm::vec2> &points, const int factor) {
-    glm::vec2 result = {};
-    glm::mat4 rotation = glm::rotate(glm::identity<glm::mat4>(), (float) factor, {0.0, 0.0, 1.0});
-    for (auto point : points) {
-        const glm::vec3 rotatedPoint = rotation * glm::vec4(point.x, point.y, 0.0, 0.0);
-        result += glm::vec2(rotatedPoint.x, rotatedPoint.y);
-    }
-    result /= points.size();
-    return result;
+    std::sort(X.begin(), X.end(), [](fourier_result &a, fourier_result &b) {
+        return a.amplitude > b.amplitude;
+    });
+    return X;
 }
