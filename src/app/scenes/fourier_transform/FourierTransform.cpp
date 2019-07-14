@@ -2,6 +2,8 @@
 
 #include "CodingTrain.h"
 
+const int MAX_FOURIER_RESOLUTION = 500;
+
 void FourierTransform::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/fourier_transform/FourierTransformVert.glsl",
                                       "../../../src/app/scenes/fourier_transform/FourierTransformFrag.glsl");
@@ -54,9 +56,11 @@ void FourierTransform::tick() {
     static auto colors = createColors();
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static float zoom = 0.5F;
     static float rotationAngle = 0.0F;
     static float rotationSpeed = 1.0F;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static int fourierResolution = 200;
     static bool useMousePositions = true;
     int previousFourierResolution = fourierResolution;
@@ -65,17 +69,19 @@ void FourierTransform::tick() {
 
     ImGui::Begin("Settings");
     ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
-    float mouseX = getInput()->mouse.pos.x / getWidth();
-    mouseX = mouseX * 2.0F - 1.0F;
-    float mouseY = (getHeight() - getInput()->mouse.pos.y) / getHeight();
-    mouseY = mouseY * 2.0F - 1.0F;
-    ImGui::Text("Relative Mouse: (%f, %f)", mouseX, mouseY);
+    glm::vec2 mouse = getInput()->mouse.pos;
+    mouse /= glm::vec2(static_cast<float>(getWidth()), -1.0F * static_cast<float>(getHeight()));
+    mouse *= 2.0F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    mouse -= glm::vec2(1.0F, -1.0F);
+    ImGui::Text("Relative Mouse: (%f, %f)", mouse.x, mouse.y);
     ImGui::Text("Num of Coefficients: %zu", coefficients.size());
     ImGui::Text("Num of Mouse Positions: %zu", mousePositions.size());
     ImGui::Text("Num of Drawn Points: %zu", drawnPoints.size());
     ImGui::Text("Rotation Angle: %f", rotationAngle);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Zoom", &zoom, 0.01F);
-    ImGui::SliderInt("Fourier Resolution", &fourierResolution, 0, 500);
+    ImGui::SliderInt("Fourier Resolution", &fourierResolution, 0, MAX_FOURIER_RESOLUTION);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Rotation Speed", &rotationSpeed, 0.001F);
     ImGui::Checkbox("Use Mouse Positions", &useMousePositions);
     if (ImGui::Button("Reset Fourier") || fourierResolution != previousFourierResolution) {
@@ -137,9 +143,10 @@ void FourierTransform::updateCoefficients(const std::vector<glm::vec2> &mousePos
             x.push_back(dataPoints[i]);
         }
     }
-    int threshold = (int) (x.size() * 0.8);
-    if (threshold > 500) {
-        threshold = 500;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    int threshold = static_cast<int>(x.size() * 0.8);
+    if (threshold > MAX_FOURIER_RESOLUTION) {
+        threshold = MAX_FOURIER_RESOLUTION;
     }
     if (fourierResolution == 0 || fourierResolution >= threshold) {
         fourierResolution = threshold;
@@ -157,7 +164,7 @@ void FourierTransform::drawFourier(std::vector<glm::vec2> &drawnPoints, float t)
     vertices.emplace_back(0, 0);
 
     for (auto &coefficient : coefficients) {
-        double angle = coefficient.frequency * t + coefficient.phase;
+        double angle = static_cast<double>(coefficient.frequency) * t + coefficient.phase;
         currentHead.x += coefficient.amplitude * cos(angle);
         currentHead.y += coefficient.amplitude * sin(angle);
         vertices.push_back(currentHead);
@@ -213,21 +220,25 @@ void FourierTransform::drawCanvas(std::vector<glm::vec4> &colors, std::vector<gl
 
     const unsigned int width = getWidth();
     const unsigned int height = getHeight();
+    const auto widthF = static_cast<float>(width);
+    const auto heightF = static_cast<float>(height);
 
     InputData *input = getInput();
     if (input->mouse.left) {
         auto &mousePos = input->mouse.pos;
 
-        auto mouseDisplaySpace = glm::vec2(mousePos.x / width, (height - mousePos.y) / height);
+        auto mouseDisplaySpace = glm::vec2(mousePos.x / widthF, (heightF - mousePos.y) / heightF);
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         mouseDisplaySpace = mouseDisplaySpace * 2.0F - glm::vec2(1.0F, 1.0F);
 
         auto adjustedDisplayPos = glm::inverse(viewMatrix) * glm::vec4(mouseDisplaySpace, 0.0, 0.0);
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         auto canvasPos = (glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y) + glm::vec2(1.0F, 1.0F)) / 2.0F;
-        canvasPos = glm::vec2(canvasPos.x * width, height - (canvasPos.y * height));
+        canvasPos = glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF));
 
-        if ((canvasPos.x >= 0 && canvasPos.x < width) && (canvasPos.y >= 0 && canvasPos.y < height)) {
+        if ((canvasPos.x >= 0.0F && canvasPos.x < widthF) && (canvasPos.y >= 0.0F && canvasPos.y < heightF)) {
             unsigned int i =
-                    (height - (unsigned int) canvasPos.y) * width + (unsigned int) canvasPos.x;
+                    (height - static_cast<unsigned int>(canvasPos.y)) * width + static_cast<unsigned int>(canvasPos.x);
             colors[i] = {1.0, 1.0, 1.0, 1.0};
             mousePositions.emplace_back(adjustedDisplayPos.x, adjustedDisplayPos.y);
         }

@@ -14,7 +14,7 @@ struct fourier_result {
 class Fourier {
 public:
 
-    static std::vector<fourier_result> dft(const std::vector<glm::vec2> &x, int i);
+    static std::vector<fourier_result> dft(const std::vector<glm::vec2> &x, int resolution);
 };
 
 

@@ -7,12 +7,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <jpeglib.h>
 #include <png.h>
 #include <utility>
-#include <jpeglib.h>
 
 int Image::loadPng() {
-    FILE *fp = fopen(fileName.c_str(), "rb");
+    FILE *fp = fopen(fileName.c_str(), "rbe");
     if (fp == nullptr) {
         std::cout << "File '" << fileName << "' could not be opened for reading" << std::endl;
         return 1;

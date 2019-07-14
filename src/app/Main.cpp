@@ -7,6 +7,7 @@
 
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
+#include "scenes/fourier_transform/FourierTransform.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/legacy_triangle/LegacyTriangle.h"
@@ -17,10 +18,9 @@
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
-#include "scenes/fourier_transform/FourierTransform.h"
 #include "util/ImGuiUtils.h"
-#include "util/MainMenu.h"
 #include "util/InputData.h"
+#include "util/MainMenu.h"
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
@@ -29,7 +29,7 @@ InputData input = {};
 
 void enableOpenGLDebugging();
 
-void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+void mouseButtonCallback(GLFWwindow * /*window*/, int button, int action, int  /*mods*/) {
     // std::cout << "Mouse " << button << std::endl;
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         input.mouse.left = action == GLFW_PRESS;
@@ -38,7 +38,7 @@ void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     }
 }
 
-void cursorPosCallback(GLFWwindow *window, double xpos, double ypos) {
+void cursorPosCallback(GLFWwindow * /*window*/, double xpos, double ypos) {
     input.mouse.pos.x = xpos;
     input.mouse.pos.y = ypos;
 }
