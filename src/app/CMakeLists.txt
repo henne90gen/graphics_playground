@@ -23,10 +23,12 @@ set(SOURCES
         scenes/landscape/Landscape.cpp
         scenes/marching_cubes/MarchingCubesScene.cpp
         scenes/font_demo/FontDemo.cpp
+        scenes/rubiks_cube/RubiksCubeScene.cpp
         scenes/model_loading/ModelLoading.cpp
         scenes/light_demo/LightDemo.cpp
         scenes/fourier_transform/FourierTransform.cpp
-        scenes/rubiks_cube/RubiksCubeScene.cpp)
+        scenes/normal_mapping/NormalMapping.cpp
+        )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -46,7 +48,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         )
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 else ()
-	add_definitions(-std=c++17)
+    add_definitions(-std=c++17)
 endif ()
 
 if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
