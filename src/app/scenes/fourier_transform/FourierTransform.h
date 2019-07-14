@@ -34,10 +34,14 @@ private:
     void
     drawCanvas(std::vector<glm::vec4> &colors, std::vector<glm::vec2> &mousePositions, const glm::mat4 &viewMatrix);
 
-    void drawFourier(const std::vector<fourier_result> &coefficients, std::vector<glm::vec2> &drawnPoints, float t,
-                     unsigned int drawResolution);
+    void drawFourier(std::vector<glm::vec2> &drawnPoints, float t);
 
     void drawConnectedPoints(const std::vector<glm::vec2> &drawnPoints);
 
     std::vector<fourier_result> coefficients;
+
+    void
+    updateCoefficients(const std::vector<glm::vec2> &mousePositions, bool useMousePositions, int &fourierResolution);
+
+    std::vector<glm::vec4, std::allocator<glm::vec4>> createColors();
 };

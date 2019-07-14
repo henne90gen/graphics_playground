@@ -3,11 +3,11 @@
 #include <glm/ext.hpp>
 #include <algorithm>
 
-std::vector<fourier_result> Fourier::dft(const std::vector<glm::vec2> &x) {
+std::vector<fourier_result> Fourier::dft(const std::vector<glm::vec2> &x, int resolution) {
     const unsigned long N = x.size();
     auto X = std::vector<fourier_result>();
 
-    for (unsigned long k = 0; k < N; k++) {
+    for (int k = -resolution; k < resolution; k++) {
         std::complex<double> sum = {0, 0};
         for (unsigned long n = 0; n < N; n++) {
             double angle = (glm::two_pi<double>() * k * n) / (double) N;
@@ -17,7 +17,7 @@ std::vector<fourier_result> Fourier::dft(const std::vector<glm::vec2> &x) {
         double im = sum.imag() / (double) N;
         double amp = glm::length(glm::vec2(re, im));
         double phase = atan2(im, re);
-        X.push_back({(int) k, amp, phase});
+        X.push_back({k, amp, phase});
     }
 
     std::sort(X.begin(), X.end(), [](fourier_result &a, fourier_result &b) {

@@ -51,22 +51,17 @@ void FourierTransform::destroy() {
 }
 
 void FourierTransform::tick() {
-    static auto colors = std::vector<glm::vec4>(getWidth() * getHeight());
+    static auto colors = createColors();
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};
     static float zoom = 0.5F;
     static float rotationAngle = 0.0F;
-    static int fourierResolution = 3;
-    static int drawResolution = 5000;
-
-    const int skip = 8;
-    auto x = std::vector<glm::vec2>();
-    for (unsigned long i = 0; i < dataPoints.size(); i += skip) {
-        x.push_back(dataPoints[i]);
-    }
-    coefficients = Fourier::dft(x);
-
+    static float rotationSpeed = 1.0F;
+    static int fourierResolution = 200;
+    static bool useMousePositions = true;
     int previousFourierResolution = fourierResolution;
+
+    updateCoefficients(mousePositions, useMousePositions, fourierResolution);
 
     ImGui::Begin("Settings");
     ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
@@ -80,18 +75,21 @@ void FourierTransform::tick() {
     ImGui::Text("Num of Drawn Points: %zu", drawnPoints.size());
     ImGui::Text("Rotation Angle: %f", rotationAngle);
     ImGui::DragFloat("Zoom", &zoom, 0.01F);
-    ImGui::SliderInt("Fourier Resolution", &fourierResolution, 0, 100);
-    ImGui::DragInt("Draw Resolution", &drawResolution);
-    if (ImGui::Button("Reset") || fourierResolution != previousFourierResolution) {
-        mousePositions.clear();
-        colors.clear();
-        colors = std::vector<glm::vec4>(getWidth() * getHeight());
+    ImGui::SliderInt("Fourier Resolution", &fourierResolution, 0, 500);
+    ImGui::DragFloat("Rotation Speed", &rotationSpeed, 0.001F);
+    ImGui::Checkbox("Use Mouse Positions", &useMousePositions);
+    if (ImGui::Button("Reset Fourier") || fourierResolution != previousFourierResolution) {
         rotationAngle = 0.0F;
+        drawnPoints.clear();
+    }
+    if (ImGui::Button("Reset Mouse Positions")) {
+        mousePositions.clear();
+        colors = createColors();
         drawnPoints.clear();
     }
     ImGui::End();
 
-    rotationAngle += glm::two_pi<double>() / coefficients.size();
+    rotationAngle += rotationSpeed / 100.0F;
     if (rotationAngle >= glm::two_pi<float>()) {
         rotationAngle = 0.0F;
         drawnPoints = {};
@@ -105,13 +103,51 @@ void FourierTransform::tick() {
 
     drawCanvas(colors, mousePositions, viewMatrix);
 
-    drawFourier(coefficients, drawnPoints, rotationAngle, drawResolution);
+    drawFourier(drawnPoints, rotationAngle);
 
     drawConnectedPoints(drawnPoints);
 }
 
-void FourierTransform::drawFourier(const std::vector<fourier_result> &coefficients, std::vector<glm::vec2> &drawnPoints,
-                                   float t, unsigned int drawResolution) {
+std::vector<glm::vec4> FourierTransform::createColors() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+    auto colors = std::vector<glm::vec4>(width * height);
+
+    const glm::vec4 borderColor = glm::vec4(0.5, 0.5, 0.5, 1);
+    for (unsigned int x = 0; x < width; x++) {
+        colors[x] = borderColor;
+        colors[(height - 2) * width + x] = borderColor;
+    }
+    for (unsigned int y = 0; y < height; y++) {
+        colors[y * width] = borderColor;
+        colors[y * width + width - 2] = borderColor;
+    }
+
+    return colors;
+}
+
+void FourierTransform::updateCoefficients(const std::vector<glm::vec2> &mousePositions, bool useMousePositions,
+                                          int &fourierResolution) {
+    auto x = std::vector<glm::vec2>();
+    if (useMousePositions) {
+        x = mousePositions;
+    } else {
+        const int skip = 8;
+        for (unsigned long i = 0; i < dataPoints.size(); i += skip) {
+            x.push_back(dataPoints[i]);
+        }
+    }
+    int threshold = (int) (x.size() * 0.8);
+    if (threshold > 500) {
+        threshold = 500;
+    }
+    if (fourierResolution == 0 || fourierResolution >= threshold) {
+        fourierResolution = threshold;
+    }
+    coefficients = Fourier::dft(x, fourierResolution);
+}
+
+void FourierTransform::drawFourier(std::vector<glm::vec2> &drawnPoints, float t) {
     shader->bind();
     shader->setUniform("u_RenderCanvas", false);
     fourierVertexArray->bind();
@@ -119,6 +155,7 @@ void FourierTransform::drawFourier(const std::vector<fourier_result> &coefficien
     std::vector<glm::vec2> vertices = {};
     glm::vec2 currentHead = {0, 0};
     vertices.emplace_back(0, 0);
+
     for (auto &coefficient : coefficients) {
         double angle = coefficient.frequency * t + coefficient.phase;
         currentHead.x += coefficient.amplitude * cos(angle);
@@ -126,9 +163,7 @@ void FourierTransform::drawFourier(const std::vector<fourier_result> &coefficien
         vertices.push_back(currentHead);
     }
 
-    if (glm::degrees(t) / 360.0 * (float) drawResolution >= drawnPoints.size()) {
-        drawnPoints.push_back(currentHead);
-    }
+    drawnPoints.push_back(currentHead);
 
     BufferLayout layout = {
             {ShaderDataType::Float2, "a_Position"}
