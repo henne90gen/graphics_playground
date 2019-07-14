@@ -44,12 +44,6 @@ void FourierTransform::setup() {
     fourierVertexArray = std::make_shared<VertexArray>(shader);
     fourierVertexArray->bind();
 
-    const int skip = 8;
-    auto x = std::vector<glm::vec2>();
-    for (unsigned long i = 0; i < dataPoints.size(); i += skip) {
-        x.push_back(dataPoints[i]);
-    }
-    coefficients = Fourier::dft(x);
 }
 
 void FourierTransform::destroy() {
@@ -62,9 +56,17 @@ void FourierTransform::tick() {
     static std::vector<glm::vec2> drawnPoints = {};
     static float zoom = 0.5F;
     static float rotationAngle = 0.0F;
-    static float animationSpeed = 0.001F;
     static int fourierResolution = 3;
     static int drawResolution = 5000;
+
+    const int skip = 8;
+    auto x = std::vector<glm::vec2>();
+    for (unsigned long i = 0; i < dataPoints.size(); i += skip) {
+        x.push_back(dataPoints[i]);
+    }
+    coefficients = Fourier::dft(x);
+
+    int previousFourierResolution = fourierResolution;
 
     ImGui::Begin("Settings");
     ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
@@ -77,11 +79,10 @@ void FourierTransform::tick() {
     ImGui::Text("Num of Mouse Positions: %zu", mousePositions.size());
     ImGui::Text("Num of Drawn Points: %zu", drawnPoints.size());
     ImGui::Text("Rotation Angle: %f", rotationAngle);
-    ImGui::DragFloat("Animation speed", &animationSpeed, 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.01F);
     ImGui::SliderInt("Fourier Resolution", &fourierResolution, 0, 100);
     ImGui::DragInt("Draw Resolution", &drawResolution);
-    if (ImGui::Button("Reset")) {
+    if (ImGui::Button("Reset") || fourierResolution != previousFourierResolution) {
         mousePositions.clear();
         colors.clear();
         colors = std::vector<glm::vec4>(getWidth() * getHeight());
