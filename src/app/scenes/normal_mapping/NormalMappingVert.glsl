@@ -1,8 +1,12 @@
 #version 130
 
-attribute vec3 position;
+attribute vec3 a_Position;
+attribute vec2 a_UV;
+attribute vec3 a_Normal;
+
+varying vec2 v_UV;
 
 void main() {
-    gl_Position.xyz = position;
-    gl_Position.w = 1.0;
+    v_UV = a_UV;
+    gl_Position = vec4(a_Position, 1.0);
 }

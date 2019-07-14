@@ -18,6 +18,7 @@
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
+#include "scenes/normal_mapping/NormalMapping.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -43,7 +44,7 @@ void cursorPosCallback(GLFWwindow * /*window*/, double xpos, double ypos) {
     input.mouse.pos.y = ypos;
 }
 
-void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+void scrollCallback(GLFWwindow */*window*/, double /*xoffset*/, double /*yoffset*/) {
     // std::cout << "Scrolled " << xoffset << ", " << yoffset << std::endl;
 }
 
@@ -54,7 +55,7 @@ void keyCallback(GLFWwindow *window, int key, int  /*scancode*/, int action, int
     }
 }
 
-void charCallback(GLFWwindow *window, unsigned int c) {
+void charCallback(GLFWwindow */*window*/, unsigned int /*c*/) {
     //  std::cout << "Entered character " << c << std::endl;
 }
 
@@ -114,6 +115,7 @@ int main() {
     scenes.push_back(new ModelLoading(window, backToMainMenu)); // 10
     scenes.push_back(new LightDemo(window, backToMainMenu)); // 11
     scenes.push_back(new FourierTransform(window, backToMainMenu)); // 12
+    scenes.push_back(new NormalMapping(window, backToMainMenu)); // 13
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(9);

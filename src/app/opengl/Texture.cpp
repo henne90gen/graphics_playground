@@ -4,6 +4,10 @@ Texture::Texture(unsigned int dataType) : dataType(dataType) { GL_Call(glGenText
 
 Texture::~Texture() = default;
 
+void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }
+
+void Texture::unbind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, 0)); }
+
 void Texture::update(const unsigned char *data, unsigned int width, unsigned int height, unsigned int unpackAlignment) {
     bind();
     if (unpackAlignment != 4) {
@@ -32,6 +36,9 @@ void Texture::update(const glm::vec4 *data, unsigned int width, unsigned int hei
     }
 }
 
-void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }
-
-void Texture::unbind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, 0)); }
+void Texture::update(Image &image) {
+    if (!image.isLoaded()) {
+        image.load();
+    }
+    update(image.getPixels().data(), image.getWidth(), image.getHeight());
+}
