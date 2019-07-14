@@ -1,7 +1,7 @@
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Optional
+import streams as s
 
 
 @dataclass
@@ -54,27 +54,6 @@ def strip(s: str) -> str:
     return s.strip()
 
 
-def main():
-    with open("build/build_report.csv") as f:
-        lines = f.readlines()
-    warnings = list(
-        filter(lambda x: x is not None,
-               map(convert,
-                   filter(warnings_only,
-                          filter(remove_carets,
-                                 map(strip,
-                                     lines))))))
-
-    show_counter(warning_type_count(warnings))
-
-    print()
-    show_counter(file_path_count(warnings))
-
-    if len(sys.argv) >= 2:
-        print()
-        show_warnings_for_file(warnings, sys.argv[1])
-
-
 def show_warnings_for_file(warnings, file_path):
     print(f"Warnings for {file_path}:")
     for warning in warnings:
@@ -103,5 +82,23 @@ def show_counter(counter):
         print(count, elem)
 
 
-if __name__ == "__main__":
-    main()
+def analyze_build_report(file_name: Optional[str]):
+    with open("build/build_report.csv") as f:
+        lines = f.readlines()
+
+    warnings = s.list(lines) > \
+               s.map(strip) > \
+               s.filter(remove_carets) > \
+               s.filter(warnings_only) > \
+               s.map(convert) > \
+               s.filter(lambda x: x is not None) > \
+               s.collect()
+
+    show_counter(warning_type_count(warnings))
+
+    print()
+    show_counter(file_path_count(warnings))
+
+    if file_name is not None:
+        print()
+        show_warnings_for_file(warnings, file_name)

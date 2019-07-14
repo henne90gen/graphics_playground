@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Tuple
+from typing import Tuple, Union
 
 CPP_TEMPLATE = """\
 #include "{name}.h"
@@ -59,11 +59,11 @@ def convert_camel_to_snake_case(name: str):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def create_folder(name: str) -> Tuple[str, os.PathLike]:
-    folder_name = convert_camel_to_snake_case(name)
+def create_folder(scene_name: str) -> Tuple[str, Union[bytes, str]]:
+    folder_name = convert_camel_to_snake_case(scene_name)
     folder_path = os.path.join("./src/app/scenes", folder_name)
     if os.path.exists(folder_path):
-        raise ValueError(f"Scene {name} already exists!")
+        raise ValueError(f"Scene {scene_name} already exists!")
     os.mkdir(folder_path)
     return folder_name, folder_path
 
@@ -101,23 +101,18 @@ def add_to_cmake_lists(cpp_path):
         f.writelines(result_lines)
 
 
-def main():
-    name = input("Name of the scene: ")
-    folder_name, folder_path = create_folder(name)
+def generate_scene_template(scene_name: str):
+    folder_name, folder_path = create_folder(scene_name)
 
-    cpp_path = os.path.join(folder_path, f"{name}.cpp")
-    h_path = os.path.join(folder_path, f"{name}.h")
-    vertex_path = os.path.join(folder_path, f"{name}Vert.glsl")
-    fragment_path = os.path.join(folder_path, f"{name}Frag.glsl")
+    cpp_path = os.path.join(folder_path, f"{scene_name}.cpp")
+    h_path = os.path.join(folder_path, f"{scene_name}.h")
+    vertex_path = os.path.join(folder_path, f"{scene_name}Vert.glsl")
+    fragment_path = os.path.join(folder_path, f"{scene_name}Frag.glsl")
 
     write_template(cpp_path, CPP_TEMPLATE,
-                   name=name, folder_name=folder_name)
-    write_template(h_path, H_TEMPLATE, name=name)
-    write_template(vertex_path, VERTEX_TEMPLATE, name=name)
-    write_template(fragment_path, FRAGMENT_TEMPLATE, name=name)
+                   name=scene_name, folder_name=folder_name)
+    write_template(h_path, H_TEMPLATE, name=scene_name)
+    write_template(vertex_path, VERTEX_TEMPLATE, name=scene_name)
+    write_template(fragment_path, FRAGMENT_TEMPLATE, name=scene_name)
 
     add_to_cmake_lists(cpp_path)
-
-
-if __name__ == "__main__":
-    main()

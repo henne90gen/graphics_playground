@@ -1,5 +1,8 @@
 from typing import List
 from dataclasses import dataclass
+import streams as s
+
+BASE_PATH = "src/app/scenes/fourier_transform"
 
 
 @dataclass
@@ -30,7 +33,11 @@ def extract_numbers(line: str):
     def remove_comma(part: str):
         return part.replace(",", "")
 
-    return list(map(float, map(remove_comma, filter(clean_parts, parts))))
+    return s.list(parts) > \
+           s.filter(clean_parts) > \
+           s.map(remove_comma) > \
+           s.map(float) > \
+           s.collect()
 
 
 def to_vector(l: List[float]) -> Vec:
@@ -49,32 +56,33 @@ def flip_vertically(v: Vec):
     return Vec(v.x, -1 * v.y)
 
 
-def main():
-    with open('codingtrain.js') as f:
+def read_js_file():
+    with open(f"{BASE_PATH}/codingtrain.js") as f:
         lines = f.readlines()
+    print("Read coding_train.js")
+    return lines
 
-    scale_factor = 1 / 150
-    lines = list(map(to_string,
-                     map(flip_vertically,
-                         map(scale(scale_factor),
-                             map(to_vector,
-                                 map(extract_numbers,
-                                     filter(clean_up_lines,
-                                            lines)
-                                     )
-                                 )
-                             )
-                         )
-                     )
-                 )
 
-    with open('CodingTrain.h', 'w') as f:
+def write_header_file(lines: List[str]):
+    with open(f"{BASE_PATH}/CodingTrain.h", 'w') as f:
         f.write("#pragma once\n")
         f.write("\n")
         f.write("std::vector<glm::vec2> dataPoints = {\n")
         f.writelines(lines)
         f.write("};\n")
+    print("Wrote CodingTrain.h")
 
 
-if __name__ == "__main__":
-    main()
+def generate_coding_train():
+    lines = read_js_file()
+
+    scale_factor = 1 / 150
+    # noinspection PyStatementEffect
+    s.list(lines) > \
+    s.filter(clean_up_lines) > \
+    s.map(extract_numbers) > \
+    s.map(to_vector) > \
+    s.map(scale(scale_factor)) > \
+    s.map(flip_vertically) > \
+    s.map(to_string) > \
+    s.collect(write_header_file)

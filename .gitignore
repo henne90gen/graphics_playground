@@ -2,5 +2,7 @@
 .vs/
 .idea/
 build/
+env/
 cmake-build-debug/
 CMakeSettings.json
+__pycache__/
