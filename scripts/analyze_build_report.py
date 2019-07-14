@@ -1,7 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Optional
-import streams as s
 
 
 @dataclass
@@ -86,13 +85,17 @@ def analyze_build_report(file_name: Optional[str]):
     with open("build/build_report.csv") as f:
         lines = f.readlines()
 
-    warnings = s.stream(lines) > \
-               s.map(strip) > \
-               s.filter(remove_carets) > \
-               s.filter(warnings_only) > \
-               s.map(convert) > \
-               s.filter(lambda x: x is not None) > \
-               s.collect()
+    warnings = list(
+        filter(lambda x: x is not None,
+               map(convert,
+                   filter(warnings_only,
+                          filter(remove_carets,
+                                 map(strip, lines)
+                                 )
+                          )
+                   )
+               )
+    )
 
     show_counter(warning_type_count(warnings))
 

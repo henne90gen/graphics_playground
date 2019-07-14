@@ -1,6 +1,5 @@
 from typing import List
 from dataclasses import dataclass
-import streams as s
 
 BASE_PATH = "src/app/scenes/fourier_transform"
 
@@ -33,11 +32,7 @@ def extract_numbers(line: str):
     def remove_comma(part: str):
         return part.replace(",", "")
 
-    return s.stream(parts) > \
-           s.filter(clean_parts) > \
-           s.map(remove_comma) > \
-           s.map(float) > \
-           s.collect()
+    return list(map(float, map(remove_comma, filter(clean_parts, parts))))
 
 
 def to_vector(l: List[float]) -> Vec:
@@ -77,12 +72,18 @@ def generate_coding_train():
     lines = read_js_file()
 
     scale_factor = 1 / 150
-    # noinspection PyStatementEffect
-    s.stream(lines) > \
-    s.filter(clean_up_lines) > \
-    s.map(extract_numbers) > \
-    s.map(to_vector) > \
-    s.map(scale(scale_factor)) > \
-    s.map(flip_vertically) > \
-    s.map(to_string) > \
-    s.collect(write_header_file)
+    lines = list(map(to_string,
+                     map(flip_vertically,
+                         map(scale(scale_factor),
+                             map(to_vector,
+                                 map(extract_numbers,
+                                     filter(clean_up_lines,
+                                            lines)
+                                     )
+                                 )
+                             )
+                         )
+                     )
+                 )
+
+    write_header_file(lines)
