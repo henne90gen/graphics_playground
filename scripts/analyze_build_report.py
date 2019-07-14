@@ -86,7 +86,7 @@ def analyze_build_report(file_name: Optional[str]):
     with open("build/build_report.csv") as f:
         lines = f.readlines()
 
-    warnings = s.list(lines) > \
+    warnings = s.stream(lines) > \
                s.map(strip) > \
                s.filter(remove_carets) > \
                s.filter(warnings_only) > \

@@ -33,7 +33,7 @@ def extract_numbers(line: str):
     def remove_comma(part: str):
         return part.replace(",", "")
 
-    return s.list(parts) > \
+    return s.stream(parts) > \
            s.filter(clean_parts) > \
            s.map(remove_comma) > \
            s.map(float) > \
@@ -78,7 +78,7 @@ def generate_coding_train():
 
     scale_factor = 1 / 150
     # noinspection PyStatementEffect
-    s.list(lines) > \
+    s.stream(lines) > \
     s.filter(clean_up_lines) > \
     s.map(extract_numbers) > \
     s.map(to_vector) > \

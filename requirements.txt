@@ -1,0 +1,2 @@
+Click==7.0
+streams==0.1
