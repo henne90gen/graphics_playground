@@ -21,13 +21,15 @@ public:
 
     void destroy() override;
 
+protected:
+    void onAspectRatioChange() override;
+
 private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<Texture> texture;
     std::shared_ptr<Texture> normalMap;
 
-    void interleaveVertexData(const std::vector<glm::vec3> &positions, const std::vector<glm::vec2> &uvs,
-                              const std::vector<glm::vec3> &normals, std::vector<float> &output);
-
+    static void interleaveVertexData(const std::vector<glm::vec3> &positions, const std::vector<glm::vec2> &uvs,
+                                     const std::vector<glm::vec3> &normals, std::vector<float> &output);
 };

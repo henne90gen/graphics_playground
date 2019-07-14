@@ -1,10 +1,16 @@
 #include <util/Image.h>
 #include "NormalMapping.h"
 
+const float FIELD_OF_VIEW = 45.0F;
+const float Z_NEAR = 0.1F;
+const float Z_FAR = 100.0F;
+
 void NormalMapping::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/normal_mapping/NormalMappingVert.glsl",
                                       "../../../src/app/scenes/normal_mapping/NormalMappingFrag.glsl");
     shader->bind();
+    auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+    shader->setUniform("u_Projection", projectionMatrix);
 
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
@@ -22,10 +28,10 @@ void NormalMapping::setup() {
             {0.0, 0.0}
     };
     std::vector<glm::vec3> normals = {
-            {0.0, 0.0, 0.0},
-            {0.0, 0.0, 0.0},
-            {0.0, 0.0, 0.0},
-            {0.0, 0.0, 0.0}
+            {0.0, 0.0, 1.0},
+            {0.0, 0.0, 1.0},
+            {0.0, 0.0, 1.0},
+            {0.0, 0.0, 1.0}
     };
 
     std::vector<float> vertexData;
@@ -67,7 +73,28 @@ void NormalMapping::setup() {
 void NormalMapping::destroy() {}
 
 void NormalMapping::tick() {
+    static glm::vec3 cameraPosition = {1.0, 0.0, -5.0};
+    static glm::vec3 cameraRotation = {};
+    static glm::vec3 position = {};
+    static glm::vec3 rotation = {};
+
+    ImGui::Begin("Settings");
+    ImGui::DragFloat3("Camera Position", (float *) &cameraPosition, 0.01F);
+    ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01F);
+    ImGui::DragFloat3("Model Position", (float *) &position, 0.01F);
+    ImGui::DragFloat3("Model Rotation", (float *) &rotation, 0.01F);
+    ImGui::End();
+
     shader->bind();
+    auto modelMatrix = glm::identity<glm::mat4>();
+    modelMatrix = glm::translate(modelMatrix, position);
+    modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
+    shader->setUniform("u_Model", modelMatrix);
+    auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    shader->setUniform("u_View", viewMatrix);
+
     vertexArray->bind();
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
@@ -91,4 +118,10 @@ void NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &positions
         output.push_back(normals[i].y);
         output.push_back(normals[i].z);
     }
+}
+
+void NormalMapping::onAspectRatioChange() {
+    shader->bind();
+    auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+    shader->setUniform("u_Projection", projectionMatrix);
 }
