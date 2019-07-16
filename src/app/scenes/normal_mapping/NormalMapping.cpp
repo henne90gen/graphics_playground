@@ -77,26 +77,44 @@ void NormalMapping::tick() {
     static glm::vec3 cameraRotation = {};
     static glm::vec3 position = {};
     static glm::vec3 rotation = {};
+    static glm::vec3 lightPosition = {0.0, 0.0, 1.0};
+    static glm::vec3 lightColor = {1.0, 1.0, 1.0};
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Camera Position", (float *) &cameraPosition, 0.01F);
     ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01F);
     ImGui::DragFloat3("Model Position", (float *) &position, 0.01F);
     ImGui::DragFloat3("Model Rotation", (float *) &rotation, 0.01F);
+    ImGui::DragFloat3("Light Position", (float *) &lightPosition, 0.01F);
+    ImGui::ColorEdit3("Light Color", (float *) &lightColor);
     ImGui::End();
 
     shader->bind();
+    setupShader(cameraPosition, cameraRotation, position, rotation, lightPosition, lightColor);
+
+    vertexArray->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void
+NormalMapping::setupShader(const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation, const glm::vec3 &position,
+                           const glm::vec3 &rotation, const glm::vec3 &lightPosition,
+                           const glm::vec3 &lightColor) const {
     auto modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::translate(modelMatrix, position);
     modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
     shader->setUniform("u_Model", modelMatrix);
+
+    auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+    shader->setUniform("u_NormalMatrix", normalMatrix);
+
     auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
     shader->setUniform("u_View", viewMatrix);
 
-    vertexArray->bind();
-    GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    shader->setUniform("u_Light.position", lightPosition);
+    shader->setUniform("u_Light.color", lightColor);
 }
 
 void NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &positions, const std::vector<glm::vec2> &uvs,

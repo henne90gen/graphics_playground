@@ -32,4 +32,7 @@ private:
 
     static void interleaveVertexData(const std::vector<glm::vec3> &positions, const std::vector<glm::vec2> &uvs,
                                      const std::vector<glm::vec3> &normals, std::vector<float> &output);
+
+    void setupShader(const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation, const glm::vec3 &position,
+                     const glm::vec3 &rotation, const glm::vec3 &lightPosition, const glm::vec3 &lightColor) const;
 };
