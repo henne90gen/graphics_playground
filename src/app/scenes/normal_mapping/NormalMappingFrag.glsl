@@ -8,17 +8,24 @@ struct Light {
 varying vec3 v_Position;
 varying vec2 v_UV;
 varying vec3 v_Normal;
+varying mat3 v_TBN;
 varying vec3 v_CameraPosition;
 
 uniform mat3 u_NormalMatrix;
 uniform Light u_Light;
 uniform sampler2D u_TextureSampler;
 uniform sampler2D u_NormalSampler;
+uniform bool u_UseNormalMap;
 
 void main() {
-    vec3 normal = texture(u_NormalSampler, v_UV).rgb;
-    normal = normalize(normal * 2.0 - 1.0);
-    normal = normalize(u_NormalMatrix * normal);
+    vec3 normal = vec3(1.0);
+    if (u_UseNormalMap) {
+        normal = texture(u_NormalSampler, v_UV).rgb;
+        normal = normalize(normal * 2.0 - 1.0);
+        normal = normalize(v_TBN * normal);
+    } else {
+        normal = normalize(u_NormalMatrix * v_Normal);
+    }
 
     vec3 surfaceToLight = u_Light.position - v_Position;
     float distanceToLight = length(surfaceToLight);
@@ -37,7 +44,7 @@ void main() {
     specularColor *= u_Light.color * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
 
     vec3 color = vec3(0.0);
-    vec3 ambientColor = vec3(0.3);
+    vec3 ambientColor = vec3(0.2);
     color += ambientColor;
     color += diffuseColor;
     color += specularColor;
