@@ -31,7 +31,8 @@ void NormalMapping::setup() {
             {ShaderDataType::Float3, "a_BiTangent"}
     };
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertexData, layout);
-    model->getMeshes()[0]->vertexArray->addVertexBuffer(vertexBuffer);
+    std::shared_ptr<OpenGLMesh> mesh = model->getMeshes()[0];
+    mesh->vertexArray->addVertexBuffer(vertexBuffer);
 
     normalMap = std::make_shared<Texture>(GL_RGBA);
     glActiveTexture(GL_TEXTURE1);

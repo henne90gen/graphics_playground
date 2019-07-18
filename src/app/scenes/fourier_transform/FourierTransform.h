@@ -30,6 +30,8 @@ private:
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexArray> fourierVertexArray;
     std::shared_ptr<Texture> texture;
+    unsigned int canvasWidth = 512;
+    unsigned int canvasHeight = 512;
 
     void
     drawCanvas(std::vector<glm::vec4> &colors, std::vector<glm::vec2> &mousePositions, const glm::mat4 &viewMatrix);

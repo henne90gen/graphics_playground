@@ -19,6 +19,7 @@
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "scenes/normal_mapping/NormalMapping.h"
+#include "scenes/a_star/AStar.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -116,6 +117,7 @@ int main() {
     scenes.push_back(new LightDemo(window, backToMainMenu)); // 11
     scenes.push_back(new FourierTransform(window, backToMainMenu)); // 12
     scenes.push_back(new NormalMapping(window, backToMainMenu)); // 13
+    scenes.push_back(new AStar(window, backToMainMenu)); // 14
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(9);

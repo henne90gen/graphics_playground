@@ -45,7 +45,6 @@ void FourierTransform::setup() {
 
     fourierVertexArray = std::make_shared<VertexArray>(shader);
     fourierVertexArray->bind();
-
 }
 
 void FourierTransform::destroy() {
@@ -115,18 +114,16 @@ void FourierTransform::tick() {
 }
 
 std::vector<glm::vec4> FourierTransform::createColors() {
-    unsigned int width = getWidth();
-    unsigned int height = getHeight();
-    auto colors = std::vector<glm::vec4>(width * height);
+    auto colors = std::vector<glm::vec4>(canvasWidth * canvasHeight);
 
     const glm::vec4 borderColor = glm::vec4(0.5, 0.5, 0.5, 1);
-    for (unsigned int x = 0; x < width; x++) {
+    for (unsigned int x = 0; x < canvasWidth; x++) {
         colors[x] = borderColor;
-        colors[(height - 2) * width + x] = borderColor;
+        colors[(canvasHeight - 2) * canvasWidth + x] = borderColor;
     }
-    for (unsigned int y = 0; y < height; y++) {
-        colors[y * width] = borderColor;
-        colors[y * width + width - 2] = borderColor;
+    for (unsigned int y = 0; y < canvasHeight; y++) {
+        colors[y * canvasWidth] = borderColor;
+        colors[y * canvasWidth + canvasWidth - 2] = borderColor;
     }
 
     return colors;
@@ -218,16 +215,18 @@ void FourierTransform::drawCanvas(std::vector<glm::vec4> &colors, std::vector<gl
     vertexArray->bind();
     texture->bind();
 
-    const unsigned int width = getWidth();
-    const unsigned int height = getHeight();
-    const auto widthF = static_cast<float>(width);
-    const auto heightF = static_cast<float>(height);
+//    const unsigned int width = getWidth();
+//    const unsigned int height = getHeight();
+    const auto widthF = static_cast<float>(canvasWidth);
+    const auto heightF = static_cast<float>(canvasHeight);
+    const float displayWidth = getWidth();
+    const float displayHeight = getHeight();
 
     InputData *input = getInput();
     if (input->mouse.left) {
         auto &mousePos = input->mouse.pos;
 
-        auto mouseDisplaySpace = glm::vec2(mousePos.x / widthF, (heightF - mousePos.y) / heightF);
+        auto mouseDisplaySpace = glm::vec2(mousePos.x / displayWidth, (displayHeight - mousePos.y) / displayHeight);
         // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         mouseDisplaySpace = mouseDisplaySpace * 2.0F - glm::vec2(1.0F, 1.0F);
 
@@ -238,12 +237,13 @@ void FourierTransform::drawCanvas(std::vector<glm::vec4> &colors, std::vector<gl
 
         if ((canvasPos.x >= 0.0F && canvasPos.x < widthF) && (canvasPos.y >= 0.0F && canvasPos.y < heightF)) {
             unsigned int i =
-                    (height - static_cast<unsigned int>(canvasPos.y)) * width + static_cast<unsigned int>(canvasPos.x);
+                    (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
+                    static_cast<unsigned int>(canvasPos.x);
             colors[i] = {1.0, 1.0, 1.0, 1.0};
             mousePositions.emplace_back(adjustedDisplayPos.x, adjustedDisplayPos.y);
         }
     }
-    texture->update(colors.data(), width, height);
+    texture->update(colors, canvasWidth, canvasHeight);
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }

@@ -28,6 +28,7 @@ set(SOURCES
         scenes/light_demo/LightDemo.cpp
         scenes/fourier_transform/FourierTransform.cpp
         scenes/normal_mapping/NormalMapping.cpp
+        scenes/a_star/AStar.cpp
         )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

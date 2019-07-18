@@ -44,7 +44,7 @@ void main() {
     specularColor *= u_Light.color * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
 
     vec3 color = vec3(0.0);
-    vec3 ambientColor = vec3(0.2);
+    vec3 ambientColor = vec3(0.1);
     color += ambientColor;
     color += diffuseColor;
     color += specularColor;
