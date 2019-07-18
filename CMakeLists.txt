@@ -77,7 +77,11 @@ GET_DIRECTORY_PROPERTY(
 	DEFINITION
 	zlibstatic
 )
-set(ZLIB_LIBRARY ${ZLIB_STATIC})
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+	set(ZLIB_LIBRARY zlibstatic)
+else ()
+	set(ZLIB_LIBRARY ${ZLIB_STATIC})
+endif ()
 set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
 
 # libpng

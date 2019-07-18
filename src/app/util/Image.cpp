@@ -12,7 +12,7 @@
 #include <utility>
 
 int Image::loadPng() {
-    FILE *fp = fopen(fileName.c_str(), "rbe");
+    FILE *fp = fopen(fileName.c_str(), "rb");
     if (fp == nullptr) {
         std::cout << "File '" << fileName << "' could not be opened for reading" << std::endl;
         return 1;
@@ -107,7 +107,7 @@ int Image::loadPng() {
 }
 
 int Image::loadJpg() {
-    FILE *infile = fopen(fileName.c_str(), "rbe");
+    FILE *infile = fopen(fileName.c_str(), "rb");
     if (infile == nullptr) {
         std::cout << "File '" << fileName << "' could not be opened for reading" << std::endl;
         return 1;
