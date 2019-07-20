@@ -13,7 +13,7 @@
 
 class Cube : public Scene {
 public:
-    Cube(GLFWwindow *window, std::function<void(void)> &backToMainMenu) : Scene(window, backToMainMenu, "Cube") {};
+    explicit Cube(SceneData data) : Scene(data, "Cube") {};
 
     ~Cube() override = default;;
 

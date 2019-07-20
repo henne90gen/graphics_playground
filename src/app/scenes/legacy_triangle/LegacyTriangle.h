@@ -4,8 +4,7 @@
 
 class LegacyTriangle : public Scene {
 public:
-    LegacyTriangle(GLFWwindow *window, std::function<void()> &backToMainMenu)
-            : Scene(window, backToMainMenu, "LegacyTriangle") {}
+    explicit LegacyTriangle(SceneData data) : Scene(data, "LegacyTriangle") {}
 
     ~LegacyTriangle() override = default;
 

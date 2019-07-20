@@ -11,8 +11,7 @@
 
 class NormalMapping : public Scene {
 public:
-    NormalMapping(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "NormalMapping") {};
+    explicit NormalMapping(SceneData data) : Scene(data, "NormalMapping") {};
 
     ~NormalMapping() override = default;
 
@@ -36,7 +35,8 @@ private:
     static void interleaveVertexData(const std::vector<glm::vec3> &tangents, const std::vector<glm::vec3> &biTangents,
                                      std::vector<float> &output);
 
-    static void calculateTangentsAndBiTangents(const std::vector<glm::ivec3> &indices, const std::vector<glm::vec3> &vertices,
-                                        const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,
-                                        std::vector<glm::vec3> &tangents, std::vector<glm::vec3> &biTangents);
+    static void
+    calculateTangentsAndBiTangents(const std::vector<glm::ivec3> &indices, const std::vector<glm::vec3> &vertices,
+                                   const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,
+                                   std::vector<glm::vec3> &tangents, std::vector<glm::vec3> &biTangents);
 };

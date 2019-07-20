@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 void GL_ClearError() {
     while (glGetError() != GL_NO_ERROR) {
@@ -14,7 +15,8 @@ void GL_ClearError() {
 bool GL_LogCall(const char *function, const char *file, int line) {
     bool noErrors = true;
     while (GLenum error = glGetError() != GL_NO_ERROR) {
-        std::cout << "OpenGL error [0x" << std::hex << error << "]: " << file << "/" << function << ":" << line << std::endl;
+        std::cout << "OpenGL error [0x" << std::hex << error << "]: " << file << "/" << function << ":" << line
+                  << std::endl;
         noErrors = false;
     }
     return noErrors;
@@ -84,4 +86,26 @@ glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cam
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, cameraPosition);
     return viewMatrix;
+}
+
+void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight) {
+    std::stringstream buffer;
+    std::time_t t = std::time(nullptr);
+    buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H:%M:%S");
+    const std::string filename = "../../../screenshot-" + buffer.str() + ".tga";
+    std::cout << filename << std::endl;
+
+    const int numberOfPixels = windowWidth * windowHeight * 3;
+    auto pixels = std::vector<unsigned char>(numberOfPixels);
+
+    GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
+    GL_Call(glReadBuffer(GL_FRONT));
+    GL_Call(glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels.data()));
+
+    FILE *outputFile = fopen(filename.c_str(), "w");
+    short header[] = {0, 2, 0, 0, 0, 0, (short) windowWidth, (short) windowHeight, 24};
+
+    fwrite(&header, sizeof(header), 1, outputFile);
+    fwrite(pixels.data(), numberOfPixels, 1, outputFile);
+    fclose(outputFile);
 }

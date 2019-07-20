@@ -5,10 +5,19 @@
 #include <imgui.h>
 #include "util/InputData.h"
 
+struct SceneData {
+    GLFWwindow *window;
+
+    InputData *input;
+
+    std::function<void(void)> &backToMainMenu;
+    std::function<void(void)> &takeScreenshot;
+};
+
 class Scene {
 public:
-    Scene(GLFWwindow *window, std::function<void(void)> &backToMainMenu, const char *name)
-            : window(window), name(name), backToMainMenu(backToMainMenu) {};
+    Scene(SceneData data, const std::string name)
+            : name(name), data(data) {};
 
     virtual ~Scene() = default;;
 
@@ -20,7 +29,7 @@ public:
 
     virtual void destroy() = 0;
 
-    const char *getName() { return name; }
+    const std::string &getName() { return name; }
 
     void setDimensions(const unsigned int _width, const unsigned int _height) {
         this->width = _width;
@@ -29,13 +38,7 @@ public:
         onAspectRatioChange();
     }
 
-    void setInputData(InputData *_input) {
-        this->input = _input;
-    }
-
 protected:
-    GLFWwindow *window;
-
     inline float getAspectRatio() { return aspectRatio; }
 
     virtual void onAspectRatioChange() {};
@@ -44,13 +47,13 @@ protected:
 
     inline unsigned int getHeight() { return height; }
 
-    inline InputData *getInput() { return input; }
+    inline InputData *getInput() { return data.input; }
 
 private:
-    const char *name;
+    const std::string name;
+    SceneData data;
+
     unsigned int width = 0;
     unsigned int height = 0;
-    InputData *input;
     float aspectRatio = 16.0f / 9.0f;
-    std::function<void(void)> &backToMainMenu;
 };

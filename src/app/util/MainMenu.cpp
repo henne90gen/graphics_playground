@@ -12,8 +12,8 @@ void MainMenu::render() {
     ImGui::Begin("Main Menu");
 
     for (unsigned long i = 0; i < scenes.size(); i++) {
-        const char *btnName = scenes[i]->getName();
-        if (ImGui::Button(btnName)) {
+        const std::string &btnName = scenes[i]->getName();
+        if (ImGui::Button(btnName.c_str())) {
             goToScene(i);
         }
     }

@@ -4,14 +4,14 @@
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
 #include "opengl/Texture.h"
+#include "a_star/AStarSolver.h"
 
 #include <functional>
 #include <memory>
 
 class AStar : public Scene {
 public:
-    AStar(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "AStar") {};
+    explicit AStar(SceneData data) : Scene(data, "AStar") {};
 
     ~AStar() override = default;
 
@@ -25,6 +25,7 @@ private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<Texture> texture;
+    std::unique_ptr<AStarSolver> solver;
 
     std::vector<glm::vec3> board;
     unsigned int boardWidth = 128;

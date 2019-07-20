@@ -14,8 +14,7 @@
 
 class ModelLoading : public Scene {
 public:
-    ModelLoading(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "ModelLoading") {};
+    explicit ModelLoading(SceneData data) : Scene(data, "ModelLoading") {};
 
     ~ModelLoading() override = default;
 

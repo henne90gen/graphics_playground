@@ -103,21 +103,32 @@ int main() {
         currentSceneIndex = 0;
         mainMenu.activate();
     };
-    scenes.push_back(new TestScene(window, backToMainMenu)); // 0
-    scenes.push_back(new LegacyTriangle(window, backToMainMenu)); // 1
-    scenes.push_back(new Triangle(window, backToMainMenu)); // 2
-    scenes.push_back(new TextureDemo(window, backToMainMenu)); // 3
-    scenes.push_back(new GammaCalculation(window, backToMainMenu)); // 4
-    scenes.push_back(new Cube(window, backToMainMenu)); // 5
-    scenes.push_back(new Landscape(window, backToMainMenu)); // 6
-    scenes.push_back(new RubiksCubeScene(window, backToMainMenu)); // 7
-    scenes.push_back(new MarchingCubesScene(window, backToMainMenu)); // 8
-    scenes.push_back(new FontDemo(window, backToMainMenu)); // 9
-    scenes.push_back(new ModelLoading(window, backToMainMenu)); // 10
-    scenes.push_back(new LightDemo(window, backToMainMenu)); // 11
-    scenes.push_back(new FourierTransform(window, backToMainMenu)); // 12
-    scenes.push_back(new NormalMapping(window, backToMainMenu)); // 13
-    scenes.push_back(new AStar(window, backToMainMenu)); // 14
+    bool shouldTakeScreenshot = false;
+    std::function<void(void)> takeScreenshot = [&shouldTakeScreenshot]() {
+        shouldTakeScreenshot = true;
+    };
+    SceneData sceneData = {
+            window,
+            &input,
+            backToMainMenu,
+            takeScreenshot
+    };
+
+    scenes.push_back(new TestScene(sceneData)); // 0
+    scenes.push_back(new LegacyTriangle(sceneData)); // 1
+    scenes.push_back(new Triangle(sceneData)); // 2
+    scenes.push_back(new TextureDemo(sceneData)); // 3
+    scenes.push_back(new GammaCalculation(sceneData)); // 4
+    scenes.push_back(new Cube(sceneData)); // 5
+    scenes.push_back(new Landscape(sceneData)); // 6
+    scenes.push_back(new RubiksCubeScene(sceneData)); // 7
+    scenes.push_back(new MarchingCubesScene(sceneData)); // 8
+    scenes.push_back(new FontDemo(sceneData)); // 9
+    scenes.push_back(new ModelLoading(sceneData)); // 10
+    scenes.push_back(new LightDemo(sceneData)); // 11
+    scenes.push_back(new FourierTransform(sceneData)); // 12
+    scenes.push_back(new NormalMapping(sceneData)); // 13
+    scenes.push_back(new AStar(sceneData)); // 14
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(9);
@@ -139,9 +150,13 @@ int main() {
             int windowHeight;
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
             scenes[currentSceneIndex]->setDimensions(windowWidth, windowHeight);
-            scenes[currentSceneIndex]->setInputData(&input);
             scenes[currentSceneIndex]->renderBackMenu();
             scenes[currentSceneIndex]->tick();
+
+            if (shouldTakeScreenshot) {
+                saveScreenshot(windowWidth, windowHeight);
+                shouldTakeScreenshot = false;
+            }
         }
 
         finishImGuiFrame();

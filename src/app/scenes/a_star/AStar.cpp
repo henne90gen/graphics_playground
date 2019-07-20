@@ -2,9 +2,6 @@
 
 #include "opengl/VertexBuffer.h"
 
-const glm::vec3 startColor = {0.0, 1.0, 0.0};
-const glm::vec3 finishColor = {1.0, 0.0, 0.0};
-
 void AStar::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/a_star/AStarVert.glsl",
                                       "../../../src/app/scenes/a_star/AStarFrag.glsl");
@@ -39,6 +36,8 @@ void AStar::setup() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform<int>("u_TextureSampler", 0);
+
+    solver = std::make_unique<AStarSolver>();
 }
 
 void AStar::destroy() {}
@@ -58,6 +57,10 @@ void AStar::tick() {
 
     ImGui::Begin("Settings");
     ImGui::DragFloat("Zoom", &zoom);
+    if (ImGui::Button("Reset")) {
+        isStartSelection = true;
+        resetBoard();
+    }
     if (ImGui::Button("Select Start")) {
         isStartSelection = true;
         isFinishSelection = false;
@@ -72,6 +75,8 @@ void AStar::tick() {
         setupDefaultProblem();
     }
     ImGui::End();
+
+    solver->nextStep(board, 0, 0);
 
     shader->bind();
     vertexArray->bind();

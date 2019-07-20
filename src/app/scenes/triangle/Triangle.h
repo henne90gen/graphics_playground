@@ -9,7 +9,7 @@
 
 class Triangle : public Scene {
 public:
-    Triangle(GLFWwindow *window, std::function<void()> &backToMainMenu) : Scene(window, backToMainMenu, "Triangle") {}
+    explicit Triangle(SceneData data) : Scene(data, "Triangle") {}
 
     ~Triangle() override = default;
 

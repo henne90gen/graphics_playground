@@ -13,8 +13,7 @@
 
 class TextureDemo : public Scene {
 public:
-    TextureDemo(GLFWwindow *window, std::function<void(void)> &backToMainMenu) : Scene(window, backToMainMenu,
-                                                                                       "TextureDemo") {};
+    explicit TextureDemo(SceneData data) : Scene(data, "TextureDemo") {};
 
     ~TextureDemo() override = default;;
 

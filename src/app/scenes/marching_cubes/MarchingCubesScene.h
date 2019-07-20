@@ -15,8 +15,7 @@
 
 class MarchingCubesScene : public Scene {
 public:
-    MarchingCubesScene(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "MarchingCubes") {};
+    explicit MarchingCubesScene(SceneData data) : Scene(data, "MarchingCubes") {};
 
     ~MarchingCubesScene() override = default;
 

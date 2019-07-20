@@ -15,8 +15,7 @@
 
 class RubiksCubeScene : public Scene {
 public:
-    RubiksCubeScene(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "RubiksCube") {};
+    explicit RubiksCubeScene(SceneData data) : Scene(data, "RubiksCube") {};
 
     ~RubiksCubeScene() override = default;;
 

@@ -13,8 +13,7 @@
 
 class GammaCalculation : public Scene {
 public:
-    GammaCalculation(GLFWwindow *window, std::function<void(void)> &backToMainMenu) :
-            Scene(window, backToMainMenu, "GammaCalculation") {};
+    explicit GammaCalculation(SceneData data) : Scene(data, "GammaCalculation") {};
 
     ~GammaCalculation() override = default;
 

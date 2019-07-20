@@ -6,8 +6,7 @@
 
 class TestScene : public Scene {
 public:
-    TestScene(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "Test Scene") {};
+    explicit TestScene(SceneData data) : Scene(data, "Test Scene") {};
 
     ~TestScene() override = default;;
 

@@ -14,8 +14,7 @@
 
 class FourierTransform : public Scene {
 public:
-    FourierTransform(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "FourierTransform") {};
+    explicit FourierTransform(SceneData data) : Scene(data, "FourierTransform") {};
 
     ~FourierTransform() override = default;
 

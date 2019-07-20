@@ -12,8 +12,7 @@
 
 class Landscape : public Scene {
 public:
-    Landscape(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "Landscape") {};
+    explicit Landscape(SceneData data) : Scene(data, "Landscape") {};
 
     ~Landscape() override = default;
 

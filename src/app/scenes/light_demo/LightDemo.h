@@ -10,8 +10,7 @@
 
 class LightDemo : public Scene {
 public:
-    LightDemo(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "LightDemo") {};
+    explicit LightDemo(SceneData data) : Scene(data, "LightDemo") {};
 
     ~LightDemo() override = default;
 

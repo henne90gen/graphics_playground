@@ -23,8 +23,7 @@ struct Character {
 
 class FontDemo : public Scene {
 public:
-    FontDemo(GLFWwindow *window, std::function<void(void)> &backToMainMenu)
-            : Scene(window, backToMainMenu, "FontDemo") {};
+    explicit FontDemo(SceneData data) : Scene(data, "FontDemo") {};
 
     ~FontDemo() override = default;
 
