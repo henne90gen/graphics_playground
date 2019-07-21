@@ -77,7 +77,11 @@ void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
         }
     }
     visited.push_back(node.position);
-    board.pixels[node.position.x + node.position.y * board.height] = visitedColor;
+
+    glm::vec3 &pixel = board.pixels[node.position.x + node.position.y * board.height];
+    if (pixel != startColor) {
+        pixel = visitedColor;
+    }
 
     float traveledDistance = node.traveledDistance + 1;
     glm::ivec2 topPos = node.position + glm::ivec2(0, 1);
@@ -91,6 +95,8 @@ void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
 
     glm::ivec2 rightPos = node.position + glm::ivec2(1, 0);
     Node right = {traveledDistance, calculateDistance(rightPos, goal), rightPos, node.position};
+
+    // FIXME dont add positions that are obstacles to the workingSet
 
     workingSet.push_back(top);
     workingSet.push_back(bottom);

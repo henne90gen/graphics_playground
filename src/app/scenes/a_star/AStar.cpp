@@ -51,15 +51,17 @@ void AStar::tick() {
     static bool init = false;
 
     if (!init) {
-        resetBoard();
+        reset();
         init = true;
+
+        setupDefaultProblem();
     }
 
     ImGui::Begin("Settings");
     ImGui::DragFloat("Zoom", &zoom);
     if (ImGui::Button("Reset")) {
         isStartSelection = true;
-        resetBoard();
+        reset();
     }
     if (ImGui::Button("Select Start")) {
         isStartSelection = true;
@@ -76,7 +78,7 @@ void AStar::tick() {
     }
     ImGui::End();
 
-    solver->nextStep(board, 0, 0);
+    solver->nextStep(board);
 
     shader->bind();
     vertexArray->bind();
@@ -84,8 +86,8 @@ void AStar::tick() {
 
     auto viewMatrix = glm::scale(glm::identity<glm::mat4>(), glm::vec3(zoom));
 
-    checkForMouseClick(boardWidth, boardHeight, viewMatrix, isStartSelection, start, isFinishSelection, finish);
-    texture->update(board, boardWidth, boardHeight);
+//    checkForMouseClick(boardWidth, boardHeight, viewMatrix, isStartSelection, start, isFinishSelection, finish);
+    texture->update(board.pixels, board.width, board.height);
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
@@ -93,9 +95,10 @@ void AStar::tick() {
     shader->unbind();
 }
 
-void AStar::resetBoard() {
-    board = std::vector<glm::vec3>(boardWidth * boardHeight);
-    for (auto &color : board) {
+void AStar::reset() {
+    solver = std::make_unique<AStarSolver>();
+    board.pixels = std::vector<glm::vec3>(board.width * board.height);
+    for (auto &color : board.pixels) {
         color = {1.0, 0.0, 1.0};
     }
 }
@@ -139,14 +142,14 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
             finish = canvasPos;
             isFinishSelection = false;
         }
-        if (board[i] != startColor && board[i] != finishColor) {
-            board[i] = color;
+        if (board.pixels[i] != startColor && board.pixels[i] != finishColor) {
+            board.pixels[i] = color;
         }
     }
 }
 
 void AStar::setupDefaultProblem() {
-    resetBoard();
-    board[10 * boardWidth + 10] = startColor;
-    board[100 * boardWidth + 100] = finishColor;
+    reset();
+    board.pixels[10 * board.width + 10] = startColor;
+    board.pixels[100 * board.width + 100] = finishColor;
 }

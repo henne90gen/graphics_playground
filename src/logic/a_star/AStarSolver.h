@@ -5,6 +5,7 @@
 
 const glm::vec3 startColor = {0.0, 1.0, 0.0};
 const glm::vec3 finishColor = {1.0, 0.0, 0.0};
+const glm::vec3 obstacleColor = {0.0, 0.0, 0.0};
 const glm::vec3 pathColor = {0.0, 0.0, 1.0};
 const glm::vec3 visitedColor = {0.1, 0.1, 0.1};
 

@@ -27,9 +27,7 @@ private:
     std::shared_ptr<Texture> texture;
     std::unique_ptr<AStarSolver> solver;
 
-    std::vector<glm::vec3> board;
-    unsigned int boardWidth = 128;
-    unsigned int boardHeight = 128;
+    Board board = {128, 128, {}};
 
     void
     checkForMouseClick(const unsigned int canvasWidth, const unsigned int canvasHeight,
@@ -38,5 +36,5 @@ private:
 
     void setupDefaultProblem();
 
-    void resetBoard();
+    void reset();
 };
