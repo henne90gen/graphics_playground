@@ -56,6 +56,8 @@ void NormalMapping::tick() {
     static glm::vec3 rotation = {};
     static glm::vec3 lightPosition = {0.0, 0.0, 1.7};
     static glm::vec3 lightColor = {1.0, 1.0, 1.0};
+    static float rotationSpeed = 0.01F;
+    static bool rotate = true;
     static bool useNormalMap = true;
 
     ImGui::Begin("Settings");
@@ -66,8 +68,14 @@ void NormalMapping::tick() {
     ImGui::DragFloat3("Model Rotation", (float *) &rotation, 0.01F);
     ImGui::DragFloat3("Light Position", (float *) &lightPosition, 0.01F);
     ImGui::ColorEdit3("Light Color", (float *) &lightColor);
+    ImGui::DragFloat("Rotation Speed", &rotationSpeed, 0.001F);
+    ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Use NormalMap", &useNormalMap);
     ImGui::End();
+
+    if (rotate) {
+        rotation.y += rotationSpeed;
+    }
 
     shader->bind();
     shader->setUniform("u_Light.position", lightPosition);
