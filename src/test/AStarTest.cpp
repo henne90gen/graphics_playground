@@ -3,31 +3,46 @@
 
 #include "a_star/AStarSolver.h"
 
-void resetBoard(std::vector<glm::vec3> &board) {
-    for (auto &field : board) {
+Board initBoard(unsigned int width, unsigned int height) {
+    auto pixels = std::vector<glm::vec3>(width * height);
+    for (auto &field : pixels) {
         field = {0.0, 0.0, 0.0};
     }
+    return {width, height, pixels};
 }
 
-bool assertEquals(glm::vec3 first, glm::vec3 second) {
-    REQUIRE(first.x == second.x);
-    REQUIRE(first.y == second.y);
-    REQUIRE(first.z == second.z);
+void assertEquals(glm::vec3 first, glm::vec3 second) {
+    REQUIRE(first.x == Approx(second.x));
+    REQUIRE(first.y == Approx(second.y));
+    REQUIRE(first.z == Approx(second.z));
 }
 
 TEST_CASE("Start and Finish right next to each other") {
-    auto board = std::vector<glm::vec3>(4 * 4);
-    board[5] = startColor;
-    board[6] = finishColor;
+    Board board = initBoard(4, 4);
+    board.pixels[5] = startColor;
+    board.pixels[6] = finishColor;
     auto solver = AStarSolver();
-    solver.nextStep(board, 4, 4);
+    REQUIRE(solver.nextStep(board));
 }
 
 TEST_CASE("Start and Finish one field apart") {
-    auto board = std::vector<glm::vec3>(5 * 5);
-    board[6] = startColor;
-    board[8] = finishColor;
+    Board board = initBoard(5, 5);
+    board.pixels[6] = startColor;
+    board.pixels[8] = finishColor;
     auto solver = AStarSolver();
-    solver.nextStep(board, 5, 5);
-    assertEquals(board[7], pathColor);
+    solver.nextStep(board);
+    assertEquals(board.pixels[7], visitedColor);
+    REQUIRE(solver.nextStep(board));
+}
+
+TEST_CASE("Start and Finish two straight fields apart") {
+    Board board = initBoard(6, 6);
+    board.pixels[7] = startColor;
+    board.pixels[10] = finishColor;
+    auto solver = AStarSolver();
+    solver.nextStep(board);
+    assertEquals(board.pixels[8], visitedColor);
+    solver.nextStep(board);
+    assertEquals(board.pixels[9], visitedColor);
+    REQUIRE(solver.nextStep(board));
 }
