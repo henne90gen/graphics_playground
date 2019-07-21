@@ -38,10 +38,7 @@ void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, uns
 }
 
 void Texture::update(Image &image) {
-    if (!image.isLoaded()) {
-        image.load();
-    }
-    update(image.getPixels().data(), image.getWidth(), image.getHeight());
+    update(image.pixels.data(), image.width, image.height);
 }
 
 void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, unsigned int height,

@@ -27,6 +27,10 @@ void FontDemo::setup() {
     vertexArray->addVertexBuffer(buffer);
 
     shader->setUniform<int>("textureSampler", 0);
+
+    GL_Call(glEnable(GL_BLEND));
+    GL_Call(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    GL_Call(glDisable(GL_DEPTH_TEST));
 }
 
 void FontDemo::destroy() {
@@ -129,10 +133,6 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
     shader->setUniform("model", modelMatrix);
 
     character.texture.bind();
-
-    GL_Call(glEnable(GL_BLEND));
-    GL_Call(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    GL_Call(glDisable(GL_DEPTH_TEST));
 
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
     character.texture.unbind();

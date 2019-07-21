@@ -45,10 +45,13 @@ void FourierTransform::setup() {
 
     fourierVertexArray = std::make_shared<VertexArray>(shader);
     fourierVertexArray->bind();
+
+    GL_Call(glDisable(GL_DEPTH_TEST));
 }
 
 void FourierTransform::destroy() {
     shader.reset();
+    GL_Call(glEnable(GL_DEPTH_TEST));
 }
 
 void FourierTransform::tick() {
@@ -99,8 +102,6 @@ void FourierTransform::tick() {
         rotationAngle = 0.0F;
         drawnPoints = {};
     }
-
-    GL_Call(glDisable(GL_DEPTH_TEST));
 
     shader->bind();
     auto viewMatrix = glm::scale(glm::mat4(1.0F), glm::vec3(zoom));

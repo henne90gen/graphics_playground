@@ -40,8 +40,10 @@ void NormalMapping::setup() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform<int>("u_NormalSampler", 1);
-    auto normalMapImage = Image("../../../src/app/scenes/normal_mapping/models/normals.jpg");
-    normalMap->update(normalMapImage);
+    Image normalMapImage = {};
+    if (ImageOps::load("../../../src/app/scenes/normal_mapping/models/normals.jpg", normalMapImage)) {
+        normalMap->update(normalMapImage);
+    }
 }
 
 void NormalMapping::destroy() {}

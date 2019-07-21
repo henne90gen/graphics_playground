@@ -130,8 +130,8 @@ int main() {
     scenes.push_back(new NormalMapping(sceneData)); // 13
     scenes.push_back(new AStar(sceneData)); // 14
 
-    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-//    mainMenu.goToScene(9);
+//    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    mainMenu.goToScene(13);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 
