@@ -177,13 +177,19 @@ void writePng(Image &image) {
     FILE *fp = fopen(image.fileName.c_str(), "wb");
     if (!fp) abort();
 
-    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png) abort();
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    if (!png) {
+        abort();
+    }
 
     png_infop info = png_create_info_struct(png);
-    if (!info) abort();
+    if (!info) {
+        abort();
+    }
 
-    if (setjmp(png_jmpbuf(png))) abort();
+    if (setjmp(png_jmpbuf(png))) {
+        abort();
+    }
 
     png_init_io(png, fp);
 
@@ -206,7 +212,7 @@ void writePng(Image &image) {
             png,
             info,
             image.width, image.height,
-            8,
+            image.bitDepth,
             colorType,
             PNG_INTERLACE_NONE,
             PNG_COMPRESSION_TYPE_DEFAULT,
@@ -214,23 +220,15 @@ void writePng(Image &image) {
     );
     png_write_info(png, info);
 
-    // To remove the alpha channel for PNG_COLOR_TYPE_RGB format,
-    // Use png_set_filler().
-    //png_set_filler(png, 0, PNG_FILLER_AFTER);
+    for (long y = image.height; y >= 0; y--) {
+        auto pixels = (png_bytep) image.pixels.data();
+        pixels += y * image.width * image.channels;
+        png_write_row(png, pixels);
+    }
 
-    auto *row_pointers = (png_bytep *) image.pixels.data();
-    if (!row_pointers) abort();
-
-    png_write_image(png, row_pointers);
     png_write_end(png, nullptr);
 
-    for (unsigned int y = 0; y < image.height; y++) {
-        free(row_pointers[y]);
-    }
-    free(row_pointers);
-
     fclose(fp);
-
     png_destroy_write_struct(&png, &info);
 }
 
@@ -243,7 +241,11 @@ void ImageOps::save(Image &image) {
     unsigned long size = image.fileName.size();
     if (image.fileName[size - 1] == 'g' && image.fileName[size - 2] == 'n' && image.fileName[size - 3] == 'p') {
         writePng(image);
+        return;
     } else if (image.fileName[size - 1] == 'g' && image.fileName[size - 2] == 'p' && image.fileName[size - 3] == 'j') {
         writeJpg(image);
+        return;
     }
+
+    std::cerr << "Image file type is not supported (" << image.fileName << ")" << std::endl;
 }

@@ -1,4 +1,5 @@
 #include "OpenGLUtils.h"
+#include "Image.h"
 
 #include <fstream>
 #include <iostream>
@@ -92,20 +93,21 @@ void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight) {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
     buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H:%M:%S");
-    const std::string filename = "../../../screenshot-" + buffer.str() + ".tga";
-    std::cout << filename << std::endl;
+    const std::string fileName = "../../../screenshot-" + buffer.str() + ".png";
 
-    const int numberOfPixels = windowWidth * windowHeight * 3;
-    auto pixels = std::vector<unsigned char>(numberOfPixels);
+    Image image = {};
+    image.fileName = fileName;
+    image.width = windowWidth;
+    image.height = windowHeight;
+    image.channels = 3;
+
+    const int numberOfPixels = image.width * image.height * image.channels;
+    image.pixels = std::vector<unsigned char>(numberOfPixels);
 
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
     GL_Call(glReadBuffer(GL_FRONT));
-    GL_Call(glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels.data()));
+    GL_Call(glReadPixels(0, 0, image.width, image.height, GL_RGB, GL_UNSIGNED_BYTE, image.pixels.data()));
 
-    FILE *outputFile = fopen(filename.c_str(), "w");
-    short header[] = {0, 2, 0, 0, 0, 0, (short) windowWidth, (short) windowHeight, 24};
-
-    fwrite(&header, sizeof(header), 1, outputFile);
-    fwrite(pixels.data(), numberOfPixels, 1, outputFile);
-    fclose(outputFile);
+    ImageOps::save(image);
+    std::cout << "Saved screenshot " << image.fileName << std::endl;
 }

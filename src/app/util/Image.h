@@ -8,7 +8,7 @@ struct Image {
     unsigned int width;
     unsigned int height;
     char channels;
-    char bitDepth;
+    char bitDepth = 8;
     std::vector<unsigned char> pixels;
 };
 
