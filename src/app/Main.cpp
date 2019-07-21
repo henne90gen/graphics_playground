@@ -53,6 +53,9 @@ void keyCallback(GLFWwindow *window, int key, int  /*scancode*/, int action, int
     // std::cout << "Key " << key << std::endl;
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
+    } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
+        auto sceneData = (SceneData *) glfwGetWindowUserPointer(window);
+        sceneData->takeScreenshot();
     }
 }
 
@@ -113,6 +116,7 @@ int main() {
             backToMainMenu,
             takeScreenshot
     };
+    glfwSetWindowUserPointer(window, &sceneData);
 
     scenes.push_back(new TestScene(sceneData)); // 0
     scenes.push_back(new LegacyTriangle(sceneData)); // 1
