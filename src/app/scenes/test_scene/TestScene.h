@@ -8,7 +8,7 @@ class TestScene : public Scene {
 public:
     explicit TestScene(SceneData data) : Scene(data, "Test Scene") {};
 
-    ~TestScene() override = default;;
+    ~TestScene() override = default;
 
     void setup() override;
 

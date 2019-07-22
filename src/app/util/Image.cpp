@@ -159,8 +159,11 @@ int loadJpg(Image &image) {
     return 0;
 }
 
-
 bool ImageOps::load(const std::string &fileName, Image &image) {
+    if (fileName.empty()) {
+        return false;
+    }
+
     image.fileName = fileName;
     unsigned long size = fileName.size();
     if (fileName[size - 1] == 'g' && fileName[size - 2] == 'n' && fileName[size - 3] == 'p') {

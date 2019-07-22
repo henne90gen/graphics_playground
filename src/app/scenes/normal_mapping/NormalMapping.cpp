@@ -39,7 +39,7 @@ void NormalMapping::setup() {
     normalMap->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    shader->setUniform<int>("u_NormalSampler", 1);
+    shader->setUniform("u_NormalSampler", 1);
     Image normalMapImage = {};
     if (ImageOps::load("../../../src/app/scenes/normal_mapping/models/normals.jpg", normalMapImage)) {
         normalMap->update(normalMapImage);

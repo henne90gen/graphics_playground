@@ -50,7 +50,7 @@ void GammaCalculation::setup() {
     checkerBoardTexture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    shader->setUniform<int>("textureSampler", 0);
+    shader->setUniform("textureSampler", 0);
 }
 
 void GammaCalculation::destroy() {}

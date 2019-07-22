@@ -3,6 +3,7 @@
 #include <glm/ext.hpp>
 #include <glad/glad.h>
 
+#ifdef DEBUG
 #ifdef WIN32
 #define ASSERT(x)             \
         if (!(x))                 \
@@ -11,6 +12,9 @@
 #define ASSERT(x)             \
         if (!(x))                  \
             __builtin_debugtrap()
+#endif
+#else
+#define ASSERT(x)
 #endif
 
 #define GL_UnsafeCall(x, error)                                                                                                     \

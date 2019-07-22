@@ -15,7 +15,7 @@ class TextureDemo : public Scene {
 public:
     explicit TextureDemo(SceneData data) : Scene(data, "TextureDemo") {};
 
-    ~TextureDemo() override = default;;
+    ~TextureDemo() override = default;
 
     void setup() override;
 

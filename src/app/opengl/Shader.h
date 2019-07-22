@@ -40,33 +40,27 @@ public:
 
     inline unsigned int getId() { return id; }
 
-    template<typename T>
-    void setUniform(const std::string &name, T f) {
-        std::cerr << "Can't set uniform of this type." << std::endl;
-        ASSERT(false);
+    void setUniform(const std::string &name, float f) {
+        GL_Call(glUniform1f(getUniformLocation(name), f));
     }
 
-    template<>
-    void setUniform<float>(const std::string &name, float f) { GL_Call(glUniform1f(getUniformLocation(name), f)); }
+    void setUniform(const std::string &name, int i) {
+        GL_Call(glUniform1i(getUniformLocation(name), i));
+    }
 
-    template<>
-    void setUniform<int>(const std::string &name, int i) { GL_Call(glUniform1i(getUniformLocation(name), i)); }
+    void setUniform(const std::string &name, bool b) {
+        setUniform(name, (int) b);
+    }
 
-    template<>
-    void setUniform<bool>(const std::string &name, bool b) { setUniform(name, (int) b); }
-
-    template<>
-    void setUniform<glm::vec3>(const std::string &name, glm::vec3 v) {
+    void setUniform(const std::string &name, glm::vec3 v) {
         GL_Call(glUniform3f(getUniformLocation(name), v.x, v.y, v.z));
     }
 
-    template<>
-    void setUniform<glm::mat4>(const std::string &name, glm::mat4 m) {
+    void setUniform(const std::string &name, glm::mat4 m) {
         GL_Call(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, (float *) &m));
     }
 
-    template<>
-    void setUniform<glm::mat3>(const std::string &name, glm::mat3 m) {
+    void setUniform(const std::string &name, glm::mat3 m) {
         GL_Call(glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, (float *) &m));
     }
 

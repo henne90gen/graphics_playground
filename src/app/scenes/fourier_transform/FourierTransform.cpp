@@ -41,7 +41,7 @@ void FourierTransform::setup() {
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    shader->setUniform<int>("u_TextureSampler", 0);
+    shader->setUniform("u_TextureSampler", 0);
 
     fourierVertexArray = std::make_shared<VertexArray>(shader);
     fourierVertexArray->bind();

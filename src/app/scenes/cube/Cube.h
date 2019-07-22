@@ -15,7 +15,7 @@ class Cube : public Scene {
 public:
     explicit Cube(SceneData data) : Scene(data, "Cube") {};
 
-    ~Cube() override = default;;
+    ~Cube() override = default;
 
     void setup() override;
 

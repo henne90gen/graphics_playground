@@ -35,7 +35,7 @@ void AStar::setup() {
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    shader->setUniform<int>("u_TextureSampler", 0);
+    shader->setUniform("u_TextureSampler", 0);
 
     solver = std::make_unique<AStarSolver>();
 }
@@ -86,7 +86,7 @@ void AStar::tick() {
 
     auto viewMatrix = glm::scale(glm::identity<glm::mat4>(), glm::vec3(zoom));
 
-//    checkForMouseClick(boardWidth, boardHeight, viewMatrix, isStartSelection, start, isFinishSelection, finish);
+    checkForMouseClick(board.width, board.height, viewMatrix, isStartSelection, start, isFinishSelection, finish);
     texture->update(board.pixels, board.width, board.height);
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
@@ -132,7 +132,7 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
                 (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
                 static_cast<unsigned int>(canvasPos.x);
 
-        glm::vec3 color = {0.0, 0.0, 0.0};
+        glm::vec3 color = obstacleColor;
         if (isStartSelection) {
             color = startColor;
             start = canvasPos;

@@ -19,7 +19,7 @@ public:
     Scene(SceneData data, const std::string name)
             : name(name), data(data) {};
 
-    virtual ~Scene() = default;;
+    virtual ~Scene() = default;
 
     void renderBackMenu();
 

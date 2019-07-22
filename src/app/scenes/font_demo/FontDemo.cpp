@@ -26,7 +26,7 @@ void FontDemo::setup() {
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);
 
-    shader->setUniform<int>("textureSampler", 0);
+    shader->setUniform("textureSampler", 0);
 
     GL_Call(glEnable(GL_BLEND));
     GL_Call(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));

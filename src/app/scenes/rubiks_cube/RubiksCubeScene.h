@@ -17,7 +17,7 @@ class RubiksCubeScene : public Scene {
 public:
     explicit RubiksCubeScene(SceneData data) : Scene(data, "RubiksCube") {};
 
-    ~RubiksCubeScene() override = default;;
+    ~RubiksCubeScene() override = default;
 
     void setup() override;
 
