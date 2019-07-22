@@ -29,6 +29,10 @@ set(SOURCES
         scenes/fourier_transform/FourierTransform.cpp
         scenes/normal_mapping/NormalMapping.cpp
         scenes/a_star/AStar.cpp
+        scenes/surface_smoothing/SurfaceSmoothing.cpp
+        scenes/water_demo/WaterDemo.cpp
+        scenes/ray_casting_3d/RayCasting3D.cpp
+        scenes/ray_casting_2d/RayCasting2D.cpp
         )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -41,15 +45,15 @@ else ()
             -Wextra
             -pedantic
             -Wno-unused-parameter)
+    add_definitions(-std=c++17)
 endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-        )
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-else ()
-    add_definitions(-std=c++17)
+        CXX_STANDARD_REQUIRED ON)
+
+if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    add_compile_definitions(DEBUG)
 endif ()
 
 if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
@@ -59,7 +63,7 @@ if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
     )
 endif ()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} glad)
@@ -90,5 +94,3 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBJPEG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
