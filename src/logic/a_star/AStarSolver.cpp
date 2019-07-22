@@ -70,6 +70,10 @@ float AStarSolver::calculateDistance(const glm::ivec2 &pos1, const glm::ivec2 &p
     return abs(pos1.x - pos2.x) + abs(pos1.y - pos2.y);
 }
 
+inline glm::vec3 getPixelValue(Board &board, glm::ivec2 &pos) {
+    return board.pixels[pos.x + pos.y * board.height];
+}
+
 void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
     for (auto &pos : visited) {
         if (node.position == pos) {
@@ -96,10 +100,19 @@ void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
     glm::ivec2 rightPos = node.position + glm::ivec2(1, 0);
     Node right = {traveledDistance, calculateDistance(rightPos, goal), rightPos, node.position};
 
-    // FIXME dont add positions that are obstacles to the workingSet
+    if (getPixelValue(board, topPos) != obstacleColor) {
+        workingSet.push_back(top);
+    }
 
-    workingSet.push_back(top);
-    workingSet.push_back(bottom);
-    workingSet.push_back(left);
-    workingSet.push_back(right);
+    if (getPixelValue(board, bottomPos) != obstacleColor) {
+        workingSet.push_back(bottom);
+    }
+
+    if (getPixelValue(board, leftPos) != obstacleColor) {
+        workingSet.push_back(left);
+    }
+
+    if (getPixelValue(board, rightPos) != obstacleColor) {
+        workingSet.push_back(right);
+    }
 }
