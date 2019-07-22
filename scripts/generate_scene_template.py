@@ -20,9 +20,9 @@ H_TEMPLATE = """\
 #include <functional>
 
 class {name} : public Scene {{
-  public:
-    {name}(GLFWwindow *window, std::function<void(void)>& backToMainMenu)
-        : Scene(window, backToMainMenu, "{name}"){{}};
+public:
+    {name}(SceneData &data)
+        : Scene(data, "{name}"){{}};
 
     ~{name}() override = default;
 
