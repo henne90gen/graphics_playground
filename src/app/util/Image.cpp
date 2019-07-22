@@ -10,7 +10,6 @@
 #include <jpeglib.h>
 #include <png.h>
 #include <utility>
-#include <hdf5_hl.h>
 
 int loadPng(Image &image) {
     FILE *fp = fopen(image.fileName.c_str(), "rb");

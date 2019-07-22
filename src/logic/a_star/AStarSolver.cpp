@@ -1,5 +1,7 @@
-#include <algorithm>
 #include "AStarSolver.h"
+
+#include <algorithm>
+#include <functional>
 
 bool AStarSolver::nextStep(Board &board) {
     if (goal.x == -1 && goal.y == -1) {
