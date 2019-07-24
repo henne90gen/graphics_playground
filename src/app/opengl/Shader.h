@@ -67,7 +67,7 @@ public:
 private:
     void compile();
 
-    GLuint load(GLuint shaderType, std::string &filePath);
+    static GLuint load(GLuint shaderType, std::string &filePath);
 
     int getUniformLocation(const std::string &name);
 

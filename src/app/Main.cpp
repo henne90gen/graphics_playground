@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
+#include <util/ScreenRecorder.h>
 
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
@@ -110,11 +111,13 @@ int main() {
     std::function<void(void)> takeScreenshot = [&shouldTakeScreenshot]() {
         shouldTakeScreenshot = true;
     };
+    ScreenRecorder recorder = {};
     SceneData sceneData = {
             window,
             &input,
             backToMainMenu,
-            takeScreenshot
+            takeScreenshot,
+            recorder
     };
     glfwSetWindowUserPointer(window, &sceneData);
 
@@ -157,10 +160,7 @@ int main() {
             scenes[currentSceneIndex]->renderBackMenu();
             scenes[currentSceneIndex]->tick();
 
-            if (shouldTakeScreenshot) {
-                saveScreenshot(windowWidth, windowHeight);
-                shouldTakeScreenshot = false;
-            }
+            recorder.tick(windowWidth, windowHeight);
         }
 
         finishImGuiFrame();

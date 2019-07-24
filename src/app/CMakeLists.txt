@@ -33,7 +33,7 @@ set(SOURCES
         scenes/water_demo/WaterDemo.cpp
         scenes/ray_casting_3d/RayCasting3D.cpp
         scenes/ray_casting_2d/RayCasting2D.cpp
-        )
+        util/ScreenRecorder.cpp util/ScreenRecorder.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -52,7 +52,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON)
 
-if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     add_compile_definitions(DEBUG)
 endif ()
 

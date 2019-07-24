@@ -32,10 +32,6 @@ void GL_ClearError();
 
 bool GL_LogCall(const char *function, const char *file, int line);
 
-GLuint loadShader(GLuint shaderType, const char *file_path);
-
-GLuint loadShaders(const char *vertex_file_path, const char *fragment_file_path);
-
 glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation);
 
 void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight);

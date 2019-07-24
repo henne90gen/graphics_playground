@@ -15,6 +15,7 @@ unsigned int BufferLayoutElement::getSize() const {
             return 1;
     }
     ASSERT(false);
+    return 0;
 }
 
 GLenum BufferLayoutElement::getDataType() const {
@@ -33,6 +34,7 @@ GLenum BufferLayoutElement::getDataType() const {
             return GL_BOOL;
     }
     ASSERT(false);
+    return 0;
 }
 
 unsigned int BufferLayoutElement::getCount() const {
@@ -57,4 +59,5 @@ unsigned int BufferLayoutElement::getCount() const {
             return 1;
     }
     ASSERT(false);
+    return 0;
 }

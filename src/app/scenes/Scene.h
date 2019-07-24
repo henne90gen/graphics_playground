@@ -1,8 +1,12 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <functional>
 #include <imgui.h>
+
+#include <utility>
+#include <functional>
+
+#include "util/ScreenRecorder.h"
 #include "util/InputData.h"
 
 struct SceneData {
@@ -12,12 +16,13 @@ struct SceneData {
 
     std::function<void(void)> &backToMainMenu;
     std::function<void(void)> &takeScreenshot;
+    ScreenRecorder &videoRecorder;
 };
 
 class Scene {
 public:
-    Scene(SceneData data, const std::string name)
-            : name(name), data(data) {};
+    Scene(SceneData data, std::string name)
+            : name(std::move(name)), data(data) {};
 
     virtual ~Scene() = default;
 
