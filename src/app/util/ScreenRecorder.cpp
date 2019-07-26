@@ -27,7 +27,7 @@ std::string generateScreenrecordingFilename(const std::string &directory, unsign
 std::string generateScreenrecordingDirectoryName(unsigned int recordingIndex) {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
-    buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H:%M:%S");
+    buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H-%M-%S");
     return "../../../screenrecording-" + buffer.str() + "-" + std::to_string(recordingIndex) + "/";
 }
 
@@ -93,14 +93,20 @@ void ScreenRecorder::saveRecordingAsGif() {
     auto fileName = generateScreenrecordingGifName(recordingIndex);
     int delay = 1;
     GifWriter g = {};
-    GifBegin(&g, fileName.c_str(), width, height, delay);
+	if (!GifBegin(&g, fileName.c_str(), width, height, delay)) {
+		std::cerr << "Could not open " << fileName << " for writing." << std::endl;
+		video.reset();
+		return;
+	}
 
     std::function<void(Frame *)> workFunction = [&g, &delay](Frame *currentFrame) {
         GifWriteFrame(&g, currentFrame->buffer, currentFrame->width, currentFrame->height, delay);
     };
     video.iterateFrames(workFunction);
 
-    GifEnd(&g);
+	if (!GifEnd(&g)) {
+		std::cerr << "Could not save to " << fileName << std::endl;
+	}
 }
 
 void ScreenRecorder::saveRecording() {
@@ -168,4 +174,6 @@ void Video::reset() {
         free(currentFrame);
         currentFrame = tmp;
     } while (currentFrame->next);
+	last = new Frame();
+	first = last;
 }
