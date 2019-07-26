@@ -15,8 +15,8 @@ struct Frame {
 class Video {
 public:
     Video() {
-        last = new Frame();
-        first = last;
+        tail = new Frame();
+        head = tail;
     }
 
     void iterateFrames(const std::function<void(Frame *)> &workFunction);
@@ -28,8 +28,8 @@ public:
     unsigned int width = 0;
     unsigned int height = 0;
 private:
-    Frame *first;
-    Frame *last;
+    Frame *head;
+    Frame *tail;
 };
 
 class ScreenRecorder {

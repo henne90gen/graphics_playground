@@ -122,7 +122,7 @@ void ScreenRecorder::saveRecording() {
 }
 
 void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
-    Frame *currentFrame = first;
+    Frame *currentFrame = head;
     do {
         if (currentFrame->buffer == nullptr) {
             continue;
@@ -135,34 +135,35 @@ void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
     } while (currentFrame->next);
 }
 
-void Video::recordFrame(unsigned int _width, unsigned int _height) {
+void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
     if (width == 0 && height == 0) {
-        width = _width;
-        height = _height;
-    } else if (width != _width || height != _height) {
+        width = screenWidth;
+        height = screenHeight;
+    } else if (width != screenWidth || height != screenHeight) {
         std::cerr << "Do not resize the window while recording. Aborted." << std::endl;
         return;
     }
-    last->width = width;
-    last->height = height;
-    last->channels = 4;
-    const int numberOfPixels = width * height * last->channels;
-    last->buffer = (unsigned char *) malloc(numberOfPixels * sizeof(unsigned char));
+    
+	tail->width = width;
+    tail->height = height;
+    tail->channels = 4;
+    const int numberOfPixels = width * height * tail->channels;
+    tail->buffer = (unsigned char *) malloc(numberOfPixels * sizeof(unsigned char));
 
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
     GL_Call(glReadBuffer(GL_FRONT));
-    GL_Call(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, last->buffer));
+    GL_Call(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tail->buffer));
 
-    Frame *tmp = last;
-    last = new Frame();
-    last->index = tmp->index + 1;
-    tmp->next = last;
+    Frame *tmp = tail;
+    tail = new Frame();
+    tail->index = tmp->index + 1;
+    tmp->next = tail;
 }
 
 void Video::reset() {
     width = 0;
     height = 0;
-    Frame *currentFrame = first;
+    Frame *currentFrame = head;
     do {
         if (currentFrame->buffer == nullptr) {
 			auto next = currentFrame->next;
@@ -179,6 +180,6 @@ void Video::reset() {
         free(currentFrame);
         currentFrame = tmp;
     } while (currentFrame->next);
-	last = new Frame();
-	first = last;
+	tail = new Frame();
+	head = tail;
 }
