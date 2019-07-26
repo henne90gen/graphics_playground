@@ -122,10 +122,10 @@ void ScreenRecorder::saveRecording() {
 }
 
 void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
-    Frame *currentFrame = first->next;
+    Frame *currentFrame = first;
     do {
         if (currentFrame->buffer == nullptr) {
-            break;
+            continue;
         }
 
         workFunction(currentFrame);
@@ -162,11 +162,16 @@ void Video::recordFrame(unsigned int _width, unsigned int _height) {
 void Video::reset() {
     width = 0;
     height = 0;
-    Frame *currentFrame = first->next;
+    Frame *currentFrame = first;
     do {
         if (currentFrame->buffer == nullptr) {
-            free(currentFrame);
-            break;
+			if (currentFrame->next) {
+				free(currentFrame);
+				continue;
+			} else {
+				free(currentFrame);
+	            break;
+			}
         }
 
         Frame *tmp = currentFrame->next;
