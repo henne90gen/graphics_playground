@@ -8,6 +8,8 @@
 #include "OpenGLUtils.h"
 #include "Image.h"
 
+#define GIF_FLIP_VERT
+
 #include <gif.h>
 
 std::string generateScreenshotFilename() {
@@ -99,6 +101,7 @@ void ScreenRecorder::saveRecording() {
         }
 
         if (recordingType == RecordingType::GIF) {
+            // FIXME go through all the frames in the correct order, otherwise the gif will play back in reverse
             GifWriteFrame(&g, currentFrame->buffer, currentFrame->width, currentFrame->height, delay);
         } else if (recordingType == RecordingType::PNG) {
             saveFrameToImage(currentFrame, directory);
