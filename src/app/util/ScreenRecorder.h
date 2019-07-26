@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <functional>
 
 struct Frame {
     unsigned char *buffer = nullptr;
@@ -8,14 +9,32 @@ struct Frame {
     unsigned int height = 0;
     unsigned int channels = 3;
     unsigned int index = 0;
-    Frame *previous = nullptr;
+    Frame *next = nullptr;
+};
+
+class Video {
+public:
+    Video() {
+        last = new Frame();
+        first = last;
+    }
+
+    void iterateFrames(const std::function<void(Frame *)> &workFunction);
+
+    void recordFrame(unsigned int width, unsigned int height);
+
+    void reset();
+
+    unsigned int width = 0;
+    unsigned int height = 0;
+private:
+    Frame *first;
+    Frame *last;
 };
 
 class ScreenRecorder {
 public:
-    ScreenRecorder() {
-        last = new Frame();
-    }
+    ScreenRecorder() = default;
 
     void tick(unsigned int windowWidth, unsigned int windowHeight) {
         if (shouldTakeScreenshot) {
@@ -24,7 +43,7 @@ public:
         }
 
         if (recording) {
-            recordFrame(windowWidth, windowHeight);
+            video.recordFrame(windowWidth, windowHeight);
         }
     }
 
@@ -47,8 +66,6 @@ public:
 
     static void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight);
 
-    void recordFrame(unsigned int width, unsigned int height);
-
     void saveRecording();
 
     enum RecordingType {
@@ -61,6 +78,10 @@ public:
 private:
     bool shouldTakeScreenshot = false;
     bool recording = false;
-    Frame *last;
     unsigned int recordingIndex = 0;
+    Video video = {};
+
+    void saveRecordingAsPng();
+
+    void saveRecordingAsGif();
 };

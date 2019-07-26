@@ -11,6 +11,7 @@
 #define GIF_FLIP_VERT
 
 #include <gif.h>
+#include <functional>
 
 std::string generateScreenshotFilename() {
     std::stringstream buffer;
@@ -73,55 +74,69 @@ void saveFrameToImage(Frame *frame, const std::string &directory) {
     ImageOps::save(image);
 }
 
-void ScreenRecorder::saveRecording() {
-    // FIXME refactor this method (split gif and png saving into two separate methods)
-    Frame *currentFrame = last->previous;
-
-    int width = currentFrame->width;
-    int height = currentFrame->height;
-    std::vector<uint8_t> black(width * height * 4, 0);
-    std::vector<uint8_t> white(width * height * 4, 255);
-
+void ScreenRecorder::saveRecordingAsPng() {
     std::string directory = generateScreenrecordingDirectoryName(recordingIndex);
-    if (recordingType == RecordingType::PNG && !std::filesystem::exists(directory)) {
+    if (!std::filesystem::exists(directory)) {
         std::filesystem::create_directory(directory);
     }
+
+    std::function<void(Frame *)> workFunction = [&directory](Frame *currentFrame) {
+        saveFrameToImage(currentFrame, directory);
+    };
+    video.iterateFrames(workFunction);
+}
+
+void ScreenRecorder::saveRecordingAsGif() {
+    int width = video.width;
+    int height = video.height;
 
     auto fileName = generateScreenrecordingGifName(recordingIndex);
     int delay = 1;
     GifWriter g = {};
-    if (recordingType == RecordingType::GIF) {
-        GifBegin(&g, fileName.c_str(), width, height, delay);
-    }
+    GifBegin(&g, fileName.c_str(), width, height, delay);
 
+    std::function<void(Frame *)> workFunction = [&g, &delay](Frame *currentFrame) {
+        GifWriteFrame(&g, currentFrame->buffer, currentFrame->width, currentFrame->height, delay);
+    };
+    video.iterateFrames(workFunction);
+
+    GifEnd(&g);
+}
+
+void ScreenRecorder::saveRecording() {
+    if (recordingType == RecordingType::PNG) {
+        saveRecordingAsPng();
+    } else if (recordingType == RecordingType::GIF) {
+        saveRecordingAsGif();
+    } else {
+        std::cerr << "Recording type is not supported (" << recordingType << ")" << std::endl;
+    }
+    recordingIndex++;
+    video.reset();
+}
+
+void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
+    Frame *currentFrame = first->next;
     do {
         if (currentFrame->buffer == nullptr) {
-            free(currentFrame);
             break;
         }
 
-        if (recordingType == RecordingType::GIF) {
-            // FIXME go through all the frames in the correct order, otherwise the gif will play back in reverse
-            GifWriteFrame(&g, currentFrame->buffer, currentFrame->width, currentFrame->height, delay);
-        } else if (recordingType == RecordingType::PNG) {
-            saveFrameToImage(currentFrame, directory);
-        }
+        workFunction(currentFrame);
 
-        Frame *tmp = currentFrame->previous;
-        free(currentFrame->buffer);
-        free(currentFrame);
+        Frame *tmp = currentFrame->next;
         currentFrame = tmp;
-    } while (currentFrame->previous);
-
-    if (recordingType == RecordingType::GIF) {
-        GifEnd(&g);
-    }
-
-    last = new Frame();
-    recordingIndex++;
+    } while (currentFrame->next);
 }
 
-void ScreenRecorder::recordFrame(unsigned int width, unsigned int height) {
+void Video::recordFrame(unsigned int _width, unsigned int _height) {
+    if (width == 0 && height == 0) {
+        width = _width;
+        height = _height;
+    } else if (width != _width || height != _height) {
+        std::cerr << "Do not resize the window while recording. Aborted." << std::endl;
+        return;
+    }
     last->width = width;
     last->height = height;
     last->channels = 4;
@@ -135,5 +150,22 @@ void ScreenRecorder::recordFrame(unsigned int width, unsigned int height) {
     Frame *tmp = last;
     last = new Frame();
     last->index = tmp->index + 1;
-    last->previous = tmp;
+    tmp->next = last;
+}
+
+void Video::reset() {
+    width = 0;
+    height = 0;
+    Frame *currentFrame = first->next;
+    do {
+        if (currentFrame->buffer == nullptr) {
+            free(currentFrame);
+            break;
+        }
+
+        Frame *tmp = currentFrame->next;
+        free(currentFrame->buffer);
+        free(currentFrame);
+        currentFrame = tmp;
+    } while (currentFrame->next);
 }

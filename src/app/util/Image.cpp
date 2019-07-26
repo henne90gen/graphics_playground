@@ -235,7 +235,7 @@ void writePng(Image &image) {
 }
 
 void writeJpg(Image &image) {
-    std::cerr << "Writing JPEG files is not yet supported" << std::endl;
+    std::cerr << "Writing JPEG files is not supported yet" << std::endl;
 }
 
 
