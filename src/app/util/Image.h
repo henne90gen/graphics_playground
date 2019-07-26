@@ -7,7 +7,7 @@ struct Image {
     std::string fileName;
     unsigned int width;
     unsigned int height;
-    char channels;
+    char channels = 3;
     char bitDepth = 8;
     std::vector<unsigned char> pixels;
 };

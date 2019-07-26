@@ -1,9 +1,9 @@
 #include "OpenGLUtils.h"
 #include "Image.h"
 
-#include <fstream>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <iomanip>
@@ -30,27 +30,4 @@ glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cam
     viewMatrix = glm::rotate(viewMatrix, cameraRotation.z, glm::vec3(0, 0, 1));
     viewMatrix = glm::translate(viewMatrix, cameraPosition);
     return viewMatrix;
-}
-
-void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight) {
-    std::stringstream buffer;
-    std::time_t t = std::time(nullptr);
-    buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H:%M:%S");
-    const std::string fileName = "../../../screenshot-" + buffer.str() + ".png";
-
-    Image image = {};
-    image.fileName = fileName;
-    image.width = windowWidth;
-    image.height = windowHeight;
-    image.channels = 3;
-
-    const int numberOfPixels = image.width * image.height * image.channels;
-    image.pixels = std::vector<unsigned char>(numberOfPixels);
-
-    GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
-    GL_Call(glReadBuffer(GL_FRONT));
-    GL_Call(glReadPixels(0, 0, image.width, image.height, GL_RGB, GL_UNSIGNED_BYTE, image.pixels.data()));
-
-    ImageOps::save(image);
-    std::cout << "Saved screenshot " << image.fileName << std::endl;
 }

@@ -141,6 +141,9 @@ get_directory_property(
 set(LIBJPEG_LIBRARY ${LIBJPEG_STATIC})
 set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
 
+# gif-h
+set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
+
 # Catch
 set(CATCH_DIR ${VENDOR_DIR}/catch)
 add_subdirectory(${CATCH_DIR})

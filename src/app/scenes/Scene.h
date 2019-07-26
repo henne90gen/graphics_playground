@@ -15,8 +15,7 @@ struct SceneData {
     InputData *input;
 
     std::function<void(void)> &backToMainMenu;
-    std::function<void(void)> &takeScreenshot;
-    ScreenRecorder &videoRecorder;
+    ScreenRecorder &recorder;
 };
 
 class Scene {

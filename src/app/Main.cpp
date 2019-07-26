@@ -56,7 +56,7 @@ void keyCallback(GLFWwindow *window, int key, int  /*scancode*/, int action, int
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
         auto sceneData = (SceneData *) glfwGetWindowUserPointer(window);
-        sceneData->takeScreenshot();
+        sceneData->recorder.takeScreenshot();
     }
 }
 
@@ -107,16 +107,11 @@ int main() {
         currentSceneIndex = 0;
         mainMenu.activate();
     };
-    bool shouldTakeScreenshot = false;
-    std::function<void(void)> takeScreenshot = [&shouldTakeScreenshot]() {
-        shouldTakeScreenshot = true;
-    };
     ScreenRecorder recorder = {};
     SceneData sceneData = {
             window,
             &input,
             backToMainMenu,
-            takeScreenshot,
             recorder
     };
     glfwSetWindowUserPointer(window, &sceneData);
