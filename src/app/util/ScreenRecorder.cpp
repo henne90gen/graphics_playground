@@ -165,11 +165,11 @@ void Video::reset() {
     Frame *currentFrame = first;
     do {
         if (currentFrame->buffer == nullptr) {
-			if (currentFrame->next) {
-				free(currentFrame);
+			auto next = currentFrame->next;
+			free(currentFrame);
+			if (next) {
 				continue;
 			} else {
-				free(currentFrame);
 	            break;
 			}
         }
