@@ -1,6 +1,7 @@
 #include "AStar.h"
 
 #include "opengl/VertexBuffer.h"
+#include "util/OpenGLUtils.h"
 
 void AStar::setup() {
     shader = std::make_shared<Shader>("../../../src/app/scenes/a_star/AStarVert.glsl",
@@ -43,11 +44,13 @@ void AStar::setup() {
 void AStar::destroy() {}
 
 void AStar::tick() {
-    static float zoom = 1.0f;
+    static glm::vec3 position = {0.5F, 0.5F, 0.0F};
+    static float zoom = 0.5F;
     static bool isStartSelection = true;
     static glm::vec2 start = {};
     static bool isFinishSelection = false;
     static glm::vec2 finish = {};
+    static bool animate = false;
     static bool init = false;
 
     if (!init) {
@@ -58,7 +61,8 @@ void AStar::tick() {
     }
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat("Zoom", &zoom);
+    ImGui::DragFloat("Zoom", &zoom, 0.001F);
+    ImGui::DragFloat3("Position", (float *) &position, 0.001F);
     if (ImGui::Button("Reset")) {
         isStartSelection = true;
         reset();
@@ -76,18 +80,24 @@ void AStar::tick() {
     if (ImGui::Button("Use Default Problem")) {
         setupDefaultProblem();
     }
+    ImGui::Checkbox("Animate", &animate);
     ImGui::End();
 
-    solver->nextStep(board);
+    if (animate) {
+        solver->nextStep(board);
+    }
 
     shader->bind();
     vertexArray->bind();
     texture->bind();
 
-    auto viewMatrix = glm::scale(glm::identity<glm::mat4>(), glm::vec3(zoom));
+    auto viewMatrix = glm::translate(glm::identity<glm::mat4>(), position);
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
 
     checkForMouseClick(board.width, board.height, viewMatrix, isStartSelection, start, isFinishSelection, finish);
     texture->update(board.pixels, board.width, board.height);
+
+    shader->setUniform("u_ViewMatrix", viewMatrix);
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
@@ -99,7 +109,7 @@ void AStar::reset() {
     solver = std::make_unique<AStarSolver>();
     board.pixels = std::vector<glm::vec3>(board.width * board.height);
     for (auto &color : board.pixels) {
-        color = {1.0, 0.0, 1.0};
+        color = backgroundColor;
     }
 }
 
@@ -107,44 +117,33 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
                                const glm::mat4 &viewMatrix, bool &isStartSelection, glm::vec2 &start,
                                bool &isFinishSelection, glm::vec2 &finish) {
     InputData *input = getInput();
-    if (input->mouse.left) {
-        const auto widthF = static_cast<float>(canvasWidth);
-        const auto heightF = static_cast<float>(canvasHeight);
-        const auto displayWidthF = static_cast<float>(getWidth());
-        const auto displayHeightF = static_cast<float>(getHeight());
+    if (!input->mouse.left) {
+        return;
+    }
 
-        auto &mousePos = input->mouse.pos;
+    auto mappedMousePos = mapMouseOntoCanvas(input, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
+    auto canvasPos = mappedMousePos.canvasPos;
 
-        auto mouseDisplaySpace = glm::vec2(mousePos.x / displayWidthF, (displayHeightF - mousePos.y) / displayHeightF);
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-        mouseDisplaySpace = mouseDisplaySpace * 2.0F - glm::vec2(1.0F, 1.0F);
+    if ((canvasPos.x < 0.0F || canvasPos.x >= canvasWidth) || (canvasPos.y < 0.0F || canvasPos.y >= canvasHeight)) {
+        return;
+    }
 
-        auto adjustedDisplayPos = glm::inverse(viewMatrix) * glm::vec4(mouseDisplaySpace, 0.0, 0.0);
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-        auto canvasPos = (glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y) + glm::vec2(1.0F, 1.0F)) / 2.0F;
-        canvasPos = glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF));
+    unsigned int i =
+            (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
+            static_cast<unsigned int>(canvasPos.x);
 
-        if ((canvasPos.x < 0.0F || canvasPos.x >= widthF) || (canvasPos.y < 0.0F || canvasPos.y >= heightF)) {
-            return;
-        }
-
-        unsigned int i =
-                (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
-                static_cast<unsigned int>(canvasPos.x);
-
-        glm::vec3 color = obstacleColor;
-        if (isStartSelection) {
-            color = startColor;
-            start = canvasPos;
-            isStartSelection = false;
-        } else if (isFinishSelection) {
-            color = finishColor;
-            finish = canvasPos;
-            isFinishSelection = false;
-        }
-        if (board.pixels[i] != startColor && board.pixels[i] != finishColor) {
-            board.pixels[i] = color;
-        }
+    glm::vec3 color = obstacleColor;
+    if (isStartSelection) {
+        color = startColor;
+        start = canvasPos;
+        isStartSelection = false;
+    } else if (isFinishSelection) {
+        color = finishColor;
+        finish = canvasPos;
+        isFinishSelection = false;
+    }
+    if (board.pixels[i] != startColor && board.pixels[i] != finishColor) {
+        board.pixels[i] = color;
     }
 }
 

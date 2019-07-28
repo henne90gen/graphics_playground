@@ -6,7 +6,7 @@
 Board initBoard(unsigned int width, unsigned int height) {
     auto pixels = std::vector<glm::vec3>(width * height);
     for (auto &field : pixels) {
-        field = {0.0, 0.0, 0.0};
+        field = backgroundColor;
     }
     return {width, height, pixels};
 }
@@ -42,6 +42,24 @@ TEST_CASE("Start and Finish two straight fields apart") {
     auto solver = AStarSolver();
     solver.nextStep(board);
     assertEquals(board.pixels[8], visitedColor);
+    solver.nextStep(board);
+    assertEquals(board.pixels[9], visitedColor);
+    REQUIRE(solver.nextStep(board));
+}
+
+TEST_CASE("Start and Finish are only separated by a simple wall") {
+    Board board = initBoard(6, 6);
+    board.pixels[7] = startColor;
+    board.pixels[2] = obstacleColor;
+    board.pixels[8] = obstacleColor;
+    board.pixels[10] = finishColor;
+    auto solver = AStarSolver();
+    solver.nextStep(board);
+    assertEquals(board.pixels[13], visitedColor);
+    solver.nextStep(board);
+    assertEquals(board.pixels[14], visitedColor);
+    solver.nextStep(board);
+    assertEquals(board.pixels[15], visitedColor);
     solver.nextStep(board);
     assertEquals(board.pixels[9], visitedColor);
     REQUIRE(solver.nextStep(board));

@@ -8,6 +8,7 @@ const glm::vec3 finishColor = {1.0, 0.0, 0.0};
 const glm::vec3 obstacleColor = {0.0, 0.0, 0.0};
 const glm::vec3 pathColor = {0.0, 0.0, 1.0};
 const glm::vec3 visitedColor = {0.1, 0.1, 0.1};
+const glm::vec3 backgroundColor = {1.0, 0.0, 1.0};
 
 struct Board {
     unsigned int width;

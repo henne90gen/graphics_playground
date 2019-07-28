@@ -76,6 +76,11 @@ inline glm::vec3 getPixelValue(Board &board, glm::ivec2 &pos) {
     return board.pixels[pos.x + pos.y * board.height];
 }
 
+bool isValidNeighbor(Board &board, glm::ivec2 &pos) {
+    glm::vec3 color = getPixelValue(board, pos);
+    return color != obstacleColor && color != visitedColor && color != startColor;
+}
+
 void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
     for (auto &pos : visited) {
         if (node.position == pos) {
@@ -102,19 +107,19 @@ void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
     glm::ivec2 rightPos = node.position + glm::ivec2(1, 0);
     Node right = {traveledDistance, calculateDistance(rightPos, goal), rightPos, node.position};
 
-    if (getPixelValue(board, topPos) != obstacleColor) {
+    if (isValidNeighbor(board, topPos)) {
         workingSet.push_back(top);
     }
 
-    if (getPixelValue(board, bottomPos) != obstacleColor) {
+    if (isValidNeighbor(board, bottomPos)) {
         workingSet.push_back(bottom);
     }
 
-    if (getPixelValue(board, leftPos) != obstacleColor) {
+    if (isValidNeighbor(board, leftPos)) {
         workingSet.push_back(left);
     }
 
-    if (getPixelValue(board, rightPos) != obstacleColor) {
+    if (isValidNeighbor(board, rightPos)) {
         workingSet.push_back(right);
     }
 }

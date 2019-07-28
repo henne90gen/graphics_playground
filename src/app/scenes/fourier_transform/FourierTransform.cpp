@@ -55,6 +55,8 @@ void FourierTransform::destroy() {
 }
 
 void FourierTransform::tick() {
+    GL_Call(glDisable(GL_DEPTH_TEST));
+
     static auto colors = createColors();
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};
@@ -70,12 +72,6 @@ void FourierTransform::tick() {
     updateCoefficients(mousePositions, useMousePositions, fourierResolution);
 
     ImGui::Begin("Settings");
-    ImGui::Text("Mouse: (%f, %f)", getInput()->mouse.pos.x, getInput()->mouse.pos.y);
-    glm::vec2 mouse = getInput()->mouse.pos;
-    mouse /= glm::vec2(static_cast<float>(getWidth()), -1.0F * static_cast<float>(getHeight()));
-    mouse *= 2.0F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    mouse -= glm::vec2(1.0F, -1.0F);
-    ImGui::Text("Relative Mouse: (%f, %f)", mouse.x, mouse.y);
     ImGui::Text("Num of Coefficients: %zu", coefficients.size());
     ImGui::Text("Num of Mouse Positions: %zu", mousePositions.size());
     ImGui::Text("Num of Drawn Points: %zu", drawnPoints.size());
@@ -216,32 +212,18 @@ void FourierTransform::drawCanvas(std::vector<glm::vec4> &colors, std::vector<gl
     vertexArray->bind();
     texture->bind();
 
-//    const unsigned int width = getWidth();
-//    const unsigned int height = getHeight();
-    const auto widthF = static_cast<float>(canvasWidth);
-    const auto heightF = static_cast<float>(canvasHeight);
-    const float displayWidth = getWidth();
-    const float displayHeight = getHeight();
-
     InputData *input = getInput();
     if (input->mouse.left) {
-        auto &mousePos = input->mouse.pos;
+        auto mappedMousePos = mapMouseOntoCanvas(input, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
+        auto canvasPos = mappedMousePos.canvasPos;
+        auto worldPos = mappedMousePos.worldPos;
 
-        auto mouseDisplaySpace = glm::vec2(mousePos.x / displayWidth, (displayHeight - mousePos.y) / displayHeight);
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-        mouseDisplaySpace = mouseDisplaySpace * 2.0F - glm::vec2(1.0F, 1.0F);
-
-        auto adjustedDisplayPos = glm::inverse(viewMatrix) * glm::vec4(mouseDisplaySpace, 0.0, 0.0);
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-        auto canvasPos = (glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y) + glm::vec2(1.0F, 1.0F)) / 2.0F;
-        canvasPos = glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF));
-
-        if ((canvasPos.x >= 0.0F && canvasPos.x < widthF) && (canvasPos.y >= 0.0F && canvasPos.y < heightF)) {
+        if ((canvasPos.x >= 0.0F && canvasPos.x < canvasWidth) && (canvasPos.y >= 0.0F && canvasPos.y < canvasHeight)) {
             unsigned int i =
                     (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
                     static_cast<unsigned int>(canvasPos.x);
             colors[i] = {1.0, 1.0, 1.0, 1.0};
-            mousePositions.emplace_back(adjustedDisplayPos.x, adjustedDisplayPos.y);
+            mousePositions.emplace_back(worldPos.x, worldPos.y);
         }
     }
     texture->update(colors, canvasWidth, canvasHeight);

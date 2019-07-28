@@ -3,6 +3,8 @@
 #include <glm/ext.hpp>
 #include <glad/glad.h>
 
+#include "InputData.h"
+
 #ifdef DEBUG
 #ifdef WIN32
 #define ASSERT(x)             \
@@ -34,4 +36,11 @@ bool GL_LogCall(const char *function, const char *file, int line);
 
 glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation);
 
-void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight);
+struct MappedMousePosition {
+    glm::vec2 canvasPos;
+    glm::vec2 worldPos;
+};
+
+MappedMousePosition
+mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix, unsigned int canvasWidth,
+                   unsigned int canvasHeight, unsigned int displayWidth, unsigned int displayHeight);

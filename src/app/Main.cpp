@@ -133,7 +133,7 @@ int main() {
     scenes.push_back(new AStar(sceneData)); // 14
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-//    mainMenu.goToScene(13);
+//    mainMenu.goToScene(12);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 
