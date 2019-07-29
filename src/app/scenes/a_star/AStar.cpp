@@ -46,11 +46,13 @@ void AStar::destroy() {}
 void AStar::tick() {
     static glm::vec3 position = {0.5F, 0.5F, 0.0F};
     static float zoom = 0.5F;
-    static bool isStartSelection = true;
+    static bool isStartSelection = false;
     static glm::vec2 start = {};
     static bool isFinishSelection = false;
     static glm::vec2 finish = {};
     static bool animate = false;
+    static bool animateOneStep = false;
+    static bool solved = false;
     static bool init = false;
 
     if (!init) {
@@ -65,6 +67,7 @@ void AStar::tick() {
     ImGui::DragFloat3("Position", (float *) &position, 0.001F);
     if (ImGui::Button("Reset")) {
         isStartSelection = true;
+        solved = false;
         reset();
     }
     if (ImGui::Button("Select Start")) {
@@ -81,10 +84,16 @@ void AStar::tick() {
         setupDefaultProblem();
     }
     ImGui::Checkbox("Animate", &animate);
+    if (ImGui::Button("Animate one step")) {
+        animateOneStep = true;
+    }
+    ImGui::Text("Size WorkingSet: %lu", solver->workingSet.size());
+    ImGui::Text("Solved: %d", solver->solved);
     ImGui::End();
 
-    if (animate) {
+    if (animate || animateOneStep) {
         solver->nextStep(board);
+        animateOneStep = false;
     }
 
     shader->bind();

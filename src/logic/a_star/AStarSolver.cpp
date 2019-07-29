@@ -3,39 +3,43 @@
 #include <algorithm>
 #include <functional>
 
-bool AStarSolver::nextStep(Board &board) {
+void AStarSolver::nextStep(Board &board) {
+    if (solved) {
+        return;
+    }
+
     if (goal.x == -1 && goal.y == -1) {
         goal = findGoal(board);
         if (goal.x == -1 && goal.y == -1) {
-            return false;
+            return;
         }
     }
 
     if (workingSet.empty()) {
         Node start = findStart(board, goal);
         if (start.position.x == -1 && start.position.y == -1) {
-            return false;
+            return;
         }
 
         addNeighborsToWorkingSet(board, start);
         if (workingSet.empty()) {
-            return false;
+            return;
         }
     }
 
     std::function<bool(Node &, Node &)> compare = [](Node &node1, Node &node2) -> bool {
-        return node1.estimatedTotalDistance < node2.estimatedTotalDistance;
+        return node1.estimatedTotalDistance > node2.estimatedTotalDistance;
     };
     std::sort(workingSet.begin(), workingSet.end(), compare);
 
-    Node &node = workingSet.front();
+    Node &node = workingSet.back();
+    workingSet.pop_back();
     if (node.position == goal) {
-        return true;
+        solved = true;
+        return;
     }
 
     addNeighborsToWorkingSet(board, node);
-
-    return false;
 }
 
 glm::ivec2 AStarSolver::findGoal(const Board &board) const {
@@ -76,22 +80,23 @@ inline glm::vec3 getPixelValue(Board &board, glm::ivec2 &pos) {
     return board.pixels[pos.x + pos.y * board.height];
 }
 
-bool isValidNeighbor(Board &board, glm::ivec2 &pos) {
+inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
+    board.pixels[pos.x + pos.y * board.height] = color;
+}
+
+bool AStarSolver::isValidNeighbor(Board &board, glm::ivec2 &pos) {
+    if (pos.x < 0 || pos.x >= board.width || pos.y < 0 || pos.y >= board.height) {
+        return false;
+    }
+
     glm::vec3 color = getPixelValue(board, pos);
-    return color != obstacleColor && color != visitedColor && color != startColor;
+    return color != obstacleColor && color != visitedColor && color != startColor && color != workingSetColor;
 }
 
 void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
-    for (auto &pos : visited) {
-        if (node.position == pos) {
-            return;
-        }
-    }
-    visited.push_back(node.position);
-
-    glm::vec3 &pixel = board.pixels[node.position.x + node.position.y * board.height];
+    glm::vec3 pixel = getPixelValue(board, node.position);
     if (pixel != startColor) {
-        pixel = visitedColor;
+        setPixelValue(board, node.position, visitedColor);
     }
 
     float traveledDistance = node.traveledDistance + 1;
@@ -107,19 +112,21 @@ void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
     glm::ivec2 rightPos = node.position + glm::ivec2(1, 0);
     Node right = {traveledDistance, calculateDistance(rightPos, goal), rightPos, node.position};
 
-    if (isValidNeighbor(board, topPos)) {
-        workingSet.push_back(top);
+    addNeighbor(board, top);
+    addNeighbor(board, bottom);
+    addNeighbor(board, left);
+    addNeighbor(board, right);
+}
+
+void AStarSolver::addNeighbor(Board &board, Node &node) {
+    if (!isValidNeighbor(board, node.position)) {
+        return;
     }
 
-    if (isValidNeighbor(board, bottomPos)) {
-        workingSet.push_back(bottom);
+    glm::vec3 pixel = getPixelValue(board, node.position);
+    if (pixel != startColor && pixel != finishColor) {
+        setPixelValue(board, node.position, workingSetColor);
     }
 
-    if (isValidNeighbor(board, leftPos)) {
-        workingSet.push_back(left);
-    }
-
-    if (isValidNeighbor(board, rightPos)) {
-        workingSet.push_back(right);
-    }
+    workingSet.push_back(node);
 }
