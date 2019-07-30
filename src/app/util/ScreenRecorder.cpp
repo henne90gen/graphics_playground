@@ -164,7 +164,7 @@ void Video::reset() {
     width = 0;
     height = 0;
     Frame *currentFrame = head;
-    do {
+    while (currentFrame != nullptr) {
         if (currentFrame->buffer == nullptr) {
 			auto next = currentFrame->next;
 			free(currentFrame);
@@ -179,7 +179,7 @@ void Video::reset() {
         free(currentFrame->buffer);
         free(currentFrame);
         currentFrame = tmp;
-    } while (currentFrame->next);
+    }
 	tail = new Frame();
 	head = tail;
 }

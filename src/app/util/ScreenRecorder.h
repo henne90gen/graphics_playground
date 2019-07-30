@@ -28,8 +28,8 @@ public:
     unsigned int width = 0;
     unsigned int height = 0;
 private:
-    Frame *head;
-    Frame *tail;
+    Frame *head = nullptr;
+    Frame *tail = nullptr;
 };
 
 class ScreenRecorder {
