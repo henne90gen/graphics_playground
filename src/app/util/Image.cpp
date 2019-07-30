@@ -11,6 +11,17 @@
 #include <png.h>
 #include <utility>
 
+bool hasExtension(const std::string &fileName, std::string extension) {
+    unsigned long size = fileName.size();
+    unsigned long extensionSize = extension.size();
+    for (unsigned long i = 1; i <= extensionSize; i++) {
+        if (fileName[size - i] != extension[extensionSize - i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int loadPng(Image &image) {
     FILE *fp = fopen(image.fileName.c_str(), "rb");
     if (fp == nullptr) {
@@ -164,10 +175,10 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
     }
 
     image.fileName = fileName;
-    unsigned long size = fileName.size();
-    if (fileName[size - 1] == 'g' && fileName[size - 2] == 'n' && fileName[size - 3] == 'p') {
+    if (hasExtension(image.fileName, "png")) {
         return loadPng(image) == 0;
-    } else if (fileName[size - 1] == 'g' && fileName[size - 2] == 'p' && fileName[size - 3] == 'j') {
+    }
+    if (hasExtension(image.fileName, "jpeg") || hasExtension(image.fileName, "jpg")) {
         return loadJpg(image) == 0;
     }
 
@@ -177,15 +188,17 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
 
 void writePng(Image &image) {
     FILE *fp = fopen(image.fileName.c_str(), "wb");
-    if (!fp) abort();
+    if (fp == nullptr) {
+        abort();
+    }
 
     png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    if (!png) {
+    if (png == nullptr) {
         abort();
     }
 
     png_infop info = png_create_info_struct(png);
-    if (!info) {
+    if (info == nullptr) {
         abort();
     }
 
@@ -223,7 +236,7 @@ void writePng(Image &image) {
     png_write_info(png, info);
 
     for (long y = image.height; y >= 0; y--) {
-        auto pixels = (png_bytep) image.pixels.data();
+        auto pixels = static_cast<png_bytep>(image.pixels.data());
         pixels += y * image.width * image.channels;
         png_write_row(png, pixels);
     }
@@ -234,17 +247,16 @@ void writePng(Image &image) {
     png_destroy_write_struct(&png, &info);
 }
 
-void writeJpg(Image &image) {
+void writeJpg(Image & /*image*/) {
     std::cerr << "Writing JPEG files is not supported yet" << std::endl;
 }
 
-
 void ImageOps::save(Image &image) {
-    unsigned long size = image.fileName.size();
-    if (image.fileName[size - 1] == 'g' && image.fileName[size - 2] == 'n' && image.fileName[size - 3] == 'p') {
+    if (hasExtension(image.fileName, "png")) {
         writePng(image);
         return;
-    } else if (image.fileName[size - 1] == 'g' && image.fileName[size - 2] == 'p' && image.fileName[size - 3] == 'j') {
+    }
+    if (hasExtension(image.fileName, "jpeg") || hasExtension(image.fileName, "jpg")) {
         writeJpg(image);
         return;
     }

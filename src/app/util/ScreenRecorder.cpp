@@ -1,17 +1,17 @@
 #include "ScreenRecorder.h"
 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
 #include <filesystem>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
-#include "OpenGLUtils.h"
 #include "Image.h"
+#include "OpenGLUtils.h"
 
 #define GIF_FLIP_VERT
 
-#include <gif.h>
 #include <functional>
+#include <gif.h>
 
 std::string generateScreenshotFilename() {
     std::stringstream buffer;
@@ -93,20 +93,20 @@ void ScreenRecorder::saveRecordingAsGif() {
     auto fileName = generateScreenrecordingGifName(recordingIndex);
     int delay = 1;
     GifWriter g = {};
-	if (!GifBegin(&g, fileName.c_str(), width, height, delay)) {
-		std::cerr << "Could not open " << fileName << " for writing." << std::endl;
-		video.reset();
-		return;
-	}
+    if (!GifBegin(&g, fileName.c_str(), width, height, delay)) {
+        std::cerr << "Could not open " << fileName << " for writing." << std::endl;
+        video.reset();
+        return;
+    }
 
     std::function<void(Frame *)> workFunction = [&g, &delay](Frame *currentFrame) {
         GifWriteFrame(&g, currentFrame->buffer, currentFrame->width, currentFrame->height, delay);
     };
     video.iterateFrames(workFunction);
 
-	if (!GifEnd(&g)) {
-		std::cerr << "Could not save to " << fileName << std::endl;
-	}
+    if (!GifEnd(&g)) {
+        std::cerr << "Could not save to " << fileName << std::endl;
+    }
 }
 
 void ScreenRecorder::saveRecording() {
@@ -123,16 +123,15 @@ void ScreenRecorder::saveRecording() {
 
 void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
     Frame *currentFrame = head;
-    do {
+    while (currentFrame != nullptr) {
         if (currentFrame->buffer == nullptr) {
             continue;
         }
 
         workFunction(currentFrame);
 
-        Frame *tmp = currentFrame->next;
-        currentFrame = tmp;
-    } while (currentFrame->next);
+        currentFrame = currentFrame->next;
+    }
 }
 
 void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
@@ -143,12 +142,12 @@ void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
         std::cerr << "Do not resize the window while recording. Aborted." << std::endl;
         return;
     }
-    
-	tail->width = width;
+
+    tail->width = width;
     tail->height = height;
     tail->channels = 4;
     const int numberOfPixels = width * height * tail->channels;
-    tail->buffer = (unsigned char *) malloc(numberOfPixels * sizeof(unsigned char));
+    tail->buffer = static_cast<unsigned char *>(malloc(numberOfPixels * sizeof(unsigned char)));
 
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
     GL_Call(glReadBuffer(GL_FRONT));
@@ -166,13 +165,13 @@ void Video::reset() {
     Frame *currentFrame = head;
     while (currentFrame != nullptr) {
         if (currentFrame->buffer == nullptr) {
-			auto next = currentFrame->next;
-			free(currentFrame);
-			if (next) {
-				continue;
-			} else {
-	            break;
-			}
+            auto next = currentFrame->next;
+            free(currentFrame);
+            if (next != nullptr) {
+                continue;
+            }
+            break;
+
         }
 
         Frame *tmp = currentFrame->next;
@@ -180,6 +179,6 @@ void Video::reset() {
         free(currentFrame);
         currentFrame = tmp;
     }
-	tail = new Frame();
-	head = tail;
+    tail = new Frame();
+    head = tail;
 }

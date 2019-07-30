@@ -59,7 +59,7 @@ void AStar::tick() {
 
     ImGui::Begin("Settings");
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
-    ImGui::DragFloat3("Position", (float *) &position, 0.001F);
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), 0.001F);
     if (ImGui::Button("Reset")) {
         setupDefaultProblem();
     }
@@ -80,9 +80,9 @@ void AStar::tick() {
         estimatedDistance = solver->workingSet.back()->f;
     }
     ImGui::Text("Total Distance: %f", estimatedDistance);
-    ImGui::Text("Solved: %d", solver->solved);
+    ImGui::Text("Solved: %d", static_cast<int>(solver->solved));
     ImGui::Text("Final Node: %p", (void *) solver->finalNode);
-    if (solver->finalNode) {
+    if (solver->finalNode != nullptr) {
         ImGui::Text("Total Distance Traveled: %d", solver->finalNode->g);
     }
     ImGui::End();
@@ -119,12 +119,12 @@ void AStar::visualizeNodeSet(const std::vector<Node *> &nodes, const glm::mat4 &
         glm::vec3 end = {node->predecessor->position.x, node->predecessor->position.y, 0.0F};
 
         start += glm::vec3(0.5, 0.5, 0.0);
-        start = {start.x / (float) board.width, start.y / (float) board.height, start.z};
+        start = {start.x / static_cast<float>(board.width), start.y / static_cast<float>(board.height), start.z};
         start *= 2.0F;
         start -= glm::vec3(1, 1, 0);
 
         end += glm::vec3(0.5, 0.5, 0.0);
-        end = {end.x / (float) board.width, end.y / (float) board.height, end.z};
+        end = {end.x / static_cast<float>(board.width), end.y / static_cast<float>(board.height), end.z};
         end *= 2.0F;
         end -= glm::vec3(1, 1, 0);
 

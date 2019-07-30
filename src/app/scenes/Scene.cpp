@@ -20,9 +20,9 @@ void Scene::renderBackMenu() {
         }
     }
     ImGui::SameLine();
-    ImGui::RadioButton("GIF", (int *) &data.recorder.recordingType, ScreenRecorder::RecordingType::GIF);
+    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&data.recorder.recordingType), ScreenRecorder::RecordingType::GIF);
     ImGui::SameLine();
-    ImGui::RadioButton("PNG", (int *) &data.recorder.recordingType, ScreenRecorder::RecordingType::PNG);
+    ImGui::RadioButton("PNG", reinterpret_cast<int *>(&data.recorder.recordingType), ScreenRecorder::RecordingType::PNG);
 
     if (ImGui::Button("Back")) {
         data.backToMainMenu();

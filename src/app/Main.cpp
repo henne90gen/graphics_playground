@@ -3,9 +3,10 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
-#include <vector>
 #include <util/ScreenRecorder.h>
+#include <vector>
 
+#include "scenes/a_star/AStar.h"
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
 #include "scenes/fourier_transform/FourierTransform.h"
@@ -15,12 +16,11 @@
 #include "scenes/light_demo/LightDemo.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
 #include "scenes/model_loading/ModelLoading.h"
+#include "scenes/normal_mapping/NormalMapping.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
-#include "scenes/normal_mapping/NormalMapping.h"
-#include "scenes/a_star/AStar.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -55,7 +55,7 @@ void keyCallback(GLFWwindow *window, int key, int  /*scancode*/, int action, int
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
-        auto sceneData = (SceneData *) glfwGetWindowUserPointer(window);
+        auto sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
         sceneData->recorder.takeScreenshot();
     }
 }

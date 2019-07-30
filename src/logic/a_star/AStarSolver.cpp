@@ -3,8 +3,8 @@
 #include "AStarSolver.h"
 
 #include <algorithm>
-#include <iostream>
 #include <functional>
+#include <iostream>
 
 inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
     board.pixels[pos.x + pos.y * board.height] = color;
@@ -132,7 +132,7 @@ bool isValidNeighbor(Board &board, glm::ivec2 &pos) {
 
 void AStarSolver::drawFinalPath(Board &board) {
     Node *currentNode = finalNode;
-    while (currentNode->predecessor) {
+    while (currentNode->predecessor != nullptr) {
         setPixelValue(board, currentNode->position, pathColor);
         currentNode = currentNode->predecessor;
     }

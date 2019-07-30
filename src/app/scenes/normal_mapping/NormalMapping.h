@@ -37,6 +37,6 @@ private:
 
     static void
     calculateTangentsAndBiTangents(const std::vector<glm::ivec3> &indices, const std::vector<glm::vec3> &vertices,
-                                   const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,
-                                   std::vector<glm::vec3> &tangents, std::vector<glm::vec3> &biTangents);
+                                   const std::vector<glm::vec2> &uvs, std::vector<glm::vec3> &tangents,
+                                   std::vector<glm::vec3> &biTangents);
 };

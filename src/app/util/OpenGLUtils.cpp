@@ -1,12 +1,12 @@
 #include "OpenGLUtils.h"
 #include "Image.h"
 
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 void GL_ClearError() {
     while (glGetError() != GL_NO_ERROR) {

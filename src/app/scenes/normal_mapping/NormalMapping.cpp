@@ -1,5 +1,5 @@
-#include <util/Image.h>
 #include "NormalMapping.h"
+#include <util/Image.h>
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -21,7 +21,7 @@ void NormalMapping::setup() {
     std::vector<glm::vec3> tangents = {};
     std::vector<glm::vec3> biTangents = {};
     ModelLoader::RawMesh &rawMesh = model->getOriginalModel()->meshes[0];
-    calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.normals, rawMesh.textureCoordinates,
+    calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.textureCoordinates,
                                    tangents, biTangents);
 
     std::vector<float> vertexData;
@@ -61,13 +61,13 @@ void NormalMapping::tick() {
     static bool useNormalMap = true;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Camera Position", (float *) &cameraPosition, 0.01F);
-    ImGui::DragFloat3("Camera Rotation", (float *) &cameraRotation, 0.01F);
+    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.01F);
+    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     ImGui::DragFloat("Model Scale", &scale, 0.01F);
-    ImGui::DragFloat3("Model Position", (float *) &position, 0.01F);
-    ImGui::DragFloat3("Model Rotation", (float *) &rotation, 0.01F);
-    ImGui::DragFloat3("Light Position", (float *) &lightPosition, 0.01F);
-    ImGui::ColorEdit3("Light Color", (float *) &lightColor);
+    ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&position), 0.01F);
+    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&rotation), 0.01F);
+    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), 0.01F);
+    ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
     ImGui::DragFloat("Rotation Speed", &rotationSpeed, 0.001F);
     ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Use NormalMap", &useNormalMap);
@@ -138,9 +138,7 @@ void NormalMapping::onAspectRatioChange() {
 
 void NormalMapping::calculateTangentsAndBiTangents(const std::vector<glm::ivec3> &indices,
                                                    const std::vector<glm::vec3> &vertices,
-                                                   const std::vector<glm::vec3> &normals,
-                                                   const std::vector<glm::vec2> &uvs,
-                                                   std::vector<glm::vec3> &tangents,
+                                                   const std::vector<glm::vec2> &uvs, std::vector<glm::vec3> &tangents,
                                                    std::vector<glm::vec3> &biTangents) {
     for (auto &index : indices) {
         auto p1 = vertices[index.x];
@@ -155,7 +153,7 @@ void NormalMapping::calculateTangentsAndBiTangents(const std::vector<glm::ivec3>
         auto deltaUV1 = uv2 - uv1;
         auto deltaUV2 = uv3 - uv1;
 
-        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        float f = 1.0F / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
         glm::vec3 tangent = {0.0, 0.0, 0.0};
         tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
         tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
