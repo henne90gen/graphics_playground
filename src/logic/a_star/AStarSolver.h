@@ -2,6 +2,10 @@
 
 #include <glm/ext.hpp>
 #include <vector>
+#include <map>
+#include <set>
+#include <queue>
+#include <functional>
 
 const glm::vec3 startColor = {0.0, 1.0, 0.0};
 const glm::vec3 finishColor = {1.0, 0.0, 0.0};
@@ -18,31 +22,37 @@ struct Board {
 };
 
 struct Node {
-    float traveledDistance;
-    float estimatedTotalDistance;
+    unsigned int g;
+    float f;
     glm::ivec2 position;
-    glm::ivec2 predecessor;
+    Node *predecessor;
 };
+
 
 class AStarSolver {
 public:
     void nextStep(Board &board);
 
-    std::vector<Node> workingSet = {};
+    std::vector<Node *> workingSet;
+    std::vector<Node *> visitedSet;
+
     bool solved = false;
+    Node *finalNode = nullptr;
+    bool useManhattenDistance = false;
 private:
     glm::ivec2 goal = {-1, -1};
-    std::vector<glm::ivec2> visited = {};
 
     glm::ivec2 findGoal(const Board &board) const;
 
-    static Node findStart(const Board &board, const glm::ivec2 &finish);
+    Node *findStart(const Board &board);
 
-    static float calculateDistance(const glm::ivec2 &pos1, const glm::ivec2 &pos2);
+    float h(const glm::ivec2 &pos1, const glm::ivec2 &pos2);
 
     bool isValidNeighbor(Board &board, glm::ivec2 &pos);
 
-    void addNeighborsToWorkingSet(Board &board, Node node);
+    void drawFinalPath(Board &board);
 
-    void addNeighbor(Board &board, Node &node);
+    std::vector<Node *> getNeighbors(Board &board, Node *pNode);
+
+    Node *getNodeFromWorkingSet(Node *pNode);
 };

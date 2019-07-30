@@ -29,12 +29,11 @@ private:
 
     Board board = {128, 128, {}};
 
-    void
-    checkForMouseClick(const unsigned int canvasWidth, const unsigned int canvasHeight,
-                       const glm::mat4 &viewMatrix, bool &isStartSelection, glm::vec2 &start, bool &isFinishSelection,
-                       glm::vec2 &finish);
+    void checkForMouseClick(unsigned int canvasWidth, unsigned int canvasHeight, const glm::mat4 &viewMatrix);
 
     void setupDefaultProblem();
 
-    void reset();
+    void renderCanvas(const glm::mat4 &viewMatrix);
+
+    void visualizeNodeSet(const std::vector<Node *> &nodes, const glm::mat4 &viewMatrix);
 };

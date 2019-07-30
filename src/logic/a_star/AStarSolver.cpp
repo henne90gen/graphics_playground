@@ -1,10 +1,23 @@
+#include <cmath>
+
 #include "AStarSolver.h"
 
 #include <algorithm>
+#include <iostream>
 #include <functional>
 
+inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
+    board.pixels[pos.x + pos.y * board.height] = color;
+}
+
+bool compareNodes(Node *n1, Node *n2) {
+    return n1->f > n2->f;
+}
+
 void AStarSolver::nextStep(Board &board) {
+
     if (solved) {
+        drawFinalPath(board);
         return;
     }
 
@@ -16,30 +29,43 @@ void AStarSolver::nextStep(Board &board) {
     }
 
     if (workingSet.empty()) {
-        Node start = findStart(board, goal);
-        if (start.position.x == -1 && start.position.y == -1) {
+        Node *start = findStart(board);
+        if (start == nullptr) {
             return;
         }
-
-        addNeighborsToWorkingSet(board, start);
-        if (workingSet.empty()) {
-            return;
-        }
+        workingSet.push_back(start);
+        std::sort(workingSet.begin(), workingSet.end(), compareNodes);
     }
 
-    std::function<bool(Node &, Node &)> compare = [](Node &node1, Node &node2) -> bool {
-        return node1.estimatedTotalDistance > node2.estimatedTotalDistance;
-    };
-    std::sort(workingSet.begin(), workingSet.end(), compare);
 
-    Node &node = workingSet.back();
+    Node *node = workingSet.back();
     workingSet.pop_back();
-    if (node.position == goal) {
+    if (node->position == goal) {
         solved = true;
+        finalNode = node;
         return;
     }
 
-    addNeighborsToWorkingSet(board, node);
+    visitedSet.push_back(node);
+    setPixelValue(board, node->position, visitedColor);
+
+    for (auto neighbor : getNeighbors(board, node)) {
+        neighbor->g = neighbor->predecessor->g + 1;
+        neighbor->f = neighbor->g + h(neighbor->position, goal);
+        Node *existingNode = getNodeFromWorkingSet(neighbor);
+        if (existingNode != nullptr) {
+            // THIS HAS TO BE '>=' FOR THE ALGORITHM TO WORK!
+            if (existingNode->f >= neighbor->f) {
+                existingNode->g = neighbor->g;
+                existingNode->f = neighbor->f;
+                existingNode->predecessor = neighbor->predecessor;
+            }
+        } else {
+            workingSet.push_back(neighbor);
+            std::sort(workingSet.begin(), workingSet.end(), compareNodes);
+            setPixelValue(board, neighbor->position, workingSetColor);
+        }
+    }
 }
 
 glm::ivec2 AStarSolver::findGoal(const Board &board) const {
@@ -53,80 +79,99 @@ glm::ivec2 AStarSolver::findGoal(const Board &board) const {
     return {-1, -1};
 }
 
-Node
-AStarSolver::findStart(const Board &board, const glm::ivec2 &finish) {
+Node *
+AStarSolver::findStart(const Board &board) {
     for (unsigned int y = 0; y < board.height; y++) {
         for (unsigned int x = 0; x < board.width; x++) {
             if (board.pixels[x + y * board.width] == startColor) {
                 glm::ivec2 pos = {x, y};
-                float distanceToFinish = calculateDistance(pos, finish);
-                return {
-                        0,
-                        distanceToFinish,
-                        pos,
-                        {-1, -1}
-                };
+                float distanceToFinish = h(pos, goal);
+                Node *result = new Node();
+                result->g = 0;
+                result->f = distanceToFinish;
+                result->predecessor = nullptr;
+                result->position = pos;
+                return result;
             }
         }
     }
-    return {0, 0, {-1, -1}, {-1, -1}};
+    return nullptr;
 }
 
-float AStarSolver::calculateDistance(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
-    return abs(pos1.x - pos2.x) + abs(pos1.y - pos2.y);
+float manhattenDistance(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
+    float xDiff = abs(pos1.x - pos2.x);
+    float yDiff = abs(pos1.y - pos2.y);
+    return xDiff + yDiff;
+}
+
+float absoluteDistance(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
+    float xDiff = pos1.x - pos2.x;
+    float yDiff = pos1.y - pos2.y;
+    return std::sqrt(xDiff * xDiff + yDiff * yDiff);
+}
+
+float AStarSolver::h(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
+    if (useManhattenDistance) {
+        return manhattenDistance(pos1, pos2);
+    }
+    return absoluteDistance(pos1, pos2);
 }
 
 inline glm::vec3 getPixelValue(Board &board, glm::ivec2 &pos) {
     return board.pixels[pos.x + pos.y * board.height];
 }
 
-inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
-    board.pixels[pos.x + pos.y * board.height] = color;
-}
-
-bool AStarSolver::isValidNeighbor(Board &board, glm::ivec2 &pos) {
+bool isValidNeighbor(Board &board, glm::ivec2 &pos) {
     if (pos.x < 0 || pos.x >= board.width || pos.y < 0 || pos.y >= board.height) {
         return false;
     }
 
     glm::vec3 color = getPixelValue(board, pos);
-    return color != obstacleColor && color != visitedColor && color != startColor && color != workingSetColor;
+    return color != obstacleColor && color != startColor && color != visitedColor;
 }
 
-void AStarSolver::addNeighborsToWorkingSet(Board &board, Node node) {
-    glm::vec3 pixel = getPixelValue(board, node.position);
-    if (pixel != startColor) {
-        setPixelValue(board, node.position, visitedColor);
+void AStarSolver::drawFinalPath(Board &board) {
+    Node *currentNode = finalNode;
+    while (currentNode->predecessor) {
+        setPixelValue(board, currentNode->position, pathColor);
+        currentNode = currentNode->predecessor;
     }
-
-    float traveledDistance = node.traveledDistance + 1;
-    glm::ivec2 topPos = node.position + glm::ivec2(0, 1);
-    Node top = {traveledDistance, calculateDistance(topPos, goal), topPos, node.position};
-
-    glm::ivec2 bottomPos = node.position + glm::ivec2(0, -1);
-    Node bottom = {traveledDistance, calculateDistance(bottomPos, goal), bottomPos, node.position};
-
-    glm::ivec2 leftPos = node.position + glm::ivec2(-1, 0);
-    Node left = {traveledDistance, calculateDistance(leftPos, goal), leftPos, node.position};
-
-    glm::ivec2 rightPos = node.position + glm::ivec2(1, 0);
-    Node right = {traveledDistance, calculateDistance(rightPos, goal), rightPos, node.position};
-
-    addNeighbor(board, top);
-    addNeighbor(board, bottom);
-    addNeighbor(board, left);
-    addNeighbor(board, right);
 }
 
-void AStarSolver::addNeighbor(Board &board, Node &node) {
-    if (!isValidNeighbor(board, node.position)) {
+void addNeighbor(Board &board, std::vector<Node *> &neighbors, Node *node, glm::ivec2 offset) {
+    glm::ivec2 topPos = node->position + offset;
+    if (!isValidNeighbor(board, topPos)) {
         return;
     }
 
-    glm::vec3 pixel = getPixelValue(board, node.position);
-    if (pixel != startColor && pixel != finishColor) {
-        setPixelValue(board, node.position, workingSetColor);
-    }
+    Node *top = new Node();
+    top->position = topPos;
+    top->predecessor = node;
 
-    workingSet.push_back(node);
+    neighbors.push_back(top);
+}
+
+std::vector<Node *> AStarSolver::getNeighbors(Board &board, Node *node) {
+    auto result = std::vector<Node *>();
+
+    addNeighbor(board, result, node, {0, 1});
+    addNeighbor(board, result, node, {0, -1});
+    addNeighbor(board, result, node, {1, 0});
+    addNeighbor(board, result, node, {-1, 0});
+
+    addNeighbor(board, result, node, {1, 1});
+    addNeighbor(board, result, node, {-1, 1});
+    addNeighbor(board, result, node, {-1, -1});
+    addNeighbor(board, result, node, {1, -1});
+
+    return result;
+}
+
+Node *AStarSolver::getNodeFromWorkingSet(Node *node) {
+    for (auto other : workingSet) {
+        if (node->position == other->position) {
+            return other;
+        }
+    }
+    return nullptr;
 }
