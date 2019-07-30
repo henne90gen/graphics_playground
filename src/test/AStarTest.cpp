@@ -27,11 +27,20 @@ void positionEquals(Board &board, glm::ivec2 pos, glm::vec3 second) {
     REQUIRE(first.z == Approx(second.z));
 }
 
+std::function<void(glm::ivec2)> createNextVisitFunc(Board &board, AStarSolver &solver) {
+    return [&board, &solver](glm::ivec2 pos) {
+        solver.nextStep(board);
+        positionEquals(board, pos, visitedColor);
+
+    };
+}
+
 TEST_CASE("Start and Finish right next to each other") {
     Board board = initBoard(4, 4);
     setColor(board, {1, 1}, startColor);
     setColor(board, {2, 1}, finishColor);
     auto solver = AStarSolver();
+    solver.nextStep(board);
     solver.nextStep(board);
     REQUIRE(solver.solved);
 }
@@ -40,9 +49,10 @@ TEST_CASE("Start and Finish one field apart") {
     Board board = initBoard(5, 5);
     setColor(board, {1, 1}, startColor);
     setColor(board, {3, 1}, finishColor);
+
     auto solver = AStarSolver();
     solver.nextStep(board);
-    positionEquals(board, {2, 1}, visitedColor);
+    createNextVisitFunc(board, solver)({2, 1});
     solver.nextStep(board);
     REQUIRE(solver.solved);
 }
@@ -51,11 +61,12 @@ TEST_CASE("Start and Finish two straight fields apart") {
     Board board = initBoard(6, 6);
     setColor(board, {1, 1}, startColor);
     setColor(board, {4, 1}, finishColor);
+
     auto solver = AStarSolver();
     solver.nextStep(board);
-    positionEquals(board, {2, 1}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {3, 1}, visitedColor);
+    const std::function<void(glm::ivec2)> &assertNextVisit = createNextVisitFunc(board, solver);
+    assertNextVisit({2, 1});
+    assertNextVisit({3, 1});
     solver.nextStep(board);
     REQUIRE(solver.solved);
 }
@@ -69,17 +80,11 @@ TEST_CASE("Start and Finish are separated by a small wall") {
 
     auto solver = AStarSolver();
     solver.nextStep(board);
-    positionEquals(board, {0, 1}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {1, 0}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {1, 2}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {2, 2}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {3, 2}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {4, 2}, visitedColor);
+
+    const std::function<void(glm::ivec2)> &assertNextVisit = createNextVisitFunc(board, solver);
+    assertNextVisit({2, 2});
+    assertNextVisit({3, 1});
+
     solver.nextStep(board);
     REQUIRE(solver.solved);
 }
@@ -95,13 +100,20 @@ TEST_CASE("Start and Finish are separated by a big wall") {
 
     auto solver = AStarSolver();
     solver.nextStep(board);
-    positionEquals(board, {1, 2}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {1, 3}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {1, 4}, visitedColor);
-    solver.nextStep(board);
-    positionEquals(board, {1, 5}, visitedColor);
+
+    const std::function<void(glm::ivec2)> &assertNextVisit = createNextVisitFunc(board, solver);
+
+    assertNextVisit({1, 0});
+    assertNextVisit({1, 2});
+    assertNextVisit({0, 1});
+    assertNextVisit({0, 0});
+    assertNextVisit({0, 2});
+    assertNextVisit({1, 3});
+    assertNextVisit({0, 3});
+    assertNextVisit({2, 4});
+    assertNextVisit({3, 3});
+    assertNextVisit({4, 2});
+
     solver.nextStep(board);
     REQUIRE(solver.solved);
 }
