@@ -10,6 +10,10 @@ inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
     board.pixels[pos.x + pos.y * board.height] = color;
 }
 
+inline glm::vec3 getPixelValue(Board &board, glm::ivec2 &pos) {
+    return board.pixels[pos.x + pos.y * board.height];
+}
+
 bool compareNodes(Node *n1, Node *n2) {
     return n1->f > n2->f;
 }
@@ -47,7 +51,9 @@ void AStarSolver::nextStep(Board &board) {
     }
 
     visitedSet.push_back(node);
-    setPixelValue(board, node->position, visitedColor);
+    if (getPixelValue(board, node->position) != startColor) {
+        setPixelValue(board, node->position, visitedColor);
+    }
 
     for (auto neighbor : getNeighbors(board, node)) {
         neighbor->g = neighbor->predecessor->g + 1;
@@ -115,10 +121,6 @@ float AStarSolver::h(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
         return manhattenDistance(pos1, pos2);
     }
     return absoluteDistance(pos1, pos2);
-}
-
-inline glm::vec3 getPixelValue(Board &board, glm::ivec2 &pos) {
-    return board.pixels[pos.x + pos.y * board.height];
 }
 
 bool isValidNeighbor(Board &board, glm::ivec2 &pos) {
