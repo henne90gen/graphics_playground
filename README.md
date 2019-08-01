@@ -39,6 +39,8 @@ Demonstrates how to map a texture to a quad.
 
 The gamma value of a display is the specific exponent of the displays color translation function.
 
+![Gamma Calculation](screenshots/gamma-calculation.gif)
+
 ### Cube
 
 Shows a simple 3D cube.
@@ -52,6 +54,8 @@ We can take this 2D position and use it as an input for one of our noise functio
 Depending on the noise function that is selected, the resulting value can be more or less similar to values of neighboring positions.
 Now we can use the value we have calculated for each position as the height at that position.
 
+![Landscape](screenshots/landscape.gif)
+
 ### Rubiks Cube
 
 ### Marching Cubes
@@ -59,8 +63,12 @@ Now we can use the value we have calculated for each position as the height at t
 ### Font Demo
 
 Demonstrates how to render fonts using freetype2.
-The selected font is loaded and then we can render bitmap images for each character.
+The selected font is loaded into memory.
+After that, each character is rendered into a bitmap.
+These bitmaps are then used as texture for a quad.
 To ensure correct placement, we have to save additional information, such as kerning, with each character.
+
+![Font Demo](screenshots/font-demo.png)
 
 ### Model Loading
 
@@ -73,6 +81,8 @@ The loader is very simplistic and can only handle very simple models correctly.
 Shows what the Phong reflection model looks like.
 The different components of the model can be switched on and off individually.
 It is also possible to adjust the color of the ambient and specular components, as well as the light color.
+
+![Light Demo](screenshots/light-demo.gif)
 
 ### Fourier Transform
 

@@ -153,7 +153,7 @@ void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) 
     *dest = r + (g << 8) + (b << 16);
 }
 
-void copyAndScaleDownFrame(unsigned char *buffer, Frame *frame, unsigned int screenWidth, unsigned int screenHeight) {
+void copyAndScaleDownFrame(const unsigned char *buffer, Frame *frame, unsigned int screenWidth, unsigned int screenHeight) {
     for (unsigned int y = 0; y < frame->height; y++) {
         for (unsigned int x = 0; x < frame->width; x++) {
             auto xF = (float) x;
@@ -205,14 +205,6 @@ void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
     tail->buffer = static_cast<unsigned char *>(malloc(
             tail->width * tail->height * tail->channels * sizeof(unsigned char)));
 
-    // Debug:
-    //      old:   0.27 to 0.30
-    //      new:   0.23 to 0.26
-    //      macro: 0.21 to 0.24
-    // Release:
-    //      old:   0.13 to 0.16
-    //      new:   0.11 to 0.13
-    //      macro: 0.11 to 0.13
     copyAndScaleDownFrame(buffer, tail, screenWidth, screenHeight);
 
     Frame *tmp = tail;
