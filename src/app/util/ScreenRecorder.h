@@ -12,12 +12,6 @@ struct Frame {
     Frame *next = nullptr;
 };
 
-enum DownsampleMode {
-    Floor,
-    Nearest,
-    Bilinear
-};
-
 class Video {
 public:
     Video() {
@@ -39,15 +33,9 @@ public:
 
     unsigned int getHeight() const { return head->height; }
 
-    DownsampleMode downsampleMode = DownsampleMode::Bilinear;
-
 private:
     Frame *head = nullptr;
     Frame *tail = nullptr;
-
-    unsigned int
-    interpolateColor(unsigned char *buffer, unsigned int channels, unsigned int width, unsigned int height, float x,
-                     float y);
 };
 
 class ScreenRecorder {

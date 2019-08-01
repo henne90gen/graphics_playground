@@ -5,6 +5,7 @@ set(SOURCES
         util/ImGuiUtils.cpp
         util/OpenGLUtils.cpp
         util/Image.cpp
+        util/ScreenRecorder.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
         opengl/BufferLayout.cpp
@@ -32,8 +33,7 @@ set(SOURCES
         scenes/surface_smoothing/SurfaceSmoothing.cpp
         scenes/water_demo/WaterDemo.cpp
         scenes/ray_casting_3d/RayCasting3D.cpp
-        scenes/ray_casting_2d/RayCasting2D.cpp
-        util/ScreenRecorder.cpp util/ScreenRecorder.h)
+        scenes/ray_casting_2d/RayCasting2D.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
