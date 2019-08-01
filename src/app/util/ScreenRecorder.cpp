@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "ScreenRecorder.h"
 
 #include <filesystem>
@@ -87,8 +89,12 @@ void ScreenRecorder::saveRecordingAsPng() {
 }
 
 void ScreenRecorder::saveRecordingAsGif() {
-    int width = video.width;
-    int height = video.height;
+    if (!video.hasFrames()) {
+        std::cerr << "There are no frames in this video." << std::endl;
+        return;
+    }
+    int width = video.getWidth();
+    int height = video.getHeight();
 
     auto fileName = generateScreenrecordingGifName(recordingIndex);
     int delay = 1;
@@ -124,34 +130,44 @@ void ScreenRecorder::saveRecording() {
 void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
     Frame *currentFrame = head;
     while (currentFrame != nullptr) {
-        if (currentFrame->buffer == nullptr) {
-            continue;
+        if (currentFrame->buffer != nullptr) {
+            // only work on frame, if the buffer points to valid memory
+            workFunction(currentFrame);
         }
-
-        workFunction(currentFrame);
 
         currentFrame = currentFrame->next;
     }
 }
 
 void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
-    if (width == 0 && height == 0) {
-        width = screenWidth;
-        height = screenHeight;
-    } else if (width != screenWidth || height != screenHeight) {
-        std::cerr << "Do not resize the window while recording. Aborted." << std::endl;
-        return;
-    }
-
-    tail->width = width;
-    tail->height = height;
-    tail->channels = 4;
-    const int numberOfPixels = width * height * tail->channels;
-    tail->buffer = static_cast<unsigned char *>(malloc(numberOfPixels * sizeof(unsigned char)));
+    const unsigned int channels = 4;
+    const int numberOfPixels = screenWidth * screenHeight * channels;
+    auto *buffer = static_cast<unsigned char *>(malloc(numberOfPixels * sizeof(unsigned char)));
 
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
     GL_Call(glReadBuffer(GL_FRONT));
-    GL_Call(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tail->buffer));
+    GL_Call(glReadPixels(0, 0, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer));
+
+    tail->width = 640;
+    tail->height = 480;
+    tail->channels = channels;
+    tail->buffer = static_cast<unsigned char *>(malloc(
+            tail->width * tail->height * tail->channels * sizeof(unsigned char)));
+
+    // scale down the image
+    for (unsigned int y = 0; y < tail->height; y++) {
+        for (unsigned int x = 0; x < tail->width; x++) {
+            auto xF = (float) x;
+            auto yF = (float) y;
+            float downScaledX = xF / (float) tail->width;
+            float downScaledY = yF / (float) tail->height;
+            float upScaledX = downScaledX * (float) screenWidth;
+            float upScaledY = downScaledY * (float) screenHeight;
+            unsigned int baseIndex = (x + y * tail->width) * tail->channels;
+            auto *pixel = (unsigned int *) (tail->buffer + baseIndex);
+            *pixel = interpolateColor(buffer, channels, screenWidth, screenHeight, upScaledX, upScaledY);
+        }
+    }
 
     Frame *tmp = tail;
     tail = new Frame();
@@ -160,8 +176,6 @@ void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
 }
 
 void Video::reset() {
-    width = 0;
-    height = 0;
     Frame *currentFrame = head;
     while (currentFrame != nullptr) {
         if (currentFrame->buffer == nullptr) {
@@ -181,4 +195,71 @@ void Video::reset() {
     }
     tail = new Frame();
     head = tail;
+}
+
+unsigned int averagePixels(unsigned int pixel1, unsigned int pixel2) {
+    unsigned int r1 = (pixel1 & 0x000000ff);
+    unsigned int g1 = (pixel1 & 0x0000ff00) >> 8;
+    unsigned int b1 = (pixel1 & 0x00ff0000) >> 16;
+
+    unsigned int r2 = (pixel2 & 0x000000ff);
+    unsigned int g2 = (pixel2 & 0x0000ff00) >> 8;
+    unsigned int b2 = (pixel2 & 0x00ff0000) >> 16;
+
+    // using exact percentages here doesn't give a better looking image
+    unsigned int r = (r1 + r2) / 2;
+    unsigned int g = (g1 + g2) / 2;
+    unsigned int b = (b1 + b2) / 2;
+    unsigned int pixel = r + (g << 8) + (b << 16);
+    return pixel;
+}
+
+unsigned int
+Video::interpolateColor(unsigned char *buffer, unsigned int channels, unsigned int width, unsigned int height, float x,
+                        float y) {
+    switch (downsampleMode) {
+        case DownsampleMode::Floor: {
+            unsigned int xU = std::floor(x);
+            unsigned int yU = std::floor(y);
+            unsigned int index = (xU + yU * width) * channels;
+            auto *pixel = (unsigned int *) (buffer + index);
+            return *pixel;
+        }
+        case DownsampleMode::Nearest: {
+            unsigned int xU = std::floor(x);
+            if (std::floor(x + 0.5F) != xU) {
+                xU++;
+            }
+            unsigned int yU = std::floor(y);
+            if (std::floor(y + 0.5F) != yU) {
+                yU++;
+            }
+            unsigned int index = (xU + yU * width) * channels;
+            auto *pixel = (unsigned int *) (buffer + index);
+            return *pixel;
+        }
+        case DownsampleMode::Bilinear: {
+            unsigned int xLeft = std::floor(x);
+            unsigned int xRight = std::ceil(x);
+            unsigned int yTop = std::floor(y);
+            unsigned int yBottom = std::ceil(y);
+
+            unsigned int index = (xLeft + yTop * width) * channels;
+            unsigned int topLeft = *(unsigned int *) (buffer + index);
+            index = (xRight + yTop * width) * channels;
+            unsigned int topRight = *(unsigned int *) (buffer + index);
+
+            index = (xLeft + yBottom * width) * channels;
+            unsigned int bottomLeft = *(unsigned int *) (buffer + index);
+            index = (xRight + yBottom * width) * channels;
+            unsigned int bottomRight = *(unsigned int *) (buffer + index);
+
+            unsigned int top = averagePixels(topLeft, topRight);
+            unsigned int bottom = averagePixels(bottomLeft, bottomRight);
+
+            unsigned int pixel = averagePixels(top, bottom);
+            return pixel;
+        }
+    }
+    return 0;
 }
