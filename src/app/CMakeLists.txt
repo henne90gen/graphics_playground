@@ -95,3 +95,20 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LIBJPEG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GIF_H_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
+
+
+set(RESOURCES
+        scenes/rubiks_cube/RubiksCubeFrag.glsl
+        scenes/rubiks_cube/RubiksCubeVert.glsl
+        scenes/a_star/AStarFrag.glsl
+        scenes/a_star/AStarVert.glsl
+        scenes/normal_mapping/NormalMappingFrag.glsl
+        scenes/normal_mapping/NormalMappingVert.glsl
+        scenes/normal_mapping/models
+        scenes/model_loading/ModelLoadingFrag.glsl
+        scenes/model_loading/ModelLoadingVert.glsl
+        scenes/model_loading/models)
+
+add_custom_target(copy-resources
+        COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_CURRENT_BINARY_DIR})
+add_dependencies(${PROJECT_NAME} copy-resources)

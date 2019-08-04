@@ -6,14 +6,14 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void NormalMapping::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/normal_mapping/NormalMappingVert.glsl",
-                                      "../../../src/app/scenes/normal_mapping/NormalMappingFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/normal_mapping/NormalMappingVert.glsl",
+                                      "scenes/normal_mapping/NormalMappingFrag.glsl");
     shader->bind();
     auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("u_Projection", projectionMatrix);
 
     model = std::make_unique<Model>();
-    model->loadFromFile("../../../src/app/scenes/normal_mapping/models/monkey.obj", shader);
+    model->loadFromFile("scenes/normal_mapping/models/monkey.obj", shader);
 
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
@@ -41,7 +41,7 @@ void NormalMapping::setup() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform("u_NormalSampler", 1);
     Image normalMapImage = {};
-    if (ImageOps::load("../../../src/app/scenes/normal_mapping/models/normals.jpg", normalMapImage)) {
+    if (ImageOps::load("scenes/normal_mapping/models/normals.jpg", normalMapImage)) {
         normalMap->update(normalMapImage);
     }
 }

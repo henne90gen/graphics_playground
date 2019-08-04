@@ -4,8 +4,8 @@
 #include "util/OpenGLUtils.h"
 
 void AStar::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/a_star/AStarVert.glsl",
-                                      "../../../src/app/scenes/a_star/AStarFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/a_star/AStarVert.glsl",
+                                      "scenes/a_star/AStarFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

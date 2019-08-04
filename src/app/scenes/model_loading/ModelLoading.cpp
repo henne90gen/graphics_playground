@@ -9,8 +9,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void ModelLoading::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/model_loading/ModelLoadingVert.glsl",
-                                      "../../../src/app/scenes/model_loading/ModelLoadingFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/model_loading/ModelLoadingVert.glsl",
+                                      "scenes/model_loading/ModelLoadingFrag.glsl");
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
@@ -110,7 +110,7 @@ showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm
              bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
              std::shared_ptr<Model> &renderModel) {
     ImGui::Begin("Settings");
-    ImGui::FileSelector("Models", "../../../src/app/scenes/model_loading/models/", currentModel, paths);
+    ImGui::FileSelector("Models", "scenes/model_loading/models/", currentModel, paths);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)

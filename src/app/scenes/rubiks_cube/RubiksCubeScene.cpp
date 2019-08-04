@@ -202,8 +202,8 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCubeScene::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/rubiks_cube/RubiksCubeVert.glsl",
-                                      "../../../src/app/scenes/rubiks_cube/RubiksCubeFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/rubiks_cube/RubiksCubeVert.glsl",
+                                      "scenes/rubiks_cube/RubiksCubeFrag.glsl");
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
