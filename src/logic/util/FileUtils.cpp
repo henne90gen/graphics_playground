@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <iostream>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -18,11 +19,17 @@
 
 
 void getFilesInDirectory(const std::string &directoryPath, std::vector<std::string> &filePaths) {
-    for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
+	if (!std::filesystem::exists(directoryPath)) {
+		std::cerr << "Director '" << directoryPath << "' does not exist" << std::endl;
+		return;
+	}
+
+	for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
         std::string fileName = entry.path().u8string();
         filePaths.push_back(fileName);
     }
-    std::sort(filePaths.begin(), filePaths.end());
+
+	std::sort(filePaths.begin(), filePaths.end());
 }
 
 
