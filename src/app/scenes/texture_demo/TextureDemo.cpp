@@ -9,8 +9,8 @@
 #include "util/OpenGLUtils.h"
 
 void TextureDemo::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/texture_demo/TextureDemoVert.glsl",
-                                      "../../../src/app/scenes/texture_demo/TextureDemoFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/texture_demo/TextureDemoVert.glsl",
+                                      "scenes/texture_demo/TextureDemoFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

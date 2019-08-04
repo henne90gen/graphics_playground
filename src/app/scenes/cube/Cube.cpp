@@ -13,8 +13,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
 void Cube::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/cube/CubeVert.glsl",
-                                      "../../../src/app/scenes/cube/CubeFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/cube/CubeVert.glsl",
+                                      "scenes/cube/CubeFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

@@ -7,13 +7,13 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void LightDemo::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/light_demo/LightDemoVert.glsl",
-                                      "../../../src/app/scenes/light_demo/LightDemoFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/light_demo/LightDemoVert.glsl",
+                                      "scenes/light_demo/LightDemoFrag.glsl");
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     model = std::make_unique<Model>();
-    model->loadFromFile("../../../src/app/scenes/light_demo/models/monkey.obj", shader);
+    model->loadFromFile("scenes/light_demo/models/monkey.obj", shader);
 }
 
 void LightDemo::onAspectRatioChange() {

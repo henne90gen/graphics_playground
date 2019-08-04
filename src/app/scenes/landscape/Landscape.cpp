@@ -18,8 +18,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
 void Landscape::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/landscape/LandscapeVert.glsl",
-                                      "../../../src/app/scenes/landscape/LandscapeFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/landscape/LandscapeVert.glsl",
+                                      "scenes/landscape/LandscapeFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

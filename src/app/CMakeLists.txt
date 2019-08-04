@@ -98,16 +98,38 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
 
 
 set(RESOURCES
-        scenes/rubiks_cube/RubiksCubeFrag.glsl
-        scenes/rubiks_cube/RubiksCubeVert.glsl
         scenes/a_star/AStarFrag.glsl
         scenes/a_star/AStarVert.glsl
+        scenes/cube/CubeFrag.glsl
+        scenes/cube/CubeVert.glsl
+        scenes/font_demo/FontDemoFrag.glsl
+        scenes/font_demo/FontDemoVert.glsl
+        scenes/font_demo/fonts
+        scenes/fourier_transform/FourierTransformFrag.glsl
+        scenes/fourier_transform/FourierTransformVert.glsl
+        scenes/gamma_calculation/GammaCalculationFrag.glsl
+        scenes/gamma_calculation/GammaCalculationVert.glsl
+        scenes/landscape/LandscapeFrag.glsl
+        scenes/landscape/LandscapeVert.glsl
+        scenes/light_demo/LightDemoFrag.glsl
+        scenes/light_demo/LightDemoVert.glsl
+        scenes/light_demo/models
+        scenes/marching_cubes/MarchingCubesFrag.glsl
+        scenes/marching_cubes/MarchingCubesVert.glsl
+        scenes/model_loading/ModelLoadingFrag.glsl
+        scenes/model_loading/ModelLoadingVert.glsl
+        scenes/model_loading/models
         scenes/normal_mapping/NormalMappingFrag.glsl
         scenes/normal_mapping/NormalMappingVert.glsl
         scenes/normal_mapping/models
-        scenes/model_loading/ModelLoadingFrag.glsl
-        scenes/model_loading/ModelLoadingVert.glsl
-        scenes/model_loading/models)
+        scenes/ray_casting_2d/RayCasting2DFrag.glsl
+        scenes/ray_casting_2d/RayCasting2DVert.glsl
+        scenes/rubiks_cube/RubiksCubeFrag.glsl
+        scenes/rubiks_cube/RubiksCubeVert.glsl
+        scenes/texture_demo/TextureDemoFrag.glsl
+        scenes/texture_demo/TextureDemoVert.glsl
+        scenes/triangle/TriangleFrag.glsl
+        scenes/triangle/TriangleVert.glsl)
 
 add_custom_target(copy-resources
         COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_CURRENT_BINARY_DIR})

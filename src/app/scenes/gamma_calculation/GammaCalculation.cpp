@@ -10,8 +10,8 @@
 #include "util/OpenGLUtils.h"
 
 void GammaCalculation::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/gamma_calculation/GammaCalculationVert.glsl",
-                                      "../../../src/app/scenes/gamma_calculation/GammaCalculationFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/gamma_calculation/GammaCalculationVert.glsl",
+                                      "scenes/gamma_calculation/GammaCalculationFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

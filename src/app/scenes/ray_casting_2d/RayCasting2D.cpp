@@ -1,8 +1,8 @@
 #include "RayCasting2D.h"
 
 void RayCasting2D::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/ray_casting_2d/RayCasting2DVert.glsl",
-                                      "../../../src/app/scenes/ray_casting_2d/RayCasting2DFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/ray_casting_2d/RayCasting2DVert.glsl",
+                                      "scenes/ray_casting_2d/RayCasting2DFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

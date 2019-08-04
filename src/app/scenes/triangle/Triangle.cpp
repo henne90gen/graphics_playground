@@ -7,8 +7,8 @@
 #include "util/OpenGLUtils.h"
 
 void Triangle::setup() {
-    shader = new Shader("../../../src/app/scenes/triangle/TriangleVert.glsl",
-                        "../../../src/app/scenes/triangle/TriangleFrag.glsl");
+    shader = new Shader("scenes/triangle/TriangleVert.glsl",
+                        "scenes/triangle/TriangleFrag.glsl");
     shader->bind();
 
     positionBuffer = new VertexBuffer();

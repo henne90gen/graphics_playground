@@ -4,8 +4,8 @@
 #include "util/ImGuiUtils.h"
 
 void FontDemo::setup() {
-    shader = std::make_shared<Shader>("../../../src/app/scenes/font_demo/FontDemoVert.glsl",
-                                      "../../../src/app/scenes/font_demo/FontDemoFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/font_demo/FontDemoVert.glsl",
+                                      "scenes/font_demo/FontDemoFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);
@@ -225,7 +225,7 @@ void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::ve
                      maxResolution);
     ImGui::Checkbox("Show Alphabet", &shouldRenderAlphabet);
 
-    std::string prefix = "../../../src/app/scenes/font_demo/fonts/";
+    std::string prefix = "scenes/font_demo/fonts/";
     ImGui::FileSelector("Font", prefix, selectedFontIndex, fontPaths);
 
     if (face != nullptr) {
