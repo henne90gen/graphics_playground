@@ -6,7 +6,7 @@
 
 class VertexArray {
 public:
-    VertexArray(std::shared_ptr<Shader> s);
+    explicit VertexArray(std::shared_ptr<Shader> s);
 
     ~VertexArray();
 

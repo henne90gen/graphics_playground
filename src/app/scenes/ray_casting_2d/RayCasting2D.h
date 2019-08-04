@@ -3,6 +3,10 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <memory>
+
+#include "opengl/Shader.h"
+#include "opengl/VertexArray.h"
 
 class RayCasting2D : public Scene {
 public:
@@ -16,4 +20,9 @@ public:
     void tick() override;
 
     void destroy() override;
+
+private:
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<VertexArray> vertexArray;
+
 };
