@@ -89,3 +89,16 @@ It is also possible to adjust the color of the ambient and specular components, 
 ### Normal Mapping
 
 ### A*
+
+A* is a search algorithm that finds the shortest path from one point to another in a graph.
+It uses a heuristic to improve the searching behavior.
+We start out doing a breadth first search.
+The only difference is that the queue that we are using is a priority queue.
+The nodes in the priority queue are sorted by their total estimated distance to the target.
+We get this value by keeping track of how far we have traveled so far and then adding whatever the heuristic says how far we are still away from the target.
+
+### Ray Casting 2D
+
+### Ray Casting 3D
+
+### Water Demo
