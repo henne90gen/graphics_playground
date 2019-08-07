@@ -8,7 +8,7 @@ set(SOURCES
         marching_cubes/MarchingCubes.cpp
         model_loading/ModelLoader.cpp
         fourier_transform/Fourier.cpp
-        a_star/AStarSolver.cpp)
+        a_star/AStarSolver.cpp ray_tracing_2d/RayTracer2D.cpp ray_tracing_2d/RayTracer2D.h)
 
 add_library(logic ${SOURCES})
 target_link_libraries(logic PRIVATE FastNoise)
