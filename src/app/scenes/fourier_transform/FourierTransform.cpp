@@ -55,8 +55,6 @@ void FourierTransform::destroy() {
 }
 
 void FourierTransform::tick() {
-    GL_Call(glDisable(GL_DEPTH_TEST));
-
     static auto colors = createColors();
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};

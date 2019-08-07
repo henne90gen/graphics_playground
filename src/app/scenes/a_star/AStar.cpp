@@ -4,6 +4,8 @@
 #include "util/OpenGLUtils.h"
 
 void AStar::setup() {
+    GL_Call(glDisable(GL_DEPTH_TEST));
+
     shader = std::make_shared<Shader>("scenes/a_star/AStarVert.glsl",
                                       "scenes/a_star/AStarFrag.glsl");
     shader->bind();
@@ -106,8 +108,6 @@ void AStar::visualizeNodeSet(const std::vector<Node *> &nodes, const glm::mat4 &
     shader->bind();
     shader->setUniform("u_RenderCanvas", false);
     shader->setUniform("u_ViewMatrix", viewMatrix);
-
-    GL_Call(glDisable(GL_DEPTH_TEST));
 
     for (auto &node : nodes) {
         if (node->predecessor == nullptr) {

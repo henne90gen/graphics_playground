@@ -117,6 +117,8 @@ int main() {
     };
     glfwSetWindowUserPointer(window, &sceneData);
 
+    GL_Call(glEnable(GL_DEPTH_TEST));
+
     scenes.push_back(new TestScene(sceneData)); // 0
     scenes.push_back(new LegacyTriangle(sceneData)); // 1
     scenes.push_back(new Triangle(sceneData)); // 2
@@ -136,8 +138,6 @@ int main() {
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(12);
-
-    GL_Call(glEnable(GL_DEPTH_TEST));
 
     enableOpenGLDebugging();
 
