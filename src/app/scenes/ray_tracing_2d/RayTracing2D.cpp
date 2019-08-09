@@ -26,6 +26,7 @@ void RayTracing2D::onAspectRatioChange() {
 }
 
 void RayTracing2D::tick() {
+    static std::shared_ptr<PerformanceTracker> performanceCounter = std::make_shared<PerformanceTracker>();
     static DrawToggles drawToggles = {};
     static glm::vec3 cameraPosition = glm::vec3();
     static float zoom = 2.5F;
@@ -39,7 +40,10 @@ void RayTracing2D::tick() {
     lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
 
     std::vector<Ray> rays = {};
-    TIME_IT(rays = RayTracer2D::calculateRays(walls, lightPosition, cutoff);)
+    {
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
+        rays = RayTracer2D::calculateRays(walls, lightPosition, cutoff);
+    }
 
     ImGui::Begin("Settings");
     ImGui::Checkbox("Draw Wireframe", &drawToggles.drawWireframe);
@@ -54,10 +58,20 @@ void RayTracing2D::tick() {
     ImGui::Text("Num Rays: %lu", rays.size());
     unsigned long numIntersections = getNumIntersections(rays);
     ImGui::Text("Num Intersections: %lu", numIntersections);
+    ImGui::Text("Rays Average Time: %f", performanceCounter->dataPoints["rays"].average);
+    ImGui::Text("Rays Standard Deviation: %f", performanceCounter->dataPoints["rays"].standardDeviation);
+    ImGui::Text("Scene Average Time: %f", performanceCounter->dataPoints["scene"].average);
+    ImGui::Text("Scene Standard Deviation: %f", performanceCounter->dataPoints["scene"].standardDeviation);
+    if (ImGui::Button("Reset Performance Counter")) {
+        performanceCounter->reset();
+    }
     ImGui::End();
 
-    createRaysVA(rays);
-    createIntersectionPointsVA(rays);
+    {
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "scene");
+        createRaysVA(rays);
+        createIntersectionPointsVA(rays);
+    }
 
     renderScene(drawToggles, viewMatrix, lightMatrix);
 }

@@ -1,5 +1,7 @@
 #include "RayTracer2D.h"
 
+#include "util/TimeUtils.h"
+
 namespace RayTracer2D {
 
     glm::vec2 getTransformedVertex(const glm::vec2 &vec, const glm::mat4 &mat) {

@@ -1,6 +1,7 @@
 
 set(SOURCES
         util/FileUtils.cpp
+        util/TimeUtils.cpp
         rubiks_cube/RubiksCubeData.cpp
         rubiks_cube/RubiksCubeLogic.cpp
         rubiks_cube/RubiksCube.cpp

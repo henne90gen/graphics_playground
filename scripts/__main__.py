@@ -7,6 +7,7 @@ from .generate_coding_train import generate_coding_train
 from .generate_scene_template import generate_scene_template
 from .copy_resources import run_copy_resources
 
+
 @group()
 def main():
     pass

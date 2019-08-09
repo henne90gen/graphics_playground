@@ -9,7 +9,6 @@
 
 #include "Image.h"
 #include "OpenGLUtils.h"
-#include "TimeUtils.h"
 
 #define GIF_FLIP_VERT
 
