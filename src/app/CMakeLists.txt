@@ -6,6 +6,7 @@ set(SOURCES
         util/OpenGLUtils.cpp
         util/Image.cpp
         util/ScreenRecorder.cpp
+        util/TimeUtils.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
         opengl/BufferLayout.cpp
