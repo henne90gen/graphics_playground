@@ -1,5 +1,7 @@
 #include "RayTracing2D.h"
 
+#include "util/TimeUtils.h"
+
 void RayTracing2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
@@ -28,7 +30,16 @@ void RayTracing2D::tick() {
     static glm::vec3 cameraPosition = glm::vec3();
     static float zoom = 2.5F;
     static glm::vec2 lightPosition = glm::vec2();
-    static float cutoff = 0.5F;
+    static float cutoff = 0.25F;
+
+    auto viewMatrix = createViewMatrix(cameraPosition, glm::vec3());
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom, zoom, zoom));
+
+    auto lightMatrix = glm::identity<glm::mat4>();
+    lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
+
+    std::vector<Ray> rays = {};
+    TIME_IT(rays = RayTracer2D::calculateRays(walls, lightPosition, cutoff);)
 
     ImGui::Begin("Settings");
     ImGui::Checkbox("Draw Wireframe", &drawToggles.drawWireframe);
@@ -40,15 +51,11 @@ void RayTracing2D::tick() {
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
     ImGui::DragFloat("Cutoff", &cutoff, 0.001F);
+    ImGui::Text("Num Rays: %lu", rays.size());
+    unsigned long numIntersections = getNumIntersections(rays);
+    ImGui::Text("Num Intersections: %lu", numIntersections);
     ImGui::End();
 
-    auto viewMatrix = createViewMatrix(cameraPosition, glm::vec3());
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom, zoom, zoom));
-
-    auto lightMatrix = glm::identity<glm::mat4>();
-    lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
-
-    auto rays = RayTracer2D::calculateRays(walls, lightPosition, cutoff);
     createRaysVA(rays);
     createIntersectionPointsVA(rays);
 
@@ -236,4 +243,12 @@ void RayTracing2D::createIntersectionPointsVA(const std::vector<Ray> &rays) {
             intersectionVAs.push_back(intersectionVA);
         }
     }
+}
+
+unsigned long RayTracing2D::getNumIntersections(const std::vector<Ray> &rays) {
+    unsigned long result = 0;
+    for (auto &ray : rays) {
+        result += ray.intersections.size();
+    }
+    return result;
 }

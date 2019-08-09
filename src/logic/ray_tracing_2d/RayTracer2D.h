@@ -20,4 +20,8 @@ namespace RayTracer2D {
 
     std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const glm::vec2 &lightPosition, float cutoff);
 
+    bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2);
+
+    bool intersects(Ray &ray, Ray &line, glm::vec2 &intersection);
+
 }

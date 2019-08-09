@@ -52,4 +52,6 @@ private:
     void addWalls();
 
     void renderScene(DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::mat4 &lightMatrix) const;
+
+    static unsigned long getNumIntersections(const std::vector<Ray> &rays);
 };

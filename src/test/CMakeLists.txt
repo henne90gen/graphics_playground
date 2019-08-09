@@ -8,7 +8,7 @@ set(SOURCES
         RubiksCubeLogicTest.cpp
         ModelLoaderTest.cpp
         FourierTest.cpp
-        AStarTest.cpp)
+        AStarTest.cpp RayTracer2DTest.cpp)
 
 add_executable(Tests ${SOURCES})
 
