@@ -28,15 +28,27 @@ namespace RayTracer2D {
             return true;
         }
 
-        double xpr = P.x - R.x;
-        double ypr = P.y - R.y;
-        double xpr_ys_xs = (xpr * S.y) / S.x;
-        double xpr_ys_xs_ypr = xpr_ys_xs - (ypr);
-        double yt_xtys_xs = T.y - ((T.x * S.y) / S.x);
-        float a = xpr_ys_xs_ypr / yt_xtys_xs;
-        float b = (xpr + T.x * a) / S.x;
-        intersection = P + T * a;
-        return a >= 0.0 && (b >= 0.0 && b <= 1.0);
+        float xpr = P.x - R.x;
+        float ypr = P.y - R.y;
+
+        if (S.y != 0.0) {
+            float ypr_xs_ys = (ypr * S.x) / S.y;
+            float ypr_xs_ys_xpr = ypr_xs_ys - xpr;
+            float xt_ytxs_ys = T.x - ((T.y * S.x) / S.y);
+            float a = ypr_xs_ys_xpr / xt_ytxs_ys;
+            float b = (ypr + T.y * a) / S.y;
+            intersection = P + T * a;
+            return a >= 0.0 && (b >= 0.0 && b <= 1.0);
+        } else if (S.x != 0.0) {
+            float xpr_ys_xs = (xpr * S.y) / S.x;
+            float xpr_ys_xs_ypr = xpr_ys_xs - ypr;
+            float yt_xtys_xs = T.y - ((T.x * S.y) / S.x);
+            float a = xpr_ys_xs_ypr / yt_xtys_xs;
+            float b = (xpr + T.x * a) / S.x;
+            intersection = P + T * a;
+            return a >= 0.0 && (b >= 0.0 && b <= 1.0);
+        }
+        return false;
     }
 
     std::vector<Ray>
@@ -69,9 +81,24 @@ namespace RayTracer2D {
 
                 glm::vec2 direction = pos - lightPosition;
 
+                double cs = cos(0.001);
+                double sn = sin(0.001);
+                double px = direction.x * cs - direction.y * sn;
+                double py = direction.x * sn + direction.y * cs;
                 Ray ray = {};
                 ray.startingPoint = lightPosition;
-                ray.direction = glm::normalize(direction);
+                ray.direction = glm::normalize(glm::vec2(px, py));
+                ray.intersections = {};
+                rays.push_back(ray);
+
+                cs = cos(-0.001);
+                sn = sin(-0.001);
+                px = direction.x * cs - direction.y * sn;
+                py = direction.x * sn + direction.y * cs;
+                ray = {};
+                ray.startingPoint = lightPosition;
+                ray.direction = glm::normalize(glm::vec2(px, py));
+                ray.intersections = {};
                 rays.push_back(ray);
             }
         }
