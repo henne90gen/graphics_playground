@@ -21,7 +21,7 @@
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
-#include "scenes/ray_tracing_2d/RayTracing2D.h"
+#include "scenes/shadows_2d/Shadows2D.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -134,7 +134,7 @@ int main() {
     scenes.push_back(new FourierTransform(sceneData)); // 12
     scenes.push_back(new NormalMapping(sceneData)); // 13
     scenes.push_back(new AStar(sceneData)); // 14
-    scenes.push_back(new RayTracing2D(sceneData)); // 15
+    scenes.push_back(new Shadows2D(sceneData)); // 15
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
 //    mainMenu.goToScene(12);

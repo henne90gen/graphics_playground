@@ -33,7 +33,7 @@ set(SOURCES
         scenes/surface_smoothing/SurfaceSmoothing.cpp
         scenes/water_demo/WaterDemo.cpp
         scenes/ray_casting_3d/RayCasting3D.cpp
-        scenes/ray_tracing_2d/RayTracing2D.cpp)
+        scenes/shadows_2d/Shadows2D.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -122,8 +122,8 @@ set(RESOURCES
         scenes/normal_mapping/NormalMappingFrag.glsl
         scenes/normal_mapping/NormalMappingVert.glsl
         scenes/normal_mapping/models
-        scenes/ray_tracing_2d/RayTracing2DFrag.glsl
-        scenes/ray_tracing_2d/RayTracing2DVert.glsl
+        scenes/shadows_2d/Shadows2DFrag.glsl
+        scenes/shadows_2d/Shadows2DVert.glsl
         scenes/rubiks_cube/RubiksCubeFrag.glsl
         scenes/rubiks_cube/RubiksCubeVert.glsl
         scenes/texture_demo/TextureDemoFrag.glsl

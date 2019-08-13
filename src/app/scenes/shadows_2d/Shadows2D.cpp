@@ -1,12 +1,12 @@
-#include "RayTracing2D.h"
+#include "Shadows2D.h"
 
 #include "util/TimeUtils.h"
 
-void RayTracing2D::setup() {
+void Shadows2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
-    shader = std::make_shared<Shader>("scenes/ray_tracing_2d/RayTracing2DVert.glsl",
-                                      "scenes/ray_tracing_2d/RayTracing2DFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/shadows_2d/Shadows2DVert.glsl",
+                                      "scenes/shadows_2d/Shadows2DFrag.glsl");
     shader->bind();
     onAspectRatioChange();
 
@@ -18,16 +18,16 @@ void RayTracing2D::setup() {
     createCircleData();
 }
 
-void RayTracing2D::destroy() {
+void Shadows2D::destroy() {
     GL_Call(glEnable(GL_DEPTH_TEST));
 }
 
-void RayTracing2D::onAspectRatioChange() {
+void Shadows2D::onAspectRatioChange() {
     projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
     shader->setUniform("u_Projection", projectionMatrix);
 }
 
-void RayTracing2D::tick() {
+void Shadows2D::tick() {
     static std::shared_ptr<PerformanceTracker> performanceCounter = std::make_shared<PerformanceTracker>();
     static DrawToggles drawToggles = {};
     static glm::vec3 cameraPosition = glm::vec3();
@@ -78,7 +78,7 @@ void RayTracing2D::tick() {
 }
 
 void
-RayTracing2D::renderScene(DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::mat4 &lightMatrix) const {
+Shadows2D::renderScene(DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::mat4 &lightMatrix) const {
     shader->bind();
     shader->setUniform("u_View", viewMatrix);
     if (drawToggles.drawWireframe) {
@@ -118,7 +118,7 @@ RayTracing2D::renderScene(DrawToggles &drawToggles, const glm::mat4 &viewMatrix,
     }
 }
 
-void RayTracing2D::createLightSourceVA() {
+void Shadows2D::createLightSourceVA() {
     lightSourceVA = std::make_shared<VertexArray>(shader);
 
     std::vector<glm::vec2> vertices = {
@@ -141,7 +141,7 @@ void RayTracing2D::createLightSourceVA() {
     lightSourceVA->setIndexBuffer(indexBuffer);
 }
 
-void RayTracing2D::createWallVA() {
+void Shadows2D::createWallVA() {
     wallsVA = std::make_shared<VertexArray>(shader);
 
     std::vector<glm::vec2> vertices = {};
@@ -168,7 +168,7 @@ void RayTracing2D::createWallVA() {
     wallsVA->setIndexBuffer(indexBuffer);
 }
 
-void RayTracing2D::addWalls() {
+void Shadows2D::addWalls() {
     glm::vec2 offset = {-0.375F, -0.25F};
     for (int y = 0; y < 3; y++) {
         for (int x = 0; x < 4; x++) {
@@ -196,7 +196,7 @@ void RayTracing2D::addWalls() {
     }
 }
 
-void RayTracing2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles) {
+void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles) {
     intersectionVAs = {};
     raysVA = std::make_shared<VertexArray>(shader);
 
@@ -227,7 +227,7 @@ void RayTracing2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, Dr
     raysVA->setIndexBuffer(indexBuffer);
 }
 
-void RayTracing2D::addIntersections(const Ray &ray) {
+void Shadows2D::addIntersections(const Ray &ray) {
     for (auto &intersection : ray.intersections) {
         std::vector<glm::vec2> vertices = {};
         vertices.reserve(circleVertices.size());
@@ -248,7 +248,7 @@ void RayTracing2D::addIntersections(const Ray &ray) {
     }
 }
 
-unsigned long RayTracing2D::getNumIntersections(const std::vector<Ray> &rays) {
+unsigned long Shadows2D::getNumIntersections(const std::vector<Ray> &rays) {
     unsigned long result = 0;
     for (auto &ray : rays) {
         result += ray.intersections.size();
@@ -256,7 +256,7 @@ unsigned long RayTracing2D::getNumIntersections(const std::vector<Ray> &rays) {
     return result;
 }
 
-void RayTracing2D::createCircleData() {
+void Shadows2D::createCircleData() {
     const float circleSize = 0.005F;
     unsigned int circleIndex = 1;
     for (unsigned int i = 0; i < 360; i += 36) {

@@ -17,12 +17,12 @@ struct DrawToggles {
     bool drawIntersections = true;
 };
 
-class RayTracing2D : public Scene {
+class Shadows2D : public Scene {
 public:
-    RayTracing2D(SceneData &data)
+    Shadows2D(SceneData &data)
             : Scene(data, "RayCasting2D") {};
 
-    ~RayTracing2D() override = default;
+    ~Shadows2D() override = default;
 
     void setup() override;
 
