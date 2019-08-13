@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <limits>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
@@ -13,6 +14,8 @@ struct Polygon {
 struct Ray {
     glm::vec2 startingPoint;
     glm::vec2 direction;
+    glm::vec2 closestIntersection = {0, 0};
+    float closestIntersectionFactor = std::numeric_limits<float>::max();
     std::vector<glm::vec2> intersections = {};
 };
 

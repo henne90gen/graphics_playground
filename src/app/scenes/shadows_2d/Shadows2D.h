@@ -15,6 +15,7 @@ struct DrawToggles {
     bool drawWalls = true;
     bool drawRays = true;
     bool drawIntersections = true;
+    bool drawClosestIntersections = true;
 };
 
 class Shadows2D : public Scene {
@@ -38,11 +39,11 @@ private:
     std::shared_ptr<VertexArray> wallsVA;
     std::shared_ptr<VertexArray> raysVA;
     std::vector<std::shared_ptr<VertexArray>> intersectionVAs = {};
+    std::vector<std::shared_ptr<VertexArray>> closestIntersectionVAs = {};
     glm::mat4 projectionMatrix;
     std::vector<Polygon> walls;
     std::vector<glm::vec2> circleVertices = {{0.0, 0.0}};
     std::vector<unsigned int> circleIndices = {0};
-
 
     void createLightSourceVA();
 
@@ -50,7 +51,7 @@ private:
 
     void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles);
 
-    void addIntersections(const Ray &ray);
+    std::shared_ptr<VertexArray> addIntersection(const glm::vec2 &intersection);
 
     void addWalls();
 

@@ -13,39 +13,37 @@ namespace RayTracer2D {
         return vec1.x * vec2.y == vec1.y * vec2.x;
     }
 
-    bool intersects(Ray &ray, Ray &line, glm::vec2 &intersection) {
+    bool intersects(Ray &ray, Ray &line, glm::vec2 &intersection, float &a) {
         if (parallel(ray.direction, line.direction)) {
             return false;
         }
 
-        auto &P = ray.startingPoint;
-        auto &T = ray.direction;
-        auto &R = line.startingPoint;
-        auto &S = line.direction;
+        auto &rayPoint = ray.startingPoint;
+        auto &rayDir = ray.direction;
+        auto &linePoint = line.startingPoint;
+        auto &lineDir = line.direction;
 
-        if (P == R) {
-            intersection = P;
+        if (rayPoint == linePoint) {
+            intersection = rayPoint;
             return true;
         }
 
-        float xpr = P.x - R.x;
-        float ypr = P.y - R.y;
-
-        if (S.y != 0.0) {
-            float ypr_xs_ys = (ypr * S.x) / S.y;
-            float ypr_xs_ys_xpr = ypr_xs_ys - xpr;
-            float xt_ytxs_ys = T.x - ((T.y * S.x) / S.y);
-            float a = ypr_xs_ys_xpr / xt_ytxs_ys;
-            float b = (ypr + T.y * a) / S.y;
-            intersection = P + T * a;
+        auto r_l = rayPoint - linePoint;
+        if (lineDir.y != 0.0) {
+            float ypr_xs_ys = (r_l.y * lineDir.x) / lineDir.y;
+            float ypr_xs_ys_xpr = ypr_xs_ys - r_l.x;
+            float xt_ytxs_ys = rayDir.x - ((rayDir.y * lineDir.x) / lineDir.y);
+            a = ypr_xs_ys_xpr / xt_ytxs_ys;
+            float b = (r_l.y + rayDir.y * a) / lineDir.y;
+            intersection = rayPoint + rayDir * a;
             return a >= 0.0 && (b >= 0.0 && b <= 1.0);
-        } else if (S.x != 0.0) {
-            float xpr_ys_xs = (xpr * S.y) / S.x;
-            float xpr_ys_xs_ypr = xpr_ys_xs - ypr;
-            float yt_xtys_xs = T.y - ((T.x * S.y) / S.x);
-            float a = xpr_ys_xs_ypr / yt_xtys_xs;
-            float b = (xpr + T.x * a) / S.x;
-            intersection = P + T * a;
+        } else if (lineDir.x != 0.0) {
+            float xpr_ys_xs = (r_l.x * lineDir.y) / lineDir.x;
+            float xpr_ys_xs_ypr = xpr_ys_xs - r_l.y;
+            float yt_xtys_xs = rayDir.y - ((rayDir.x * lineDir.y) / lineDir.x);
+            a = xpr_ys_xs_ypr / yt_xtys_xs;
+            float b = (r_l.x + rayDir.x * a) / lineDir.x;
+            intersection = rayPoint + rayDir * a;
             return a >= 0.0 && (b >= 0.0 && b <= 1.0);
         }
         return false;
@@ -106,8 +104,14 @@ namespace RayTracer2D {
         for (auto &ray : rays) {
             for (auto &line : lineSegments) {
                 glm::vec2 intersection = {};
-                if (!intersects(ray, line, intersection)) {
+                float a = 0.0;
+                if (!intersects(ray, line, intersection, a)) {
                     continue;
+                }
+
+                if (a < ray.closestIntersectionFactor) {
+                    ray.closestIntersectionFactor = a;
+                    ray.closestIntersection = intersection;
                 }
                 ray.intersections.push_back(intersection);
             }

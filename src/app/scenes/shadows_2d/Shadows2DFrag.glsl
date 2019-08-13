@@ -12,5 +12,11 @@ void main() {
     } else if (u_DrawMode == 2) {
         // rays
         gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    } else if (u_DrawMode == 3) {
+        // intersections
+        gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+    } else if (u_DrawMode == 4) {
+        // closest intersections
+        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
     }
 }
