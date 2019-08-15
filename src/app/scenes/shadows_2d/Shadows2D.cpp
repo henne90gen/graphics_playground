@@ -70,9 +70,11 @@ void Shadows2D::tick() {
     }
     ImGui::End();
 
+    std::vector<glm::vec2> shadowPolygon = {};
     {
         TIME_SCOPE_RECORD_NAME(performanceCounter, "scene");
-        createRaysAndIntersectionsVA(rays, drawToggles);
+        createRaysAndIntersectionsVA(rays, drawToggles, shadowPolygon);
+        createShadowPolygonVA(shadowPolygon);
     }
 
     renderScene(drawToggles, viewMatrix, lightMatrix);
@@ -206,7 +208,8 @@ void Shadows2D::addWalls() {
     }
 }
 
-void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles) {
+void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles,
+                                             std::vector<glm::vec2> &shadowPolygon) {
     intersectionVAs = {};
     closestIntersectionVAs = {};
     raysVA = std::make_shared<VertexArray>(shader);
@@ -228,15 +231,16 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawT
                 if (intersection == ray.closestIntersection) {
                     continue;
                 }
-                auto va = addIntersection(intersection);
+                auto va = createIntersectionVA(intersection);
                 intersectionVAs.push_back(va);
             }
         }
 
         if (drawToggles.drawClosestIntersections) {
             if (!ray.intersections.empty()) {
-                auto va = addIntersection(ray.closestIntersection);
+                auto va = createIntersectionVA(ray.closestIntersection);
                 closestIntersectionVAs.push_back(va);
+                shadowPolygon.push_back(ray.closestIntersection);
             }
         }
     }
@@ -251,7 +255,7 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawT
     raysVA->setIndexBuffer(indexBuffer);
 }
 
-std::shared_ptr<VertexArray> Shadows2D::addIntersection(const glm::vec2 &intersection) {
+std::shared_ptr<VertexArray> Shadows2D::createIntersectionVA(const glm::vec2 &intersection) {
     std::vector<glm::vec2> vertices = {};
     vertices.reserve(circleVertices.size());
     for (auto &vertex : circleVertices) {
@@ -292,4 +296,9 @@ void Shadows2D::createCircleData() {
         circleIndices.push_back(circleIndex++);
     }
     circleIndices.push_back(1);
+}
+
+void Shadows2D::createShadowPolygonVA(const std::vector<glm::vec2> &vertices) {
+    shadowPolygonVA = std::make_shared<VertexArray>(shader);
+
 }

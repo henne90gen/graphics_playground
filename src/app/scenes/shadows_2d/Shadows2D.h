@@ -40,6 +40,7 @@ private:
     std::shared_ptr<VertexArray> raysVA;
     std::vector<std::shared_ptr<VertexArray>> intersectionVAs = {};
     std::vector<std::shared_ptr<VertexArray>> closestIntersectionVAs = {};
+    std::shared_ptr<VertexArray> shadowPolygonVA;
     glm::mat4 projectionMatrix;
     std::vector<Polygon> walls;
     std::vector<glm::vec2> circleVertices = {{0.0, 0.0}};
@@ -49,9 +50,12 @@ private:
 
     void createWallVA();
 
-    void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles);
+    void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles,
+                                      std::vector<glm::vec2> &shadowPolygon);
 
-    std::shared_ptr<VertexArray> addIntersection(const glm::vec2 &intersection);
+    void createShadowPolygonVA(const std::vector<glm::vec2> &vertices);
+
+    std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
 
     void addWalls();
 
