@@ -9,3 +9,4 @@ cmake-build-debug/
 cmake-build-release/
 CMakeSettings.json
 __pycache__/
+docs/
