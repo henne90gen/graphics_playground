@@ -54,6 +54,8 @@ void Shadows2D::tick() {
     ImGui::Checkbox("Draw Rays", &drawToggles.drawRays);
     ImGui::Checkbox("Draw Intersection Points", &drawToggles.drawIntersections);
     ImGui::Checkbox("Draw Closest Intersection Points", &drawToggles.drawClosestIntersections);
+    ImGui::Checkbox("Draw Shadow", &drawToggles.drawShadow);
+    ImGui::Checkbox("Cover Shadow Area", &drawToggles.coverShadowArea);
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
@@ -74,14 +76,15 @@ void Shadows2D::tick() {
     {
         TIME_SCOPE_RECORD_NAME(performanceCounter, "scene");
         createRaysAndIntersectionsVA(rays, drawToggles, shadowPolygon);
-        createShadowPolygonVA(shadowPolygon);
+        createShadowPolygonVA(shadowPolygon, viewMatrix, lightPosition, drawToggles.coverShadowArea);
     }
 
     renderScene(drawToggles, viewMatrix, lightMatrix);
 }
 
 void
-Shadows2D::renderScene(DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::mat4 &lightMatrix) const {
+Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix,
+                       const glm::mat4 &lightMatrix) const {
     shader->bind();
     shader->setUniform("u_View", viewMatrix);
     if (drawToggles.drawWireframe) {
@@ -123,6 +126,12 @@ Shadows2D::renderScene(DrawToggles &drawToggles, const glm::mat4 &viewMatrix, co
             GL_Call(glDrawElements(GL_TRIANGLE_FAN, intersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
                                    nullptr));
         }
+    }
+
+    if (drawToggles.drawShadow) {
+        shader->setUniform("u_DrawMode", 5);
+        shadowPolygonVA->bind();
+        GL_Call(glDrawElements(GL_TRIANGLES, shadowPolygonVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
 
     if (drawToggles.drawWireframe) {
@@ -226,22 +235,18 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawT
             currentIndex += 2;
         }
 
-        if (drawToggles.drawIntersections) {
-            for (auto &intersection : ray.intersections) {
-                if (intersection == ray.closestIntersection) {
-                    continue;
-                }
-                auto va = createIntersectionVA(intersection);
-                intersectionVAs.push_back(va);
+        for (auto &intersection : ray.intersections) {
+            if (intersection == ray.closestIntersection) {
+                continue;
             }
+            auto va = createIntersectionVA(intersection);
+            intersectionVAs.push_back(va);
         }
 
-        if (drawToggles.drawClosestIntersections) {
-            if (!ray.intersections.empty()) {
-                auto va = createIntersectionVA(ray.closestIntersection);
-                closestIntersectionVAs.push_back(va);
-                shadowPolygon.push_back(ray.closestIntersection);
-            }
+        if (!ray.intersections.empty()) {
+            auto va = createIntersectionVA(ray.closestIntersection);
+            closestIntersectionVAs.push_back(va);
+            shadowPolygon.push_back(ray.closestIntersection);
         }
     }
 
@@ -298,7 +303,64 @@ void Shadows2D::createCircleData() {
     circleIndices.push_back(1);
 }
 
-void Shadows2D::createShadowPolygonVA(const std::vector<glm::vec2> &vertices) {
-    shadowPolygonVA = std::make_shared<VertexArray>(shader);
+void
+Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
+                                 const glm::vec2 &lightPosition, bool coverShadowArea) {
+    // sort all vertices in a circle
+    std::sort(vertices.begin(), vertices.end(), [&lightPosition](const glm::vec2 &first, const glm::vec2 &second) {
+        auto firstP = first - lightPosition;
+        auto secondP = second - lightPosition;
+        float radiansFirst = glm::atan(firstP.y, firstP.x);
+        float radiansSecond = glm::atan(secondP.y, secondP.x);
+        return radiansFirst < radiansSecond;
+    });
 
+    // insert corners of the screen
+    auto inverseViewMatrix = glm::inverse(viewMatrix);
+    std::function<void(const glm::vec2)> insert = [&vertices, &inverseViewMatrix](const glm::vec2 v) {
+        glm::vec4 vec = inverseViewMatrix * glm::vec4(v.x, v.y, 0, 1);
+        vertices.insert(vertices.begin(), {vec.x, vec.y});
+    };
+    float rightBound = getAspectRatio();
+    float topBound = 1.0;
+    insert({rightBound, -topBound}); // bottom - right
+    insert({-rightBound, -topBound}); // bottom - left
+    insert({-rightBound, topBound}); // top - left
+    insert({rightBound, topBound}); // top - right
+    vertices.insert(vertices.begin(), lightPosition); // light position
+
+    shadowPolygonVA = std::make_shared<VertexArray>(shader);
+    shadowPolygonVA->bind();
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
+    std::shared_ptr<VertexBuffer> buffer = std::make_shared<VertexBuffer>(vertices, layout);
+    shadowPolygonVA->addVertexBuffer(buffer);
+
+    std::vector<glm::ivec3> indices = {};
+    if (coverShadowArea) {
+        //    Cover shadow area
+        //      - add vertices for the corners of the screen
+        //      - in each quadrant connect the vertices to the corresponding corner
+        //      - add filler triangles to close the gap between quadrants
+        for (unsigned long i = 5; i < vertices.size() - 1; i++) {
+            float radiansFirst = glm::atan(vertices[i].y, vertices[i].x);
+            float radiansSecond = glm::atan(vertices[i + 1].y, vertices[i + 1].x);
+            float halfPi = glm::half_pi<float>();
+            if (radiansFirst >= 0 && radiansFirst < halfPi && radiansSecond >= 0 && radiansSecond < halfPi) {
+                // first quadrant
+                indices.emplace_back(i, i + 1, 1);
+            }
+        }
+    } else {
+        //    Cover light area
+        //      - add a vertex for the light source
+        //      - render TRIANGLE_FAN
+        for (unsigned long i = 5; i < vertices.size() - 1; i++) {
+            indices.emplace_back(0, i, i + 1);
+        }
+        indices.emplace_back(0, vertices.size() - 1, 5);
+    }
+//    indices.emplace_back(0, 2, 1);
+//    indices.emplace_back(0, 3, 2);
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    shadowPolygonVA->setIndexBuffer(indexBuffer);
 }
