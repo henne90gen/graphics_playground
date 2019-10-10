@@ -1,5 +1,9 @@
 # Graphics Playground
 
+In this project I'm trying out different graphics algorithms and visualizations.
+Each scene has a small panel with settings which affect the algorithm in some way.
+This way one can see the effect of different parameters in real time.
+
 ## Setup
 
 1. Checkout the git repository recursively with `git clone --recursive ...`
@@ -58,11 +62,34 @@ Now we can use the value we have calculated for each position as the height at t
 
 ### Rubiks Cube
 
+Here you can see a rubiks cube.
+It can be shuffled by pressing a button.
+Maybe I will get around to implementing a solver at some point.
+
 ### Marching Cubes
+
+Generating interesting terrains is a big part of most procedural games.
+The marching cubes algorithm can be used to do just that.
+The basis of this algorithm is a cube, from which we select corners.
+Depending on which corners we selected, we add the corresponding vertices and thus triangles to the mesh.
+A cube has 8 corners, thus we have 2^8 possible combinations of these corners.
+From all these combinations we pre-generate a table that contains the corresponding vertices as explained above.
+The next step is to place the small cube into the big volume.
+This is where the marching comes into play.
+The small cube moves through the big volume and at each position we decide for every corner of the cube whether it is inside of the terrain or outside of it.
+To decide that, we use a function that accepts 3D coordinates and gives us a value between 0.0 and 1.0 back.
+The surface of our terrain is then defined by a threshold between 0.0 and 1.0.
+A corner of the small cube is inside the terrain if the value of the function is below the threshold.
+For each position of the cube we use the result of checking each corner whether its inside the terrain or not to query the pre-generated table for the corresponding vertices.
+If we do this for every possible position inside of the volume, then we'll get the surface of the terrain.
+To make the surface less "blocky" we can use the result of the function to interpolate the vertex positions between the corners.
+The end result looks something like this:
+
+![Marching Cubes](screenshots/marching-cubes.gif)
 
 ### Font Demo
 
-Demonstrates how to render fonts using freetype2.
+This demo shows how to render fonts using freetype2.
 The selected font is loaded into memory.
 After that, each character is rendered into a bitmap.
 These bitmaps are then used as texture for a quad.
@@ -88,6 +115,15 @@ It is also possible to adjust the color of the ambient and specular components, 
 
 ### Normal Mapping
 
+Normal mapping or bump mapping is a technique to increase the visual fidelity of surfaces without increasing the complexity of the underlying mesh.
+The idea is fairly simple. Instead of one normal per surface, we create one normal per fragment.
+We can do this by pre-calculating them and storing them in a special texture called normal map.
+The only thing we need to consider when applying the normal map, is the fact that the surface we are applying it to might not have the same orientation in space as the surface we created the normal map for.
+This can be easily corrected by calculating the normal, tangent and bi-tangent vectors for the surface.
+The end result can be seen below.
+
+![Normal Mapping](screenshots/normal-mapping.gif)
+
 ### A*
 
 A* is a search algorithm that finds the shortest path from one point to another in a graph.
@@ -97,7 +133,34 @@ The only difference is that the queue that we are using is a priority queue.
 The nodes in the priority queue are sorted by their total estimated distance to the target.
 We get this value by keeping track of how far we have traveled so far and then adding whatever the heuristic says how far we are still away from the target.
 
-### Ray Casting 2D
+### 2D Shadows
+
+This demo shows how to cast shadows in a 2D environment.
+The basic algorithm consists of 3 main parts.
+
+#### 1. Ray casting
+
+At first we cast rays from the light source into the scene.
+We cast as many rays as we have corners of obstacles in the scene.
+
+#### 2. Calculate closest intersections
+
+Next we calculate the closest intersection point with any obstacle for each ray.
+
+#### 3. Calculate light/shadow mesh
+
+With this information we can go to the final stage of the process, calculating a mesh that covers either the shadow or the light area.
+
+##### 3.a Light mesh
+
+To cover the light area, we sort all the closest intersection points in a circle.
+This ensures that two neighboring points in the array are also next to each other on an imaginary circle.
+With the points sorted in this manner, we can just draw triangles from the light source to two neighboring points.
+This will then cover the whole lit area.
+
+##### 3.b Shadow mesh
+
+I don't have a solid idea on how to do this yet.
 
 ### Ray Casting 3D
 
