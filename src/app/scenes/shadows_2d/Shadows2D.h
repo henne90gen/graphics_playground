@@ -62,6 +62,7 @@ private:
     std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
 
     void addWalls();
+    Polygon createScreenBorder(float scale);
 
     void renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::mat4 &lightMatrix) const;
 

@@ -5,8 +5,7 @@
 void Shadows2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
-    shader = std::make_shared<Shader>("scenes/shadows_2d/Shadows2DVert.glsl",
-                                      "scenes/shadows_2d/Shadows2DFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/shadows_2d/Shadows2DVert.glsl", "scenes/shadows_2d/Shadows2DFrag.glsl");
     shader->bind();
     onAspectRatioChange();
 
@@ -18,9 +17,7 @@ void Shadows2D::setup() {
     createCircleData();
 }
 
-void Shadows2D::destroy() {
-    GL_Call(glEnable(GL_DEPTH_TEST));
-}
+void Shadows2D::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void Shadows2D::onAspectRatioChange() {
     projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
@@ -42,9 +39,10 @@ void Shadows2D::tick() {
     lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
 
     std::vector<Ray> rays = {};
+    auto screenBorder = createScreenBorder(1.0F / zoom);
     {
         TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
-        rays = RayTracer2D::calculateRays(walls, lightPosition, cutoff);
+        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, cutoff);
     }
 
     ImGui::Begin("Settings");
@@ -82,9 +80,8 @@ void Shadows2D::tick() {
     renderScene(drawToggles, viewMatrix, lightMatrix);
 }
 
-void
-Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix,
-                       const glm::mat4 &lightMatrix) const {
+void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix,
+                            const glm::mat4 &lightMatrix) const {
     shader->bind();
     shader->setUniform("u_View", viewMatrix);
     if (drawToggles.drawWireframe) {
@@ -142,21 +139,17 @@ Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatr
 void Shadows2D::createLightSourceVA() {
     lightSourceVA = std::make_shared<VertexArray>(shader);
 
-    std::vector<glm::vec2> vertices = {
-            {-0.01, -0.01}, //
-            {0.01,  -0.01}, //
-            {0.01,  0.01}, //
-            {-0.01, 0.01}
-    };
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"}
-    };
+    std::vector<glm::vec2> vertices = {{-0.01, -0.01}, //
+                                       {0.01, -0.01},  //
+                                       {0.01, 0.01},   //
+                                       {-0.01, 0.01}};
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     lightSourceVA->addVertexBuffer(vertexBuffer);
 
     std::vector<glm::ivec3> indices = {
-            {0, 1, 2}, //
-            {0, 2, 3},
+          {0, 1, 2}, //
+          {0, 2, 3},
     };
     std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(indices);
     lightSourceVA->setIndexBuffer(indexBuffer);
@@ -179,9 +172,7 @@ void Shadows2D::createWallVA() {
         currentIndex += wall.vertices.size();
     }
 
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"}
-    };
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     wallsVA->addVertexBuffer(vertexBuffer);
 
@@ -193,7 +184,7 @@ void Shadows2D::addWalls() {
     glm::vec2 offset = {-0.375F, -0.25F};
     for (int y = 0; y < 3; y++) {
         for (int x = 0; x < 4; x++) {
-            glm::vec2 position = glm::vec2(x * 0.25F, y * 0.25F);
+            glm::vec2 position = glm::vec2((float)x * 0.25F, (float)y * 0.25F);
             position += offset;
             float scale = 0.05;
             auto transformMatrix = glm::identity<glm::mat4>();
@@ -202,19 +193,35 @@ void Shadows2D::addWalls() {
 
             auto wall = Polygon();
             wall.transformMatrix = transformMatrix;
-            wall.vertices = {
-                    {-1, -1}, //
-                    {1,  -1}, //
-                    {1,  1}, //
-                    {-1, 1}
-            };
+            wall.vertices = {{-1, -1}, //
+                             {1, -1},  //
+                             {1, 1},   //
+                             {-1, 1}};
             wall.indices = {
-                    {0, 1, 2}, //
-                    {0, 2, 3},
+                  {0, 1, 2}, //
+                  {0, 2, 3},
             };
             walls.push_back(wall);
         }
     }
+}
+
+Polygon Shadows2D::createScreenBorder(float scale) {
+    auto transformMatrix = glm::identity<glm::mat4>();
+    transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
+
+    float x = getAspectRatio();
+    Polygon wall = {};
+    wall.transformMatrix = transformMatrix;
+    wall.vertices = {{-x, -1.0}, //
+                     {x, -1.0},  //
+                     {x, 1.0},   //
+                     {-x, 1.0}};
+    wall.indices = {
+          {0, 1, 2}, //
+          {0, 2, 3},
+    };
+    return wall;
 }
 
 void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles,
@@ -250,9 +257,7 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawT
         }
     }
 
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"}
-    };
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     raysVA->addVertexBuffer(vertexBuffer);
 
@@ -268,9 +273,7 @@ std::shared_ptr<VertexArray> Shadows2D::createIntersectionVA(const glm::vec2 &in
     }
 
     std::shared_ptr<VertexArray> intersectionVA = std::make_shared<VertexArray>(shader);
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"}
-    };
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     intersectionVA->addVertexBuffer(vertexBuffer);
 
@@ -291,8 +294,7 @@ void Shadows2D::createCircleData() {
     const float circleSize = 0.005F;
     unsigned int circleIndex = 1;
     for (unsigned int i = 0; i < 360; i += 36) {
-        auto rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians((float) i),
-                                          glm::vec3(0.0, 0.0, 1.0));
+        auto rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians((float)i), glm::vec3(0.0, 0.0, 1.0));
         glm::vec4 direction = {1.0, 0.0, 0.0, 0.0};
         direction = rotationMatrix * direction;
         direction = glm::normalize(direction);
@@ -303,9 +305,8 @@ void Shadows2D::createCircleData() {
     circleIndices.push_back(1);
 }
 
-void
-Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
-                                 const glm::vec2 &lightPosition, bool coverShadowArea) {
+void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
+                                      const glm::vec2 &lightPosition, bool coverShadowArea) {
     // sort all vertices in a circle
     std::sort(vertices.begin(), vertices.end(), [&lightPosition](const glm::vec2 &first, const glm::vec2 &second) {
         auto firstP = first - lightPosition;
@@ -316,17 +317,17 @@ Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::ma
     });
 
     // insert corners of the screen
-    auto inverseViewMatrix = glm::inverse(viewMatrix);
-    std::function<void(const glm::vec2)> insert = [&vertices, &inverseViewMatrix](const glm::vec2 v) {
-        glm::vec4 vec = inverseViewMatrix * glm::vec4(v.x, v.y, 0, 1);
-        vertices.insert(vertices.begin(), {vec.x, vec.y});
-    };
-    float rightBound = getAspectRatio();
-    float topBound = 1.0;
-    insert({rightBound, -topBound}); // bottom - right
-    insert({-rightBound, -topBound}); // bottom - left
-    insert({-rightBound, topBound}); // top - left
-    insert({rightBound, topBound}); // top - right
+    //    auto inverseViewMatrix = glm::inverse(viewMatrix);
+    //    std::function<void(const glm::vec2)> insert = [&vertices, &inverseViewMatrix](const glm::vec2 v) {
+    //        glm::vec4 vec = inverseViewMatrix * glm::vec4(v.x, v.y, 0, 1);
+    //        vertices.insert(vertices.begin(), {vec.x, vec.y});
+    //    };
+    //    float rightBound = getAspectRatio();
+    //    float topBound = 1.0;
+    //    insert({rightBound, -topBound}); // bottom - right
+    //    insert({-rightBound, -topBound}); // bottom - left
+    //    insert({-rightBound, topBound}); // top - left
+    //    insert({rightBound, topBound}); // top - right
     vertices.insert(vertices.begin(), lightPosition); // light position
 
     shadowPolygonVA = std::make_shared<VertexArray>(shader);
@@ -341,10 +342,10 @@ Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::ma
         //      - add vertices for the corners of the screen
         //      - in each quadrant connect the vertices to the corresponding corner
         //      - add filler triangles to close the gap between quadrants
-        for (unsigned long i = 5; i < vertices.size() - 1; i++) {
+        for (unsigned long i = 1; i < vertices.size() - 1; i++) {
             float radiansFirst = glm::atan(vertices[i].y, vertices[i].x);
             float radiansSecond = glm::atan(vertices[i + 1].y, vertices[i + 1].x);
-            float halfPi = glm::half_pi<float>();
+            auto halfPi = glm::half_pi<float>();
             if (radiansFirst >= 0 && radiansFirst < halfPi && radiansSecond >= 0 && radiansSecond < halfPi) {
                 // first quadrant
                 indices.emplace_back(i, i + 1, 1);
@@ -354,13 +355,11 @@ Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::ma
         //    Cover light area
         //      - add a vertex for the light source
         //      - render TRIANGLE_FAN
-        for (unsigned long i = 5; i < vertices.size() - 1; i++) {
+        for (unsigned long i = 1; i < vertices.size() - 1; i++) {
             indices.emplace_back(0, i, i + 1);
         }
-        indices.emplace_back(0, vertices.size() - 1, 5);
+        indices.emplace_back(0, vertices.size() - 1, 1);
     }
-//    indices.emplace_back(0, 2, 1);
-//    indices.emplace_back(0, 3, 2);
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     shadowPolygonVA->setIndexBuffer(indexBuffer);
 }

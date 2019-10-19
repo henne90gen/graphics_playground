@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <limits>
-#include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <glm/glm.hpp>
+#include <limits>
+#include <vector>
 
 struct Polygon {
     glm::mat4 transformMatrix;
@@ -21,10 +21,11 @@ struct Ray {
 
 namespace RayTracer2D {
 
-    std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const glm::vec2 &lightPosition, float cutoff);
+std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
+                               const glm::vec2 &lightPosition, float cutoff);
 
-    bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2);
+bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2);
 
-    bool intersects(Ray &ray, Ray &line, glm::vec2 &intersection);
+bool intersects(Ray &ray, Ray &line, glm::vec2 &intersection);
 
-}
+} // namespace RayTracer2D
