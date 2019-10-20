@@ -316,33 +316,13 @@ void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const gl
         return radiansFirst < radiansSecond;
     });
 
-    // insert corners of the screen
-    //    auto inverseViewMatrix = glm::inverse(viewMatrix);
-    //    std::function<void(const glm::vec2)> insert = [&vertices, &inverseViewMatrix](const glm::vec2 v) {
-    //        glm::vec4 vec = inverseViewMatrix * glm::vec4(v.x, v.y, 0, 1);
-    //        vertices.insert(vertices.begin(), {vec.x, vec.y});
-    //    };
-    //    float rightBound = getAspectRatio();
-    //    float topBound = 1.0;
-    //    insert({rightBound, -topBound}); // bottom - right
-    //    insert({-rightBound, -topBound}); // bottom - left
-    //    insert({-rightBound, topBound}); // top - left
-    //    insert({rightBound, topBound}); // top - right
-    vertices.insert(vertices.begin(), lightPosition); // light position
-
-    shadowPolygonVA = std::make_shared<VertexArray>(shader);
-    shadowPolygonVA->bind();
-    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
-    std::shared_ptr<VertexBuffer> buffer = std::make_shared<VertexBuffer>(vertices, layout);
-    shadowPolygonVA->addVertexBuffer(buffer);
-
     std::vector<glm::ivec3> indices = {};
     if (coverShadowArea) {
         //    Cover shadow area
         //      - add vertices for the corners of the screen
         //      - in each quadrant connect the vertices to the corresponding corner
         //      - add filler triangles to close the gap between quadrants
-        for (unsigned long i = 1; i < vertices.size() - 1; i++) {
+        for (unsigned long i = 0; i < vertices.size() - 1; i++) {
             float radiansFirst = glm::atan(vertices[i].y, vertices[i].x);
             float radiansSecond = glm::atan(vertices[i + 1].y, vertices[i + 1].x);
             auto halfPi = glm::half_pi<float>();
@@ -352,14 +332,22 @@ void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const gl
             }
         }
     } else {
+        vertices.insert(vertices.begin(), lightPosition); // light position
         //    Cover light area
         //      - add a vertex for the light source
-        //      - render TRIANGLE_FAN
+        //      - render "TRIANGLE_FAN"
         for (unsigned long i = 1; i < vertices.size() - 1; i++) {
             indices.emplace_back(0, i, i + 1);
         }
         indices.emplace_back(0, vertices.size() - 1, 1);
     }
+
+    shadowPolygonVA = std::make_shared<VertexArray>(shader);
+    shadowPolygonVA->bind();
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
+    std::shared_ptr<VertexBuffer> buffer = std::make_shared<VertexBuffer>(vertices, layout);
+    shadowPolygonVA->addVertexBuffer(buffer);
+
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     shadowPolygonVA->setIndexBuffer(indexBuffer);
 }

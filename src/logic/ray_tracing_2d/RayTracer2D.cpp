@@ -11,7 +11,7 @@ glm::vec2 getTransformedVertex(const glm::vec2 &vec, const glm::mat4 &mat) {
 
 bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2) { return vec1.x * vec2.y == vec1.y * vec2.x; }
 
-bool intersects(Ray &ray, Ray &line, glm::vec2 &intersection, float &a) {
+bool intersects(const Ray &ray, const Ray &line, glm::vec2 &intersection, float &a) {
     if (parallel(ray.direction, line.direction)) {
         return false;
     }
@@ -73,8 +73,9 @@ void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std
 
         glm::vec2 direction = pos - lightPosition;
 
-        double cs = cos(0.001);
-        double sn = sin(0.001);
+        const double deviation = 0.00001;
+        double cs = cos(deviation);
+        double sn = sin(deviation);
         double px = direction.x * cs - direction.y * sn;
         double py = direction.x * sn + direction.y * cs;
         Ray ray = {};
@@ -83,8 +84,8 @@ void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std
         ray.intersections = {};
         rays.push_back(ray);
 
-        cs = cos(-0.001);
-        sn = sin(-0.001);
+        cs = cos(-deviation);
+        sn = sin(-deviation);
         px = direction.x * cs - direction.y * sn;
         py = direction.x * sn + direction.y * cs;
         ray = {};
