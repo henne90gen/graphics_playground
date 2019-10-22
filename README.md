@@ -149,18 +149,15 @@ Next we calculate the closest intersection point with any obstacle for each ray.
 
 #### 3. Calculate light/shadow mesh
 
-With this information we can go to the final stage of the process, calculating a mesh that covers either the shadow or the light area.
-
-##### 3.a Light mesh
-
+With this information we can go to the final stage of the process, calculating a mesh that covers the light area.
 To cover the light area, we sort all the closest intersection points in a circle.
-This ensures that two neighboring points in the array are also next to each other on an imaginary circle.
-With the points sorted in this manner, we can just draw triangles from the light source to two neighboring points.
+This ensures that two neighboring points in the array are also next to each other on an imaginary circle around the light source.
+With the points sorted in this manner, we can simply draw a triangle fan around the light source.
 This will then cover the whole lit area.
 
-##### 3.b Shadow mesh
-
-I don't have a solid idea on how to do this yet.
+We can then use the stencil buffer to create the illusion of shadows.
+This can be achieved by setting up the stencil in such a way that the lit area is the only area that passes the stencil test.
+Thus the lit area is the only area that is drawn to. The rest of the scene lies in darkness.
 
 ### Ray Casting 3D
 
