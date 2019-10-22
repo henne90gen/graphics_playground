@@ -15,6 +15,8 @@ void Shadows2D::setup() {
     createWallVA();
 
     createCircleData();
+
+    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 }
 
 void Shadows2D::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
@@ -27,11 +29,13 @@ void Shadows2D::onAspectRatioChange() {
 void Shadows2D::tick() {
     static std::shared_ptr<PerformanceCounter> performanceCounter = std::make_shared<PerformanceCounter>();
     static DrawToggles drawToggles = {};
+    static ColorConfig colorConfig = {};
+    static glm::vec2 lightPosition = glm::vec2();
     static glm::vec3 cameraPosition = glm::vec3();
     static float zoom = 2.5F;
-    static glm::vec2 lightPosition = glm::vec2();
 
     ImGui::Begin("Settings");
+
     ImGui::Checkbox("Draw Wireframe", &drawToggles.drawWireframe);
     ImGui::Checkbox("Draw Light Source", &drawToggles.drawLightSource);
     ImGui::Checkbox("Draw Walls", &drawToggles.drawWalls);
@@ -40,9 +44,19 @@ void Shadows2D::tick() {
     ImGui::Checkbox("Draw Closest Intersection Points", &drawToggles.drawClosestIntersections);
     ImGui::Checkbox("Draw Shadow", &drawToggles.drawShadow);
     ImGui::Checkbox("Cover Shadow Area", &drawToggles.coverShadowArea);
+
+    ImGui::ColorEdit3("Background", reinterpret_cast<float *>(&colorConfig.background));
+    ImGui::ColorEdit3("Shadow", reinterpret_cast<float *>(&colorConfig.shadow));
+    ImGui::ColorEdit3("Walls", reinterpret_cast<float *>(&colorConfig.walls));
+    ImGui::ColorEdit3("Rays", reinterpret_cast<float *>(&colorConfig.rays));
+    ImGui::ColorEdit3("Intersections", reinterpret_cast<float *>(&colorConfig.intersections));
+    ImGui::ColorEdit3("Closest Intersections", reinterpret_cast<float *>(&colorConfig.closestIntersections));
+    ImGui::ColorEdit3("Light Source", reinterpret_cast<float *>(&colorConfig.lightSource));
+
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
+
     ImGui::End();
 
     std::vector<Ray> rays = {};
@@ -79,45 +93,71 @@ void Shadows2D::tick() {
     ImGui::Text("Num Indices: %u", numIndices);
     ImGui::End();
 
+    renderScene(drawToggles, viewMatrix, lightPosition, colorConfig);
+}
+
+void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
+                            const ColorConfig &colorConfig) const {
     auto lightMatrix = glm::identity<glm::mat4>();
     lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
 
-    renderScene(drawToggles, viewMatrix, lightMatrix);
-}
-
-void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix,
-                            const glm::mat4 &lightMatrix) const {
     shader->bind();
     shader->setUniform("u_View", viewMatrix);
     if (drawToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    //    glClear(GL_STENCIL_BUFFER_BIT);
-    //    glEnable(GL_STENCIL_TEST);
-    //    glStencilFunc(GL_EQUAL, 2, 0xFF);
+    if (drawToggles.drawShadow) {
+        glEnable(GL_STENCIL_TEST);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+
+        shader->setUniform("u_Color", colorConfig.shadow);
+        shadowPolygonVA->bind();
+        GL_Call(
+              glDrawElements(GL_TRIANGLE_FAN, shadowPolygonVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+        if (drawToggles.coverShadowArea) {
+            glStencilFunc(GL_EQUAL, 1, 0xFF);
+        } else {
+            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        }
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    //    glClear(GL_COLOR_BUFFER_BIT);
+    //    glClearColor(0, 0, 0, 1);
+
+    //    if (drawToggles.drawBackground) {
+    //        shader->setUniform("u_Color", colorConfig.background);
+    //        backgroundVA->bind();
+    //        GL_Call(glDrawElements(GL_TRIANGLES, backgroundVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
+    //        nullptr));
+    //    }
 
     if (drawToggles.drawLightSource) {
-        shader->setUniform("u_DrawMode", 0);
+        shader->setUniform("u_Color", colorConfig.lightSource);
         shader->setUniform("u_Model", lightMatrix);
         lightSourceVA->bind();
         GL_Call(glDrawElements(GL_TRIANGLES, lightSourceVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+        shader->setUniform("u_Model", glm::mat4(1.F));
     }
 
     if (drawToggles.drawWalls) {
-        shader->setUniform("u_DrawMode", 1);
+        shader->setUniform("u_Color", colorConfig.walls);
         wallsVA->bind();
         GL_Call(glDrawElements(GL_TRIANGLES, wallsVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
 
     if (drawToggles.drawRays) {
-        shader->setUniform("u_DrawMode", 2);
+        shader->setUniform("u_Color", colorConfig.rays);
         raysVA->bind();
         GL_Call(glDrawElements(GL_LINES, raysVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
 
     if (drawToggles.drawIntersections) {
-        shader->setUniform("u_DrawMode", 3);
+        shader->setUniform("u_Color", colorConfig.intersections);
         for (auto &intersectionVA : intersectionVAs) {
             intersectionVA->bind();
             GL_Call(glDrawElements(GL_TRIANGLE_FAN, intersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
@@ -126,7 +166,7 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
     }
 
     if (drawToggles.drawClosestIntersections) {
-        shader->setUniform("u_DrawMode", 4);
+        shader->setUniform("u_Color", colorConfig.closestIntersections);
         for (auto &intersectionVA : closestIntersectionVAs) {
             intersectionVA->bind();
             GL_Call(glDrawElements(GL_TRIANGLE_FAN, intersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
@@ -134,15 +174,13 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
         }
     }
 
-    if (drawToggles.drawShadow) {
-        shader->setUniform("u_DrawMode", 5);
-        shadowPolygonVA->bind();
-        GL_Call(
-              glDrawElements(GL_TRIANGLE_FAN, shadowPolygonVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-    }
-
     if (drawToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    }
+
+    if (drawToggles.drawShadow) {
+        glStencilMask(0xFF);
+        glDisable(GL_STENCIL_TEST);
     }
 }
 

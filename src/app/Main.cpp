@@ -18,10 +18,10 @@
 #include "scenes/model_loading/ModelLoading.h"
 #include "scenes/normal_mapping/NormalMapping.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
+#include "scenes/shadows_2d/Shadows2D.h"
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
-#include "scenes/shadows_2d/Shadows2D.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -33,7 +33,7 @@ InputData input = {};
 
 void enableOpenGLDebugging();
 
-void mouseButtonCallback(GLFWwindow * /*window*/, int button, int action, int  /*mods*/) {
+void mouseButtonCallback(GLFWwindow * /*window*/, int button, int action, int /*mods*/) {
     // std::cout << "Mouse " << button << std::endl;
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         input.mouse.left = action == GLFW_PRESS;
@@ -47,11 +47,11 @@ void cursorPosCallback(GLFWwindow * /*window*/, double xpos, double ypos) {
     input.mouse.pos.y = ypos;
 }
 
-void scrollCallback(GLFWwindow */*window*/, double /*xoffset*/, double /*yoffset*/) {
+void scrollCallback(GLFWwindow * /*window*/, double /*xoffset*/, double /*yoffset*/) {
     // std::cout << "Scrolled " << xoffset << ", " << yoffset << std::endl;
 }
 
-void keyCallback(GLFWwindow *window, int key, int  /*scancode*/, int action, int  /*mods*/) {
+void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int /*mods*/) {
     // std::cout << "Key " << key << std::endl;
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
@@ -61,13 +61,11 @@ void keyCallback(GLFWwindow *window, int key, int  /*scancode*/, int action, int
     }
 }
 
-void charCallback(GLFWwindow */*window*/, unsigned int /*c*/) {
+void charCallback(GLFWwindow * /*window*/, unsigned int /*c*/) {
     //  std::cout << "Entered character " << c << std::endl;
 }
 
-void resizeCallback(GLFWwindow * /*window*/, int width, int height) {
-    glViewport(0, 0, width, height);
-}
+void resizeCallback(GLFWwindow * /*window*/, int width, int height) { glViewport(0, 0, width, height); }
 
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -109,41 +107,36 @@ int main() {
         mainMenu.activate();
     };
     ScreenRecorder recorder = {};
-    SceneData sceneData = {
-            window,
-            &input,
-            backToMainMenu,
-            recorder
-    };
+    SceneData sceneData = {window, &input, backToMainMenu, recorder};
     glfwSetWindowUserPointer(window, &sceneData);
 
     GL_Call(glEnable(GL_DEPTH_TEST));
 
-    scenes.push_back(new TestScene(sceneData)); // 0
-    scenes.push_back(new LegacyTriangle(sceneData)); // 1
-    scenes.push_back(new Triangle(sceneData)); // 2
-    scenes.push_back(new TextureDemo(sceneData)); // 3
-    scenes.push_back(new GammaCalculation(sceneData)); // 4
-    scenes.push_back(new Cube(sceneData)); // 5
-    scenes.push_back(new Landscape(sceneData)); // 6
-    scenes.push_back(new RubiksCubeScene(sceneData)); // 7
+    scenes.push_back(new TestScene(sceneData));          // 0
+    scenes.push_back(new LegacyTriangle(sceneData));     // 1
+    scenes.push_back(new Triangle(sceneData));           // 2
+    scenes.push_back(new TextureDemo(sceneData));        // 3
+    scenes.push_back(new GammaCalculation(sceneData));   // 4
+    scenes.push_back(new Cube(sceneData));               // 5
+    scenes.push_back(new Landscape(sceneData));          // 6
+    scenes.push_back(new RubiksCubeScene(sceneData));    // 7
     scenes.push_back(new MarchingCubesScene(sceneData)); // 8
-    scenes.push_back(new FontDemo(sceneData)); // 9
-    scenes.push_back(new ModelLoading(sceneData)); // 10
-    scenes.push_back(new LightDemo(sceneData)); // 11
-    scenes.push_back(new FourierTransform(sceneData)); // 12
-    scenes.push_back(new NormalMapping(sceneData)); // 13
-    scenes.push_back(new AStar(sceneData)); // 14
-    scenes.push_back(new Shadows2D(sceneData)); // 15
+    scenes.push_back(new FontDemo(sceneData));           // 9
+    scenes.push_back(new ModelLoading(sceneData));       // 10
+    scenes.push_back(new LightDemo(sceneData));          // 11
+    scenes.push_back(new FourierTransform(sceneData));   // 12
+    scenes.push_back(new NormalMapping(sceneData));      // 13
+    scenes.push_back(new AStar(sceneData));              // 14
+    scenes.push_back(new Shadows2D(sceneData));          // 15
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-//    mainMenu.goToScene(12);
+    //    mainMenu.goToScene(12);
 
     enableOpenGLDebugging();
 
     while (glfwWindowShouldClose(window) == 0) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
         glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
 
         startImGuiFrame();
 
@@ -170,17 +163,10 @@ int main() {
     return 0;
 }
 
-void GLAPIENTRY
-MessageCallback(GLenum  /*source*/,
-                GLenum type,
-                GLuint  /*id*/,
-                GLenum severity,
-                GLsizei  /*length*/,
-                const GLchar *message,
-                const void * /*userParam*/) {
+void GLAPIENTRY MessageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/,
+                                const GLchar *message, const void * /*userParam*/) {
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            type, severity, message);
+            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
 }
 
 void enableOpenGLDebugging() {

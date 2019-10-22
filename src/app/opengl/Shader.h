@@ -56,6 +56,10 @@ public:
         GL_Call(glUniform3f(getUniformLocation(name), v.x, v.y, v.z));
     }
 
+    void setUniform(const std::string &name, glm::vec4 v) {
+        GL_Call(glUniform4f(getUniformLocation(name), v.x, v.y, v.z, v.w));
+    }
+
     void setUniform(const std::string &name, glm::mat4 m) {
         GL_Call(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, (float *) &m));
     }

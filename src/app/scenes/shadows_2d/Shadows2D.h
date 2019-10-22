@@ -20,6 +20,16 @@ struct DrawToggles {
     bool coverShadowArea = true;
 };
 
+struct ColorConfig {
+    glm::vec3 background = {0.1, 0.1, 0.1};
+    glm::vec3 shadow = glm::vec3(0.0, 0.0, 0.0);
+    glm::vec3 walls = glm::vec3(0.5, 0.5, 0.5);
+    glm::vec3 rays = glm::vec3(1.0, 0.0, 0.0);
+    glm::vec3 intersections = glm::vec3(1.0, 0.0, 1.0);
+    glm::vec3 closestIntersections = glm::vec3(1.0, 1.0, 0.0);
+    glm::vec3 lightSource = glm::vec3(1.0, 1.0, 1.0);
+};
+
 class Shadows2D : public Scene {
   public:
     Shadows2D(SceneData &data) : Scene(data, "RayCasting2D"){};
@@ -55,15 +65,15 @@ class Shadows2D : public Scene {
                                       std::vector<glm::vec2> &shadowPolygon);
 
     void createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
-                               const glm::vec2 &lightPosition, unsigned int &numVertices,
-                               unsigned int &numIndices);
+                               const glm::vec2 &lightPosition, unsigned int &numVertices, unsigned int &numIndices);
 
     std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
 
     void addWalls();
     Polygon createScreenBorder(float scale);
 
-    void renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::mat4 &lightMatrix) const;
+    void renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
+                     const ColorConfig &colorConfig) const;
 
     static unsigned long getNumIntersections(const std::vector<Ray> &rays);
 
