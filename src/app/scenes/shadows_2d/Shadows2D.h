@@ -55,7 +55,7 @@ class Shadows2D : public Scene {
                                       std::vector<glm::vec2> &shadowPolygon);
 
     void createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
-                               const glm::vec2 &lightPosition, bool coverShadowArea, unsigned int &numVertices,
+                               const glm::vec2 &lightPosition, unsigned int &numVertices,
                                unsigned int &numIndices);
 
     std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);

@@ -58,6 +58,18 @@ void Shadows2D::tick() {
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
     ImGui::DragFloat("Cutoff", &cutoff, 0.001F);
+    ImGui::End();
+
+    unsigned int numVertices = 0;
+    unsigned int numIndices = 0;
+    std::vector<glm::vec2> shadowPolygon = {};
+    {
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "scene");
+        createRaysAndIntersectionsVA(rays, drawToggles, shadowPolygon);
+        createShadowPolygonVA(shadowPolygon, viewMatrix, lightPosition, numVertices, numIndices);
+    }
+
+    ImGui::Begin("Metrics");
     ImGui::Text("Num Rays: %lu", rays.size());
     unsigned long numIntersections = getNumIntersections(rays);
     ImGui::Text("Num Intersections: %lu", numIntersections);
@@ -68,19 +80,6 @@ void Shadows2D::tick() {
     if (ImGui::Button("Reset Performance Counter")) {
         performanceCounter->reset();
     }
-    ImGui::End();
-
-    unsigned int numVertices = 0;
-    unsigned int numIndices = 0;
-    std::vector<glm::vec2> shadowPolygon = {};
-    {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "scene");
-        createRaysAndIntersectionsVA(rays, drawToggles, shadowPolygon);
-        createShadowPolygonVA(shadowPolygon, viewMatrix, lightPosition, drawToggles.coverShadowArea, numVertices,
-                              numIndices);
-    }
-
-    ImGui::Begin("Settings");
     ImGui::Text("Num Vertices: %u", numVertices);
     ImGui::Text("Num Indices: %u", numIndices);
     ImGui::End();
@@ -315,7 +314,7 @@ void Shadows2D::createCircleData() {
 }
 
 void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
-                                      const glm::vec2 &lightPosition, bool coverShadowArea, unsigned int &numVertices,
+                                      const glm::vec2 &lightPosition, unsigned int &numVertices,
                                       unsigned int &numIndices) {
     // sort all vertices in a circle
     std::sort(vertices.begin(), vertices.end(), [&lightPosition](const glm::vec2 &first, const glm::vec2 &second) {
@@ -323,7 +322,7 @@ void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const gl
         auto secondP = second - lightPosition;
         double radiansFirst = glm::atan(firstP.y, firstP.x);
         double radiansSecond = glm::atan(secondP.y, secondP.x);
-        return radiansFirst < radiansSecond;
+        return radiansFirst > radiansSecond;
     });
 
     std::vector<unsigned int> indices = {};
