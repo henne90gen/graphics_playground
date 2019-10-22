@@ -17,7 +17,7 @@ struct DrawToggles {
     bool drawIntersections = false;
     bool drawClosestIntersections = false;
     bool drawShadow = true;
-    bool coverShadowArea = true;
+    bool showShadowArea = true;
 };
 
 struct ColorConfig {
@@ -77,4 +77,5 @@ class Shadows2D : public Scene {
     static unsigned long getNumIntersections(const std::vector<Ray> &rays);
 
     void createCircleData();
+    void renderShadow(const DrawToggles &drawToggles, const ColorConfig &colorConfig) const;
 };

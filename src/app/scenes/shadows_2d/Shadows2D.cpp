@@ -43,7 +43,7 @@ void Shadows2D::tick() {
     ImGui::Checkbox("Draw Intersection Points", &drawToggles.drawIntersections);
     ImGui::Checkbox("Draw Closest Intersection Points", &drawToggles.drawClosestIntersections);
     ImGui::Checkbox("Draw Shadow", &drawToggles.drawShadow);
-    ImGui::Checkbox("Cover Shadow Area", &drawToggles.coverShadowArea);
+    ImGui::Checkbox("Show Shadow Area", &drawToggles.showShadowArea);
 
     ImGui::ColorEdit3("Light", reinterpret_cast<float *>(&colorConfig.light));
     ImGui::ColorEdit3("Light Source", reinterpret_cast<float *>(&colorConfig.lightSource));
@@ -106,24 +106,7 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    if (drawToggles.drawShadow) {
-        glEnable(GL_STENCIL_TEST);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilMask(0xFF);
-
-        shader->setUniform("u_Color", colorConfig.light);
-        shadowPolygonVA->bind();
-        GL_Call(
-              glDrawElements(GL_TRIANGLE_FAN, shadowPolygonVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-
-        if (drawToggles.coverShadowArea) {
-            glStencilFunc(GL_EQUAL, 1, 0xFF);
-        } else {
-            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        }
-        glStencilMask(0x00);
-        glDisable(GL_DEPTH_TEST);
-    }
+    renderShadow(drawToggles, colorConfig);
 
     if (drawToggles.drawLightSource) {
         shader->setUniform("u_Color", colorConfig.lightSource);
@@ -171,6 +154,31 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
         glStencilMask(0xFF);
         glDisable(GL_STENCIL_TEST);
     }
+}
+
+void Shadows2D::renderShadow(const DrawToggles &drawToggles,
+                             const ColorConfig &colorConfig) const {
+    if (!drawToggles.drawShadow) {
+        return;
+    }
+
+    // set up the stencil buffer for writing to it
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilMask(0xFF);
+
+    shader->setUniform("u_Color", colorConfig.light);
+    shadowPolygonVA->bind();
+    GL_Call(glDrawElements(GL_TRIANGLE_FAN, shadowPolygonVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    // set up the stencil buffer for reading from it
+    if (drawToggles.showShadowArea) {
+        glStencilFunc(GL_EQUAL, 1, 0xFF);
+    } else {
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    }
+    glStencilMask(0x00);
+    glDisable(GL_DEPTH_TEST);
 }
 
 void Shadows2D::createLightSourceVA() {
