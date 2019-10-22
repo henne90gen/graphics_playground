@@ -3,9 +3,9 @@
 #include <functional>
 #include <memory>
 
-#include "scenes/Scene.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
+#include "scenes/Scene.h"
 
 #include "ray_tracing_2d/RayTracer2D.h"
 
@@ -21,9 +21,8 @@ struct DrawToggles {
 };
 
 class Shadows2D : public Scene {
-public:
-    Shadows2D(SceneData &data)
-            : Scene(data, "RayCasting2D") {};
+  public:
+    Shadows2D(SceneData &data) : Scene(data, "RayCasting2D"){};
 
     ~Shadows2D() override = default;
 
@@ -35,7 +34,7 @@ public:
 
     void onAspectRatioChange() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> lightSourceVA;
     std::shared_ptr<VertexArray> wallsVA;
@@ -55,9 +54,9 @@ private:
     void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles,
                                       std::vector<glm::vec2> &shadowPolygon);
 
-    void
-    createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
-                          bool coverShadowArea);
+    void createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
+                               const glm::vec2 &lightPosition, bool coverShadowArea, unsigned int &numVertices,
+                               unsigned int &numIndices);
 
     std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
 
