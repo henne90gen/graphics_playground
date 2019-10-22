@@ -45,13 +45,12 @@ void Shadows2D::tick() {
     ImGui::Checkbox("Draw Shadow", &drawToggles.drawShadow);
     ImGui::Checkbox("Cover Shadow Area", &drawToggles.coverShadowArea);
 
-    ImGui::ColorEdit3("Background", reinterpret_cast<float *>(&colorConfig.background));
-    ImGui::ColorEdit3("Shadow", reinterpret_cast<float *>(&colorConfig.shadow));
+    ImGui::ColorEdit3("Light", reinterpret_cast<float *>(&colorConfig.light));
+    ImGui::ColorEdit3("Light Source", reinterpret_cast<float *>(&colorConfig.lightSource));
     ImGui::ColorEdit3("Walls", reinterpret_cast<float *>(&colorConfig.walls));
     ImGui::ColorEdit3("Rays", reinterpret_cast<float *>(&colorConfig.rays));
     ImGui::ColorEdit3("Intersections", reinterpret_cast<float *>(&colorConfig.intersections));
     ImGui::ColorEdit3("Closest Intersections", reinterpret_cast<float *>(&colorConfig.closestIntersections));
-    ImGui::ColorEdit3("Light Source", reinterpret_cast<float *>(&colorConfig.lightSource));
 
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
@@ -112,7 +111,7 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF);
 
-        shader->setUniform("u_Color", colorConfig.shadow);
+        shader->setUniform("u_Color", colorConfig.light);
         shadowPolygonVA->bind();
         GL_Call(
               glDrawElements(GL_TRIANGLE_FAN, shadowPolygonVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
@@ -125,16 +124,6 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
         glStencilMask(0x00);
         glDisable(GL_DEPTH_TEST);
     }
-
-    //    glClear(GL_COLOR_BUFFER_BIT);
-    //    glClearColor(0, 0, 0, 1);
-
-    //    if (drawToggles.drawBackground) {
-    //        shader->setUniform("u_Color", colorConfig.background);
-    //        backgroundVA->bind();
-    //        GL_Call(glDrawElements(GL_TRIANGLES, backgroundVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
-    //        nullptr));
-    //    }
 
     if (drawToggles.drawLightSource) {
         shader->setUniform("u_Color", colorConfig.lightSource);
@@ -272,7 +261,7 @@ Polygon Shadows2D::createScreenBorder(float scale) {
     return wall;
 }
 
-void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles,
+void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, const DrawToggles &drawToggles,
                                              std::vector<glm::vec2> &shadowPolygon) {
     intersectionVAs = {};
     closestIntersectionVAs = {};
@@ -291,7 +280,7 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawT
         }
 
         for (auto &intersection : ray.intersections) {
-            if (intersection == ray.closestIntersection) {
+            if (drawToggles.drawClosestIntersections && intersection == ray.closestIntersection) {
                 continue;
             }
             auto va = createIntersectionVA(intersection);

@@ -13,16 +13,15 @@ struct DrawToggles {
     bool drawWireframe = false;
     bool drawLightSource = true;
     bool drawWalls = true;
-    bool drawRays = true;
-    bool drawIntersections = true;
-    bool drawClosestIntersections = true;
+    bool drawRays = false;
+    bool drawIntersections = false;
+    bool drawClosestIntersections = false;
     bool drawShadow = true;
     bool coverShadowArea = true;
 };
 
 struct ColorConfig {
-    glm::vec3 background = {0.1, 0.1, 0.1};
-    glm::vec3 shadow = glm::vec3(0.0, 0.0, 0.0);
+    glm::vec3 light = glm::vec3(0.8, 0.8, 0.8);
     glm::vec3 walls = glm::vec3(0.5, 0.5, 0.5);
     glm::vec3 rays = glm::vec3(1.0, 0.0, 0.0);
     glm::vec3 intersections = glm::vec3(1.0, 0.0, 1.0);
@@ -61,7 +60,7 @@ class Shadows2D : public Scene {
 
     void createWallVA();
 
-    void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, DrawToggles &drawToggles,
+    void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, const DrawToggles &drawToggles,
                                       std::vector<glm::vec2> &shadowPolygon);
 
     void createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
