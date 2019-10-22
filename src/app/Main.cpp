@@ -17,6 +17,7 @@
 #include "scenes/marching_cubes/MarchingCubesScene.h"
 #include "scenes/model_loading/ModelLoading.h"
 #include "scenes/normal_mapping/NormalMapping.h"
+#include "scenes/ray_tracing/RayTracing.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
 #include "scenes/shadows_2d/Shadows2D.h"
 #include "scenes/test_scene/TestScene.h"
@@ -127,7 +128,8 @@ int main() {
     scenes.push_back(new FourierTransform(sceneData));   // 12
     scenes.push_back(new NormalMapping(sceneData));      // 13
     scenes.push_back(new AStar(sceneData));              // 14
-    scenes.push_back(new Shadows2D(sceneData));          // 15
+    scenes.push_back(new Shadows2D(sceneData));       // 15
+    scenes.push_back(new RayTracing(sceneData));      // 16
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     //    mainMenu.goToScene(12);

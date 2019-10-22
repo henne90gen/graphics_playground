@@ -34,8 +34,9 @@ void VertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuf
     }
 
     bind();
-
+    shader->bind();
     vertexBuffer->bind();
+
     const auto &layout = vertexBuffer->getLayout();
     const auto &elements = layout.getElements();
     unsigned int offset = 0;

@@ -1,5 +1,7 @@
 #include "Texture.h"
 
+#include <iostream>
+
 Texture::Texture(unsigned int dataType) : dataType(dataType) { GL_Call(glGenTextures(1, &id)); }
 
 Texture::~Texture() = default;
@@ -37,9 +39,7 @@ void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, uns
     }
 }
 
-void Texture::update(Image &image) {
-    update(image.pixels.data(), image.width, image.height);
-}
+void Texture::update(Image &image) { update(image.pixels.data(), image.width, image.height); }
 
 void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, unsigned int height,
                      unsigned int unpackAlignment) {
@@ -47,6 +47,10 @@ void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, uns
     if (unpackAlignment != 4) {
         ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 8);
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment));
+    }
+
+    if (width * height != data.size()) {
+        std::cout << "Warning: width*height does not match size of data array." << std::endl;
     }
 
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, dataType, width, height, 0, dataType, GL_FLOAT, data.data()));
