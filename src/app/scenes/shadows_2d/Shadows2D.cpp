@@ -32,19 +32,6 @@ void Shadows2D::tick() {
     static glm::vec2 lightPosition = glm::vec2();
     static float cutoff = 1.0F;
 
-    auto viewMatrix = createViewMatrix(cameraPosition, glm::vec3());
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom, zoom, zoom));
-
-    auto lightMatrix = glm::identity<glm::mat4>();
-    lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
-
-    std::vector<Ray> rays = {};
-    auto screenBorder = createScreenBorder(1.0F / zoom);
-    {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
-        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, cutoff);
-    }
-
     ImGui::Begin("Settings");
     ImGui::Checkbox("Draw Wireframe", &drawToggles.drawWireframe);
     ImGui::Checkbox("Draw Light Source", &drawToggles.drawLightSource);
@@ -59,6 +46,16 @@ void Shadows2D::tick() {
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
     ImGui::DragFloat("Cutoff", &cutoff, 0.001F);
     ImGui::End();
+
+    std::vector<Ray> rays = {};
+    auto screenBorder = createScreenBorder(1.0F / zoom);
+    {
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
+        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, cutoff);
+    }
+
+    auto viewMatrix = createViewMatrix(cameraPosition, glm::vec3());
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom, zoom, zoom));
 
     unsigned int numVertices = 0;
     unsigned int numIndices = 0;
@@ -83,6 +80,9 @@ void Shadows2D::tick() {
     ImGui::Text("Num Vertices: %u", numVertices);
     ImGui::Text("Num Indices: %u", numIndices);
     ImGui::End();
+
+    auto lightMatrix = glm::identity<glm::mat4>();
+    lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
 
     renderScene(drawToggles, viewMatrix, lightMatrix);
 }
