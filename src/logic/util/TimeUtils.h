@@ -16,11 +16,11 @@ struct DataPoint {
 /**
  * NOTE: All times are in milliseconds.
  */
-class PerformanceTracker {
+class PerformanceCounter {
 public:
-    PerformanceTracker() = default;
+  PerformanceCounter() = default;
 
-    ~PerformanceTracker() = default;
+    ~PerformanceCounter() = default;
 
     void recordValue(const std::string &name, double value);
 
@@ -37,7 +37,7 @@ public:
 
 class Timer {
 public:
-    explicit Timer(std::shared_ptr<PerformanceTracker> performanceTracker, std::string name);
+    explicit Timer(std::shared_ptr<PerformanceCounter> performanceTracker, std::string name);
 
     ~Timer();
 
@@ -45,7 +45,7 @@ private:
 
     std::string name;
     std::chrono::time_point<std::chrono::high_resolution_clock> start;
-    std::shared_ptr<PerformanceTracker> performanceTracker;
+    std::shared_ptr<PerformanceCounter> performanceTracker;
 };
 
 

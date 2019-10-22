@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cmath>
 
-Timer::Timer(std::shared_ptr<PerformanceTracker> performanceTracker, std::string name) :
+Timer::Timer(std::shared_ptr<PerformanceCounter> performanceTracker, std::string name) :
         name(std::move(name)),
         performanceTracker(std::move(performanceTracker)) {
     start = std::chrono::high_resolution_clock::now();
@@ -28,7 +28,7 @@ Timer::~Timer() {
     }
 }
 
-void PerformanceTracker::recordValue(const std::string &name, double value) {
+void PerformanceCounter::recordValue(const std::string &name, double value) {
     auto &dp = dataPoints[name];
     dp.timerCount++;
 

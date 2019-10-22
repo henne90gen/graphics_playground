@@ -48,7 +48,7 @@ bool intersects(const Ray &ray, const Ray &line, glm::vec2 &intersection, float 
 }
 
 void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std::vector<Ray> &lineSegments,
-                             const glm::vec2 &lightPosition, const float cutoff) {
+                             const glm::vec2 &lightPosition) {
     for (unsigned long i = 0; i < polygon.vertices.size(); i++) {
         const auto pos = getTransformedVertex(polygon.vertices[i], polygon.transformMatrix);
 
@@ -64,11 +64,6 @@ void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std
             lineSegment.startingPoint = pos;
             lineSegment.direction = nextPos - pos;
             lineSegments.push_back(lineSegment);
-        }
-
-        if (pos.x - lightPosition.x < -cutoff || pos.x - lightPosition.x > cutoff ||
-            pos.y - lightPosition.y < -cutoff || pos.y - lightPosition.y > cutoff) {
-            continue;
         }
 
         glm::vec2 direction = pos - lightPosition;
@@ -97,15 +92,14 @@ void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std
 }
 
 std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
-                               const glm::vec2 &lightPosition, const float cutoff) {
+                               const glm::vec2 &lightPosition) {
     std::vector<Ray> rays = {};
     std::vector<Ray> lineSegments = {};
     for (auto &polygon : walls) {
-        calculateRaysForPolygon(polygon, rays, lineSegments, lightPosition, cutoff);
+        calculateRaysForPolygon(polygon, rays, lineSegments, lightPosition);
     }
 
-    // FIXME is a cutoff really a good idea for this?
-    calculateRaysForPolygon(screenBorder, rays, lineSegments, lightPosition, cutoff);
+    calculateRaysForPolygon(screenBorder, rays, lineSegments, lightPosition);
 
     for (auto &ray : rays) {
         for (auto &line : lineSegments) {

@@ -22,7 +22,7 @@ struct Ray {
 namespace RayTracer2D {
 
 std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
-                               const glm::vec2 &lightPosition, float cutoff);
+                               const glm::vec2 &lightPosition);
 
 bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2);
 

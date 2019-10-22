@@ -25,12 +25,11 @@ void Shadows2D::onAspectRatioChange() {
 }
 
 void Shadows2D::tick() {
-    static std::shared_ptr<PerformanceTracker> performanceCounter = std::make_shared<PerformanceTracker>();
+    static std::shared_ptr<PerformanceCounter> performanceCounter = std::make_shared<PerformanceCounter>();
     static DrawToggles drawToggles = {};
     static glm::vec3 cameraPosition = glm::vec3();
     static float zoom = 2.5F;
     static glm::vec2 lightPosition = glm::vec2();
-    static float cutoff = 1.0F;
 
     ImGui::Begin("Settings");
     ImGui::Checkbox("Draw Wireframe", &drawToggles.drawWireframe);
@@ -44,14 +43,13 @@ void Shadows2D::tick() {
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
-    ImGui::DragFloat("Cutoff", &cutoff, 0.001F);
     ImGui::End();
 
     std::vector<Ray> rays = {};
     auto screenBorder = createScreenBorder(1.0F / zoom);
     {
         TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
-        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, cutoff);
+        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition);
     }
 
     auto viewMatrix = createViewMatrix(cameraPosition, glm::vec3());
@@ -94,6 +92,10 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
     if (drawToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
+
+    //    glClear(GL_STENCIL_BUFFER_BIT);
+    //    glEnable(GL_STENCIL_TEST);
+    //    glStencilFunc(GL_EQUAL, 2, 0xFF);
 
     if (drawToggles.drawLightSource) {
         shader->setUniform("u_DrawMode", 0);
@@ -322,7 +324,7 @@ void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const gl
         auto secondP = second - lightPosition;
         double radiansFirst = glm::atan(firstP.y, firstP.x);
         double radiansSecond = glm::atan(secondP.y, secondP.x);
-        return radiansFirst > radiansSecond;
+        return radiansFirst < radiansSecond;
     });
 
     std::vector<unsigned int> indices = {};
