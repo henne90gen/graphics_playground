@@ -37,6 +37,7 @@ TEST_CASE("Can determine whether two rays intersect") {
     float a = 0;
     REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(0.0, 0.0));
+    REQUIRE(a == 0.0);
 
     ray = {{0.0, 0.0}, {2.0, 1.0}};
     line = {{5.0, 0.0}, {-2.0, 4.0}};
@@ -44,6 +45,7 @@ TEST_CASE("Can determine whether two rays intersect") {
     a = 0;
     REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(4.0, 2.0));
+    REQUIRE(a == 2.0);
 
     ray = {{0.0, 0.0}, {1.0, 2.0}};
     line = {{1.0, 1.0}, {-2.0, 0.0}};
@@ -51,6 +53,7 @@ TEST_CASE("Can determine whether two rays intersect") {
     a = 0;
     REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(0.5, 1.0));
+    REQUIRE(a == 0.5);
 
     ray = {{0.0, 0.0}, {-1.15, -1.05}};
     line = {{-1.0, -1.0}, {0.0, 0.1}};
@@ -58,4 +61,5 @@ TEST_CASE("Can determine whether two rays intersect") {
     a = 0;
     REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(-1.0, -0.913043499));
+    REQUIRE(a == Approx(0.869565248));
 }
