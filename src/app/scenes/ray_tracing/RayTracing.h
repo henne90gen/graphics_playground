@@ -27,4 +27,5 @@ class RayTracing : public Scene {
     std::shared_ptr<Texture> texture;
 
     std::vector<RayTracer::Object> objects = {};
+    std::vector<RayTracer::Light> lights = {};
 };

@@ -34,9 +34,10 @@ void RayTracing::destroy() {}
 void RayTracing::tick() {
     static unsigned int width = 1000;
     static unsigned int height = 1000;
-    std::vector<glm::vec3> pixels = {};
+    static glm::vec3 cameraPosition = {0, 0, 0};
 
-    RayTracer::rayTrace(objects, pixels, width, height);
+    std::vector<glm::vec3> pixels = {};
+    RayTracer::rayTrace(objects, lights, cameraPosition, pixels, width, height);
 
     texture->update(pixels, width, height);
     vertexArray->bind();

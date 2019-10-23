@@ -58,7 +58,7 @@ void Shadows2D::tick() {
 
     ImGui::End();
 
-    std::vector<Ray2D> rays = {};
+    std::vector<RayTracer2D::Ray> rays = {};
     auto screenBorder = createScreenBorder(1.0F / zoom);
     {
         TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
@@ -236,7 +236,7 @@ void Shadows2D::addWalls() {
             transformMatrix = glm::translate(transformMatrix, glm::vec3(position.x, position.y, 0.0F));
             transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
 
-            auto wall = Polygon2D();
+            auto wall = RayTracer2D::Polygon();
             wall.transformMatrix = transformMatrix;
             wall.vertices = {{-1, -1}, //
                              {1, -1},  //
@@ -251,12 +251,12 @@ void Shadows2D::addWalls() {
     }
 }
 
-Polygon2D Shadows2D::createScreenBorder(float scale) {
+RayTracer2D::Polygon Shadows2D::createScreenBorder(float scale) {
     auto transformMatrix = glm::identity<glm::mat4>();
     transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
 
     float x = getAspectRatio();
-    Polygon2D wall = {};
+    RayTracer2D::Polygon wall = {};
     wall.transformMatrix = transformMatrix;
     wall.vertices = {{-x, -1.0}, //
                      {x, -1.0},  //
@@ -269,7 +269,7 @@ Polygon2D Shadows2D::createScreenBorder(float scale) {
     return wall;
 }
 
-void Shadows2D::createRaysAndIntersectionsVA(const std::vector<Ray2D> &rays, const DrawToggles &drawToggles,
+void Shadows2D::createRaysAndIntersectionsVA(const std::vector<RayTracer2D::Ray> &rays, const DrawToggles &drawToggles,
                                              std::vector<glm::vec2> &shadowPolygon) {
     intersectionVAs = {};
     closestIntersectionVAs = {};
@@ -327,7 +327,7 @@ std::shared_ptr<VertexArray> Shadows2D::createIntersectionVA(const glm::vec2 &in
     return intersectionVA;
 }
 
-unsigned long Shadows2D::getNumIntersections(const std::vector<Ray2D> &rays) {
+unsigned long Shadows2D::getNumIntersections(const std::vector<RayTracer2D::Ray> &rays) {
     unsigned long result = 0;
     for (auto &ray : rays) {
         result += ray.intersections.size();

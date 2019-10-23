@@ -35,8 +35,8 @@ TEST_CASE("Can determine whether two rays intersect") {
           std::make_tuple(ray({0, 0}, {1, 0}), ray({0, 0}, {0, 1}), glm::vec2(0, 0), 0, true),
           std::make_tuple(ray({0, 0}, {2, 1}), ray({5, 0}, {-2, 4}), glm::vec2(4, 2), 2, true),
           std::make_tuple(ray({0, 0}, {1, 2}), ray({1, 1}, {-2, 0}), glm::vec2(0.5, 1), 0.5, true),
-
-          std::make_tuple(ray({0, 0}, {-1.15, -1.05}), ray({-1, -1}, {0, 0.1}), glm::vec2(-1.0, -0.913043499), 0.869565248, true),
+          std::make_tuple(ray({0, 0}, {-1.15, -1.05}), ray({-1, -1}, {0, 0.1}), glm::vec2(-1.0, -0.913043499),
+                          0.869565248, true),
     }));
     RayTracer2D::Ray ray = std::get<0>(data);
     RayTracer2D::Ray line = std::get<1>(data);
