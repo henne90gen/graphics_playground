@@ -31,9 +31,9 @@ TEST_CASE("Can determine whether two lines are parallel") {
 }
 
 TEST_CASE("Can determine whether two rays intersect") {
-    Ray ray = {{0.0, 0.0},
+    Ray2D ray = {{0.0, 0.0},
                {1.0, 0.0}};
-    Ray line = {{0.0, 0.0},
+    Ray2D line = {{0.0, 0.0},
                 {0.0, 1.0}};
     glm::vec2 intersection = {};
     REQUIRE(RayTracer2D::intersects(ray, line, intersection));

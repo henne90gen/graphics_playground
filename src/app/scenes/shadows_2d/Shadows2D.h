@@ -52,7 +52,7 @@ class Shadows2D : public Scene {
     std::vector<std::shared_ptr<VertexArray>> closestIntersectionVAs = {};
     std::shared_ptr<VertexArray> shadowPolygonVA;
     glm::mat4 projectionMatrix;
-    std::vector<Polygon> walls;
+    std::vector<Polygon2D> walls;
     std::vector<glm::vec2> circleVertices = {{0.0, 0.0}};
     std::vector<unsigned int> circleIndices = {0};
 
@@ -60,7 +60,7 @@ class Shadows2D : public Scene {
 
     void createWallVA();
 
-    void createRaysAndIntersectionsVA(const std::vector<Ray> &rays, const DrawToggles &drawToggles,
+    void createRaysAndIntersectionsVA(const std::vector<Ray2D> &rays, const DrawToggles &drawToggles,
                                       std::vector<glm::vec2> &shadowPolygon);
 
     void createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
@@ -69,12 +69,12 @@ class Shadows2D : public Scene {
     std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
 
     void addWalls();
-    Polygon createScreenBorder(float scale);
+    Polygon2D createScreenBorder(float scale);
 
     void renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
                      const ColorConfig &colorConfig) const;
 
-    static unsigned long getNumIntersections(const std::vector<Ray> &rays);
+    static unsigned long getNumIntersections(const std::vector<Ray2D> &rays);
 
     void createCircleData();
     void renderShadow(const DrawToggles &drawToggles, const ColorConfig &colorConfig) const;
