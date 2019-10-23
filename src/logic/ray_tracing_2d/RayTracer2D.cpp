@@ -11,7 +11,7 @@ glm::vec2 getTransformedVertex(const glm::vec2 &vec, const glm::mat4 &mat) {
 
 bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2) { return vec1.x * vec2.y == vec1.y * vec2.x; }
 
-bool intersects(const Ray2D &ray, const Ray2D &line, glm::vec2 &intersection, float &a) {
+bool intersects(const Ray &ray, const Ray &line, glm::vec2 &intersection, float &a) {
     if (parallel(ray.direction, line.direction)) {
         return false;
     }
@@ -47,20 +47,20 @@ bool intersects(const Ray2D &ray, const Ray2D &line, glm::vec2 &intersection, fl
     return false;
 }
 
-void calculateRaysForPolygon(const Polygon2D &polygon, std::vector<Ray2D> &rays, std::vector<Ray2D> &lineSegments,
+void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std::vector<Ray> &lineSegments,
                              const glm::vec2 &lightPosition) {
     for (unsigned long i = 0; i < polygon.vertices.size(); i++) {
         const auto pos = getTransformedVertex(polygon.vertices[i], polygon.transformMatrix);
 
         if (i + 1 < polygon.vertices.size()) {
             const auto nextPos = getTransformedVertex(polygon.vertices[i + 1], polygon.transformMatrix);
-            Ray2D lineSegment = {};
+            Ray lineSegment = {};
             lineSegment.startingPoint = pos;
             lineSegment.direction = nextPos - pos;
             lineSegments.push_back(lineSegment);
         } else if (i == polygon.vertices.size() - 1) {
             const auto nextPos = getTransformedVertex(polygon.vertices[0], polygon.transformMatrix);
-            Ray2D lineSegment = {};
+            Ray lineSegment = {};
             lineSegment.startingPoint = pos;
             lineSegment.direction = nextPos - pos;
             lineSegments.push_back(lineSegment);
@@ -73,7 +73,7 @@ void calculateRaysForPolygon(const Polygon2D &polygon, std::vector<Ray2D> &rays,
         double sn = sin(deviation);
         double px = direction.x * cs - direction.y * sn;
         double py = direction.x * sn + direction.y * cs;
-        Ray2D ray = {};
+        Ray ray = {};
         ray.startingPoint = lightPosition;
         ray.direction = glm::normalize(glm::vec2(px, py));
         ray.intersections = {};
@@ -91,10 +91,10 @@ void calculateRaysForPolygon(const Polygon2D &polygon, std::vector<Ray2D> &rays,
     }
 }
 
-std::vector<Ray2D> calculateRays(const std::vector<Polygon2D> &walls, const Polygon2D &screenBorder,
+std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
                                const glm::vec2 &lightPosition) {
-    std::vector<Ray2D> rays = {};
-    std::vector<Ray2D> lineSegments = {};
+    std::vector<Ray> rays = {};
+    std::vector<Ray> lineSegments = {};
     for (auto &polygon : walls) {
         calculateRaysForPolygon(polygon, rays, lineSegments, lightPosition);
     }

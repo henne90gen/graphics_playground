@@ -32,14 +32,13 @@ void RayTracing::setup() {
 void RayTracing::destroy() {}
 
 void RayTracing::tick() {
-    unsigned int width = 10;
-    unsigned int height = 10;
+    static unsigned int width = 1000;
+    static unsigned int height = 1000;
     std::vector<glm::vec3> pixels = {};
-    pixels.resize(width * height);
-    pixels[0] = {1,1,1};
-    pixels[2] = {1,1,1};
-    texture->update(pixels, width, height);
 
+    RayTracer::rayTrace(objects, pixels, width, height);
+
+    texture->update(pixels, width, height);
     vertexArray->bind();
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
 }

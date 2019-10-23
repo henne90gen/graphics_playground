@@ -31,35 +31,31 @@ TEST_CASE("Can determine whether two lines are parallel") {
 }
 
 TEST_CASE("Can determine whether two rays intersect") {
-    Ray2D ray = {{0.0, 0.0},
-               {1.0, 0.0}};
-    Ray2D line = {{0.0, 0.0},
-                {0.0, 1.0}};
+    RayTracer2D::Ray ray = {{0.0, 0.0}, {1.0, 0.0}};
+    RayTracer2D::Ray line = {{0.0, 0.0}, {0.0, 1.0}};
     glm::vec2 intersection = {};
-    REQUIRE(RayTracer2D::intersects(ray, line, intersection));
+    float a = 0;
+    REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(0.0, 0.0));
 
-    ray = {{0.0, 0.0},
-           {2.0, 1.0}};
-    line = {{5.0,  0.0},
-            {-2.0, 4.0}};
+    ray = {{0.0, 0.0}, {2.0, 1.0}};
+    line = {{5.0, 0.0}, {-2.0, 4.0}};
     intersection = {};
-    REQUIRE(RayTracer2D::intersects(ray, line, intersection));
+    a = 0;
+    REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(4.0, 2.0));
 
-    ray = {{0.0, 0.0},
-           {1.0, 2.0}};
-    line = {{1.0,  1.0},
-            {-2.0, 0.0}};
+    ray = {{0.0, 0.0}, {1.0, 2.0}};
+    line = {{1.0, 1.0}, {-2.0, 0.0}};
     intersection = {};
-    REQUIRE(RayTracer2D::intersects(ray, line, intersection));
+    a = 0;
+    REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(0.5, 1.0));
 
-    ray = {{0.0, 0.0},
-           {-1.15, -1.05}};
-    line = {{-1.0,  -1.0},
-            {0.0, 0.1}};
+    ray = {{0.0, 0.0}, {-1.15, -1.05}};
+    line = {{-1.0, -1.0}, {0.0, 0.1}};
     intersection = {};
-    REQUIRE(RayTracer2D::intersects(ray, line, intersection));
+    a = 0;
+    REQUIRE(RayTracer2D::intersects(ray, line, intersection, a));
     REQUIRE(intersection == glm::vec2(-1.0, -0.913043499));
 }
