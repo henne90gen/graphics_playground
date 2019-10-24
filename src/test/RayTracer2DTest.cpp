@@ -1,8 +1,8 @@
 #include <catch.hpp>
 #include <glm/glm.hpp>
-
 #include <tuple>
 
+#include "TestUtils.h"
 #include "ray_tracing_2d/RayTracer2D.h"
 
 TEST_CASE("Can determine whether two lines are parallel") {
@@ -19,9 +19,9 @@ TEST_CASE("Can determine whether two lines are parallel") {
     auto dir2 = std::get<1>(data);
     auto result = std::get<2>(data);
 
-    INFO("dir1: x: " << dir1.x << ", y: " << dir1.y);
-    INFO("dir2: x: " << dir2.x << ", y: " << dir2.y);
-    INFO("result: " << result);
+    INFO_VEC2(dir1)
+    INFO_VEC2(dir2)
+    INFO_BASIC(result)
     REQUIRE(RayTracer2D::parallel(dir1, dir2) == result);
 }
 
@@ -46,6 +46,13 @@ TEST_CASE("Can determine whether two rays intersect") {
     glm::vec2 intersection = {};
     float a = 0;
 
+    INFO_VEC2(ray.startingPoint)
+    INFO_VEC2(ray.direction)
+    INFO_VEC2(line.startingPoint)
+    INFO_VEC2(line.direction)
+    INFO_VEC2(expectedIntersection)
+    INFO_BASIC(expectedA)
+    INFO_BASIC(result)
     REQUIRE(RayTracer2D::intersects(ray, line, intersection, a) == result);
     REQUIRE(intersection == expectedIntersection);
     REQUIRE(a == Approx(expectedA));

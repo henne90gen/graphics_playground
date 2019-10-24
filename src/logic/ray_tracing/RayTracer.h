@@ -6,17 +6,14 @@
 namespace RayTracer {
 
 struct Sphere {
-    glm::vec3 position;
     float radius;
 };
 
 struct Plane {
-    glm::vec3 position;
     glm::vec3 normal;
 };
 
 struct Cuboid {
-    glm::vec3 position;
     glm::vec3 xDim;
     glm::vec3 yDim;
     glm::vec3 zDim;
@@ -30,6 +27,7 @@ struct Object {
         Cuboid,
     };
     ObjectType type = None;
+    glm::vec3 position;
     glm::vec3 color;
 
     union {
@@ -49,7 +47,11 @@ struct Light {
     float brightness;
 };
 
-void rayTrace(const std::vector<Object> &objects, const std::vector<Light> &lights, const glm::vec3 cameraPosition,
-              std::vector<glm::vec3> &pixels, const unsigned int width, const unsigned int height);
+void rayTrace(const std::vector<Object> &objects, const std::vector<Light> &lights, glm::vec3 cameraPosition,
+              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height);
+
+bool intersects(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal);
+
+bool intersects(const Ray &ray, const Object &object);
 
 } // namespace RayTracer

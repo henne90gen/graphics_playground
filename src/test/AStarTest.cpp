@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <glm/glm.hpp>
 
+#include "TestUtils.h"
 #include "a_star/AStarSolver.h"
 
 Board initBoard(unsigned int width, unsigned int height) {
@@ -11,27 +12,22 @@ Board initBoard(unsigned int width, unsigned int height) {
     return {width, height, pixels};
 }
 
-void setColor(Board &board, glm::ivec2 pos, glm::vec3 color) {
-    board.pixels[pos.x + pos.y * board.width] = color;
-}
+void setColor(Board &board, glm::ivec2 pos, glm::vec3 color) { board.pixels[pos.x + pos.y * board.width] = color; }
 
-void positionEquals(Board &board, glm::ivec2 pos, glm::vec3 second) {
-    glm::vec3 first = board.pixels[pos.x + pos.y * board.width];
-    INFO("Position: (" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ")")
-    INFO("Expected Color: (" + std::to_string(second.x) + ", " + std::to_string(second.y) + ", " +
-         std::to_string(second.z) + ")")
-    INFO("Actual Color: (" + std::to_string(first.x) + ", " + std::to_string(first.y) + ", " +
-         std::to_string(first.z) + ")")
-    REQUIRE(first.x == Approx(second.x));
-    REQUIRE(first.y == Approx(second.y));
-    REQUIRE(first.z == Approx(second.z));
+void positionEquals(Board &board, glm::ivec2 pos, glm::vec3 expectedColor) {
+    glm::vec3 actualColor = board.pixels[pos.x + pos.y * board.width];
+    INFO_VEC2(pos)
+    INFO_VEC3(expectedColor)
+    INFO_VEC3(actualColor)
+    REQUIRE(actualColor.x == Approx(expectedColor.x));
+    REQUIRE(actualColor.y == Approx(expectedColor.y));
+    REQUIRE(actualColor.z == Approx(expectedColor.z));
 }
 
 std::function<void(glm::ivec2)> createNextVisitFunc(Board &board, AStarSolver &solver) {
     return [&board, &solver](glm::ivec2 pos) {
         solver.nextStep(board);
         positionEquals(board, pos, visitedColor);
-
     };
 }
 
