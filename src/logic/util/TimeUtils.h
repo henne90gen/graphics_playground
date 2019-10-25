@@ -52,8 +52,11 @@ private:
 #define TIME_SCOPE() \
     auto timer = Timer(nullptr, __func__)
 
-#define TIME_SCOPE_RECORD(PerfCounter) \
-    auto timer = Timer(PerfCounter, __func__)
+#define TIME_SCOPE_NAME(name) \
+    auto timer = Timer(nullptr, name)
 
-#define TIME_SCOPE_RECORD_NAME(PerfCounter, Name) \
-    auto timer = Timer(PerfCounter, Name)
+#define TIME_SCOPE_RECORD(perfCounter) \
+    auto timer = Timer(perfCounter, __func__)
+
+#define TIME_SCOPE_RECORD_NAME(perfCounter, name) \
+    auto timer = Timer(perfCounter, name)

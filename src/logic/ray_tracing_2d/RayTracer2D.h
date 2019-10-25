@@ -22,7 +22,7 @@ struct Ray {
 };
 
 std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
-                               const glm::vec2 &lightPosition);
+                               const glm::vec2 &lightPosition, bool runAsync);
 
 bool parallel(const glm::vec2 &vec1, const glm::vec2 &vec2);
 

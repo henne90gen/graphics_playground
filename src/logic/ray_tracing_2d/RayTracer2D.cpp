@@ -1,5 +1,8 @@
 #include "RayTracer2D.h"
 
+#include <functional>
+#include <future>
+
 #include "util/TimeUtils.h"
 
 namespace RayTracer2D {
@@ -91,17 +94,10 @@ void calculateRaysForPolygon(const Polygon &polygon, std::vector<Ray> &rays, std
     }
 }
 
-std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
-                               const glm::vec2 &lightPosition) {
-    std::vector<Ray> rays = {};
-    std::vector<Ray> lineSegments = {};
-    for (auto &polygon : walls) {
-        calculateRaysForPolygon(polygon, rays, lineSegments, lightPosition);
-    }
-
-    calculateRaysForPolygon(screenBorder, rays, lineSegments, lightPosition);
-
-    for (auto &ray : rays) {
+void findIntersections(const std::vector<Ray> &lineSegments, std::vector<Ray> &rays, unsigned long startIndex,
+                       unsigned long endIndex) {
+    for (unsigned long i = startIndex; i < endIndex; i++) {
+        auto &ray = rays[i];
         for (auto &line : lineSegments) {
             glm::vec2 intersection = {};
             float a = 0.0;
@@ -115,6 +111,37 @@ std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon 
             }
             ray.intersections.push_back(intersection);
         }
+    }
+}
+
+std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon &screenBorder,
+                               const glm::vec2 &lightPosition, bool runAsync) {
+    std::vector<Ray> rays = {};
+    std::vector<Ray> lineSegments = {};
+    for (auto &polygon : walls) {
+        calculateRaysForPolygon(polygon, rays, lineSegments, lightPosition);
+    }
+    calculateRaysForPolygon(screenBorder, rays, lineSegments, lightPosition);
+
+    if (runAsync) {
+        TIME_SCOPE_NAME("intersectionsAsync");
+        std::vector<std::future<void>> results = {};
+        results.reserve(rays.size());
+        // FIXME what do we do, if we have an odd number of rays?
+        int numCores = 8;
+        unsigned long numRaysPerCore = rays.size() / numCores;
+        for (unsigned int i = 0; i < numCores; i++) {
+            unsigned long startIndex = numRaysPerCore * i;
+            unsigned long endIndex = numRaysPerCore * (i + 1);
+            results.push_back(std::async(std::launch::async, findIntersections, std::ref(lineSegments), std::ref(rays),
+                                         startIndex, endIndex));
+        }
+        for (auto &result : results) {
+            result.get();
+        }
+    } else {
+        TIME_SCOPE_NAME("intersections");
+        findIntersections(lineSegments, rays, 0, rays.size());
     }
     return rays;
 }

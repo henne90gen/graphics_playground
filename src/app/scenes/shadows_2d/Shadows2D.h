@@ -31,7 +31,7 @@ struct ColorConfig {
 
 class Shadows2D : public Scene {
   public:
-    Shadows2D(SceneData &data) : Scene(data, "RayCasting2D"){};
+    Shadows2D(SceneData &data) : Scene(data, "Shadows2D"){};
 
     ~Shadows2D() override = default;
 

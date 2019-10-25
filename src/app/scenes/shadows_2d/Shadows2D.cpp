@@ -33,6 +33,7 @@ void Shadows2D::tick() {
     static glm::vec2 lightPosition = glm::vec2();
     static glm::vec3 cameraPosition = glm::vec3();
     static float zoom = 2.5F;
+    static bool runAsync = false;
 
     ImGui::Begin("Settings");
 
@@ -56,13 +57,15 @@ void Shadows2D::tick() {
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
 
+    ImGui::Checkbox("Run async", &runAsync);
+
     ImGui::End();
 
     std::vector<RayTracer2D::Ray> rays = {};
     auto screenBorder = createScreenBorder(1.0F / zoom);
     {
         TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
-        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition);
+        rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, runAsync);
     }
 
     auto viewMatrix = createViewMatrix(cameraPosition, glm::vec3());
@@ -227,11 +230,11 @@ void Shadows2D::createWallVA() {
 
 void Shadows2D::addWalls() {
     glm::vec2 offset = {-0.375F, -0.25F};
-    for (int y = 0; y < 3; y++) {
-        for (int x = 0; x < 4; x++) {
-            glm::vec2 position = glm::vec2((float)x * 0.25F, (float)y * 0.25F);
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            glm::vec2 position = glm::vec2((float)x * 0.1F, (float)y * 0.1F);
             position += offset;
-            float scale = 0.05;
+            float scale = 0.02;
             auto transformMatrix = glm::identity<glm::mat4>();
             transformMatrix = glm::translate(transformMatrix, glm::vec3(position.x, position.y, 0.0F));
             transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
