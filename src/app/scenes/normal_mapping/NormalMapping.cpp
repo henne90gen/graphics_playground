@@ -9,8 +9,7 @@ void NormalMapping::setup() {
     shader = std::make_shared<Shader>("scenes/normal_mapping/NormalMappingVert.glsl",
                                       "scenes/normal_mapping/NormalMappingFrag.glsl");
     shader->bind();
-    auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-    shader->setUniform("u_Projection", projectionMatrix);
+    onAspectRatioChange();
 
     model = std::make_unique<Model>();
     model->loadFromFile("scenes/normal_mapping/models/monkey.obj", shader);
@@ -21,15 +20,11 @@ void NormalMapping::setup() {
     std::vector<glm::vec3> tangents = {};
     std::vector<glm::vec3> biTangents = {};
     ModelLoader::RawMesh &rawMesh = model->getOriginalModel()->meshes[0];
-    calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.textureCoordinates,
-                                   tangents, biTangents);
+    calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.textureCoordinates, tangents, biTangents);
 
     std::vector<float> vertexData;
     interleaveVertexData(tangents, biTangents, vertexData);
-    BufferLayout layout = {
-            {ShaderDataType::Float3, "a_Tangent"},
-            {ShaderDataType::Float3, "a_BiTangent"}
-    };
+    BufferLayout layout = {{ShaderDataType::Float3, "a_Tangent"}, {ShaderDataType::Float3, "a_BiTangent"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertexData, layout);
     std::shared_ptr<OpenGLMesh> mesh = model->getMeshes()[0];
     mesh->vertexArray->addVertexBuffer(vertexBuffer);
@@ -115,9 +110,8 @@ void NormalMapping::tick() {
     }
 }
 
-void
-NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &tangents, const std::vector<glm::vec3> &biTangents,
-                                    std::vector<float> &output) {
+void NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &tangents,
+                                         const std::vector<glm::vec3> &biTangents, std::vector<float> &output) {
 
     for (unsigned long i = 0; i < tangents.size(); i++) {
         output.push_back(tangents[i].x);
@@ -131,7 +125,6 @@ NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &tangents, cons
 }
 
 void NormalMapping::onAspectRatioChange() {
-    shader->bind();
     auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("u_Projection", projectionMatrix);
 }

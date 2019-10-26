@@ -22,7 +22,7 @@ void Shadows2D::setup() {
 void Shadows2D::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void Shadows2D::onAspectRatioChange() {
-    projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
+    auto projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
     shader->setUniform("u_Projection", projectionMatrix);
 }
 

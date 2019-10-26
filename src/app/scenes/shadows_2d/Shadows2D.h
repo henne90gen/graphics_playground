@@ -51,7 +51,6 @@ class Shadows2D : public Scene {
     std::vector<std::shared_ptr<VertexArray>> intersectionVAs = {};
     std::vector<std::shared_ptr<VertexArray>> closestIntersectionVAs = {};
     std::shared_ptr<VertexArray> shadowPolygonVA;
-    glm::mat4 projectionMatrix;
     std::vector<RayTracer2D::Polygon> walls;
     std::vector<glm::vec2> circleVertices = {{0.0, 0.0}};
     std::vector<unsigned int> circleIndices = {0};

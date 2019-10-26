@@ -5,6 +5,7 @@ set(SOURCES
         util/ImGuiUtils.cpp
         util/OpenGLUtils.cpp
         util/Image.cpp
+        util/RenderUtils.cpp
         util/ScreenRecorder.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp
