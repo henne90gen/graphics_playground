@@ -14,7 +14,7 @@ Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &c
     result.startingPoint = cameraPosition;
     int x = (int)col - (int)width / 2;
     int y = (int)row - (int)height / 2;
-    glm::vec3 direction = {x, y, zDistance};
+    glm::vec3 direction = {x, y, -1.0 * zDistance};
     result.direction = glm::normalize(direction);
     return result;
 }
@@ -116,10 +116,15 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
     }
     bool isNotInShadow = true;
     if (object.type != Object::None) {
-        // compute illumination
         Ray shadowRay = {};
         shadowRay.direction = glm::normalize(light.position - hitPoint);
+        shadowRay.startingPoint = hitPoint + shadowRay.direction * 0.00001F;
+        int index = -1;
         for (auto &currentObject : objects) {
+            index++;
+            if (index == 3) {
+                continue;
+            }
             if (intersects(shadowRay, currentObject)) {
                 isNotInShadow = false;
                 break;
@@ -129,16 +134,10 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
     return object.color * light.brightness * (float)isNotInShadow;
 }
 
-void rayTrace(const std::vector<Object> &objects, const std::vector<Light> &lights, const glm::vec3 cameraPosition,
+void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 cameraPosition,
               std::vector<glm::vec3> &pixels, const unsigned int width, const unsigned int height,
               const unsigned int zDistance) {
     pixels.resize(width * height);
-    if (lights.empty()) {
-        std::cout << "Could not find any lights in the scene." << std::endl;
-        return;
-    }
-    const Light &light = lights[0];
-
     for (unsigned int row = 0; row < height; row++) {
         for (unsigned int col = 0; col < width; col++) {
             Ray ray = createRay(row, col, cameraPosition, width, height, zDistance);
@@ -147,6 +146,7 @@ void rayTrace(const std::vector<Object> &objects, const std::vector<Light> &ligh
     }
 }
 Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float radius) {
+    static int nextId = 0;
     Object result = {};
     result.type = Object::Sphere;
     result.position = position;
