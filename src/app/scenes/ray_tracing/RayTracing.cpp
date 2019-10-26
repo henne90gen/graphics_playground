@@ -27,17 +27,30 @@ void RayTracing::setup() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform("u_TextureSampler", 0);
+
+    lights.push_back({{0, 0, 2}, 0.75});
+    objects.push_back(RayTracer::sphere({0, 0, 2}, {1, 0, 0}, 0.5));
 }
 
 void RayTracing::destroy() {}
 
 void RayTracing::tick() {
-    static unsigned int width = 1000;
-    static unsigned int height = 1000;
+    static int dimensions[2] = {500, 500};
     static glm::vec3 cameraPosition = {0, 0, 0};
+    static int zDistance = 250;
+    float dragSpeed = 0.001F;
+
+    ImGui::Begin("Settings");
+    ImGui::DragInt2("Dimensions", dimensions, 1.0, 1, 1000);
+    ImGui::DragInt("Z-Distance", &zDistance, 1.0, 1, 1000);
+    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
+    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lights[0].position), dragSpeed);
+    ImGui::End();
 
     std::vector<glm::vec3> pixels = {};
-    RayTracer::rayTrace(objects, lights, cameraPosition, pixels, width, height);
+    unsigned int width = dimensions[0];
+    unsigned int height = dimensions[1];
+    RayTracer::rayTrace(objects, lights, cameraPosition, pixels, width, height, zDistance);
 
     texture->update(pixels, width, height);
     vertexArray->bind();

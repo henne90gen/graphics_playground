@@ -13,7 +13,9 @@ RayTracer::Object sphere(glm::vec3 position, float radius) {
 
 TEST_CASE("Can calculate intersection of sphere and ray") {
     auto data = GENERATE(table<RayTracer::Ray, RayTracer::Object, glm::vec3, glm::vec3, bool>({
-          std::make_tuple(ray({0, 0, 0}, {0, 0, 1}), sphere({0, 0, 2}, 1), glm::vec3(), glm::vec3(), true),
+          std::make_tuple(ray({0, 0, 0}, {0, 0, 1}), sphere({0, 0, 2}, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, -1),
+                          true),
+          std::make_tuple(ray({0, 0, 0}, {0, 0, -1}), sphere({0, 0, 2}, 1), glm::vec3(), glm::vec3(), false),
     }));
     RayTracer::Ray ray = std::get<0>(data);
     RayTracer::Object object = std::get<1>(data);

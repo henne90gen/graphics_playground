@@ -27,8 +27,8 @@ struct Object {
         Cuboid,
     };
     ObjectType type = None;
-    glm::vec3 position;
-    glm::vec3 color;
+    glm::vec3 position = {0, 0, 0};
+    glm::vec3 color = {0, 0, 0};
 
     union {
         struct Sphere sphere;
@@ -38,20 +38,22 @@ struct Object {
 };
 
 struct Ray {
-    glm::vec3 startingPoint;
-    glm::vec3 direction;
+    glm::vec3 startingPoint = {0, 0, 0};
+    glm::vec3 direction = {0, 0, 0};
 };
 
 struct Light {
-    glm::vec3 position;
-    float brightness;
+    glm::vec3 position = {0, 0, 0};
+    float brightness = 1.0F;
 };
 
 void rayTrace(const std::vector<Object> &objects, const std::vector<Light> &lights, glm::vec3 cameraPosition,
-              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height);
+              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height, unsigned int zDistance);
 
 bool intersects(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal);
 
 bool intersects(const Ray &ray, const Object &object);
+
+Object sphere(const glm::vec3 &position, const glm::vec3 &color, float radius);
 
 } // namespace RayTracer

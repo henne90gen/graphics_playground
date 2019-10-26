@@ -14,7 +14,7 @@ set(SOURCES
         ray_tracing/RayTracer.cpp)
 
 add_library(logic ${SOURCES})
-target_link_libraries(logic PRIVATE FastNoise)
+target_link_libraries(logic PRIVATE FastNoise pthread)
 
 set_target_properties(
         logic PROPERTIES
