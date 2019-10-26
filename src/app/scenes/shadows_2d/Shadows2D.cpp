@@ -1,5 +1,7 @@
 #include "Shadows2D.h"
 
+#include <algorithm>
+
 #include "util/TimeUtils.h"
 
 void Shadows2D::setup() {
