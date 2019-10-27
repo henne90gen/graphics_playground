@@ -3,19 +3,20 @@
 #include "scenes/Scene.h"
 
 #include <functional>
-#include <memory>
 #include <glad/glad.h>
+#include <memory>
 
+#include "marching_cubes/MarchingCubes.h"
+#include "opengl/IndexBuffer.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
-#include "opengl/IndexBuffer.h"
-#include "marching_cubes/MarchingCubes.h"
+#include "util/TimeUtils.h"
 
 class MarchingCubesScene : public Scene {
-public:
-    explicit MarchingCubesScene(SceneData data) : Scene(data, "MarchingCubes") {};
+  public:
+    explicit MarchingCubesScene(SceneData data) : Scene(data, "MarchingCubes"){};
 
     ~MarchingCubesScene() override = default;
 
@@ -25,10 +26,10 @@ public:
 
     void destroy() override;
 
-protected:
+  protected:
     void onAspectRatioChange() override;
 
-public:
+  public:
     std::shared_ptr<Shader> shader;
 
     std::shared_ptr<VertexArray> cubeVertexArray;
@@ -39,6 +40,7 @@ public:
     std::shared_ptr<IndexBuffer> surfaceIndexBuffer;
 
     std::shared_ptr<MarchingCubes> marchingCubes;
+    std::shared_ptr<PerformanceCounter> perfCounter = std::make_shared<PerformanceCounter>();
 
     glm::mat4 projectionMatrix;
 
@@ -46,6 +48,6 @@ public:
 
     void drawSurface(bool drawWireframe);
 
-    void showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
-                      float &scale, bool &rotate, bool &drawWireframe) const;
+    void showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation, float &scale,
+                      bool &rotate, bool &drawWireframe) const;
 };

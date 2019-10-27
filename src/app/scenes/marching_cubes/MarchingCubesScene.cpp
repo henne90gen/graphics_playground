@@ -1,7 +1,6 @@
 #include "MarchingCubesScene.h"
 
 #include <array>
-
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
@@ -22,20 +21,20 @@ void MarchingCubesScene::setup() {
     cubeVertexArray->bind();
 
     BufferLayout bufferLayout = {
-            {ShaderDataType::Float3, "position"}
+          {ShaderDataType::Float3, "a_Position"},
     };
     auto positionBuffer = std::make_shared<VertexBuffer>(cubeCorners, bufferLayout);
     cubeVertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
-            // bottom
-            4, 5, 1, 0, 4, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          // bottom
+          4, 5, 1, 0, 4, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
-            // top
-            7, 6, 2, 3, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          // top
+          7, 6, 2, 3, 7, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
-            // edges
-            6, 5, 1, 2, 3, 0 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          // edges
+          6, 5, 1, 2, 3, 0 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
     cubeIndexBuffer = std::make_shared<IndexBuffer>(indices);
     cubeIndexBuffer->bind();
@@ -49,7 +48,7 @@ void MarchingCubesScene::setup() {
     surfaceVertexBuffer->bind();
 
     BufferLayout surfaceBufferLayout = {
-            {ShaderDataType::Float3, "position"}
+          {ShaderDataType::Float3, "a_Position"},
     };
     surfaceVertexBuffer->setLayout(surfaceBufferLayout);
     surfaceVertexArray->addVertexBuffer(surfaceVertexBuffer);
@@ -62,14 +61,13 @@ void MarchingCubesScene::onAspectRatioChange() {
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
-void MarchingCubesScene::destroy() {
-}
+void MarchingCubesScene::destroy() {}
 
 void MarchingCubesScene::tick() {
-    static auto translation = glm::vec3(1.7F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto translation = glm::vec3(1.0F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static float scale = 0.1F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float scale = 0.1F;                                 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool rotate = true;
     static bool drawWireframe = false;
 
@@ -80,33 +78,40 @@ void MarchingCubesScene::tick() {
 
     showSettings(translation, cameraRotation, modelRotation, scale, rotate, drawWireframe);
 
-    marchingCubes->step();
+    {
+        TIME_SCOPE_RECORD_NAME(perfCounter, "MarchingCubes");
+        marchingCubes->step();
+    }
 
-    glm::vec3 dimensions = glm::vec3(
-            static_cast<float>(marchingCubes->width),
-            static_cast<float>(marchingCubes->height),
-            static_cast<float>(marchingCubes->depth)
-    );
-    const float halfScale = -0.5F;
-    glm::vec3 modelCenter = dimensions * halfScale;
+    {
+        TIME_SCOPE_RECORD_NAME(perfCounter, "Render");
+        glm::vec3 dimensions =
+              glm::vec3(static_cast<float>(marchingCubes->width), static_cast<float>(marchingCubes->height),
+                        static_cast<float>(marchingCubes->depth));
+        const float halfScale = -0.5F;
+        glm::vec3 modelCenter = dimensions * halfScale;
 
-    shader->bind();
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    modelMatrix = glm::translate(modelMatrix, modelCenter);
-    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
-    shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
-    shader->setUniform("dimensions", dimensions);
+        shader->bind();
 
-    drawSurface(drawWireframe);
-    drawCube();
+        glm::mat4 modelMatrix = glm::mat4(1.0F);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+        modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+        modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+        modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+        modelMatrix = glm::translate(modelMatrix, modelCenter);
+        glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
+        shader->setUniform("u_Model", modelMatrix);
+        shader->setUniform("u_View", viewMatrix);
+        shader->setUniform("u_Projection", projectionMatrix);
+        shader->setUniform("u_Dimensions", dimensions);
 
-    shader->unbind();
+        drawSurface(drawWireframe);
+        drawCube();
+
+        shader->unbind();
+    }
+
+    ImGui::Metrics(perfCounter);
 }
 
 void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
@@ -157,7 +162,7 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
 }
 
 void MarchingCubesScene::drawCube() {
-    shader->setUniform("offset", marchingCubes->getCubeTranslation());
+    shader->setUniform("u_Offset", marchingCubes->getCubeTranslation());
     cubeVertexArray->bind();
     GL_Call(glDrawElements(GL_LINE_LOOP, cubeIndexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
     cubeVertexArray->unbind();
@@ -169,7 +174,7 @@ void MarchingCubesScene::drawSurface(bool drawWireframe) {
     surfaceVertexBuffer->update(marchingCubes->getVertices());
     surfaceIndexBuffer->update(marchingCubes->getIndices());
 
-    shader->setUniform("offset", glm::vec3());
+    shader->setUniform("u_Offset", glm::vec3());
 
     if (drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));

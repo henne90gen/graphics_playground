@@ -1,10 +1,10 @@
 #version 130
 
-uniform vec3 dimensions;
+uniform vec3 u_Dimensions;
 
-varying vec3 finalPosition;
+varying vec3 v_FinalPosition;
 
 void main() {
-    vec3 color = finalPosition / dimensions;
+    vec3 color = v_FinalPosition / u_Dimensions;
     gl_FragColor = vec4(color, 1.0);
 }
