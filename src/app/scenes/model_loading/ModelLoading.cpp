@@ -1,8 +1,8 @@
 #include "ModelLoading.h"
-#include <util/Image.h>
 
 #include "model_loading/ModelLoader.h"
 #include "util/ImGuiUtils.h"
+#include "util/Image.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -23,7 +23,7 @@ void ModelLoading::tick() {
     static auto translation = glm::vec3(1.7F, -3.5F, -12.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static float scale = 0.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float scale = 0.5F;                                 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool rotate = true;
     static bool drawWireframe = false;
     static unsigned int currentModel = 0;
@@ -35,21 +35,13 @@ void ModelLoading::tick() {
     }
 
     std::vector<std::string> paths = {};
-    showSettings(
-            rotate,
-            translation,
-            modelRotation,
-            cameraRotation,
-            scale,
-            drawWireframe,
-            currentModel,
-            paths,
-            glModel
-    );
+    showSettings(rotate, translation, modelRotation, cameraRotation, scale, drawWireframe, currentModel, paths,
+                 glModel);
 
     shader->bind();
 
     if (prevModel != currentModel) {
+        TIME_SCOPE_RECORD_NAME(perfCounter, "LoadingModel");
         std::string modelFileName = paths[currentModel];
         glModel->loadFromFile(modelFileName, shader);
         prevModel = currentModel;
@@ -58,6 +50,8 @@ void ModelLoading::tick() {
     drawModel(translation, modelRotation, cameraRotation, scale, drawWireframe);
 
     shader->unbind();
+
+    ImGui::Metrics(perfCounter);
 }
 
 void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
@@ -105,10 +99,9 @@ void ModelLoading::onAspectRatioChange() {
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
-void
-showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale,
-             bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
-             std::shared_ptr<Model> &renderModel) {
+void showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation,
+                  float &scale, bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
+                  std::shared_ptr<Model> &renderModel) {
     ImGui::Begin("Settings");
     ImGui::FileSelector("Models", "scenes/model_loading/models/", currentModel, paths);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)

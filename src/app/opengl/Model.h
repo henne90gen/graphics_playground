@@ -31,9 +31,6 @@ public:
     std::shared_ptr<IndexBuffer> indexBuffer;
     std::shared_ptr<Texture> texture;
     bool visible = true;
-
-private:
-
 };
 
 class Model {
