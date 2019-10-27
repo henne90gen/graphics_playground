@@ -1,14 +1,16 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <imgui.h>
-#include <glm/glm.hpp>
 #include <FastNoise.h>
+#include <GLFW/glfw3.h>
 #include <array>
-#include <vector>
+#include <glm/glm.hpp>
+#include <imgui.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "util/FileUtils.h"
+#include "util/TimeUtils.h"
 
 void initImGui(GLFWwindow *window);
 
@@ -25,11 +27,15 @@ void pickPosition(glm::vec3 &position);
 void pickColorAndVertices(float *color, float *vertices);
 
 namespace ImGui {
-    void NoiseTypeSelector(FastNoise::NoiseType *pType);
 
-    void ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
-                 const std::string &prefix = "");
+void NoiseTypeSelector(FastNoise::NoiseType *pType);
 
-    void FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
-                             std::vector<std::string> &filePaths);
-}
+void ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
+             const std::string &prefix = "");
+
+void FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
+                  std::vector<std::string> &filePaths);
+
+void Metrics(std::shared_ptr<PerformanceCounter> performanceCounter);
+
+} // namespace ImGui

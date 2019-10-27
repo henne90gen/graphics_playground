@@ -83,3 +83,15 @@ void ImGui::FileSelector(const std::string &label, const std::string &path, unsi
     getFilesInDirectory(path, filePaths);
     ImGui::ListBox(label, currentItem, filePaths, path);
 }
+
+void ImGui::Metrics(std::shared_ptr<PerformanceCounter> performanceCounter) {
+    ImGui::Begin("Metrics");
+    for (auto &dataPoint : performanceCounter->dataPoints) {
+        ImGui::Text("%s Average Time: %fms", dataPoint.first.c_str(), dataPoint.second.average);
+        ImGui::Text("%s Standard Deviation: %fms", dataPoint.first.c_str(), dataPoint.second.standardDeviation);
+    }
+    if (ImGui::Button("Reset Performance Counter")) {
+        performanceCounter->reset();
+    }
+    ImGui::End();
+}

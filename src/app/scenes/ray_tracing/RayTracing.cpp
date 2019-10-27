@@ -1,6 +1,7 @@
 #include "RayTracing.h"
 
 #include "ray_tracing/RayTracer.h"
+#include "util/ImGuiUtils.h"
 #include "util/RenderUtils.h"
 #include "util/TimeUtils.h"
 
@@ -54,16 +55,21 @@ void RayTracing::tick() {
     unsigned int width = dimensions[0];
     unsigned int height = dimensions[1];
     {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "rayTrace");
+        TIME_SCOPE_RECORD_NAME(perfCounter, "RayTrace");
         RayTracer::rayTrace(objects, light, rayTracerCameraPosition, pixels, width, height, zDistance);
     }
 
-    shader->bind();
-    auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-    shader->setUniform("u_View", viewMatrix);
+    {
+        TIME_SCOPE_RECORD_NAME(perfCounter, "Render");
+        shader->bind();
+        auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+        shader->setUniform("u_View", viewMatrix);
 
-    renderRayTracedTexture(pixels, width, height, zDistance, rayTracerCameraPosition);
-    renderScene(rayTracerCameraPosition);
+        renderRayTracedTexture(pixels, width, height, zDistance, rayTracerCameraPosition);
+        renderScene(rayTracerCameraPosition);
+    }
+
+    ImGui::Metrics(perfCounter);
 }
 
 void RayTracing::renderRayTracedTexture(const std::vector<glm::vec3> &vector, const unsigned int width,

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
 
 void Shadows2D::setup() {
@@ -66,7 +67,7 @@ void Shadows2D::tick() {
     std::vector<RayTracer2D::Ray> rays = {};
     auto screenBorder = createScreenBorder(1.0F / zoom);
     {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "rays");
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "Rays");
         rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, runAsync);
     }
 
@@ -77,27 +78,25 @@ void Shadows2D::tick() {
     unsigned int numIndices = 0;
     std::vector<glm::vec2> shadowPolygon = {};
     {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "scene");
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "Scene");
         createRaysAndIntersectionsVA(rays, drawToggles, shadowPolygon);
         createShadowPolygonVA(shadowPolygon, viewMatrix, lightPosition, numVertices, numIndices);
     }
+
+    {
+        TIME_SCOPE_RECORD_NAME(performanceCounter, "render");
+        renderScene(drawToggles, viewMatrix, lightPosition, colorConfig);
+    }
+
+    ImGui::Metrics(performanceCounter);
 
     ImGui::Begin("Metrics");
     ImGui::Text("Num Rays: %lu", rays.size());
     unsigned long numIntersections = getNumIntersections(rays);
     ImGui::Text("Num Intersections: %lu", numIntersections);
-    ImGui::Text("Rays Average Time: %f", performanceCounter->dataPoints["rays"].average);
-    ImGui::Text("Rays Standard Deviation: %f", performanceCounter->dataPoints["rays"].standardDeviation);
-    ImGui::Text("Scene Average Time: %f", performanceCounter->dataPoints["scene"].average);
-    ImGui::Text("Scene Standard Deviation: %f", performanceCounter->dataPoints["scene"].standardDeviation);
-    if (ImGui::Button("Reset Performance Counter")) {
-        performanceCounter->reset();
-    }
     ImGui::Text("Num Vertices: %u", numVertices);
     ImGui::Text("Num Indices: %u", numIndices);
     ImGui::End();
-
-    renderScene(drawToggles, viewMatrix, lightPosition, colorConfig);
 }
 
 void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
@@ -161,8 +160,7 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
     }
 }
 
-void Shadows2D::renderShadow(const DrawToggles &drawToggles,
-                             const ColorConfig &colorConfig) const {
+void Shadows2D::renderShadow(const DrawToggles &drawToggles, const ColorConfig &colorConfig) const {
     if (!drawToggles.drawShadow) {
         return;
     }
