@@ -1,4 +1,5 @@
 #include "RayTracing.h"
+#include <ray_tracing/RayTracer.h>
 
 #include "ray_tracing/RayTracer.h"
 #include "util/ImGuiUtils.h"
@@ -89,8 +90,8 @@ void RayTracing::renderRayTracedTexture(const std::vector<glm::vec3> &vector, co
 void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition) {
     renderCube(rayTracerCameraPosition, {1, 1, 1});
     for (auto &object : objects) {
-        //        renderObject(object);
-        renderCube(object.position, object.color);
+        renderObject(object);
+        //        renderCube(object.position, object.color);
     }
     renderCube(light.position, {1, 1, 1});
 }
@@ -108,38 +109,21 @@ void RayTracing::renderCube(const glm::vec3 &position, const glm::vec3 &color) {
 }
 
 void RayTracing::renderObject(const RayTracer::Object &object) {
-    std::vector<glm::vec3> vertices = {};
-    std::vector<glm::ivec3> indices = {};
-    auto transformMatrix = glm::mat4(1.0F);
+    std::shared_ptr<VertexArray> array;
+    auto modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::translate(modelMatrix, object.position);
+
     if (object.type == RayTracer::Object::Sphere) {
-        vertices.emplace_back(0, 1, 0);
-        for (float vertical = 0.1F; vertical < glm::pi<float>(); vertical += 0.1F) {
-            for (float horizontal = 0; horizontal < glm::two_pi<float>(); horizontal += 0.1F) {
-                auto vec = glm::vec4(0, 1, 0, 1);
-                auto rotation = glm::rotate(glm::mat4(1.0F), vertical, glm::vec3(1, 0, 0));
-                rotation = glm::rotate(rotation, horizontal, glm::vec3(0, 1, 0));
-                vertices.emplace_back(rotation * vec);
-            }
-        }
-        vertices.emplace_back(0, -1, 0);
-
-        indices.emplace_back(glm::vec3(0, 1, 2));
+        array = createSphereVA(shader);
+        float r = object.data.sphere.radius;
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(r, r, r));
     }
-
-    VertexArray array = VertexArray(shader);
-    BufferLayout layout = {
-          {ShaderDataType::Float3, "a_Position"},
-    };
-    std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(vertices, layout);
-    array.addVertexBuffer(vb);
-    std::shared_ptr<IndexBuffer> ib = std::make_shared<IndexBuffer>(indices);
-    array.setIndexBuffer(ib);
 
     shader->setUniform("u_UseTexture", false);
     shader->setUniform("u_Color", object.color);
-    shader->setUniform("u_Model", transformMatrix);
-    array.bind();
-    GL_Call(glDrawElements(GL_TRIANGLES, array.getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    shader->setUniform("u_Model", modelMatrix);
+    array->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, array->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
 void RayTracing::setupRayTracedTexture() {
