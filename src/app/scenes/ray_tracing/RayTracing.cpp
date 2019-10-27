@@ -38,6 +38,7 @@ void RayTracing::tick() {
     static int zDistance = 100;
     static glm::vec3 cameraPosition = {-5, 0, -2};
     static glm::vec3 cameraRotation = {0, -1, 0};
+    static bool runAsync = false;
     float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
@@ -47,6 +48,7 @@ void RayTracing::tick() {
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
     ImGui::DragFloat3("Ray-Tracer Camera Position", reinterpret_cast<float *>(&rayTracerCameraPosition), dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&light.position), dragSpeed);
+    ImGui::Checkbox("Run Async", &runAsync);
     ImGui::End();
 
     // FIXME find a better solution for getting the light into the scene
@@ -57,7 +59,7 @@ void RayTracing::tick() {
     unsigned int height = dimensions[1];
     {
         TIME_SCOPE_RECORD_NAME(perfCounter, "RayTrace");
-        RayTracer::rayTrace(objects, light, rayTracerCameraPosition, pixels, width, height, zDistance);
+        RayTracer::rayTrace(objects, light, rayTracerCameraPosition, pixels, width, height, zDistance, runAsync);
     }
 
     {
@@ -91,7 +93,6 @@ void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition) {
     renderCube(rayTracerCameraPosition, {1, 1, 1});
     for (auto &object : objects) {
         renderObject(object);
-        //        renderCube(object.position, object.color);
     }
     renderCube(light.position, {1, 1, 1});
 }

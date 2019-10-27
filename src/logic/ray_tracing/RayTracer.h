@@ -48,7 +48,8 @@ struct Light {
 };
 
 void rayTrace(const std::vector<Object> &objects, const Light &light, glm::vec3 cameraPosition,
-              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height, unsigned int zDistance);
+              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height, unsigned int zDistance,
+              bool runAsync);
 
 bool intersects(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal);
 

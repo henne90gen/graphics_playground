@@ -126,7 +126,6 @@ std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon 
     if (runAsync) {
         TIME_SCOPE_NAME("intersectionsAsync");
         std::vector<std::future<void>> results = {};
-        results.reserve(rays.size());
         // FIXME what do we do, if we have an odd number of rays?
         int numCores = 8;
         unsigned long numRaysPerCore = rays.size() / numCores;

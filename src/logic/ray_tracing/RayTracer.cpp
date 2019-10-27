@@ -1,5 +1,6 @@
 #include "RayTracer.h"
 
+#include <future>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/projection.hpp>
 #include <iostream>
@@ -134,14 +135,49 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
     return object.color * light.brightness * (float)isNotInShadow;
 }
 
+void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &objects, const Light &light,
+                   const glm::vec3 cameraPosition, std::vector<glm::vec3> &pixels, unsigned int startIndex,
+                   unsigned int endIndex) {
+    for (unsigned int i = startIndex; i < endIndex; i++) {
+        auto &ray = rays[i];
+        pixels[i] = trace(ray, light, cameraPosition, objects, 0);
+    }
+}
+
 void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 cameraPosition,
               std::vector<glm::vec3> &pixels, const unsigned int width, const unsigned int height,
-              const unsigned int zDistance) {
+              const unsigned int zDistance, bool runAsync) {
     pixels.resize(width * height);
-    for (unsigned int row = 0; row < height; row++) {
-        for (unsigned int col = 0; col < width; col++) {
-            Ray ray = createRay(row, col, cameraPosition, width, height, zDistance);
-            pixels[row * width + col] = trace(ray, light, cameraPosition, objects, 0);
+
+    if (runAsync) {
+        std::vector<Ray> rays = {};
+        rays.resize(pixels.size());
+        for (unsigned int row = 0; row < height; row++) {
+            for (unsigned int col = 0; col < width; col++) {
+                Ray ray = createRay(row, col, cameraPosition, width, height, zDistance);
+                rays[row * width + col] = ray;
+            }
+        }
+
+        std::vector<std::future<void>> results = {};
+        // FIXME what do we do, if we have an odd number of rays?
+        int numCores = 8;
+        unsigned long numRaysPerCore = rays.size() / numCores;
+        for (unsigned long i = 0; i < numCores; i++) {
+            unsigned long startIndex = numRaysPerCore * i;
+            unsigned long endIndex = numRaysPerCore * (i + 1);
+            results.push_back(std::async(std::launch::async, traceMultiple, std::ref(rays), std::ref(objects),
+                                         std::ref(light), cameraPosition, std::ref(pixels), startIndex, endIndex));
+        }
+        for (auto &result : results) {
+            result.get();
+        }
+    } else {
+        for (unsigned int row = 0; row < height; row++) {
+            for (unsigned int col = 0; col < width; col++) {
+                Ray ray = createRay(row, col, cameraPosition, width, height, zDistance);
+                pixels[row * width + col] = trace(ray, light, cameraPosition, objects, 0);
+            }
         }
     }
 }
