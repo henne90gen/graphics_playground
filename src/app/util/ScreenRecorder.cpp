@@ -378,11 +378,16 @@ void ScreenRecorder::saveRecordingAsMp4() {
                                     SWS_BICUBIC, nullptr, nullptr, nullptr);
         }
 
-        int inLinesize[1] = {(int)currentFrame->channels * cctx->width};
+        // Using a negative stride to flip the image with sws_scale
+        int stride[1] = {-1 * (int)currentFrame->channels * cctx->width};
+
+        // Creating a pointer to the pointer that contains the actual start position.
+        // The start position is at the end of the buffer, so that the image is flipped with sws_scale
+        auto tmp = currentFrame->buffer + (currentFrame->channels * cctx->width * (cctx->height - 1));
+        const auto *const *data = (const uint8_t *const *)&tmp;
 
         // From RGB to YUV
-        sws_scale(swsCtx, (const uint8_t *const *)&currentFrame->buffer, inLinesize, 0, cctx->height, videoFrame->data,
-                  videoFrame->linesize);
+        sws_scale(swsCtx, data, stride, 0, cctx->height, videoFrame->data, videoFrame->linesize);
 
         videoFrame->pts = frameCounter++;
 
