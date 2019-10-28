@@ -371,12 +371,14 @@ void ScreenRecorder::saveRecordingAsMp4() {
                 format = AV_PIX_FMT_RGBA;
             } else {
                 std::cout << "Number of channels not supported (" << currentFrame->channels << ")" << std::endl;
+                Free(ofctx, cctx, videoFrame, swsCtx);
+                return;
             }
             swsCtx = sws_getContext(cctx->width, cctx->height, format, cctx->width, cctx->height, AV_PIX_FMT_YUV420P,
                                     SWS_BICUBIC, nullptr, nullptr, nullptr);
         }
 
-        int inLinesize[1] = {3 * cctx->width};
+        int inLinesize[1] = {(int)currentFrame->channels * cctx->width};
 
         // From RGB to YUV
         sws_scale(swsCtx, (const uint8_t *const *)&currentFrame->buffer, inLinesize, 0, cctx->height, videoFrame->data,
