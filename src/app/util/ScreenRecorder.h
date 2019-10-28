@@ -13,7 +13,7 @@ struct Frame {
 };
 
 class Video {
-public:
+  public:
     Video() {
         tail = new Frame();
         head = tail;
@@ -25,21 +25,19 @@ public:
 
     void reset();
 
-    bool hasFrames() {
-        return head->buffer != nullptr;
-    }
+    bool hasFrames() { return head->buffer != nullptr; }
 
     unsigned int getWidth() const { return head->width; }
 
     unsigned int getHeight() const { return head->height; }
 
-private:
+  private:
     Frame *head = nullptr;
     Frame *tail = nullptr;
 };
 
 class ScreenRecorder {
-public:
+  public:
     ScreenRecorder() = default;
 
     void tick(unsigned int windowWidth, unsigned int windowHeight) {
@@ -53,22 +51,16 @@ public:
         }
     }
 
-    void takeScreenshot() {
-        shouldTakeScreenshot = true;
-    }
+    void takeScreenshot() { shouldTakeScreenshot = true; }
 
-    void startRecording() {
-        recording = true;
-    }
+    void startRecording() { recording = true; }
 
     void stopRecording() {
         recording = false;
         saveRecording();
     }
 
-    bool isRecording() {
-        return recording;
-    }
+    bool isRecording() { return recording; }
 
     static void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight);
 
@@ -76,12 +68,13 @@ public:
 
     enum RecordingType {
         GIF = 0,
-        PNG
+        PNG,
+        MP4,
     };
 
     RecordingType recordingType = GIF;
 
-private:
+  private:
     bool shouldTakeScreenshot = false;
     bool recording = false;
     unsigned int recordingIndex = 0;
@@ -90,4 +83,6 @@ private:
     void saveRecordingAsPng();
 
     void saveRecordingAsGif();
+
+    void saveRecordingAsMp4();
 };

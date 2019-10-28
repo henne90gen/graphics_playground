@@ -3,7 +3,7 @@
 void Scene::renderBackMenu() {
     ImGui::Begin(name.c_str());
     ImGui::SetWindowPos(ImVec2(0, 0));
-    const unsigned int windowWidth = 250;
+    const unsigned int windowWidth = 300;
     const unsigned int windowHeight = 100;
     ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
 
@@ -23,6 +23,8 @@ void Scene::renderBackMenu() {
     ImGui::RadioButton("GIF", reinterpret_cast<int *>(&data.recorder.recordingType), ScreenRecorder::RecordingType::GIF);
     ImGui::SameLine();
     ImGui::RadioButton("PNG", reinterpret_cast<int *>(&data.recorder.recordingType), ScreenRecorder::RecordingType::PNG);
+    ImGui::SameLine();
+    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&data.recorder.recordingType), ScreenRecorder::RecordingType::MP4);
 
     if (ImGui::Button("Back")) {
         data.backToMainMenu();

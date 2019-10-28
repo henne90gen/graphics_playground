@@ -82,6 +82,9 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
 else ()
     target_link_libraries(${PROJECT_NAME} stdc++fs)
+
+    # linking FFMPEG
+    target_link_libraries(${PROJECT_NAME} x264 swscale avutil avformat avcodec)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
