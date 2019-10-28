@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "util/FileUtils.h"
+#include "util/ScreenRecorder.h"
 #include "util/TimeUtils.h"
 
 void initImGui(GLFWwindow *window);
@@ -36,6 +37,6 @@ void ListBox(const std::string &label, unsigned int &currentItem, const std::vec
 void FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
                   std::vector<std::string> &filePaths);
 
-void Metrics(const std::shared_ptr<PerformanceCounter>& performanceCounter);
+void Metrics(const std::shared_ptr<PerformanceCounter> &performanceCounter);
 
 } // namespace ImGui
