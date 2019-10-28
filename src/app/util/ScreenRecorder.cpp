@@ -130,6 +130,67 @@ void ScreenRecorder::saveRecordingAsPng() {
     video.iterateFrames(workFunction);
 }
 
+void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) {
+    unsigned int r1 = (pixel1 & 0x000000ff);
+    unsigned int g1 = (pixel1 & 0x0000ff00) >> 8;
+    unsigned int b1 = (pixel1 & 0x00ff0000) >> 16;
+    unsigned int r2 = (pixel2 & 0x000000ff);
+    unsigned int g2 = (pixel2 & 0x0000ff00) >> 8;
+    unsigned int b2 = (pixel2 & 0x00ff0000) >> 16;
+    unsigned int r = (r1 + r2) / 2;
+    unsigned int g = (g1 + g2) / 2;
+    unsigned int b = (b1 + b2) / 2;
+    *dest = r + (g << 8) + (b << 16);
+}
+
+void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsigned int newHeight = 600) {
+    auto buffer = static_cast<unsigned char *>(malloc(newWidth * newHeight * frame->channels * sizeof(unsigned char)));
+
+    const unsigned int oldWidth = frame->width;
+    const unsigned int oldHeight = frame->height;
+
+    frame->width = newWidth;
+    frame->height = newHeight;
+
+    for (unsigned int y = 0; y < frame->height; y++) {
+        for (unsigned int x = 0; x < frame->width; x++) {
+            auto xF = (float)x;
+            auto yF = (float)y;
+            float downScaledX = xF / (float)frame->width;
+            float downScaledY = yF / (float)frame->height;
+            float upScaledX = downScaledX * (float)oldWidth;
+            float upScaledY = downScaledY * (float)oldHeight;
+
+            unsigned int xLeft = std::floor(upScaledX);
+            unsigned int xRight = std::ceil(upScaledX);
+            unsigned int yTop = std::floor(upScaledY);
+            unsigned int yBottom = std::ceil(upScaledY);
+
+            unsigned int index = (xLeft + yTop * oldWidth) * frame->channels;
+            unsigned int topLeft = *(unsigned int *)(frame->buffer + index);
+            index = (xRight + yTop * oldWidth) * frame->channels;
+            unsigned int topRight = *(unsigned int *)(frame->buffer + index);
+
+            index = (xLeft + yBottom * oldWidth) * frame->channels;
+            unsigned int bottomLeft = *(unsigned int *)(frame->buffer + index);
+            index = (xRight + yBottom * oldWidth) * frame->channels;
+            unsigned int bottomRight = *(unsigned int *)(frame->buffer + index);
+
+            unsigned int top;
+            averagePixel(topLeft, topRight, &top);
+            unsigned int bottom;
+            averagePixel(bottomLeft, bottomRight, &bottom);
+
+            unsigned int baseIndex = (x + y * frame->width) * frame->channels;
+            auto *pixel = (unsigned int *)(buffer + baseIndex);
+            averagePixel(top, bottom, pixel);
+        }
+    }
+
+    free(frame->buffer);
+    frame->buffer = buffer;
+}
+
 void ScreenRecorder::saveRecordingAsGif() {
     int width = (int)video.getWidth();
     int height = (int)video.getHeight();
@@ -144,6 +205,7 @@ void ScreenRecorder::saveRecordingAsGif() {
     }
 
     std::function<void(Frame *)> workFunction = [&g, &delay](Frame *currentFrame) {
+        scaleDownFrame(currentFrame);
         GifWriteFrame(&g, currentFrame->buffer, currentFrame->width, currentFrame->height, delay);
     };
     video.iterateFrames(workFunction);
@@ -468,73 +530,17 @@ void Video::iterateFrames(const std::function<void(Frame *)> &workFunction) {
     }
 }
 
-void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) {
-    unsigned int r1 = (pixel1 & 0x000000ff);
-    unsigned int g1 = (pixel1 & 0x0000ff00) >> 8;
-    unsigned int b1 = (pixel1 & 0x00ff0000) >> 16;
-    unsigned int r2 = (pixel2 & 0x000000ff);
-    unsigned int g2 = (pixel2 & 0x0000ff00) >> 8;
-    unsigned int b2 = (pixel2 & 0x00ff0000) >> 16;
-    unsigned int r = (r1 + r2) / 2;
-    unsigned int g = (g1 + g2) / 2;
-    unsigned int b = (b1 + b2) / 2;
-    *dest = r + (g << 8) + (b << 16);
-}
-
-void copyAndScaleDownFrame(const unsigned char *buffer, Frame *frame, unsigned int screenWidth,
-                           unsigned int screenHeight) {
-    for (unsigned int y = 0; y < frame->height; y++) {
-        for (unsigned int x = 0; x < frame->width; x++) {
-            auto xF = (float)x;
-            auto yF = (float)y;
-            float downScaledX = xF / (float)frame->width;
-            float downScaledY = yF / (float)frame->height;
-            float upScaledX = downScaledX * (float)screenWidth;
-            float upScaledY = downScaledY * (float)screenHeight;
-
-            unsigned int xLeft = std::floor(upScaledX);
-            unsigned int xRight = std::ceil(upScaledX);
-            unsigned int yTop = std::floor(upScaledY);
-            unsigned int yBottom = std::ceil(upScaledY);
-
-            unsigned int index = (xLeft + yTop * screenWidth) * frame->channels;
-            unsigned int topLeft = *(unsigned int *)(buffer + index);
-            index = (xRight + yTop * screenWidth) * frame->channels;
-            unsigned int topRight = *(unsigned int *)(buffer + index);
-
-            index = (xLeft + yBottom * screenWidth) * frame->channels;
-            unsigned int bottomLeft = *(unsigned int *)(buffer + index);
-            index = (xRight + yBottom * screenWidth) * frame->channels;
-            unsigned int bottomRight = *(unsigned int *)(buffer + index);
-
-            unsigned int top;
-            averagePixel(topLeft, topRight, &top);
-            unsigned int bottom;
-            averagePixel(bottomLeft, bottomRight, &bottom);
-
-            unsigned int baseIndex = (x + y * frame->width) * frame->channels;
-            auto *pixel = (unsigned int *)(frame->buffer + baseIndex);
-            averagePixel(top, bottom, pixel);
-        }
-    }
-}
-
 void Video::recordFrame(unsigned int screenWidth, unsigned int screenHeight) {
     const unsigned int channels = 4;
-    const int numberOfPixels = screenWidth * screenHeight * channels;
-    auto *buffer = static_cast<unsigned char *>(malloc(numberOfPixels * sizeof(unsigned char)));
-
-    GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
-    GL_Call(glReadBuffer(GL_FRONT));
-    GL_Call(glReadPixels(0, 0, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer));
-
-    tail->width = 800;
-    tail->height = 600;
+    tail->width = screenWidth;
+    tail->height = screenHeight;
     tail->channels = channels;
     tail->buffer =
           static_cast<unsigned char *>(malloc(tail->width * tail->height * tail->channels * sizeof(unsigned char)));
 
-    copyAndScaleDownFrame(buffer, tail, screenWidth, screenHeight);
+    GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
+    GL_Call(glReadBuffer(GL_FRONT));
+    GL_Call(glReadPixels(0, 0, screenWidth, screenHeight, GL_RGBA, GL_UNSIGNED_BYTE, tail->buffer));
 
     Frame *tmp = tail;
     tail = new Frame();
