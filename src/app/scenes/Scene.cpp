@@ -11,7 +11,7 @@ void Scene::renderBackMenu() {
         data.recorder.takeScreenshot();
     }
 
-    static const std::array<const char *, 3> items = {"GIF", "PNG", "MP4"};
+    static const std::array<const char *, 2> items = {"GIF", "MP4"};
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::Combo("Recording Type", reinterpret_cast<int *>(&data.recorder.recordingType), items.data(), items.size());
 

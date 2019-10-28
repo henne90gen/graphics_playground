@@ -22,10 +22,6 @@ std::string generateScreenshotFilename() {
     return "../../../screenshot-" + buffer.str() + ".png";
 }
 
-std::string generateScreenrecordingFilename(const std::string &directory, unsigned int frameIndex) {
-    return directory + std::to_string(frameIndex) + ".png";
-}
-
 std::string generateScreenrecordingDirectoryName(unsigned int recordingIndex) {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
@@ -63,37 +59,6 @@ void ScreenRecorder::saveScreenshot(unsigned int windowWidth, unsigned int windo
 
     ImageOps::save(image);
     std::cout << "Saved screenshot " << image.fileName << std::endl;
-}
-
-void saveFrameToImage(Frame *frame, const std::string &directory) {
-    Image image = {};
-    image.fileName = generateScreenrecordingFilename(directory, frame->index);
-    image.width = frame->width;
-    image.height = frame->height;
-    image.channels = frame->channels;
-
-    const int numberOfPixels = frame->width * frame->height * frame->channels;
-    image.pixels = std::vector<unsigned char>(numberOfPixels);
-
-    unsigned char *ptr = frame->buffer;
-    for (unsigned char &pixel : image.pixels) {
-        pixel = *ptr;
-        ptr++;
-    }
-
-    ImageOps::save(image);
-}
-
-void ScreenRecorder::saveRecordingAsPng() {
-    std::string directory = generateScreenrecordingDirectoryName(recordingIndex);
-    if (!std::filesystem::exists(directory)) {
-        std::filesystem::create_directory(directory);
-    }
-
-    std::function<void(Frame *)> workFunction = [&directory](Frame *currentFrame) {
-        saveFrameToImage(currentFrame, directory);
-    };
-    video.iterateFrames(workFunction);
 }
 
 void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) {
@@ -192,9 +157,7 @@ void ScreenRecorder::saveRecording() {
         std::cerr << "There are no frames in this recording." << std::endl;
         return;
     }
-    if (recordingType == RecordingType::PNG) {
-        saveRecordingAsPng();
-    } else if (recordingType == RecordingType::GIF) {
+    if (recordingType == RecordingType::GIF) {
         saveRecordingAsGif();
     } else if (recordingType == RecordingType::MP4) {
         saveRecordingAsMp4();

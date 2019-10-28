@@ -34,7 +34,6 @@ class ScreenRecorder {
 
     enum RecordingType {
         GIF = 0,
-        PNG,
         MP4,
     };
 
@@ -45,8 +44,6 @@ class ScreenRecorder {
     bool recording = false;
     unsigned int recordingIndex = 0;
     Video video = {};
-
-    void saveRecordingAsPng();
 
     void saveRecordingAsGif();
 
