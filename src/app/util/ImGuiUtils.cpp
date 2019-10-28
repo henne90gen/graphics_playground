@@ -84,7 +84,7 @@ void ImGui::FileSelector(const std::string &label, const std::string &path, unsi
     ImGui::ListBox(label, currentItem, filePaths, path);
 }
 
-void ImGui::Metrics(std::shared_ptr<PerformanceCounter> performanceCounter) {
+void ImGui::Metrics(const std::shared_ptr<PerformanceCounter>& performanceCounter) {
     ImGui::Begin("Metrics");
     for (auto &dataPoint : performanceCounter->dataPoints) {
         ImGui::Text("%s Average Time: %fms", dataPoint.first.c_str(), dataPoint.second.average);
