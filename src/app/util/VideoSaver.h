@@ -93,15 +93,18 @@ class Mp4VideoSaver : public VideoSaver {
     void free();
 };
 
-#if 0
+struct GifWriter;
+
 class GifVideoSaver : public VideoSaver {
   public:
-    GifVideoSaver(const std::string &videoFileName);
+    explicit GifVideoSaver(std::string videoFileName) : VideoSaver(std::move(videoFileName)) {}
+    ~GifVideoSaver();
 
-    void init(unsigned int frameWidth, unsigned int frameHeight) override;
-    void acceptFrame(const std::unique_ptr<Frame> &frame) override;
+    bool doInit() override;
+    void doAcceptFrame(const std::unique_ptr<Frame> &frame) override;
     void save() override;
 
   private:
+    int delay = 1;
+    GifWriter *gifWriter = nullptr;
 };
-#endif

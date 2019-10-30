@@ -162,3 +162,20 @@ Thus the lit area is the only area that is drawn to. The rest of the scene lies 
 ### Ray Casting 3D
 
 ### Water Demo
+
+## Additional Features
+
+### Screenshots
+
+The back menu offers the option to take screenshots of the current scene.
+The screenshot is then saved to the projects working directory as `screenshot-%year%-%month%-%day%-%hour%:%minute%:%second%.png`.
+
+### Screen Recording
+
+The back menu offers the option to take screen recordings of the current scene.
+Choose one of GIF or MP4 and press the `Start Recording` button.
+After you're done recording, just press the `Stop Recording` button.
+The recording is then stored in the projects working directory as `screenshot-%year%-%month%-%day%-%hour%:%minute%:%second%.%extension%`
+The extension is determined by the recording type you chose.
+
+### Timing Utility

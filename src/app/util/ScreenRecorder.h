@@ -29,6 +29,4 @@ class ScreenRecorder {
     bool shouldTakeScreenshot = false;
     unsigned int recordingIndex = 0;
     std::unique_ptr<VideoSaver> videoSaver = nullptr;
-
-    void saveRecordingAsGif();
 };
