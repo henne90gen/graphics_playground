@@ -8,12 +8,10 @@
 #include <iostream>
 
 #define GIF_FLIP_VERT
-
 #include <gif.h>
 
 #include "Image.h"
 #include "OpenGLUtils.h"
-#include "VideoSaver.h"
 
 std::string generateScreenshotFilename() {
     std::stringstream buffer;
@@ -29,18 +27,19 @@ std::string generateScreenrecordingDirectoryName(unsigned int recordingIndex) {
     return "../../../screenrecording-" + buffer.str() + "-" + std::to_string(recordingIndex) + "/";
 }
 
-std::string generateScreenrecordingName(unsigned int recordingIndex, std::string fileExtension) {
+std::string generateScreenrecordingName(unsigned int recordingIndex, ScreenRecorder::RecordingType recordingType) {
+    std::string fileExtension;
+    switch (recordingType) {
+    case ScreenRecorder::GIF:
+        fileExtension = ".gif";
+        break;
+    case ScreenRecorder::MP4:
+        fileExtension = ".mp4";
+        break;
+    }
     std::string dir = generateScreenrecordingDirectoryName(recordingIndex);
     std::string fileName = dir.substr(0, dir.size() - 1);
     return fileName + fileExtension;
-}
-
-std::string generateScreenrecordingGifName(unsigned int recordingIndex) {
-    return generateScreenrecordingName(recordingIndex, ".gif");
-}
-
-std::string generateScreenrecordingMp4Name(unsigned int recordingIndex) {
-    return generateScreenrecordingName(recordingIndex, ".mp4");
 }
 
 void ScreenRecorder::saveScreenshot(unsigned int windowWidth, unsigned int windowHeight) {
@@ -123,6 +122,7 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsig
 }
 
 void ScreenRecorder::saveRecordingAsGif() {
+#if 0
     int width = (int)video.getWidth();
     int height = (int)video.getHeight();
 
@@ -144,26 +144,56 @@ void ScreenRecorder::saveRecordingAsGif() {
     if (!GifEnd(&g)) {
         std::cerr << "Could not save to " << fileName << std::endl;
     }
+#endif
 }
 
-void ScreenRecorder::saveRecordingAsMp4() {
-    auto videoFileName = generateScreenrecordingMp4Name(recordingIndex);
-    auto videoSaver = VideoSaver(&video, videoFileName);
-    videoSaver.run();
+std::unique_ptr<Frame> captureFrame(unsigned int screenWidth, unsigned int screenHeight) {
+    const unsigned int channels = 4;
+    std::unique_ptr<Frame> frame = std::make_unique<Frame>();
+    frame->width = screenWidth;
+    frame->height = screenHeight;
+    frame->channels = channels;
+    const unsigned int numberOfPixels = frame->width * frame->height;
+    frame->buffer = static_cast<unsigned char *>(malloc(numberOfPixels * frame->channels * sizeof(unsigned char)));
+
+    GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
+    GL_Call(glReadBuffer(GL_FRONT));
+    GL_Call(glReadPixels(0, 0, frame->width, frame->height, GL_RGBA, GL_UNSIGNED_BYTE, frame->buffer));
+
+    return frame;
 }
 
-void ScreenRecorder::saveRecording() {
-    if (!video.hasFrames()) {
-        std::cerr << "There are no frames in this recording." << std::endl;
+void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
+    if (shouldTakeScreenshot) {
+        saveScreenshot(windowWidth, windowHeight);
+        shouldTakeScreenshot = false;
+    }
+
+    if (isRecording()) {
+        std::unique_ptr<Frame> frame = captureFrame(windowWidth, windowHeight);
+        videoSaver->acceptFrame(frame);
+    }
+}
+
+void ScreenRecorder::stopRecording() {
+    // FIXME refactor the ScreenRecorder to give the frames directly to the underlying saving mechanism, maybe with an
+    //       asynchronous queue or something
+    if (videoSaver == nullptr) {
+        std::cout << "There is no video to save." << std::endl;
         return;
     }
+    videoSaver->save();
+    videoSaver = nullptr;
+    recordingIndex++;
+}
+
+void ScreenRecorder::startRecording() {
+    std::string fileName = generateScreenrecordingName(recordingIndex, recordingType);
     if (recordingType == RecordingType::GIF) {
-        saveRecordingAsGif();
+        //        videoSaver = std::make_unique<GifVideoSaver>(fileName);
     } else if (recordingType == RecordingType::MP4) {
-        saveRecordingAsMp4();
+        videoSaver = std::make_unique<Mp4VideoSaver>(fileName);
     } else {
         std::cerr << "Recording type is not supported (" << recordingType << ")" << std::endl;
     }
-    recordingIndex++;
-    video.reset();
 }

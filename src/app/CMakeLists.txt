@@ -7,7 +7,6 @@ set(SOURCES
         util/Image.cpp
         util/RenderUtils.cpp
         util/ScreenRecorder.cpp
-        util/Video.cpp
         util/VideoSaver.cpp
         opengl/VertexBuffer.cpp
         opengl/IndexBuffer.cpp

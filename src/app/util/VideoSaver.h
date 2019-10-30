@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <string>
+#include <utility>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -35,19 +37,50 @@ extern "C" {
 #include <libswscale/swscale.h>
 };
 
-class Video;
+struct Frame {
+    unsigned char *buffer = nullptr;
+    unsigned int width = 0;
+    unsigned int height = 0;
+    unsigned int channels = 3;
+    unsigned int index = 0;
+    Frame *next = nullptr;
+};
 
 class VideoSaver {
   public:
-    VideoSaver(Video *video, const std::string &videoFileName);
+    explicit VideoSaver(std::string videoFileName) : videoFileName(std::move(videoFileName)) {}
+    virtual ~VideoSaver() = default;
 
-    void run();
+    virtual bool doInit() = 0;
+    virtual void doAcceptFrame(const std::unique_ptr<Frame> &frame) = 0;
+    virtual void save() = 0;
+
+    bool isInitialized() { return initialized; }
+    void init(unsigned int frameWidth, unsigned int frameHeight);
+
+    void acceptFrame(const std::unique_ptr<Frame> &frame);
+
+  protected:
+    const std::string videoFileName;
+    unsigned int frameWidth = 0;
+    unsigned int frameHeight = 0;
 
   private:
-    Video *video = nullptr;
-    const std::string &videoFileName;
+    bool initialized = false;
+};
 
+class Mp4VideoSaver : public VideoSaver {
+  public:
+    explicit Mp4VideoSaver(std::string videoFileName) : VideoSaver(std::move(videoFileName)) {}
+    ~Mp4VideoSaver() override { free(); }
+
+    bool doInit() override;
+    void doAcceptFrame(const std::unique_ptr<Frame> &frame) override;
+    void save() override;
+
+  private:
     const int fps = 60; // FIXME maybe calculate fps?
+    int frameCounter = 0;
 
     AVCodecContext *cctx = nullptr;
     AVFormatContext *ofctx = nullptr;
@@ -55,9 +88,20 @@ class VideoSaver {
     SwsContext *swsCtx = nullptr;
     AVOutputFormat *oformat = nullptr;
 
-    void init();
-    void process();
     void cleanUp();
     void remux();
     void free();
 };
+
+#if 0
+class GifVideoSaver : public VideoSaver {
+  public:
+    GifVideoSaver(const std::string &videoFileName);
+
+    void init(unsigned int frameWidth, unsigned int frameHeight) override;
+    void acceptFrame(const std::unique_ptr<Frame> &frame) override;
+    void save() override;
+
+  private:
+};
+#endif

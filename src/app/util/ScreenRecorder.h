@@ -1,36 +1,22 @@
 #pragma once
 
-#include "Video.h"
+#include "VideoSaver.h"
 
 class ScreenRecorder {
   public:
     ScreenRecorder() = default;
 
-    void tick(unsigned int windowWidth, unsigned int windowHeight) {
-        if (shouldTakeScreenshot) {
-            saveScreenshot(windowWidth, windowHeight);
-            shouldTakeScreenshot = false;
-        }
-
-        if (recording) {
-            video.recordFrame(windowWidth, windowHeight);
-        }
-    }
+    void tick(unsigned int windowWidth, unsigned int windowHeight);
 
     void takeScreenshot() { shouldTakeScreenshot = true; }
 
-    void startRecording() { recording = true; }
+    void startRecording();
 
-    void stopRecording() {
-        recording = false;
-        saveRecording();
-    }
+    void stopRecording();
 
-    bool isRecording() { return recording; }
+    bool isRecording() { return videoSaver != nullptr; }
 
     static void saveScreenshot(unsigned int windowWidth, unsigned int windowHeight);
-
-    void saveRecording();
 
     enum RecordingType {
         GIF = 0,
@@ -41,11 +27,8 @@ class ScreenRecorder {
 
   private:
     bool shouldTakeScreenshot = false;
-    bool recording = false;
     unsigned int recordingIndex = 0;
-    Video video = {};
+    std::unique_ptr<VideoSaver> videoSaver = nullptr;
 
     void saveRecordingAsGif();
-
-    void saveRecordingAsMp4();
 };

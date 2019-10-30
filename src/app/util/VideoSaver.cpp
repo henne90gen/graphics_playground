@@ -6,7 +6,33 @@
 
 #define VIDEO_TMP_FILE "tmp.h264"
 
-void VideoSaver::free() {
+void VideoSaver::init(unsigned int frameWidth, unsigned int frameHeight) {
+    this->frameWidth = frameWidth;
+    this->frameHeight = frameHeight;
+    if (!doInit()) {
+        std::cout << "Could not initialze video saver" << std::endl;
+        return;
+    }
+    initialized = true;
+}
+
+void VideoSaver::acceptFrame(const std::unique_ptr<Frame> &frame) {
+    if (!isInitialized()) {
+        init(frame->width, frame->height);
+        if (!isInitialized()) {
+            std::cout << "Failed to accept frame" << std::endl;
+            return;
+        }
+    } else if (frame->width != frameWidth || frame->height != frameHeight) {
+        // FIXME do something more sensible here
+        std::cerr << "Resizing the video is not supported" << std::endl;
+        exit(1);
+    }
+
+    doAcceptFrame(frame);
+}
+
+void Mp4VideoSaver::free() {
     if (videoFrame) {
         av_frame_free(&videoFrame);
     }
@@ -15,9 +41,11 @@ void VideoSaver::free() {
     }
     if (ofctx) {
         avformat_free_context(ofctx);
+        ofctx = nullptr;
     }
     if (swsCtx) {
         sws_freeContext(swsCtx);
+        swsCtx = nullptr;
     }
 }
 
@@ -33,7 +61,7 @@ void FreeRemux(AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx) {
     }
 }
 
-void VideoSaver::remux() {
+void Mp4VideoSaver::remux() {
     AVFormatContext *ifmt_ctx = nullptr, *ofmt_ctx = nullptr;
     int err = avformat_open_input(&ifmt_ctx, VIDEO_TMP_FILE, nullptr, nullptr);
     if (err < 0) {
@@ -104,44 +132,46 @@ void VideoSaver::remux() {
     }
 
     av_write_trailer(ofmt_ctx);
+
+    FreeRemux(ifmt_ctx, ofmt_ctx);
 }
 
-void VideoSaver::init() {
-    int width = (int)video->getWidth();
-    int height = (int)video->getHeight();
+bool Mp4VideoSaver::doInit() {
+    int width = (int)frameWidth;
+    int height = (int)frameHeight;
 
     oformat = av_guess_format(nullptr, VIDEO_TMP_FILE, nullptr);
     if (oformat == nullptr) {
         std::cout << "Failed to define output format" << std::endl;
-        return;
+        return false;
     }
 
     int err = avformat_alloc_output_context2(&ofctx, oformat, nullptr, VIDEO_TMP_FILE);
     if (err < 0) {
         std::cout << "Failed to allocate output context (" << err << ")" << std::endl;
         free();
-        return;
+        return false;
     }
 
     AVCodec *codec = avcodec_find_encoder(oformat->video_codec);
     if (codec == nullptr) {
         std::cout << "Failed to find encoder" << std::endl;
         free();
-        return;
+        return false;
     }
 
     AVStream *videoStream = avformat_new_stream(ofctx, codec);
     if (videoStream == nullptr) {
         std::cout << "Failed to create new stream" << std::endl;
         free();
-        return;
+        return false;
     }
 
     cctx = avcodec_alloc_context3(codec);
     if (cctx == nullptr) {
         std::cout << "Failed to allocate codec context" << std::endl;
         free();
-        return;
+        return false;
     }
 
     int bitrate = 0; // FIXME what is this?
@@ -168,95 +198,28 @@ void VideoSaver::init() {
     if ((err = avcodec_open2(cctx, codec, nullptr)) < 0) {
         std::cout << "Failed to open codec (" << err << ")" << std::endl;
         free();
-        return;
+        return false;
     }
 
     if (!(oformat->flags & AVFMT_NOFILE)) {
         if ((err = avio_open(&ofctx->pb, VIDEO_TMP_FILE, AVIO_FLAG_WRITE)) < 0) {
             std::cout << "Failed to open file (" << err << ")" << std::endl;
             free();
-            return;
+            return false;
         }
     }
 
     if ((err = avformat_write_header(ofctx, nullptr)) < 0) {
         std::cout << "Failed to write header (" << err << ")" << std::endl;
         free();
-        return;
+        return false;
     }
+
     av_dump_format(ofctx, 0, VIDEO_TMP_FILE, 1);
+    return true;
 }
 
-
-
-void VideoSaver::process() {
-    int frameCounter = 0;
-    std::function<void(Frame *)> workFunction = [this, &frameCounter](Frame *currentFrame) {
-      int err;
-      if (videoFrame == nullptr) {
-          videoFrame = av_frame_alloc();
-          videoFrame->format = AV_PIX_FMT_YUV420P;
-          videoFrame->width = cctx->width;
-          videoFrame->height = cctx->height;
-
-          if ((err = av_frame_get_buffer(videoFrame, 32)) < 0) {
-              std::cout << "Failed to allocate picture (" << err << ")" << std::endl;
-              return;
-          }
-      }
-
-      if (swsCtx == nullptr) {
-          AVPixelFormat format = AV_PIX_FMT_RGB24;
-          if (currentFrame->channels == 1) {
-              format = AV_PIX_FMT_GRAY8;
-          } else if (currentFrame->channels == 2) {
-              format = AV_PIX_FMT_GRAY8A;
-          } else if (currentFrame->channels == 3) {
-              format = AV_PIX_FMT_RGB24;
-          } else if (currentFrame->channels == 4) {
-              format = AV_PIX_FMT_RGBA;
-          } else {
-              std::cout << "Number of channels not supported (" << currentFrame->channels << ")" << std::endl;
-              free();
-              return;
-          }
-          swsCtx = sws_getContext(cctx->width, cctx->height, format, cctx->width, cctx->height, AV_PIX_FMT_YUV420P,
-                                  SWS_BICUBIC, nullptr, nullptr, nullptr);
-      }
-
-      // Using a negative stride to flip the image with sws_scale
-      int stride[1] = {-1 * (int)currentFrame->channels * cctx->width};
-
-      // Creating a pointer to the pointer that contains the actual start position.
-      // The start position is at the end of the buffer, so that the image is flipped with sws_scale
-      auto tmp = currentFrame->buffer + (currentFrame->channels * cctx->width * (cctx->height - 1));
-      const auto *const *data = (const uint8_t *const *)&tmp;
-
-      // From RGB to YUV
-      sws_scale(swsCtx, data, stride, 0, cctx->height, videoFrame->data, videoFrame->linesize);
-
-      videoFrame->pts = frameCounter++;
-
-      if ((err = avcodec_send_frame(cctx, videoFrame)) < 0) {
-          std::cout << "Failed to send frame (" << err << ")" << std::endl;
-          return;
-      }
-
-      AVPacket pkt;
-      av_init_packet(&pkt);
-      pkt.data = nullptr;
-      pkt.size = 0;
-
-      if (avcodec_receive_packet(cctx, &pkt) == 0) {
-          pkt.flags |= AV_PKT_FLAG_KEY;
-          av_interleaved_write_frame(ofctx, &pkt);
-          av_packet_unref(&pkt);
-      }
-    };
-    video->iterateFrames(workFunction);
-}
-
-void VideoSaver::cleanUp() {
+void Mp4VideoSaver::cleanUp() {
     AVPacket pkt;
     av_init_packet(&pkt);
     pkt.data = nullptr;
@@ -283,14 +246,71 @@ void VideoSaver::cleanUp() {
     free();
 }
 
-void VideoSaver::run() {
-    init();
+void Mp4VideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
+    int err;
+    if (videoFrame == nullptr) {
+        videoFrame = av_frame_alloc();
+        videoFrame->format = AV_PIX_FMT_YUV420P;
+        videoFrame->width = cctx->width;
+        videoFrame->height = cctx->height;
 
-    process();
+        if ((err = av_frame_get_buffer(videoFrame, 32)) < 0) {
+            std::cout << "Failed to allocate picture (" << err << ")" << std::endl;
+            return;
+        }
+    }
 
+    if (swsCtx == nullptr) {
+        AVPixelFormat format = AV_PIX_FMT_RGB24;
+        if (frame->channels == 1) {
+            format = AV_PIX_FMT_GRAY8;
+        } else if (frame->channels == 2) {
+            format = AV_PIX_FMT_GRAY8A;
+        } else if (frame->channels == 3) {
+            format = AV_PIX_FMT_RGB24;
+        } else if (frame->channels == 4) {
+            format = AV_PIX_FMT_RGBA;
+        } else {
+            std::cout << "Number of channels not supported (" << frame->channels << ")" << std::endl;
+            free();
+            return;
+        }
+        swsCtx = sws_getContext(cctx->width, cctx->height, format, cctx->width, cctx->height, AV_PIX_FMT_YUV420P,
+                                SWS_BICUBIC, nullptr, nullptr, nullptr);
+    }
+
+    // Using a negative stride to flip the image with sws_scale
+    int stride[1] = {-1 * (int)frame->channels * cctx->width};
+
+    // Creating a pointer to the pointer that contains the actual start position.
+    // The start position is at the end of the buffer, so that the image is flipped with sws_scale
+    auto tmp = frame->buffer + (frame->channels * cctx->width * (cctx->height - 1));
+    const auto *const *data = (const uint8_t *const *)&tmp;
+
+    // From RGB to YUV
+    sws_scale(swsCtx, data, stride, 0, cctx->height, videoFrame->data, videoFrame->linesize);
+
+    videoFrame->pts = frameCounter++;
+
+    if ((err = avcodec_send_frame(cctx, videoFrame)) < 0) {
+        std::cout << "Failed to send frame (" << err << ")" << std::endl;
+        return;
+    }
+
+    AVPacket pkt;
+    av_init_packet(&pkt);
+    pkt.data = nullptr;
+    pkt.size = 0;
+
+    if (avcodec_receive_packet(cctx, &pkt) == 0) {
+        pkt.flags |= AV_PKT_FLAG_KEY;
+        av_interleaved_write_frame(ofctx, &pkt);
+        av_packet_unref(&pkt);
+    }
+}
+
+void Mp4VideoSaver::save() {
     cleanUp();
 
     remux();
 }
-
-VideoSaver::VideoSaver(Video *video, const std::string &videoFileName) : video(video), videoFileName(videoFileName) {}
