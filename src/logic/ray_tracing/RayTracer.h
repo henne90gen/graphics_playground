@@ -47,14 +47,14 @@ struct Light {
     float brightness = 1.0F;
 };
 
-void rayTrace(const std::vector<Object> &objects, const Light &light, glm::vec3 cameraPosition,
-              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height, unsigned int zDistance,
-              bool runAsync);
+void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition, float zDistance,
+              std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height, bool runAsync);
 
 bool intersects(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal);
 
 bool intersects(const Ray &ray, const Object &object);
 
 Object sphere(const glm::vec3 &position, const glm::vec3 &color, float radius);
+Object plane(const glm::vec3 &position, const glm::vec3 &color, const glm::vec3 &normal);
 
 } // namespace RayTracer

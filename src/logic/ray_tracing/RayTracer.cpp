@@ -9,18 +9,22 @@
 
 namespace RayTracer {
 
-Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &cameraPosition, const unsigned int width,
-              const unsigned int height, const unsigned int zDistance) {
+Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &cameraPosition, const float zDistance,
+              const unsigned int width, const unsigned int height) {
     Ray result;
     result.startingPoint = cameraPosition;
-    int x = (int)col - (int)width / 2;
-    int y = (int)row - (int)height / 2;
-    glm::vec3 direction = {x, y, -1.0 * zDistance};
+    float x = (float)col / (float)width;
+    float y = (float)row / (float)height;
+    x -= 0.5F;
+    y -= 0.5F;
+    glm::vec3 direction = {x, y, zDistance};
     result.direction = glm::normalize(direction);
     return result;
 }
 
-inline float calculateDistance(glm::vec3 point1, glm::vec3 point2) { return glm::abs(glm::length(point1 - point2)); }
+inline float calculateDistance(const glm::vec3 &point1, const glm::vec3 &point2) {
+    return glm::abs(glm::length(point2 - point1));
+}
 
 bool intersectsSphere(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal) {
     if (object.type != Object::Sphere) {
@@ -115,23 +119,31 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
             }
         }
     }
+
     bool isNotInShadow = true;
     if (object.type != Object::None) {
         Ray shadowRay = {};
         shadowRay.direction = glm::normalize(light.position - hitPoint);
-        shadowRay.startingPoint = hitPoint + shadowRay.direction * 0.00001F;
+        // moving starting point outside the object
+        shadowRay.startingPoint = hitPoint + shadowRay.direction * 0.0001F;
         int index = -1;
         for (auto &currentObject : objects) {
             index++;
-            if (index == 3) {
+            if (index == 0) {
+                // the first object is the light source, skipping it
                 continue;
             }
-            if (intersects(shadowRay, currentObject)) {
-                isNotInShadow = false;
-                break;
+            if (intersects(shadowRay, currentObject, hitPoint, hitNormal)) {
+                float distance = glm::length(shadowRay.startingPoint - hitPoint);
+                float lightDistance = glm::length(shadowRay.startingPoint - light.position);
+                if (distance > lightDistance) {
+                    isNotInShadow = false;
+                    break;
+                }
             }
         }
     }
+
     return object.color * light.brightness * (float)isNotInShadow;
 }
 
@@ -144,9 +156,9 @@ void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &obje
     }
 }
 
-void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 cameraPosition,
-              std::vector<glm::vec3> &pixels, const unsigned int width, const unsigned int height,
-              const unsigned int zDistance, bool runAsync) {
+void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
+              const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
+              const unsigned int height, bool runAsync) {
     pixels.resize(width * height);
 
     if (runAsync) {
@@ -154,7 +166,7 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
         rays.resize(pixels.size());
         for (unsigned int row = 0; row < height; row++) {
             for (unsigned int col = 0; col < width; col++) {
-                Ray ray = createRay(row, col, cameraPosition, width, height, zDistance);
+                Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
                 rays[row * width + col] = ray;
             }
         }
@@ -175,19 +187,29 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
     } else {
         for (unsigned int row = 0; row < height; row++) {
             for (unsigned int col = 0; col < width; col++) {
-                Ray ray = createRay(row, col, cameraPosition, width, height, zDistance);
+                Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
                 pixels[row * width + col] = trace(ray, light, cameraPosition, objects, 0);
             }
         }
     }
 }
+
 Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float radius) {
-    static int nextId = 0;
     Object result = {};
     result.type = Object::Sphere;
     result.position = position;
     result.color = color;
     result.data = {radius};
+    return result;
+}
+
+Object plane(const glm::vec3 &position, const glm::vec3 &color, const glm::vec3 &normal) {
+    Object result = {};
+    result.type = Object::Plane;
+    result.position = position;
+    result.color = color;
+    result.data.plane = Plane();
+    result.data.plane.normal = normal;
     return result;
 }
 

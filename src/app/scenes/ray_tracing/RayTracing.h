@@ -24,7 +24,7 @@ class RayTracing : public Scene {
 
   private:
     std::shared_ptr<Shader> shader;
-    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<VertexArray> rayTracedTextureArray;
     std::shared_ptr<Texture> texture;
     std::shared_ptr<PerformanceCounter> perfCounter = std::make_shared<PerformanceCounter>();
 
@@ -33,11 +33,11 @@ class RayTracing : public Scene {
 
     void onAspectRatioChange() override;
 
-    void renderRayTracedTexture(const std::vector<glm::vec3> &vector, unsigned int width, unsigned int height,
-                                int zDistance, const glm::vec3 &cameraPosition);
-    void renderScene(const glm::vec3 &rayTracerCameraPosition);
+    void renderRayTracedTexture(const std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height,
+                                const glm::vec3 &cameraPosition, float zDistance);
+    void renderScene(const glm::vec3 &rayTracerCameraPosition, float zDistance);
+    void renderLines(const glm::vec3 &rayTracerCameraPosition, float zDistance);
     void renderObject(const RayTracer::Object &object);
     void setupRayTracedTexture();
     void renderCube(const glm::vec3 &position, const glm::vec3 &color);
-    RayTracer::Object convertLightToSphere();
 };
