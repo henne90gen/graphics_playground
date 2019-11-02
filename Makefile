@@ -2,18 +2,18 @@ clean:
 	rm -rf build
 
 cmake:
-	mkdir -p build; cd build; cmake -G"Ninja" ..
+	@mkdir -p build; cd build; cmake -G"Ninja" ..
 
 build: cmake
-	cd build; ninja
+	@cd build; ninja
 
 test: build
-	cd build; ninja test
+	@cd build; ninja test
 
 run: build
-	cd build/src/app; ./Playground
+	@cd build/src/app; ./Playground
 
 docs:
-	doxygen
+	@doxygen
 
 .PHONY: docs
