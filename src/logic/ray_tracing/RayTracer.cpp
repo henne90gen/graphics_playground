@@ -14,9 +14,13 @@ Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &c
     Ray result;
     result.startingPoint = cameraPosition;
     float x = (float)col / (float)width;
+    x *= 2.0F;
+    x -= 1.0F;
+
     float y = (float)row / (float)height;
-    x -= 0.5F;
-    y -= 0.5F;
+    y *= 2.0F;
+    y -= 1.0F;
+
     glm::vec3 direction = {x, y, zDistance};
     result.direction = glm::normalize(direction);
     return result;
@@ -130,7 +134,7 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
         for (auto &currentObject : objects) {
             index++;
             if (index == 0) {
-                // the first object is the light source, skipping it
+                // the first object is the light source, skip it
                 continue;
             }
             if (intersects(shadowRay, currentObject, hitPoint, hitNormal)) {

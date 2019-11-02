@@ -23,7 +23,7 @@ void RayTracing::setup() {
     objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5));
     objects.push_back(RayTracer::sphere({1, 0, -2}, {0, 1, 0}, 0.5));
     objects.push_back(RayTracer::sphere({0, 1, -2}, {0, 0, 1}, 0.5));
-    objects.push_back(RayTracer::plane({0, 0, 5}, {1, 1, 0}, {0, 0, 1}));
+//    objects.push_back(RayTracer::plane({0, 0, 5}, {1, 1, 0}, {0, 0, 1}));
 }
 
 void RayTracing::onAspectRatioChange() {
@@ -36,10 +36,10 @@ void RayTracing::destroy() {}
 void RayTracing::tick() {
     static int dimensions[2] = {250, 250};
     static glm::vec3 rayTracerCameraPosition = {0.5, 0.5, 0};
-    static float zDistance = -1.0F;
+    static float zDistance = -1.2F;
     static glm::vec3 cameraPosition = {-5, 0, -2};
     static glm::vec3 cameraRotation = {0, -1, 0};
-    static bool runAsync = false;
+    static bool runAsync = true;
     float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
