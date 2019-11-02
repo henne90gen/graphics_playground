@@ -26,10 +26,6 @@ Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &c
     return result;
 }
 
-inline float calculateDistance(const glm::vec3 &point1, const glm::vec3 &point2) {
-    return glm::abs(glm::length(point2 - point1));
-}
-
 bool intersectsSphere(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal) {
     if (object.type != Object::Sphere) {
         return false;
@@ -60,7 +56,7 @@ bool intersectsPlane(const Ray &ray, const Object &object, glm::vec3 &hitPoint, 
     float distance = 0.0F;
     bool result = glm::intersectRayPlane(ray.startingPoint, ray.direction, object.position, plane.normal, distance);
     if (result) {
-        hitPoint = ray.startingPoint + ray.direction * distance;
+        hitPoint = ray.startingPoint + glm::normalize(ray.direction) * distance;
         hitNormal = plane.normal;
     }
     return result;
@@ -108,6 +104,41 @@ bool intersects(const Ray &ray, const Object &object) {
     return intersects(ray, object, point, normal);
 }
 
+bool isPositionInShadow(const std::vector<Object> &objects, const Object &object, const Light &light,
+                        const glm::vec3 &position) {
+    if (object.type == Object::None) {
+        return false;
+    }
+
+    Ray shadowRay = {};
+    shadowRay.direction = glm::normalize(light.position - position);
+    // moving starting point outside the object
+    shadowRay.startingPoint = position + shadowRay.direction * 0.0001F;
+
+    glm::vec3 hitPoint;
+    glm::vec3 hitNormal;
+    int index = -1;
+    for (auto &currentObject : objects) {
+        index++;
+        if (index == 0) {
+            // the first object is the light source, skip it
+            continue;
+        }
+
+        if (!intersects(shadowRay, currentObject, hitPoint, hitNormal)) {
+            continue;
+        }
+
+        float distanceToHitPoint = glm::length(shadowRay.startingPoint - hitPoint);
+        float distanceToLight = glm::length(shadowRay.startingPoint - light.position);
+        if (distanceToHitPoint < distanceToLight) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
                 unsigned int depth) {
     glm::vec3 hitPoint;
@@ -115,40 +146,21 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
     float minDistance = INFINITY;
     Object object = {};
     for (auto &currentObject : objects) {
-        if (intersects(ray, currentObject, hitPoint, hitNormal)) {
-            float distance = calculateDistance(cameraPosition, hitPoint);
-            if (distance < minDistance) {
-                object = currentObject;
-                minDistance = distance;
-            }
+        if (!intersects(ray, currentObject, hitPoint, hitNormal)) {
+            continue;
         }
+
+        float distance = glm::length(cameraPosition - hitPoint);
+        if (distance > minDistance) {
+            continue;
+        }
+
+        object = currentObject;
+        minDistance = distance;
     }
 
-    bool isNotInShadow = true;
-    if (object.type != Object::None) {
-        Ray shadowRay = {};
-        shadowRay.direction = glm::normalize(light.position - hitPoint);
-        // moving starting point outside the object
-        shadowRay.startingPoint = hitPoint + shadowRay.direction * 0.0001F;
-        int index = -1;
-        for (auto &currentObject : objects) {
-            index++;
-            if (index == 0) {
-                // the first object is the light source, skip it
-                continue;
-            }
-            if (intersects(shadowRay, currentObject, hitPoint, hitNormal)) {
-                float distance = glm::length(shadowRay.startingPoint - hitPoint);
-                float lightDistance = glm::length(shadowRay.startingPoint - light.position);
-                if (distance > lightDistance) {
-                    isNotInShadow = false;
-                    break;
-                }
-            }
-        }
-    }
-
-    return object.color * light.brightness * (float)isNotInShadow;
+    bool isInShadow = isPositionInShadow(objects, object, light, hitPoint);
+    return object.color * light.brightness * (float)!isInShadow;
 }
 
 void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &objects, const Light &light,

@@ -21,9 +21,9 @@ void RayTracing::setup() {
     light = {{1, 1, -2}, 0.75};
     objects.push_back(RayTracer::sphere({}, {}, 0.5));
     objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5));
-    objects.push_back(RayTracer::sphere({1, 0, -2}, {0, 1, 0}, 0.5));
-    objects.push_back(RayTracer::sphere({0, 1, -2}, {0, 0, 1}, 0.5));
-//    objects.push_back(RayTracer::plane({0, 0, 5}, {1, 1, 0}, {0, 0, 1}));
+    objects.push_back(RayTracer::plane({0, 0, -5}, {1, 1, 0}, {0, 0, 1}));
+    //    objects.push_back(RayTracer::sphere({1, 0, -2}, {0, 1, 0}, 0.5));
+    //    objects.push_back(RayTracer::sphere({0, 1, -2}, {0, 0, 1}, 0.5));
 }
 
 void RayTracing::onAspectRatioChange() {
@@ -39,7 +39,7 @@ void RayTracing::tick() {
     static float zDistance = -1.2F;
     static glm::vec3 cameraPosition = {-5, 0, -2};
     static glm::vec3 cameraRotation = {0, -1, 0};
-    static bool runAsync = true;
+    static bool runAsync = false;
     float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
@@ -156,21 +156,26 @@ void RayTracing::renderObject(const RayTracer::Object &object) {
         modelMatrix = glm::scale(modelMatrix, glm::vec3(r, r, r));
     }
     if (object.type == RayTracer::Object::Plane) {
-        rayTracedTextureArray = std::make_shared<VertexArray>(shader);
-        std::vector<float> vertices = {
-              -1, -1, 0, 0, 0, //
-              1,  -1, 0, 1, 0, //
-              1,  1,  0, 1, 1, //
-              -1, -1, 0, 0, 0, //
-              1,  1,  0, 1, 1, //
-              -1, 1,  0, 0, 1, //
+        array = std::make_shared<VertexArray>(shader);
+        std::vector<glm::vec3> vertices = {
+              {-1, -1, 0}, //
+              {1, -1, 0},  //
+              {1, 1, 0},   //
+              {-1, 1, 0},  //
         };
         BufferLayout bufferLayout = {
               {Float3, "a_Position"},
-              {Float2, "a_UV"},
         };
         auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
-        rayTracedTextureArray->addVertexBuffer(buffer);
+        array->addVertexBuffer(buffer);
+
+        std::vector<glm::ivec3> indices = {
+              {0, 1, 2}, //
+              {0, 2, 3}, //
+        };
+        array->setIndexBuffer(std::make_shared<IndexBuffer>(indices));
+
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(10, 10, 10));
     }
 
     if (array == nullptr) {
