@@ -179,3 +179,5 @@ The recording is then stored in the projects working directory as `screenshot-%y
 The extension is determined by the recording type you chose.
 
 ### Timing Utility
+
+With the Timer and the PerformanceCounter, one can easily time functions and also benchmark their performance over time.
