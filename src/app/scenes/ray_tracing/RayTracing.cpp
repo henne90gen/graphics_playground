@@ -1,10 +1,11 @@
 #include "RayTracing.h"
-#include <ray_tracing/RayTracer.h>
 
 #include "ray_tracing/RayTracer.h"
 #include "util/ImGuiUtils.h"
 #include "util/RenderUtils.h"
 #include "util/TimeUtils.h"
+
+#include <glm/gtx/quaternion.hpp>
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.01F;
@@ -20,8 +21,10 @@ void RayTracing::setup() {
 
     light = {{1, 1, -2}, 0.75};
     objects.push_back(RayTracer::sphere({}, {}, 0.5));
-    objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5));
     objects.push_back(RayTracer::plane({0, 0, -5}, {1, 1, 0}, {0, 0, 1}));
+    objects.push_back(RayTracer::plane({-5, 0, 0}, {0, 1, 1}, {1, 0, 0}));
+    objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5));
+    //    objects.push_back(RayTracer::plane({0, 0, -5}, {1, 1, 0}, {0, 0, 1}));
     //    objects.push_back(RayTracer::sphere({1, 0, -2}, {0, 1, 0}, 0.5));
     //    objects.push_back(RayTracer::sphere({0, 1, -2}, {0, 0, 1}, 0.5));
 }
@@ -174,8 +177,10 @@ void RayTracing::renderObject(const RayTracer::Object &object) {
               {0, 2, 3}, //
         };
         array->setIndexBuffer(std::make_shared<IndexBuffer>(indices));
-
+        glm::vec3 orig = {0, 0, 1};
+        glm::quat rotation = glm::rotation(orig, object.data.plane.normal);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(10, 10, 10));
+        modelMatrix = modelMatrix * glm::toMat4(rotation);
     }
 
     if (array == nullptr) {
