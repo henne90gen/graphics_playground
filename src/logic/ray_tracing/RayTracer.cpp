@@ -5,6 +5,8 @@
 #include <glm/gtx/projection.hpp>
 #include <iostream>
 
+#include "util/VectorUtils.h"
+
 #define USE_GLM_INTERSECT 1
 
 namespace RayTracer {
@@ -54,9 +56,14 @@ bool intersectsPlane(const Ray &ray, const Object &object, glm::vec3 &hitPoint, 
     auto plane = object.data.plane;
 #if USE_GLM_INTERSECT
     float distance = 0.0F;
-    bool result = glm::intersectRayPlane(ray.startingPoint, ray.direction, object.position, plane.normal, distance);
+    glm::vec3 rayDirection = glm::normalize(ray.direction);
+    bool result = glm::intersectRayPlane(ray.startingPoint, rayDirection, object.position, plane.normal, distance);
+    if (distance < 0.0F) {
+        std::cerr << "distance=" << distance << std::endl;
+        std::cerr << "distance should not be negative!" << std::endl;
+    }
     if (result) {
-        hitPoint = ray.startingPoint + glm::normalize(ray.direction) * distance;
+        hitPoint = ray.startingPoint + rayDirection * distance;
         hitNormal = plane.normal;
     }
     return result;
@@ -143,7 +150,9 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
                 unsigned int depth) {
     glm::vec3 hitPoint;
     glm::vec3 hitNormal;
-    float minDistance = INFINITY;
+    glm::vec3 minHitPoint;
+    glm::vec3 minHitNormal;
+    float minDistance = -1.0F;
     Object object = {};
     for (auto &currentObject : objects) {
         if (!intersects(ray, currentObject, hitPoint, hitNormal)) {
@@ -151,15 +160,17 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
         }
 
         float distance = glm::length(cameraPosition - hitPoint);
-        if (distance > minDistance) {
+        if (minDistance >= 0.0F && distance > minDistance) {
             continue;
         }
 
         object = currentObject;
         minDistance = distance;
+        minHitPoint = hitPoint;
+        minHitNormal = hitNormal;
     }
 
-    bool isInShadow = isPositionInShadow(objects, object, light, hitPoint);
+    bool isInShadow = isPositionInShadow(objects, object, light, minHitPoint);
     return object.color * light.brightness * (float)!isInShadow;
 }
 
@@ -225,7 +236,7 @@ Object plane(const glm::vec3 &position, const glm::vec3 &color, const glm::vec3 
     result.position = position;
     result.color = color;
     result.data.plane = Plane();
-    result.data.plane.normal = normal;
+    result.data.plane.normal = glm::normalize(normal);
     return result;
 }
 
