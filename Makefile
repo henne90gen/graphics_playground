@@ -4,7 +4,7 @@ clean:
 cmake:
 	@mkdir -p build; cd build; cmake -G"Ninja" ..
 
-build: cmake
+build:
 	@cd build; ninja
 
 test: build
@@ -16,4 +16,4 @@ run: build
 docs:
 	@doxygen
 
-.PHONY: docs
+.PHONY: docs build

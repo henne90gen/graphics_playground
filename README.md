@@ -7,14 +7,8 @@ This way one can see the effect of different parameters in real time.
 ## Setup
 
 1. Checkout the git repository recursively with `git clone --recursive ...`
-2. Build the executable
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    make
-    ```
-3. Go into the directory `build/src/app` and run the `Playground` executable
+2. Build the executable `make cmake build`
+3. Run the executable `make run`
 
 ## Usage
 
