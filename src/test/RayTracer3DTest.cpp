@@ -8,7 +8,7 @@
 RayTracer::Ray ray(glm::vec3 startingPoint, glm::vec3 direction) { return {startingPoint, direction}; }
 
 RayTracer::Object sphere(glm::vec3 position, float radius) {
-    return {RayTracer::Object::Sphere, position, {}, {radius}};
+    return {RayTracer::Object::Sphere, position, {}, false, {radius}};
 }
 
 TEST_CASE("Can calculate intersection of sphere and ray") {

@@ -8,8 +8,14 @@
 #include "util/VectorUtils.h"
 
 #define USE_GLM_INTERSECT 1
+#define MAX_RAY_DEPTH 5
+
+const glm::vec3 BACKGROUND_COLOR = {0.1F, 0.1F, 0.1F};
 
 namespace RayTracer {
+
+glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
+                unsigned int depth);
 
 Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &cameraPosition, const float zDistance,
               const unsigned int width, const unsigned int height) {
@@ -113,10 +119,6 @@ bool intersects(const Ray &ray, const Object &object) {
 
 bool isPositionInShadow(const std::vector<Object> &objects, const Object &object, const Light &light,
                         const glm::vec3 &position) {
-    if (object.type == Object::None) {
-        return false;
-    }
-
     Ray shadowRay = {};
     shadowRay.direction = glm::normalize(light.position - position);
     // moving starting point outside the object
@@ -146,6 +148,30 @@ bool isPositionInShadow(const std::vector<Object> &objects, const Object &object
     return false;
 }
 
+Ray createReflectionRay(const glm::vec3 &direction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal) {
+    Ray result = {};
+    result.startingPoint = hitPoint;
+    result.direction = glm::reflect(direction, hitNormal);
+    return result;
+}
+
+Ray createRefractionRay(const glm::vec3 &direction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal,
+                        const float transparency) {
+    Ray result = {};
+    result.startingPoint = hitPoint;
+    result.direction = glm::refract(direction, hitNormal, transparency);
+    return result;
+}
+
+glm::vec3 traceGlass(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition,
+                     const std::vector<Object> &objects, const Object &object, const glm::vec3 &hitPoint,
+                     const glm::vec3 &hitNormal, unsigned int depth) {
+    Ray reflectionRay = createReflectionRay(ray.direction, hitPoint, hitNormal);
+    // TODO create rays that go out in a circle around the actual direction
+    auto color = trace(reflectionRay, light, cameraPosition, objects, depth + 1);
+    return color * object.reflection;
+}
+
 glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
                 unsigned int depth) {
     glm::vec3 hitPoint;
@@ -170,6 +196,15 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
         minHitNormal = hitNormal;
     }
 
+    if (object.type == Object::None) {
+        return BACKGROUND_COLOR;
+    }
+
+    if ((object.transparency > 0.0F || object.reflection > 0.0F) && depth < MAX_RAY_DEPTH) {
+        return traceGlass(ray, light, cameraPosition, objects, object, minHitPoint, minHitNormal, depth);
+    }
+
+    // normal object
     bool isInShadow = isPositionInShadow(objects, object, light, minHitPoint);
     return object.color * light.brightness * (float)!isInShadow;
 }
@@ -221,11 +256,14 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
     }
 }
 
-Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float radius) {
+Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float radius, const float transparency,
+              const float reflection) {
     Object result = {};
     result.type = Object::Sphere;
     result.position = position;
     result.color = color;
+    result.transparency = transparency;
+    result.reflection = reflection;
     result.data = {radius};
     return result;
 }
