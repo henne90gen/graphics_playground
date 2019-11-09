@@ -45,6 +45,7 @@ void RayTracing::tick() {
     static glm::vec3 cameraPosition = {-4, 0, -1.5};
     static glm::vec3 cameraRotation = {0, -1, 0};
     static bool runAsync = true;
+    static bool shouldRenderRays = false;
     float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
@@ -55,6 +56,7 @@ void RayTracing::tick() {
     ImGui::DragFloat("Z-Distance", &zDistance, dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&light.position), dragSpeed);
     ImGui::Checkbox("Run Async", &runAsync);
+    ImGui::Checkbox("Render Rays", &shouldRenderRays);
     ImGui::End();
 
     // FIXME find a better solution for getting the light into the scene
@@ -63,9 +65,10 @@ void RayTracing::tick() {
     std::vector<glm::vec3> pixels = {};
     unsigned int width = dimensions[0];
     unsigned int height = dimensions[1];
+    std::vector<RayTracer::Ray> rays = {};
     {
         TIME_SCOPE_RECORD_NAME(perfCounter, "RayTrace");
-        RayTracer::rayTrace(objects, light, rayTracerCameraPosition, zDistance, pixels, width, height, runAsync);
+        RayTracer::rayTrace(objects, light, rayTracerCameraPosition, zDistance, pixels, width, height, rays, runAsync);
     }
 
     {
@@ -75,7 +78,7 @@ void RayTracing::tick() {
         shader->setUniform("u_View", viewMatrix);
 
         renderRayTracedTexture(pixels, width, height, rayTracerCameraPosition, zDistance);
-        renderScene(rayTracerCameraPosition, zDistance);
+        renderScene(rayTracerCameraPosition, zDistance, rays, shouldRenderRays);
     }
 
     ImGui::Metrics(perfCounter);
@@ -94,7 +97,8 @@ void RayTracing::renderRayTracedTexture(const std::vector<glm::vec3> &pixels, co
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
 }
 
-void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition, const float zDistance) {
+void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition, const float zDistance,
+                             const std::vector<RayTracer::Ray> &rays, bool shouldRenderRays) {
     // render camera
     renderCube(rayTracerCameraPosition, {1, 1, 1});
 
@@ -103,6 +107,10 @@ void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition, const flo
     // render objects
     for (auto &object : objects) {
         renderObject(object);
+    }
+
+    if (shouldRenderRays) {
+        renderRays(rays);
     }
 }
 
@@ -135,6 +143,36 @@ void RayTracing::renderLines(const glm::vec3 &rayTracerCameraPosition, const flo
     shader->setUniform("u_UseTexture", false);
     shader->setUniform("u_Model", glm::mat4(1.0F));
     shader->setUniform("u_Color", {0, 1, 1});
+    GL_Call(glDrawElements(GL_LINES, array.getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void RayTracing::renderRays(const std::vector<RayTracer::Ray> &rays) {
+    std::vector<glm::vec3> vertices = {};
+    std::vector<unsigned int> indices = {};
+
+    unsigned int currentIndex = 0;
+    const float factor = 100.0F;
+    for (auto ray : rays) {
+        vertices.push_back(ray.startingPoint);
+        vertices.push_back(ray.startingPoint + glm::normalize(ray.direction) * factor);
+        indices.push_back(currentIndex++);
+        indices.push_back(currentIndex++);
+    }
+
+    VertexArray array = VertexArray(shader);
+    BufferLayout bufferLayout = {
+          {Float3, "a_Position"},
+    };
+    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
+    array.addVertexBuffer(buffer);
+
+    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(indices);
+    array.setIndexBuffer(indexBuffer);
+    array.bind();
+
+    shader->setUniform("u_UseTexture", false);
+    shader->setUniform("u_Model", glm::mat4(1.0F));
+    shader->setUniform("u_Color", {1, 1, 1});
     GL_Call(glDrawElements(GL_LINES, array.getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 

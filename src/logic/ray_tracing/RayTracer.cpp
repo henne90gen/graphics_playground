@@ -242,8 +242,7 @@ void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &obje
 
 void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
                    const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
-                   const unsigned int height) {
-    std::vector<Ray> rays = {};
+                   const unsigned int height, std::vector<Ray> &rays) {
     rays.resize(pixels.size());
     for (unsigned int row = 0; row < height; row++) {
         for (unsigned int col = 0; col < width; col++) {
@@ -270,15 +269,16 @@ void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const
 
 void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
               const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
-              const unsigned int height, bool runAsync) {
+              const unsigned int height, std::vector<Ray> &rays, bool runAsync) {
     pixels.resize(width * height);
 
     if (runAsync) {
-        rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height);
+        rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height, rays);
     } else {
         for (unsigned int row = 0; row < height; row++) {
             for (unsigned int col = 0; col < width; col++) {
                 Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
+                rays.push_back(ray);
                 pixels[row * width + col] = trace(ray, light, cameraPosition, objects, 0);
             }
         }
