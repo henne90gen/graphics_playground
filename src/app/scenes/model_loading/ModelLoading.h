@@ -36,8 +36,8 @@ class ModelLoading : public Scene {
 
     void drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation, const glm::vec3 &cameraRotation,
                    float scale, bool drawWireframe) const;
-};
 
-void showSettings(bool &rotate, glm::vec3 &translation, glm::vec3 &modelRotation, glm::vec3 &cameraRotation,
-                  float &scale, bool &drawWireframe, unsigned int &currentModel, std::vector<std::string> &paths,
-                  std::shared_ptr<Model> &renderModel);
+    void showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation, glm::vec3 &modelRotation,
+                      glm::vec3 &cameraRotation, float &scale, bool &drawWireframe, unsigned int &currentModel,
+                      std::vector<std::string> &paths, std::shared_ptr<Model> &renderModel);
+};
