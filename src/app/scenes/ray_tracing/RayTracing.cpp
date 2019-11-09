@@ -45,6 +45,7 @@ void RayTracing::tick() {
     static glm::vec3 cameraPosition = {-4, 0, -1.5};
     static glm::vec3 cameraRotation = {0, -1, 0};
     static bool runAsync = true;
+    static glm::vec3 rayColor = {1, 1, 1};
     static bool shouldRenderRays = false;
     float dragSpeed = 0.001F;
 
@@ -57,6 +58,7 @@ void RayTracing::tick() {
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&light.position), dragSpeed);
     ImGui::Checkbox("Run Async", &runAsync);
     ImGui::Checkbox("Render Rays", &shouldRenderRays);
+    ImGui::ColorEdit3("Ray Color", reinterpret_cast<float *>(&rayColor));
     ImGui::End();
 
     // FIXME find a better solution for getting the light into the scene
@@ -78,7 +80,7 @@ void RayTracing::tick() {
         shader->setUniform("u_View", viewMatrix);
 
         renderRayTracedTexture(pixels, width, height, rayTracerCameraPosition, zDistance);
-        renderScene(rayTracerCameraPosition, zDistance, rays, shouldRenderRays);
+        renderScene(rayTracerCameraPosition, zDistance, rays, rayColor, shouldRenderRays);
     }
 
     ImGui::Metrics(perfCounter);
@@ -98,7 +100,8 @@ void RayTracing::renderRayTracedTexture(const std::vector<glm::vec3> &pixels, co
 }
 
 void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition, const float zDistance,
-                             const std::vector<RayTracer::Ray> &rays, bool shouldRenderRays) {
+                             const std::vector<RayTracer::Ray> &rays, const glm::vec3 &rayColor,
+                             bool shouldRenderRays) {
     // render camera
     renderCube(rayTracerCameraPosition, {1, 1, 1});
 
@@ -110,7 +113,7 @@ void RayTracing::renderScene(const glm::vec3 &rayTracerCameraPosition, const flo
     }
 
     if (shouldRenderRays) {
-        renderRays(rays);
+        renderRays(rays, rayColor);
     }
 }
 
@@ -146,7 +149,7 @@ void RayTracing::renderLines(const glm::vec3 &rayTracerCameraPosition, const flo
     GL_Call(glDrawElements(GL_LINES, array.getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void RayTracing::renderRays(const std::vector<RayTracer::Ray> &rays) {
+void RayTracing::renderRays(const std::vector<RayTracer::Ray> &rays, const glm::vec3 &color) {
     std::vector<glm::vec3> vertices = {};
     std::vector<unsigned int> indices = {};
 
@@ -172,7 +175,7 @@ void RayTracing::renderRays(const std::vector<RayTracer::Ray> &rays) {
 
     shader->setUniform("u_UseTexture", false);
     shader->setUniform("u_Model", glm::mat4(1.0F));
-    shader->setUniform("u_Color", {1, 1, 1});
+    shader->setUniform("u_Color", color);
     GL_Call(glDrawElements(GL_LINES, array.getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 

@@ -36,10 +36,10 @@ class RayTracing : public Scene {
     void renderRayTracedTexture(const std::vector<glm::vec3> &pixels, unsigned int width, unsigned int height,
                                 const glm::vec3 &cameraPosition, float zDistance);
     void renderScene(const glm::vec3 &rayTracerCameraPosition, float zDistance, const std::vector<RayTracer::Ray> &rays,
-                     bool shouldRenderRays);
+                     const glm::vec3 &rayColor, bool shouldRenderRays);
     void renderLines(const glm::vec3 &rayTracerCameraPosition, float zDistance);
     void renderObject(const RayTracer::Object &object);
-    void renderRays(const std::vector<RayTracer::Ray> &rays);
+    void renderRays(const std::vector<RayTracer::Ray> &rays, const glm::vec3 &color);
     void setupRayTracedTexture();
     void renderCube(const glm::vec3 &position, const glm::vec3 &color);
 };
