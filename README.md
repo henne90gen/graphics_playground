@@ -118,9 +118,9 @@ The end result can be seen below.
 
 ![Normal Mapping](screenshots/normal-mapping.gif)
 
-### A*
+### A\*
 
-A* is a search algorithm that finds the shortest path from one point to another in a graph.
+A\* is a search algorithm that finds the shortest path from one point to another in a graph.
 It uses a heuristic to improve the searching behavior.
 We start out doing a breadth first search.
 The only difference is that the queue that we are using is a priority queue.
@@ -153,7 +153,21 @@ We can then use the stencil buffer to create the illusion of shadows.
 This can be achieved by setting up the stencil in such a way that the lit area is the only area that passes the stencil test.
 Thus the lit area is the only area that is drawn to. The rest of the scene lies in darkness.
 
-### Ray Casting 3D
+### Ray Tracing
+
+Calculating accurate lighting for a scene is a very difficult task.
+One technique that can be used to do that is called ray tracing.
+We place a virtual camera into our scene and then shoot rays from each pixel of the cameras sensor into the scene.
+The color of whatever the ray hits is then written to the pixel where it originated.
+This process is visualized, by rendering the whole scene from a different perspective than the ray tracing camera.
+It is possible to adjust the cameras focal length and position.
+
+#### Reflective surfaces
+
+Surfaces such as glass, a mirror or even water can reflect light and thus create a reflection on them.
+This can be simulated by creating new rays, which go off into the scene and record new color values.
+In nature this would happen infinitely often, but since we only have limited computation time, we need to restrict this process.
+This is done by only doing this light bounce a certain number of times and simply stopping after a certain depth is reached.
 
 ### Water Demo
 
@@ -169,7 +183,7 @@ The screenshot is then saved to the projects working directory as `screenshot-%y
 The back menu offers the option to take screen recordings of the current scene.
 Choose one of GIF or MP4 and press the `Start Recording` button.
 After you're done recording, just press the `Stop Recording` button.
-The recording is then stored in the projects working directory as `screenshot-%year%-%month%-%day%-%hour%:%minute%:%second%.%extension%`
+The recording is then stored in the projects working directory as `screenrecording-%year%-%month%-%day%-%hour%:%minute%:%second%.%extension%`
 The extension is determined by the recording type you chose.
 
 ### Timing Utility
