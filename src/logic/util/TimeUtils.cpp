@@ -2,13 +2,12 @@
 
 #include "TimeUtils.h"
 
-#include <utility>
-#include <iostream>
 #include <cmath>
+#include <iostream>
+#include <utility>
 
-Timer::Timer(std::shared_ptr<PerformanceCounter> performanceTracker, std::string name) :
-        name(std::move(name)),
-        performanceTracker(std::move(performanceTracker)) {
+Timer::Timer(std::shared_ptr<PerformanceCounter> performanceTracker, std::string name)
+    : name(std::move(name)), performanceTracker(std::move(performanceTracker)) {
     start = std::chrono::high_resolution_clock::now();
     if (performanceTracker) {
         performanceTracker->addTimer(name);
@@ -31,6 +30,8 @@ Timer::~Timer() {
 void PerformanceCounter::recordValue(const std::string &name, double value) {
     auto &dp = dataPoints[name];
     dp.timerCount++;
+
+    dp.lastValue = value;
 
     dp.sum += value;
     dp.average = dp.sum / dp.timerCount;

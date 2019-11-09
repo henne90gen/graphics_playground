@@ -6,6 +6,7 @@
 #include <vector>
 
 struct DataPoint {
+    double lastValue;
     double average;
     double standardDeviation;
     double timerCount;
