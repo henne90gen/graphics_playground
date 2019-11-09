@@ -4,6 +4,7 @@
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/projection.hpp>
 #include <iostream>
+#include <optional>
 
 #include "util/VectorUtils.h"
 
@@ -167,19 +168,22 @@ glm::vec3 traceGlass(const Ray &ray, const Light &light, const glm::vec3 &camera
                      const std::vector<Object> &objects, const Object &object, const glm::vec3 &hitPoint,
                      const glm::vec3 &hitNormal, unsigned int depth) {
     Ray reflectionRay = createReflectionRay(ray.direction, hitPoint, hitNormal);
-    // TODO create rays that go out in a circle around the actual direction
+    // TODO create multiple rays that go out in a circle around the actual direction
     auto color = trace(reflectionRay, light, cameraPosition, objects, depth + 1);
     return color * object.reflection;
 }
+struct HitResult {
+    Object object;
+    float distance;
+    glm::vec3 point;
+    glm::vec3 normal;
+};
 
-glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
-                unsigned int depth) {
+std::optional<HitResult> hitCheck(const Ray &ray, const glm::vec3 &cameraPosition, const std::vector<Object> &objects) {
+    HitResult result = {};
     glm::vec3 hitPoint;
     glm::vec3 hitNormal;
-    glm::vec3 minHitPoint;
-    glm::vec3 minHitNormal;
     float minDistance = -1.0F;
-    Object object = {};
     for (auto &currentObject : objects) {
         if (!intersects(ray, currentObject, hitPoint, hitNormal)) {
             continue;
@@ -190,22 +194,40 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
             continue;
         }
 
-        object = currentObject;
         minDistance = distance;
-        minHitPoint = hitPoint;
-        minHitNormal = hitNormal;
+        result.object = currentObject;
+        result.distance = distance;
+        result.point = hitPoint;
+        result.normal = hitNormal;
     }
 
-    if (object.type == Object::None) {
+    if (minDistance < 0) {
+        return {};
+    }
+
+    return result;
+}
+
+bool isTransparentOrReflective(const Object &object) { return object.transparency > 0.0F || object.reflection > 0.0F; }
+
+glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
+                unsigned int depth) {
+    auto hitOpt = hitCheck(ray, cameraPosition, objects);
+    if (!hitOpt.has_value()) {
         return BACKGROUND_COLOR;
     }
 
-    if ((object.transparency > 0.0F || object.reflection > 0.0F) && depth < MAX_RAY_DEPTH) {
-        return traceGlass(ray, light, cameraPosition, objects, object, minHitPoint, minHitNormal, depth);
+    auto hit = hitOpt.value();
+    auto object = hit.object;
+    glm::vec3 hitPoint = hit.point;
+    glm::vec3 hitNormal = hit.normal;
+
+    if (isTransparentOrReflective(object) && depth < MAX_RAY_DEPTH) {
+        return traceGlass(ray, light, cameraPosition, objects, object, hitPoint, hitNormal, depth);
     }
 
     // normal object
-    bool isInShadow = isPositionInShadow(objects, object, light, minHitPoint);
+    bool isInShadow = isPositionInShadow(objects, object, light, hitPoint);
     return object.color * light.brightness * (float)!isInShadow;
 }
 
@@ -218,34 +240,40 @@ void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &obje
     }
 }
 
+void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
+                   const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
+                   const unsigned int height) {
+    std::vector<Ray> rays = {};
+    rays.resize(pixels.size());
+    for (unsigned int row = 0; row < height; row++) {
+        for (unsigned int col = 0; col < width; col++) {
+            Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
+            rays[row * width + col] = ray;
+        }
+    }
+
+    std::vector<std::future<void>> results = {};
+    // FIXME what do we do, if we have an odd number of rays?
+    int numCores = 8;
+    unsigned long numRaysPerCore = rays.size() / numCores;
+    for (unsigned long i = 0; i < numCores; i++) {
+        unsigned long startIndex = numRaysPerCore * i;
+        unsigned long endIndex = numRaysPerCore * (i + 1);
+        results.push_back(std::async(std::launch::async, traceMultiple, std::ref(rays), std::ref(objects),
+                                     std::ref(light), cameraPosition, std::ref(pixels), startIndex, endIndex));
+    }
+    for (auto &result : results) {
+        result.get();
+    }
+}
+
 void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
               const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
               const unsigned int height, bool runAsync) {
     pixels.resize(width * height);
 
     if (runAsync) {
-        std::vector<Ray> rays = {};
-        rays.resize(pixels.size());
-        for (unsigned int row = 0; row < height; row++) {
-            for (unsigned int col = 0; col < width; col++) {
-                Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
-                rays[row * width + col] = ray;
-            }
-        }
-
-        std::vector<std::future<void>> results = {};
-        // FIXME what do we do, if we have an odd number of rays?
-        int numCores = 8;
-        unsigned long numRaysPerCore = rays.size() / numCores;
-        for (unsigned long i = 0; i < numCores; i++) {
-            unsigned long startIndex = numRaysPerCore * i;
-            unsigned long endIndex = numRaysPerCore * (i + 1);
-            results.push_back(std::async(std::launch::async, traceMultiple, std::ref(rays), std::ref(objects),
-                                         std::ref(light), cameraPosition, std::ref(pixels), startIndex, endIndex));
-        }
-        for (auto &result : results) {
-            result.get();
-        }
+        rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height);
     } else {
         for (unsigned int row = 0; row < height; row++) {
             for (unsigned int col = 0; col < width; col++) {
