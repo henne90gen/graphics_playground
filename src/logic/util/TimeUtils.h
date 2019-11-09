@@ -25,9 +25,7 @@ public:
 
     void recordValue(const std::string &name, double value);
 
-    void reset() {
-        dataPoints = {};
-    }
+    void reset();
 
     void addTimer(const std::string &name) {
         dataPoints[name] = {};

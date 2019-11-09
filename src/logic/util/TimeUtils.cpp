@@ -39,3 +39,13 @@ void PerformanceCounter::recordValue(const std::string &name, double value) {
     dp.sdSum += (value - dp.average) * (value - dp.average);
     dp.standardDeviation = sqrt(dp.sdSum / dp.timerCount);
 }
+
+void PerformanceCounter::reset() {
+    for (auto &dataPoint : dataPoints) {
+        dataPoint.second.lastValue = 0;
+        dataPoint.second.sum = 0;
+        dataPoint.second.average = 0;
+        dataPoint.second.sdSum = 0;
+        dataPoint.second.standardDeviation = 0;
+    }
+}
