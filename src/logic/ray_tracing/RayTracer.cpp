@@ -262,6 +262,7 @@ void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const
         results.push_back(std::async(std::launch::async, traceMultiple, std::ref(rays), std::ref(objects),
                                      std::ref(light), cameraPosition, std::ref(pixels), startIndex, endIndex));
     }
+
     for (auto &result : results) {
         result.get();
     }
