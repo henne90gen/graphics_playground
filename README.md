@@ -169,7 +169,10 @@ This can be simulated by creating new rays, which go off into the scene and reco
 In nature this would happen infinitely often, but since we only have limited computation time, we need to restrict this process.
 This is done by only doing this light bounce a certain number of times and simply stopping after a certain depth is reached.
 
-### Water Demo
+## Ideas
+
+-   Water Demo
+-   Graph Visualization
 
 ## Additional Features
 
