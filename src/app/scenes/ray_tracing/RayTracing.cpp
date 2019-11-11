@@ -25,7 +25,7 @@ void RayTracing::setup() {
     objects.push_back(RayTracer::plane({-2, 0, 0}, {0, 1, 1}, {1, 0, 0}));
     objects.push_back(RayTracer::plane({0, 0, -5}, {1, 1, 0}, {0, 0, 1}));
     objects.push_back(RayTracer::plane({0, 2, 0}, {1, 0, 1}, {0, -1, 0}));
-    objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5, 1.0, 1.0));
+    objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5, 0.0, 1.0));
     objects.push_back(RayTracer::sphere({1, 0, -1.5}, {0, 1, 0}, 0.25));
     objects.push_back(RayTracer::sphere({0, 1, -1.5}, {0, 0, 1}, 0.25));
     objects.push_back(RayTracer::sphere({1, 1, -3}, {1, 0.5, 0.5}, 0.5));
@@ -42,11 +42,13 @@ void RayTracing::tick() {
     static int dimensions[2] = {250, 250};
     static glm::vec3 rayTracerCameraPosition = {0, 0.25, 1.0};
     static float zDistance = -2.1F;
-    static glm::vec3 cameraPosition = {-4, 0, -1.5};
-    static glm::vec3 cameraRotation = {0, -1, 0};
+    static glm::vec3 cameraPosition = {-1.5, -0.2, -2};
+    static glm::vec3 cameraRotation = {0, -0.5, 0};
     static bool runAsync = true;
     static glm::vec3 rayColor = {1, 1, 1};
     static bool shouldRenderRays = false;
+    static int maxRayDepth = 5;
+    static glm::vec3 glassSpherePosition = {0, 0, -2};
     float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
@@ -59,10 +61,13 @@ void RayTracing::tick() {
     ImGui::Checkbox("Run Async", &runAsync);
     ImGui::Checkbox("Render Rays", &shouldRenderRays);
     ImGui::ColorEdit3("Ray Color", reinterpret_cast<float *>(&rayColor));
+    ImGui::DragInt("Max Ray Depth", &maxRayDepth, 1.0F, 0, 100);
+    ImGui::DragFloat3("Glass Sphere Position", reinterpret_cast<float *>(&glassSpherePosition), dragSpeed);
     ImGui::End();
 
     // FIXME find a better solution for getting the light into the scene
     objects[0] = RayTracer::sphere(light.position, {1, 1, 1}, 0.1);
+    objects[4] = RayTracer::sphere(glassSpherePosition, {1, 0, 0}, 0.5, 0.0, 1.0);
 
     std::vector<glm::vec3> pixels = {};
     unsigned int width = dimensions[0];
@@ -70,7 +75,8 @@ void RayTracing::tick() {
     std::vector<RayTracer::Ray> rays = {};
     {
         TIME_SCOPE_RECORD_NAME(perfCounter, "RayTrace");
-        RayTracer::rayTrace(objects, light, rayTracerCameraPosition, zDistance, pixels, width, height, rays, runAsync);
+        RayTracer::rayTrace(objects, light, rayTracerCameraPosition, zDistance, pixels, width, height, maxRayDepth,
+                            rays, runAsync);
     }
 
     {

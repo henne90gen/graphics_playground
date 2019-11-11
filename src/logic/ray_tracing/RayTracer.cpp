@@ -9,14 +9,14 @@
 #include "util/VectorUtils.h"
 
 #define USE_GLM_INTERSECT 1
-#define MAX_RAY_DEPTH 5
+#define MAX_RAY_DEPTH 10
 
 const glm::vec3 BACKGROUND_COLOR = {0.1F, 0.1F, 0.1F};
 
 namespace RayTracer {
 
 glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
-                unsigned int depth);
+                unsigned int depth, const unsigned int maxRayDepth);
 
 Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &cameraPosition, const float zDistance,
               const unsigned int width, const unsigned int height) {
@@ -166,12 +166,13 @@ Ray createRefractionRay(const glm::vec3 &direction, const glm::vec3 &hitPoint, c
 
 glm::vec3 traceGlass(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition,
                      const std::vector<Object> &objects, const Object &object, const glm::vec3 &hitPoint,
-                     const glm::vec3 &hitNormal, unsigned int depth) {
+                     const glm::vec3 &hitNormal, unsigned int depth, const unsigned int maxRayDepth) {
     Ray reflectionRay = createReflectionRay(ray.direction, hitPoint, hitNormal);
     // TODO create multiple rays that go out in a circle around the actual direction
-    auto color = trace(reflectionRay, light, cameraPosition, objects, depth + 1);
+    auto color = trace(reflectionRay, light, cameraPosition, objects, depth + 1, maxRayDepth);
     return color * object.reflection;
 }
+
 struct HitResult {
     Object object;
     float distance;
@@ -211,7 +212,7 @@ std::optional<HitResult> hitCheck(const Ray &ray, const glm::vec3 &cameraPositio
 bool isTransparentOrReflective(const Object &object) { return object.transparency > 0.0F || object.reflection > 0.0F; }
 
 glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
-                unsigned int depth) {
+                unsigned int depth, const unsigned int maxRayDepth = 10) {
     auto hitOpt = hitCheck(ray, cameraPosition, objects);
     if (!hitOpt.has_value()) {
         return BACKGROUND_COLOR;
@@ -222,27 +223,30 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
     glm::vec3 hitPoint = hit.point;
     glm::vec3 hitNormal = hit.normal;
 
-    if (isTransparentOrReflective(object) && depth < MAX_RAY_DEPTH) {
-        return traceGlass(ray, light, cameraPosition, objects, object, hitPoint, hitNormal, depth);
+    if (isTransparentOrReflective(object) && depth < maxRayDepth) {
+        auto color = traceGlass(ray, light, cameraPosition, objects, object, hitPoint, hitNormal, depth, maxRayDepth);
+        if (color.x == 0.1F || color.y == 0.1F || color.z == 0.1F) {
+            // PRINT_VEC3(color);
+        }
+        return color;
     }
 
-    // normal object
     bool isInShadow = isPositionInShadow(objects, object, light, hitPoint);
     return object.color * light.brightness * (float)!isInShadow;
 }
 
 void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &objects, const Light &light,
-                   const glm::vec3 cameraPosition, std::vector<glm::vec3> &pixels, unsigned int startIndex,
-                   unsigned int endIndex) {
+                   const glm::vec3 cameraPosition, std::vector<glm::vec3> &pixels, const unsigned int maxRayDepth,
+                   unsigned int startIndex, unsigned int endIndex) {
     for (unsigned int i = startIndex; i < endIndex; i++) {
         auto &ray = rays[i];
-        pixels[i] = trace(ray, light, cameraPosition, objects, 0);
+        pixels[i] = trace(ray, light, cameraPosition, objects, 0, maxRayDepth);
     }
 }
 
 void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
                    const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
-                   const unsigned int height, std::vector<Ray> &rays) {
+                   const unsigned int height, const unsigned int maxRayDepth, std::vector<Ray> &rays) {
     rays.resize(pixels.size());
     for (unsigned int row = 0; row < height; row++) {
         for (unsigned int col = 0; col < width; col++) {
@@ -259,7 +263,8 @@ void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const
         unsigned long startIndex = numRaysPerCore * i;
         unsigned long endIndex = numRaysPerCore * (i + 1);
         results.push_back(std::async(std::launch::async, traceMultiple, std::ref(rays), std::ref(objects),
-                                     std::ref(light), cameraPosition, std::ref(pixels), startIndex, endIndex));
+                                     std::ref(light), cameraPosition, std::ref(pixels), maxRayDepth, startIndex,
+                                     endIndex));
     }
 
     for (auto &result : results) {
@@ -269,17 +274,17 @@ void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const
 
 void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
               const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
-              const unsigned int height, std::vector<Ray> &rays, bool runAsync) {
+              const unsigned int height, const unsigned int maxRayDepth, std::vector<Ray> &rays, bool runAsync) {
     pixels.resize(width * height);
 
     if (runAsync) {
-        rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height, rays);
+        rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height, maxRayDepth, rays);
     } else {
         for (unsigned int row = 0; row < height; row++) {
             for (unsigned int col = 0; col < width; col++) {
                 Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
                 rays.push_back(ray);
-                pixels[row * width + col] = trace(ray, light, cameraPosition, objects, 0);
+                pixels[row * width + col] = trace(ray, light, cameraPosition, objects, maxRayDepth, 0);
             }
         }
     }
