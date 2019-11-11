@@ -6,12 +6,12 @@
 #include <vector>
 
 struct DataPoint {
-    double lastValue;
-    double average;
-    double standardDeviation;
-    double timerCount;
-    double sum;
-    double sdSum;
+    double lastValue = 0.0;
+    double average = 0.0;
+    double standardDeviation = 0.0;
+    double _sum = 0.0;
+    double _sdSum = 0.0;
+    unsigned int timerCount = 0;
 };
 
 /**
