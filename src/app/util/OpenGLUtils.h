@@ -13,7 +13,7 @@
 #else
 #define ASSERT(x)             \
         if (!(x))                  \
-            __builtin_debugtrap()
+            __builtin_trap()
 #endif
 #else
 #define ASSERT(x)

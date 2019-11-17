@@ -45,7 +45,7 @@ void ModelLoading::tick() {
     shader->bind();
 
     if (prevModel != currentModel) {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "LoadingModel");
+        RECORD_SCOPE_NAME("LoadingModel");
         std::string modelFileName = paths[currentModel];
         glModel->loadFromFile(modelFileName, shader);
         prevModel = currentModel;
@@ -67,17 +67,15 @@ void ModelLoading::tick() {
         glm::vec2 adjustedPos = {mousePos.x / (float)getWidth(), 1.0F - (mousePos.y / (float)getHeight())};
         lastMousePos = adjustedPos;
     }
-
-    ImGui::Metrics(perfCounter);
 }
 
 void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
-                             const glm::vec3 &cameraRotation, float scale, bool drawWireframe) const {
+                             const glm::vec3 &cameraRotation, float scale, bool drawWireframe) {
     if (!glModel) {
         return;
     }
 
-    TIME_SCOPE_RECORD_NAME(perfCounter, "RenderModel");
+    RECORD_SCOPE_NAME("RenderModel");
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));

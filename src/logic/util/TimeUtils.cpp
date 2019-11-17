@@ -4,30 +4,51 @@
 
 #include <cmath>
 #include <iostream>
-#include <utility>
 
-Timer::Timer(std::shared_ptr<PerformanceCounter> performanceTracker, std::string name)
-    : name(std::move(name)), performanceTracker(std::move(performanceTracker)) {
+#define NANOSECONDS(timePoint)                                                                                         \
+    std::chrono::time_point_cast<std::chrono::nanoseconds>(timePoint).time_since_epoch().count()
+
+Timer::Timer(PerformanceCounter *performanceTracker, std::string name)
+    : name(std::move(name)), performanceTracker(performanceTracker) {
     start = std::chrono::high_resolution_clock::now();
-    if (performanceTracker) {
-        performanceTracker->addTimer(name);
-    }
 }
 
 Timer::~Timer() {
     auto end = std::chrono::high_resolution_clock::now();
-    auto endNs = std::chrono::time_point_cast<std::chrono::nanoseconds>(end).time_since_epoch().count();
-    auto startNs = std::chrono::time_point_cast<std::chrono::nanoseconds>(start).time_since_epoch().count();
-    long long duration = endNs - startNs;
-    double ms = duration * 0.001 * 0.001;
+    auto endNs = NANOSECONDS(end);
+    auto startNs = NANOSECONDS(start);
     if (performanceTracker) {
-        performanceTracker->recordValue(name, ms);
+        performanceTracker->recordValue(name, startNs, endNs);
     } else {
+        long long duration = endNs - startNs;
+        double ms = (double)duration * 0.001 * 0.001;
         std::cout << name << ": " << ms << "ms" << std::endl;
     }
 }
 
-void PerformanceCounter::recordValue(const std::string &name, double value) {
+PerformanceCounter::PerformanceCounter() {
+#if PROFILING
+    programStart = std::chrono::high_resolution_clock::now();
+    fileOutput = std::ofstream("results.json", std::ofstream::out);
+    fileOutput << "[";
+#endif
+}
+
+PerformanceCounter::~PerformanceCounter() {
+#if PROFILING
+    fileOutput << "]";
+    fileOutput.flush();
+    fileOutput.close();
+#endif
+}
+
+void PerformanceCounter::recordValue(const std::string &name, long long start, long long end) {
+    if (dataPoints.find(name) == dataPoints.end()) {
+        dataPoints[name] = {};
+    }
+    double valueMicro = (double)(end - start) * 0.001;
+    double value = valueMicro * 0.001;
+
     auto &dp = dataPoints[name];
     dp.timerCount++;
 
@@ -38,6 +59,28 @@ void PerformanceCounter::recordValue(const std::string &name, double value) {
 
     dp._sdSum += (value - dp.average) * (value - dp.average);
     dp.standardDeviation = sqrt(dp._sdSum / dp.timerCount);
+
+#if PROFILING
+    unsigned int processId = 0;
+    unsigned int threadId = 0;
+    double startMicro = (double)(start - NANOSECONDS(programStart)) * 0.001;
+    if (hasWrittenValuesToFile) {
+        fileOutput << ",";
+    }
+    fileOutput << "{";
+    fileOutput << R"("name": ")" << name << "\",";
+    fileOutput << R"("cat": "",)";
+    fileOutput << R"("ph": "X",)";
+    fileOutput << R"("ts": )" << startMicro << ",";
+    fileOutput << R"("dur": )" << valueMicro << ",";
+    fileOutput << R"("pid": )" << processId << ",";
+    fileOutput << R"("tid": )" << threadId << ",";
+    fileOutput << R"("args": {})";
+    fileOutput << "}";
+    fileOutput.flush();
+
+    hasWrittenValuesToFile = true;
+#endif
 }
 
 void PerformanceCounter::reset() {

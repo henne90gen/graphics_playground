@@ -74,13 +74,13 @@ void RayTracing::tick() {
     unsigned int height = dimensions[1];
     std::vector<RayTracer::Ray> rays = {};
     {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "RayTrace");
+        RECORD_SCOPE_NAME("RayTrace");
         RayTracer::rayTrace(objects, light, rayTracerCameraPosition, zDistance, pixels, width, height, maxRayDepth,
                             rays, runAsync);
     }
 
     {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "Render");
+        RECORD_SCOPE_NAME("Render");
         shader->bind();
         auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
         shader->setUniform("u_View", viewMatrix);
@@ -88,8 +88,6 @@ void RayTracing::tick() {
         renderRayTracedTexture(pixels, width, height, rayTracerCameraPosition, zDistance);
         renderScene(rayTracerCameraPosition, zDistance, rays, rayColor, shouldRenderRays);
     }
-
-    ImGui::Metrics(perfCounter);
 }
 
 void RayTracing::renderRayTracedTexture(const std::vector<glm::vec3> &pixels, const unsigned int width,

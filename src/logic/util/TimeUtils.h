@@ -1,9 +1,12 @@
 #pragma once
 
 #include <chrono>
+#include <fstream>
 #include <memory>
 #include <unordered_map>
 #include <vector>
+
+#define PROFILING 1
 
 struct DataPoint {
     double lastValue = 0.0;
@@ -18,44 +21,44 @@ struct DataPoint {
  * NOTE: All times are in milliseconds.
  */
 class PerformanceCounter {
-public:
-  PerformanceCounter() = default;
+  public:
+    PerformanceCounter();
+    ~PerformanceCounter();
 
-    ~PerformanceCounter() = default;
-
-    void recordValue(const std::string &name, double value);
+    void recordValue(const std::string &name, long long start, long long end);
 
     void reset();
 
-    void addTimer(const std::string &name) {
-        dataPoints[name] = {};
-    }
-
     std::unordered_map<std::string, DataPoint> dataPoints = {};
+
+  private:
+#if PROFILING
+    std::ofstream fileOutput = {};
+    bool hasWrittenValuesToFile = false;
+    std::chrono::time_point<std::chrono::high_resolution_clock> programStart;
+#endif
 };
 
 class Timer {
-public:
-    explicit Timer(std::shared_ptr<PerformanceCounter> performanceTracker, std::string name);
+  public:
+    explicit Timer(PerformanceCounter *performanceTracker, std::string name);
 
     ~Timer();
 
-private:
-
+  private:
     std::string name;
     std::chrono::time_point<std::chrono::high_resolution_clock> start;
-    std::shared_ptr<PerformanceCounter> performanceTracker;
+    PerformanceCounter *performanceTracker;
 };
 
+#ifdef __FUNCSIG__
+#define FUNCTION_NAME __FUNCSIG__
+#else
+#define FUNCTION_NAME __PRETTY_FUNCTION__
+#endif
 
-#define TIME_SCOPE() \
-    auto timer = Timer(nullptr, __func__)
+#define TIME_SCOPE() auto timer##__LINE__ = Timer(nullptr, FUNCTION_NAME)
+#define TIME_SCOPE_NAME(name) auto timer##__LINE__ = Timer(nullptr, name)
 
-#define TIME_SCOPE_NAME(name) \
-    auto timer = Timer(nullptr, name)
-
-#define TIME_SCOPE_RECORD(perfCounter) \
-    auto timer = Timer(perfCounter, __func__)
-
-#define TIME_SCOPE_RECORD_NAME(perfCounter, name) \
-    auto timer = Timer(perfCounter, name)
+#define RECORD_SCOPE() auto timer##__LINE__ = Timer(getPerformanceCounter(), FUNCTION_NAME)
+#define RECORD_SCOPE_NAME(name) auto timer##__LINE__ = Timer(getPerformanceCounter(), name)

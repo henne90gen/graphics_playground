@@ -86,13 +86,11 @@ void NormalMapping::tick() {
     shader->setUniform("u_View", viewMatrix);
 
     {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "Render");
+        RECORD_SCOPE_NAME("Render");
         for (auto &mesh : model->getMeshes()) {
             renderMesh(mesh, position, rotation, scale);
         }
     }
-
-    ImGui::Metrics(perfCounter);
 }
 
 void NormalMapping::renderMesh(const std::shared_ptr<OpenGLMesh> &mesh, const glm::vec3 &position,

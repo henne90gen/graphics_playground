@@ -32,3 +32,30 @@ void Scene::renderBackMenu() {
     }
     ImGui::End();
 }
+
+void Scene::renderMetrics() {
+    ImGui::Begin("Metrics");
+
+    for (auto &dataPoint : performanceCounter.dataPoints) {
+        ImGui::Text("%.3fms - Last Time - %s", dataPoint.second.lastValue, dataPoint.first.c_str());
+        ImGui::Text("%.3fms - Average Time - %s", dataPoint.second.average, dataPoint.first.c_str());
+        ImGui::Text("%.3fms - Standard Deviation - %s", dataPoint.second.standardDeviation, dataPoint.first.c_str());
+    }
+
+    if (ImGui::Button("Reset Performance Counter")) {
+        performanceCounter.reset();
+    }
+
+    ImGui::End();
+}
+
+void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
+    RECORD_SCOPE();
+
+    setDimensions(windowWidth, windowHeight);
+
+    tick();
+
+    renderBackMenu();
+    renderMetrics();
+}

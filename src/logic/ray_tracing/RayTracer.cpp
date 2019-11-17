@@ -16,7 +16,7 @@ const glm::vec3 BACKGROUND_COLOR = {0.1F, 0.1F, 0.1F};
 namespace RayTracer {
 
 glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
-                unsigned int depth, const unsigned int maxRayDepth);
+                unsigned int depth, unsigned int maxRayDepth);
 
 Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &cameraPosition, const float zDistance,
               const unsigned int width, const unsigned int height) {
@@ -110,12 +110,6 @@ bool intersects(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::
         return false;
     }
     return false;
-}
-
-bool intersects(const Ray &ray, const Object &object) {
-    glm::vec3 point = {};
-    glm::vec3 normal = {};
-    return intersects(ray, object, point, normal);
 }
 
 bool isPositionInShadow(const std::vector<Object> &objects, const Object &object, const Light &light,
@@ -284,7 +278,7 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
             for (unsigned int col = 0; col < width; col++) {
                 Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
                 rays.push_back(ray);
-                pixels[row * width + col] = trace(ray, light, cameraPosition, objects, maxRayDepth, 0);
+                pixels[row * width + col] = trace(ray, light, cameraPosition, objects, 0, maxRayDepth);
             }
         }
     }

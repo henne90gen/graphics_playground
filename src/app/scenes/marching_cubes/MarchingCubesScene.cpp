@@ -79,12 +79,12 @@ void MarchingCubesScene::tick() {
     showSettings(translation, cameraRotation, modelRotation, scale, rotate, drawWireframe);
 
     {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "MarchingCubes");
+        RECORD_SCOPE_NAME("MarchingCubes");
         marchingCubes->step();
     }
 
     {
-        TIME_SCOPE_RECORD_NAME(perfCounter, "Render");
+        RECORD_SCOPE_NAME("Render");
         glm::vec3 dimensions =
               glm::vec3(static_cast<float>(marchingCubes->width), static_cast<float>(marchingCubes->height),
                         static_cast<float>(marchingCubes->depth));
@@ -110,8 +110,6 @@ void MarchingCubesScene::tick() {
 
         shader->unbind();
     }
-
-    ImGui::Metrics(perfCounter);
 }
 
 void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,

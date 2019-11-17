@@ -35,7 +35,7 @@ extern "C" {
 
 // lib swresample
 #include <libswscale/swscale.h>
-};
+}
 
 struct Frame {
     unsigned char *buffer = nullptr;

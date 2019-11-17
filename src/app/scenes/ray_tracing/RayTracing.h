@@ -26,7 +26,6 @@ class RayTracing : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> rayTracedTextureArray;
     std::shared_ptr<Texture> texture;
-    std::shared_ptr<PerformanceCounter> perfCounter = std::make_shared<PerformanceCounter>();
 
     std::vector<RayTracer::Object> objects = {};
     RayTracer::Light light = {};

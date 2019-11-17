@@ -148,9 +148,7 @@ int main() {
             int windowWidth;
             int windowHeight;
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-            scenes[currentSceneIndex]->setDimensions(windowWidth, windowHeight);
-            scenes[currentSceneIndex]->renderBackMenu();
-            scenes[currentSceneIndex]->tick();
+            scenes[currentSceneIndex]->tick(windowWidth, windowHeight);
 
             recorder.tick(windowWidth, windowHeight);
         }

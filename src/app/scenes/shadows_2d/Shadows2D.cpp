@@ -30,7 +30,6 @@ void Shadows2D::onAspectRatioChange() {
 }
 
 void Shadows2D::tick() {
-    static std::shared_ptr<PerformanceCounter> performanceCounter = std::make_shared<PerformanceCounter>();
     static DrawToggles drawToggles = {};
     static ColorConfig colorConfig = {};
     static glm::vec2 lightPosition = glm::vec2();
@@ -67,7 +66,7 @@ void Shadows2D::tick() {
     std::vector<RayTracer2D::Ray> rays = {};
     auto screenBorder = createScreenBorder(1.0F / zoom);
     {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "Rays");
+        RECORD_SCOPE_NAME("Rays");
         rays = RayTracer2D::calculateRays(walls, screenBorder, lightPosition, runAsync);
     }
 
@@ -78,17 +77,15 @@ void Shadows2D::tick() {
     unsigned int numIndices = 0;
     std::vector<glm::vec2> shadowPolygon = {};
     {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "Scene");
+        RECORD_SCOPE_NAME("Scene");
         createRaysAndIntersectionsVA(rays, drawToggles, shadowPolygon);
         createShadowPolygonVA(shadowPolygon, viewMatrix, lightPosition, numVertices, numIndices);
     }
 
     {
-        TIME_SCOPE_RECORD_NAME(performanceCounter, "render");
+        RECORD_SCOPE_NAME("render");
         renderScene(drawToggles, viewMatrix, lightPosition, colorConfig);
     }
-
-    ImGui::Metrics(performanceCounter);
 
     ImGui::Begin("Metrics");
     ImGui::Text("Num Rays: %lu", rays.size());

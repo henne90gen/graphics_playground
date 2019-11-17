@@ -40,7 +40,6 @@ class MarchingCubesScene : public Scene {
     std::shared_ptr<IndexBuffer> surfaceIndexBuffer;
 
     std::shared_ptr<MarchingCubes> marchingCubes;
-    std::shared_ptr<PerformanceCounter> perfCounter = std::make_shared<PerformanceCounter>();
 
     glm::mat4 projectionMatrix;
 
