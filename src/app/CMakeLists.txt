@@ -35,6 +35,7 @@ set(SOURCES
         scenes/surface_smoothing/SurfaceSmoothing.cpp
         scenes/water_demo/WaterDemo.cpp
         scenes/ray_tracing/RayTracing.cpp
+        scenes/bloom_effect/BloomEffect.cpp
         scenes/shadows_2d/Shadows2D.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -105,6 +106,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
 set(RESOURCES
         scenes/a_star/AStarFrag.glsl
         scenes/a_star/AStarVert.glsl
+        scenes/bloom_effect/BloomEffectFrag.glsl
+        scenes/bloom_effect/BloomEffectVert.glsl
         scenes/cube/CubeFrag.glsl
         scenes/cube/CubeVert.glsl
         scenes/font_demo/FontDemoFrag.glsl

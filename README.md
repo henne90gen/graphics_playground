@@ -171,6 +171,7 @@ This is done by only doing this light bounce a certain number of times and simpl
 
 ## Ideas
 
+-   [Bloom Effect](https://learnopengl.com/Advanced-Lighting/Bloom)
 -   Water Demo
 -   Graph Visualization
 

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "scenes/a_star/AStar.h"
+#include "scenes/bloom_effect/BloomEffect.h"
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
 #include "scenes/fourier_transform/FourierTransform.h"
@@ -84,7 +85,7 @@ int main() {
         return -1;
     }
 
-    window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Hello World", nullptr, nullptr);
+    window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Graphics Playground", nullptr, nullptr);
     if (window == nullptr) {
         glfwTerminate();
         return -1;
@@ -130,6 +131,7 @@ int main() {
     scenes.push_back(new AStar(sceneData));              // 14
     scenes.push_back(new Shadows2D(sceneData));          // 15
     scenes.push_back(new RayTracing(sceneData));         // 16
+    scenes.push_back(new BloomEffect(sceneData));        // 17
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     // mainMenu.goToScene(10);

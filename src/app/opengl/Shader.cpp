@@ -69,6 +69,7 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
     GLuint shaderId;
     GL_Call(shaderId = glCreateShader(shaderType));
 
+    // TODO process shader source into lines, so that error reporting works properly
     char const *sourcePointer = shaderCode.c_str();
     GL_Call(glShaderSource(shaderId, 1, &sourcePointer, nullptr));
     GL_Call(glCompileShader(shaderId));
