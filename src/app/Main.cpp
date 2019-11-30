@@ -173,5 +173,6 @@ void GLAPIENTRY MessageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, G
 
 void enableOpenGLDebugging() {
     GL_Call(glEnable(GL_DEBUG_OUTPUT));
+    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
     GL_Call(glDebugMessageCallback(MessageCallback, nullptr));
 }

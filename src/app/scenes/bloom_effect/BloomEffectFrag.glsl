@@ -5,10 +5,13 @@ struct Light {
     vec3 color;
 };
 
-varying vec3 v_Position;
-varying vec3 v_Normal;
-varying vec2 v_UV;
-varying vec3 v_CameraPosition;
+in vec3 v_Position;
+in vec3 v_Normal;
+in vec2 v_UV;
+in vec3 v_CameraPosition;
+
+out vec4 FragColor;
+out vec4 BrightColor;
 
 uniform sampler2D u_TextureSampler;
 uniform vec3 u_AmbientColor;
@@ -35,5 +38,13 @@ void main() {
     color += u_AmbientColor;
     color += diffuseColor;
     color += specularColor;
-    gl_FragColor = vec4(color, surfaceColor.a);
+    FragColor = vec4(color, surfaceColor.a);
+
+    // check whether fragment output is higher than threshold, if so output as brightness color
+    brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if (brightness > 1.0) {
+        BrightColor = vec4(FragColor.rgb, 1.0);
+    } else {
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
 }

@@ -4,6 +4,7 @@
 void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader) {
     meshes.clear();
 
+    shader->bind();
     model = std::make_shared<ModelLoader::RawModel>();
     unsigned int error = ModelLoader::fromFile(fileName, model);
     if (error != 0) {

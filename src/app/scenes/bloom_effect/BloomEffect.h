@@ -4,10 +4,10 @@
 
 #include <functional>
 
-#include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
-#include "opengl/Texture.h"
 #include "opengl/Model.h"
+#include "opengl/Shader.h"
+#include "opengl/Texture.h"
+#include "opengl/VertexArray.h"
 
 class BloomEffect : public Scene {
   public:
@@ -22,15 +22,23 @@ class BloomEffect : public Scene {
     void destroy() override;
 
   protected:
-    void onAspectRatioChange()override;
+    void onAspectRatioChange() override;
 
   private:
     std::shared_ptr<Shader> shader;
+    std::shared_ptr<Shader> shaderBlur;
+    std::shared_ptr<Shader> shaderBloom;
     std::unique_ptr<Model> model = {};
 
     glm::mat4 projectionMatrix;
 
-    void
-    drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
-              const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation, const bool drawWireframe) const;
+    unsigned int hdrFBO;
+    unsigned int colorBuffers[2];
+    unsigned int pingpongFBO[2];
+    unsigned int pingpongColorbuffers[2];
+
+    void drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
+                   const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation, bool drawWireframe) const;
+
+    void renderQuad();
 };
