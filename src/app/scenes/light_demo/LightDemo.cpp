@@ -23,7 +23,7 @@ void LightDemo::onAspectRatioChange() {
 void LightDemo::destroy() {}
 
 void LightDemo::tick() {
-    static auto cameraTranslation = glm::vec3(1.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3();
     static auto modelTranslation = glm::vec3();
     static auto modelRotation = glm::vec3();

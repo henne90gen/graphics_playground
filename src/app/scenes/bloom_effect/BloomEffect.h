@@ -7,6 +7,7 @@
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
 #include "opengl/Texture.h"
+#include "opengl/Model.h"
 
 class BloomEffect : public Scene {
   public:
@@ -20,8 +21,16 @@ class BloomEffect : public Scene {
 
     void destroy() override;
 
+  protected:
+    void onAspectRatioChange()override;
+
   private:
     std::shared_ptr<Shader> shader;
-    std::shared_ptr<VertexArray> vertexArray;
-    std::shared_ptr<Texture> texture;
+    std::unique_ptr<Model> model = {};
+
+    glm::mat4 projectionMatrix;
+
+    void
+    drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
+              const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation, const bool drawWireframe) const;
 };
