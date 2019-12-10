@@ -26,6 +26,7 @@ void AStar::setup() {
 void AStar::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void AStar::tick() {
+    // TODO move camera so that whole canvas can be seen
     static float zoom = 1.0F;
     static glm::vec3 position = {0.5F, 0.5F, 0.0F};
     static bool animate = false;
@@ -42,6 +43,7 @@ void AStar::tick() {
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), 0.001F);
     if (ImGui::Button("Reset")) {
         setupDefaultProblem();
+        animate = false;
     }
     if (animate) {
         if (ImGui::Button("Stop Animation")) {
@@ -59,7 +61,7 @@ void AStar::tick() {
     if (!solver->workingSet.empty()) {
         estimatedDistance = solver->workingSet.back()->f;
     }
-    ImGui::Text("Total Distance: %f", estimatedDistance);
+    ImGui::Text("Total Estimated Distance: %f", estimatedDistance);
     ImGui::Text("Solved: %d", static_cast<int>(solver->solved));
     ImGui::Text("Final Node: %p", (void *)solver->finalNode);
     if (solver->finalNode != nullptr) {
