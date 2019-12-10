@@ -16,3 +16,5 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
  */
 std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, int sectorCount = 36,
                                             int stackCount = 18);
+
+std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader);

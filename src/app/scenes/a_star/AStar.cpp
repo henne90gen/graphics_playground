@@ -2,36 +2,16 @@
 
 #include "opengl/VertexBuffer.h"
 #include "util/OpenGLUtils.h"
+#include "util/RenderUtils.h"
 
 void AStar::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
-    shader = std::make_shared<Shader>("scenes/a_star/AStarVert.glsl",
-                                      "scenes/a_star/AStarFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/a_star/AStarVert.glsl", "scenes/a_star/AStarFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>(shader);
+    vertexArray = createQuadVA(shader);
     vertexArray->bind();
-
-    std::vector<float> vertices = {
-            -1.0, -1.0, 0.0, 0.0, 0.0, //
-            1.0, -1.0, 0.0, 1.0, 0.0, //
-            1.0, 1.0, 0.0, 1.0, 1.0, //
-            -1.0, 1.0, 0.0, 0.0, 1.0
-    };
-    BufferLayout bufferLayout = {
-            {ShaderDataType::Float3, "a_Position"},
-            {ShaderDataType::Float2, "a_UV"}
-    };
-    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
-    vertexArray->addVertexBuffer(buffer);
-
-    std::vector<glm::ivec3> indices = {
-            {0, 1, 2},
-            {0, 2, 3},
-    };
-    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    vertexArray->setIndexBuffer(indexBuffer);
 
     texture = std::make_shared<Texture>();
     glActiveTexture(GL_TEXTURE0);
@@ -43,9 +23,7 @@ void AStar::setup() {
     solver = std::make_unique<AStarSolver>();
 }
 
-void AStar::destroy() {
-    GL_Call(glEnable(GL_DEPTH_TEST));
-}
+void AStar::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void AStar::tick() {
     static float zoom = 1.0F;
@@ -83,7 +61,7 @@ void AStar::tick() {
     }
     ImGui::Text("Total Distance: %f", estimatedDistance);
     ImGui::Text("Solved: %d", static_cast<int>(solver->solved));
-    ImGui::Text("Final Node: %p", (void *) solver->finalNode);
+    ImGui::Text("Final Node: %p", (void *)solver->finalNode);
     if (solver->finalNode != nullptr) {
         ImGui::Text("Total Distance Traveled: %d", solver->finalNode->g);
     }
@@ -150,13 +128,11 @@ void AStar::visualizeNodeSet(const std::vector<Node *> &nodes, const glm::mat4 &
         auto vb = std::make_shared<VertexBuffer>(vertices, layout);
         va.addVertexBuffer(vb);
 
-        std::vector<unsigned int> indices = {
-                0, 1,//
-                1, 2,//
-                2, 3,//
-                3, 4,//
-                4, 5
-        };
+        std::vector<unsigned int> indices = {0, 1, //
+                                             1, 2, //
+                                             2, 3, //
+                                             3, 4, //
+                                             4, 5};
         auto ib = std::make_shared<IndexBuffer>(indices);
         va.setIndexBuffer(ib);
 
@@ -196,9 +172,8 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
         return;
     }
 
-    unsigned int i =
-            (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
-            static_cast<unsigned int>(canvasPos.x);
+    unsigned int i = (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
+                     static_cast<unsigned int>(canvasPos.x);
 
     if (board.pixels[i] != startColor && board.pixels[i] != finishColor) {
         board.pixels[i] = obstacleColor;

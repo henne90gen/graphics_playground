@@ -3,7 +3,7 @@
 #include <vector>
 
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader) {
-    std::vector<glm::vec3> vertices = {
+    static std::vector<glm::vec3> vertices = {
           // back
           {-1.0F, -1.0F, -1.0F}, // 0
           {1.0F, -1.0F, -1.0F},  // 1
@@ -16,7 +16,7 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
           {1.0F, 1.0F, 1.0F},   // 6
           {-1.0F, 1.0F, 1.0F},  // 7
     };
-    std::vector<glm::ivec3> indices = {
+    static std::vector<glm::ivec3> indices = {
           // front
           {0, 1, 2}, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
           {0, 2, 3}, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
@@ -42,15 +42,16 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
           {4, 1, 0}, // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     };
 
-    auto array = std::make_shared<VertexArray>(shader);
+    auto result = std::make_shared<VertexArray>(shader);
     BufferLayout layout = {
           {ShaderDataType::Float3, "a_Position"},
     };
     std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(vertices, layout);
-    array->addVertexBuffer(vb);
+    result->addVertexBuffer(vb);
     std::shared_ptr<IndexBuffer> ib = std::make_shared<IndexBuffer>(indices);
-    array->setIndexBuffer(ib);
-    return array;
+    result->setIndexBuffer(ib);
+
+    return result;
 }
 
 std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, const int sectorCount,
@@ -106,4 +107,28 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
     std::shared_ptr<IndexBuffer> ib = std::make_shared<IndexBuffer>(indices);
     array->setIndexBuffer(ib);
     return array;
+}
+
+std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader) {
+    std::vector<float> vertices = {-1.0, -1.0, 0.0, 0.0, 0.0, //
+                                   1.0,  -1.0, 0.0, 1.0, 0.0, //
+                                   1.0,  1.0,  0.0, 1.0, 1.0, //
+                                   -1.0, 1.0,  0.0, 0.0, 1.0};
+
+    auto result = std::make_shared<VertexArray>(shader);
+    BufferLayout bufferLayout = {
+          {ShaderDataType::Float3, "a_Position"},
+          {ShaderDataType::Float2, "a_UV"},
+    };
+    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
+    result->addVertexBuffer(buffer);
+
+    std::vector<glm::ivec3> indices = {
+          {0, 1, 2},
+          {0, 2, 3},
+    };
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    result->setIndexBuffer(indexBuffer);
+
+    return result;
 }
