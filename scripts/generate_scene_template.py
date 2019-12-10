@@ -21,7 +21,7 @@ H_TEMPLATE = """\
 
 class {name} : public Scene {{
 public:
-    {name}(SceneData &data)
+    explicit {name}(SceneData &data)
         : Scene(data, "{name}"){{}};
 
     ~{name}() override = default;
