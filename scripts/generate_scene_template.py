@@ -73,9 +73,15 @@ def write_template(file_path, template, **kwargs):
         f.writelines(map(lambda line: line + "\n", lines))
 
 
-def add_to_cmake_lists(cpp_path):
-    cpp_path = cpp_path.replace("./", "").replace("src/app/", "")
-    cpp_path = f"        {cpp_path}\n"
+def correctly_indent_for_cmakelists(path: str):
+    path = path.replace("./", "").replace("src/app/", "")
+    return f"        {path}\n"
+
+
+def add_to_cmake_lists(cpp_path: str, vertex_path: str, fragment_path: str):
+    cpp_path = correctly_indent_for_cmakelists(cpp_path)
+    vertex_path = correctly_indent_for_cmakelists(vertex_path)
+    fragment_path = correctly_indent_for_cmakelists(fragment_path)
 
     cmake_path = "src/app/CMakeLists.txt"
     with open(cmake_path) as f:
@@ -83,6 +89,7 @@ def add_to_cmake_lists(cpp_path):
 
     result_lines = []
     inside_sources = False
+    inside_resources = False
     for line in lines:
         if inside_sources:
             if cpp_path in line:
@@ -90,9 +97,17 @@ def add_to_cmake_lists(cpp_path):
             elif ")" in line:
                 inside_sources = False
                 result_lines.append(cpp_path)
+        if inside_resources:
+            if ")" in line:
+                inside_resources = False
+                result_lines.append(vertex_path)
+                result_lines.append(fragment_path)
 
         if "set(SOURCES" in line:
             inside_sources = True
+
+        if "set(RESOURCES" in line:
+            inside_resources = True
 
         result_lines.append(line)
 
@@ -114,4 +129,4 @@ def generate_scene_template(scene_name: str):
     write_template(vertex_path, VERTEX_TEMPLATE, name=scene_name)
     write_template(fragment_path, FRAGMENT_TEMPLATE, name=scene_name)
 
-    add_to_cmake_lists(cpp_path)
+    add_to_cmake_lists(cpp_path, vertex_path, fragment_path)
