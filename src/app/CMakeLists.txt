@@ -109,6 +109,10 @@ set(RESOURCES
         scenes/a_star/AStarVert.glsl
         scenes/bloom_effect/BloomEffectFrag.glsl
         scenes/bloom_effect/BloomEffectVert.glsl
+        scenes/bloom_effect/BloomFrag.glsl
+        scenes/bloom_effect/BloomVert.glsl
+        scenes/bloom_effect/BlurFrag.glsl
+        scenes/bloom_effect/BlurVert.glsl
         scenes/cube/CubeFrag.glsl
         scenes/cube/CubeVert.glsl
         scenes/font_demo/FontDemoFrag.glsl
