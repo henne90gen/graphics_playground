@@ -11,6 +11,7 @@
 #include "scenes/cube/Cube.h"
 #include "scenes/font_demo/FontDemo.h"
 #include "scenes/fourier_transform/FourierTransform.h"
+#include "scenes/framebuffer_demo/FramebufferDemo.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/legacy_triangle/LegacyTriangle.h"
@@ -76,25 +77,33 @@ void installCallbacks(GLFWwindow *window) {
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCharCallback(window, charCallback);
     glfwSetWindowSizeCallback(window, resizeCallback);
+    glfwSetFramebufferSizeCallback(window, resizeCallback);
 }
 
 int main() {
     GLFWwindow *window;
 
     if (glfwInit() == 0) {
-        return -1;
+        return 1;
     }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Graphics Playground", nullptr, nullptr);
     if (window == nullptr) {
         glfwTerminate();
-        return -1;
+        return 1;
     }
 
-    installCallbacks(window);
     glfwMakeContextCurrent(window);
+    installCallbacks(window);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        return 1;
+    }
 
     initImGui(window);
 
@@ -131,10 +140,11 @@ int main() {
     scenes.push_back(new AStar(sceneData));              // 14
     scenes.push_back(new Shadows2D(sceneData));          // 15
     scenes.push_back(new RayTracing(sceneData));         // 16
-    scenes.push_back(new BloomEffect(sceneData));        // 17
+    scenes.push_back(new FramebufferDemo(sceneData));    // 17
+    scenes.push_back(new BloomEffect(sceneData));        // 18
 
-    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    // mainMenu.goToScene(10);
+    //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    mainMenu.goToScene(17);
 
     enableOpenGLDebugging();
 

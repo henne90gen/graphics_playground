@@ -26,6 +26,7 @@ set(SOURCES
         scenes/landscape/Landscape.cpp
         scenes/marching_cubes/MarchingCubesScene.cpp
         scenes/font_demo/FontDemo.cpp
+        scenes/framebuffer_demo/FramebufferDemo.cpp
         scenes/rubiks_cube/RubiksCubeScene.cpp
         scenes/model_loading/ModelLoading.cpp
         scenes/light_demo/LightDemo.cpp
@@ -115,6 +116,8 @@ set(RESOURCES
         scenes/font_demo/fonts
         scenes/fourier_transform/FourierTransformFrag.glsl
         scenes/fourier_transform/FourierTransformVert.glsl
+        scenes/framebuffer_demo/FramebufferDemoFrag.glsl
+        scenes/framebuffer_demo/FramebufferDemoVert.glsl
         scenes/gamma_calculation/GammaCalculationFrag.glsl
         scenes/gamma_calculation/GammaCalculationVert.glsl
         scenes/landscape/LandscapeFrag.glsl
