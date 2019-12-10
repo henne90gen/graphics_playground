@@ -5,9 +5,9 @@
 #include <vector>
 
 class MainMenu {
-public:
+  public:
     MainMenu(GLFWwindow *window, std::vector<Scene *> &scenes, unsigned int *currentSceneIndex)
-            : window(window), scenes(scenes), currentSceneIndex(currentSceneIndex) {};
+        : window(window), scenes(scenes), currentSceneIndex(currentSceneIndex){};
 
     virtual ~MainMenu() = default;
 
@@ -19,8 +19,7 @@ public:
 
     void goToScene(unsigned long sceneIndex);
 
-private:
-
+  private:
     bool active = true;
     GLFWwindow *window;
     std::vector<Scene *> &scenes;

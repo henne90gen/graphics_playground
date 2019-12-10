@@ -25,12 +25,11 @@ class Scene {
 
     virtual ~Scene() = default;
 
+    void setup(unsigned int windowWidth, unsigned int windowHeight);
     void tick(unsigned int windowWidth, unsigned int windowHeight);
     void renderBackMenu();
     void renderMetrics();
 
-    virtual void setup() = 0;
-    virtual void tick() = 0;
     virtual void destroy() = 0;
 
     const std::string &getName() { return name; }
@@ -43,16 +42,14 @@ class Scene {
     }
 
   protected:
-    inline float getAspectRatio() { return aspectRatio; }
-
+    virtual void setup() = 0;
+    virtual void tick() = 0;
     virtual void onAspectRatioChange(){};
 
+    inline float getAspectRatio() { return aspectRatio; }
     inline unsigned int getWidth() { return width; }
-
     inline unsigned int getHeight() { return height; }
-
     inline InputData *getInput() { return data.input; }
-
     inline PerformanceCounter *getPerformanceCounter() { return &this->performanceCounter; }
 
   private:

@@ -49,6 +49,14 @@ void Scene::renderMetrics() {
     ImGui::End();
 }
 
+void Scene::setup(unsigned int windowWidth, unsigned int windowHeight) {
+    RECORD_SCOPE();
+
+    setDimensions(windowWidth, windowHeight);
+
+    setup();
+}
+
 void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
     RECORD_SCOPE();
 

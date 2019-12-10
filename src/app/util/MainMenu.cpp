@@ -5,7 +5,9 @@
 void MainMenu::goToScene(unsigned long sceneIndex) {
     *currentSceneIndex = sceneIndex;
     active = false;
-    scenes[*currentSceneIndex]->setup();
+    unsigned int width, height;
+    glfwGetFramebufferSize(window, reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height));
+    scenes[*currentSceneIndex]->setup(width, height);
 }
 
 void MainMenu::render() {
