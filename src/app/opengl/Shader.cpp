@@ -10,9 +10,8 @@
 #include "util/FileUtils.h"
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
-        : id(0), vertexPath(std::move(vertexPath)), fragmentPath(std::move(fragmentPath)), lastModTimeVertex(0),
-          lastModTimeFragment(0) {
-}
+    : id(0), vertexPath(std::move(vertexPath)), fragmentPath(std::move(fragmentPath)), lastModTimeVertex(-1),
+      lastModTimeFragment(-1) {}
 
 void Shader::compile() {
     lastModTimeVertex = getLastModifiedTime(vertexPath);
@@ -62,8 +61,8 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
         shaderCode = sstr.str();
         shaderStream.close();
     } else {
-        std::cout << "Could not open " << filePath << std::endl;
-        return GL_INVALID_VALUE;
+        std::cerr << "Could not open " << filePath << std::endl;
+        return 0;
     }
 
     GLuint shaderId;
@@ -85,6 +84,15 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
     }
 
     if (success == 0) {
+        std::cerr << "Failed to compile ";
+        if (shaderType == GL_VERTEX_SHADER) {
+            std::cerr << "vertex";
+        } else if (shaderType == GL_FRAGMENT_SHADER) {
+            std::cerr << "fragment";
+        } else {
+            std::cerr << "unknown";
+        }
+        std::cerr << "shader: " << filePath << std::endl;
         return 0;
     }
 
@@ -117,6 +125,10 @@ void Shader::bind() {
 void Shader::unbind() const { GL_Call(glUseProgram(0)); }
 
 bool Shader::hasBeenModified() {
-    return getLastModifiedTime(vertexPath) > lastModTimeVertex ||
-           getLastModifiedTime(fragmentPath) > lastModTimeFragment;
+    if (lastModTimeVertex == -1 || lastModTimeFragment == -1) {
+        return true;
+    }
+    long modTimeVertex = getLastModifiedTime(vertexPath);
+    long modTimeFragment = getLastModifiedTime(fragmentPath);
+    return modTimeVertex > lastModTimeVertex || modTimeFragment > lastModTimeFragment;
 }
