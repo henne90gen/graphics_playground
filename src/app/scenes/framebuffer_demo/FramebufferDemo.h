@@ -37,4 +37,5 @@ class FramebufferDemo : public Scene {
     void renderObjects(const glm::mat4 &viewMatrix);
     void renderMirror(const glm::mat4 &viewMatrix, const glm::vec3 &mirrorPosition, const glm::vec3 &mirrorRotation);
     void checkFramebufferStatus() const;
+    void initFramebuffer();
 };

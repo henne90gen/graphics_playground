@@ -109,13 +109,9 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
     return array;
 }
 
-std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader, bool flipUvHorizontally) {
+std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader) {
     glm::vec2 uvMin = {0.0F, 0.0F};
     glm::vec2 uvMax = {1.0F, 1.0F};
-    if (flipUvHorizontally) {
-        uvMin = {1.0F, 0.0F};
-        uvMax = {0.0F, 1.0F};
-    }
     std::vector<float> vertices = {
           -0.5, -0.5, 0.0, uvMin.x, uvMin.y, //
           0.5,  -0.5, 0.0, uvMax.x, uvMin.y, //
