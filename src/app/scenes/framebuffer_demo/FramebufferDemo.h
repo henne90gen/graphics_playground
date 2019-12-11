@@ -30,7 +30,11 @@ class FramebufferDemo : public Scene {
     std::vector<Object> objects = {};
     glm::mat4 projectionMatrix = glm::mat4(1.0);
 
-    GLuint fbo;
+    unsigned int fbo = 0;
+    unsigned int mirrorTextureId = 0;
+    std::shared_ptr<VertexArray> mirrorVA;
 
     void renderObjects(const glm::mat4 &viewMatrix);
+    void renderMirror(const glm::mat4 &viewMatrix, const glm::vec3 &mirrorPosition, const glm::vec3 &mirrorRotation);
+    void checkFramebufferStatus() const;
 };

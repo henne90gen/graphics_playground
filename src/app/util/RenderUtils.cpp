@@ -5,16 +5,16 @@
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader) {
     static std::vector<glm::vec3> vertices = {
           // back
-          {-1.0F, -1.0F, -1.0F}, // 0
-          {1.0F, -1.0F, -1.0F},  // 1
-          {1.0F, 1.0F, -1.0F},   // 2
-          {-1.0F, 1.0F, -1.0F},  // 3
+          {-0.5F, -0.5F, -0.5F}, // 0
+          {0.5F, -0.5F, -0.5F},  // 1
+          {0.5F, 0.5F, -0.5F},   // 2
+          {-0.5F, 0.5F, -0.5F},  // 3
 
           // front
-          {-1.0F, -1.0F, 1.0F}, // 4
-          {1.0F, -1.0F, 1.0F},  // 5
-          {1.0F, 1.0F, 1.0F},   // 6
-          {-1.0F, 1.0F, 1.0F},  // 7
+          {-0.5F, -0.5F, 0.5F}, // 4
+          {0.5F, -0.5F, 0.5F},  // 5
+          {0.5F, 0.5F, 0.5F},   // 6
+          {-0.5F, 0.5F, 0.5F},  // 7
     };
     static std::vector<glm::ivec3> indices = {
           // front
@@ -109,11 +109,19 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
     return array;
 }
 
-std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader) {
-    std::vector<float> vertices = {-1.0, -1.0, 0.0, 0.0, 0.0, //
-                                   1.0,  -1.0, 0.0, 1.0, 0.0, //
-                                   1.0,  1.0,  0.0, 1.0, 1.0, //
-                                   -1.0, 1.0,  0.0, 0.0, 1.0};
+std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader, bool flipUvHorizontally) {
+    glm::vec2 uvMin = {0.0F, 0.0F};
+    glm::vec2 uvMax = {1.0F, 1.0F};
+    if (flipUvHorizontally) {
+        uvMin = {1.0F, 0.0F};
+        uvMax = {0.0F, 1.0F};
+    }
+    std::vector<float> vertices = {
+          -0.5, -0.5, 0.0, uvMin.x, uvMin.y, //
+          0.5,  -0.5, 0.0, uvMax.x, uvMin.y, //
+          0.5,  0.5,  0.0, uvMax.x, uvMax.y, //
+          -0.5, 0.5,  0.0, uvMin.x, uvMax.y, //
+    };
 
     auto result = std::make_shared<VertexArray>(shader);
     BufferLayout bufferLayout = {

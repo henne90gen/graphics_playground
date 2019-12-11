@@ -143,7 +143,7 @@ int main() {
     scenes.push_back(new FramebufferDemo(sceneData));    // 17
     scenes.push_back(new BloomEffect(sceneData));        // 18
 
-    //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    //        mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     mainMenu.goToScene(17);
 
     enableOpenGLDebugging();
