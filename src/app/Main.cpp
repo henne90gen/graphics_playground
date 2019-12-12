@@ -100,7 +100,7 @@ int main() {
     glfwMakeContextCurrent(window);
     installCallbacks(window);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+    if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return 1;
     }
@@ -143,7 +143,7 @@ int main() {
     scenes.push_back(new FramebufferDemo(sceneData));    // 17
     scenes.push_back(new BloomEffect(sceneData));        // 18
 
-    //        mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     mainMenu.goToScene(17);
 
     enableOpenGLDebugging();

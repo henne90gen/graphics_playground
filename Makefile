@@ -1,5 +1,5 @@
 clean:
-	rm -rf build
+	@rm -rf build
 
 cmake:
 	@mkdir -p build; cd build; cmake -G"Ninja" ..
@@ -12,6 +12,9 @@ test: build
 
 run: build
 	@cd build/src/app; ./Playground
+
+clang-tidy: clean
+	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt
 
 docs:
 	@doxygen

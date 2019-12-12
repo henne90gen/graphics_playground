@@ -82,7 +82,7 @@ def show_counter(counter):
 
 
 def analyze_build_report(file_name: Optional[str]):
-    with open("build/build_report.csv") as f:
+    with open("build/clang-tidy-report.txt") as f:
         lines = f.readlines()
 
     warnings = list(

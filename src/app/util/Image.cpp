@@ -187,7 +187,7 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
 }
 
 void writePng(Image &image) {
-    FILE *fp = fopen(image.fileName.c_str(), "wb");
+    FILE *fp = fopen(image.fileName.c_str(), "wbe");
     if (fp == nullptr) {
         abort();
     }

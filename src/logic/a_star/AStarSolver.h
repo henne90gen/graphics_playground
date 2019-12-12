@@ -42,7 +42,7 @@ public:
 private:
     glm::ivec2 goal = {-1, -1};
 
-    glm::ivec2 findGoal(const Board &board) const;
+    static glm::ivec2 findGoal(const Board &board) ;
 
     Node *findStart(const Board &board);
 
@@ -52,7 +52,7 @@ private:
 
     void drawFinalPath(Board &board);
 
-    std::vector<Node *> getNeighbors(Board &board, Node *pNode);
+    static std::vector<Node *> getNeighbors(Board &board, Node *pNode);
 
     Node *getNodeFromWorkingSet(Node *pNode);
 };

@@ -113,6 +113,9 @@ set(RESOURCES
         scenes/bloom_effect/BloomVert.glsl
         scenes/bloom_effect/BlurFrag.glsl
         scenes/bloom_effect/BlurVert.glsl
+        scenes/bloom_effect/SimpleTextureFrag.glsl
+        scenes/bloom_effect/SimpleTextureVert.glsl
+        scenes/bloom_effect/models
         scenes/cube/CubeFrag.glsl
         scenes/cube/CubeVert.glsl
         scenes/font_demo/FontDemoFrag.glsl

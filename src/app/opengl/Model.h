@@ -24,7 +24,7 @@ public:
 
     void updateTexture(ModelLoader::RawMesh &mesh);
 
-    void createCheckerBoard(Image &image);
+    static void createCheckerBoard(Image &image);
 
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexBuffer> vertexBuffer;

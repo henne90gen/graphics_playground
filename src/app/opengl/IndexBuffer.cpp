@@ -23,7 +23,7 @@ IndexBuffer::~IndexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
 
 void IndexBuffer::bind() const { GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); }
 
-void IndexBuffer::unbind() const { GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)); }
+void IndexBuffer::unbind() { GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)); }
 
 void IndexBuffer::update(const unsigned int *data, const unsigned int countParam) {
     count = countParam;
