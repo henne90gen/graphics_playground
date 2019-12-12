@@ -23,13 +23,10 @@ class {name} : public Scene {{
 public:
     explicit {name}(SceneData &data)
         : Scene(data, "{name}"){{}};
-
     ~{name}() override = default;
 
     void setup() override;
-
     void tick() override;
-
     void destroy() override;
 }};\
 """
