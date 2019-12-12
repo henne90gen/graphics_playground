@@ -12,13 +12,10 @@
 class BloomEffect : public Scene {
   public:
     BloomEffect(SceneData &data) : Scene(data, "BloomEffect"){};
-
     ~BloomEffect() override = default;
 
     void setup() override;
-
     void tick() override;
-
     void destroy() override;
 
   protected:
@@ -28,11 +25,17 @@ class BloomEffect : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Shader> shaderBlur;
     std::shared_ptr<Shader> shaderBloom;
+    std::shared_ptr<Shader> textureShader;
+
+    std::shared_ptr<VertexArray> quadVA;
     std::unique_ptr<Model> model = {};
 
     glm::mat4 projectionMatrix;
 
     unsigned int hdrFBO;
+    unsigned int finalFbo;
+    unsigned int finalTexture;
+
     unsigned int colorBuffers[2];
     unsigned int pingpongFBO[2];
     unsigned int pingpongColorbuffers[2];
@@ -40,5 +43,6 @@ class BloomEffect : public Scene {
     void drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
                    const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation, bool drawWireframe) const;
 
-    void renderQuad();
+    void renderQuad(const std::shared_ptr<Shader> &s);
+    void renderAllQuads(const glm::vec3 &pos);
 };
