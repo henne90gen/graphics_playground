@@ -38,7 +38,8 @@ bool intersects(const Ray &ray, const Ray &line, glm::vec2 &intersection, float 
         float b = (r_l.y + rayDir.y * a) / lineDir.y;
         intersection = rayPoint + rayDir * a;
         return a >= 0.0 && (b >= 0.0 && b <= 1.0);
-    } else if (lineDir.x != 0.0) {
+    }
+    if (lineDir.x != 0.0) {
         float xpr_ys_xs = (r_l.x * lineDir.y) / lineDir.x;
         float xpr_ys_xs_ypr = xpr_ys_xs - r_l.y;
         float yt_xtys_xs = rayDir.y - ((rayDir.x * lineDir.y) / lineDir.x);

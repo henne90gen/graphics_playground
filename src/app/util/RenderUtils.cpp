@@ -59,27 +59,32 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::ivec3> indices = {};
 
-    float sectorStep = glm::two_pi<float>() / (float)sectorCount;
-    float stackStep = glm::pi<float>() / (float)stackCount;
-    float sectorAngle, stackAngle;
-    float x, y, z, xy;
+    float sectorStep = glm::two_pi<float>() / static_cast<float>(sectorCount);
+    float stackStep = glm::pi<float>() / static_cast<float>(stackCount);
+    float sectorAngle;
+    float stackAngle;
+    float x;
+    float y;
+    float z;
+    float xy;
 
     for (int i = 0; i <= stackCount; i++) {
-        stackAngle = glm::half_pi<float>() - (float)i * stackStep; // starting from pi/2 to -pi/2
+        stackAngle = glm::half_pi<float>() - static_cast<float>(i) * stackStep; // starting from pi/2 to -pi/2
         xy = glm::cos(stackAngle);
         z = glm::sin(stackAngle);
 
         // add (sectorCount+1) vertices per stack
         // the first and last vertices have same position and normal, but different tex coords
         for (int j = 0; j <= sectorCount; j++) {
-            sectorAngle = (float)j * sectorStep;
+            sectorAngle = static_cast<float>(j) * sectorStep;
             x = xy * glm::cos(sectorAngle);
             y = xy * glm::sin(sectorAngle);
             vertices.emplace_back(x, y, z);
         }
     }
 
-    int k1, k2;
+    int k1;
+    int k2;
     for (int i = 0; i < stackCount; ++i) {
         k1 = i * (sectorCount + 1); // beginning of current stack
         k2 = k1 + sectorCount + 1;  // beginning of next stack

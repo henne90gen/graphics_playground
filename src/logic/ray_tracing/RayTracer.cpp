@@ -22,11 +22,11 @@ Ray createRay(const unsigned int row, const unsigned int col, const glm::vec3 &c
               const unsigned int width, const unsigned int height) {
     Ray result;
     result.startingPoint = cameraPosition;
-    float x = (float)col / (float)width;
+    float x = static_cast<float>(col) / static_cast<float>(width);
     x *= 2.0F;
     x -= 1.0F;
 
-    float y = (float)row / (float)height;
+    float y = static_cast<float>(row) / static_cast<float>(height);
     y *= 2.0F;
     y -= 1.0F;
 
@@ -160,9 +160,9 @@ Ray createRefractionRay(const glm::vec3 &direction, const glm::vec3 &hitPoint, c
 
 glm::vec3 traceGlass(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition,
                      const std::vector<Object> &objects, const Object &object, const glm::vec3 &hitPoint,
-                     const glm::vec3 &hitNormal, unsigned int depth, const unsigned int maxRayDepth) {
+                     const glm::vec3 &hitNormal, unsigned int depth, const unsigned int maxRayDepth) -> glm::vec3 {
     Ray reflectionRay = createReflectionRay(ray.direction, hitPoint, hitNormal);
-    // TODO create multiple rays that go out in a circle around the actual direction
+    // TODO(henne): create multiple rays that go out in a circle around the actual direction
     auto color = trace(reflectionRay, light, cameraPosition, objects, depth + 1, maxRayDepth);
     return color * object.reflection;
 }
@@ -205,8 +205,8 @@ std::optional<HitResult> hitCheck(const Ray &ray, const glm::vec3 &cameraPositio
 
 bool isTransparentOrReflective(const Object &object) { return object.transparency > 0.0F || object.reflection > 0.0F; }
 
-glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
-                unsigned int depth, const unsigned int maxRayDepth = 10) {
+auto trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
+                unsigned int depth, const unsigned int maxRayDepth) -> glm::vec3 {
     auto hitOpt = hitCheck(ray, cameraPosition, objects);
     if (!hitOpt.has_value()) {
         return BACKGROUND_COLOR;
@@ -226,7 +226,7 @@ glm::vec3 trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosit
     }
 
     bool isInShadow = isPositionInShadow(objects, object, light, hitPoint);
-    return object.color * light.brightness * (float)!isInShadow;
+    return object.color * light.brightness * static_cast<float>(!isInShadow);
 }
 
 void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &objects, const Light &light,
