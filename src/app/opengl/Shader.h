@@ -36,7 +36,7 @@ public:
 
     void bind();
 
-    void unbind() const;
+    static void unbind() ;
 
     inline unsigned int getId() { return id; }
 

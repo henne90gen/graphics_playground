@@ -32,7 +32,7 @@ public:
 
     void bind() const;
 
-    void unbind() const;
+    static void unbind() ;
 
 private:
     unsigned int id = 0;

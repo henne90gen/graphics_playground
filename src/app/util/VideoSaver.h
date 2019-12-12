@@ -72,7 +72,7 @@ class VideoSaver {
 class Mp4VideoSaver : public VideoSaver {
   public:
     explicit Mp4VideoSaver(std::string videoFileName) : VideoSaver(std::move(videoFileName)) {}
-    ~Mp4VideoSaver() override { free(); }
+    ~Mp4VideoSaver() override { this->free(); }
 
     bool doInit() override;
     void doAcceptFrame(const std::unique_ptr<Frame> &frame) override;
@@ -98,7 +98,7 @@ struct GifWriter;
 class GifVideoSaver : public VideoSaver {
   public:
     explicit GifVideoSaver(std::string videoFileName) : VideoSaver(std::move(videoFileName)) {}
-    ~GifVideoSaver();
+    ~GifVideoSaver() override;
 
     bool doInit() override;
     void doAcceptFrame(const std::unique_ptr<Frame> &frame) override;

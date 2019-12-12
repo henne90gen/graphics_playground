@@ -8,7 +8,7 @@ Texture::~Texture() = default;
 
 void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }
 
-void Texture::unbind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, 0)); }
+void Texture::unbind() { GL_Call(glBindTexture(GL_TEXTURE_2D, 0)); }
 
 void Texture::update(const unsigned char *data, unsigned int width, unsigned int height, unsigned int unpackAlignment) {
     bind();

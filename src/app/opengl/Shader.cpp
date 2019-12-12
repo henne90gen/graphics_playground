@@ -68,7 +68,7 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
     GLuint shaderId;
     GL_Call(shaderId = glCreateShader(shaderType));
 
-    // TODO process shader source into lines, so that error reporting works properly
+    // TODO(henne): process shader source into lines, so that error reporting works properly
     char const *sourcePointer = shaderCode.c_str();
     GL_Call(glShaderSource(shaderId, 1, &sourcePointer, nullptr));
     GL_Call(glCompileShader(shaderId));
@@ -122,7 +122,7 @@ void Shader::bind() {
     GL_Call(glUseProgram(id));
 }
 
-void Shader::unbind() const { GL_Call(glUseProgram(0)); }
+void Shader::unbind() { GL_Call(glUseProgram(0)); }
 
 bool Shader::hasBeenModified() {
     if (lastModTimeVertex == -1 || lastModTimeFragment == -1) {

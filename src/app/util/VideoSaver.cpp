@@ -34,36 +34,37 @@ void VideoSaver::acceptFrame(const std::unique_ptr<Frame> &frame) {
 }
 
 void Mp4VideoSaver::free() {
-    if (videoFrame) {
+    if (videoFrame != nullptr) {
         av_frame_free(&videoFrame);
     }
-    if (cctx) {
+    if (cctx != nullptr) {
         avcodec_free_context(&cctx);
     }
-    if (ofctx) {
+    if (ofctx != nullptr) {
         avformat_free_context(ofctx);
         ofctx = nullptr;
     }
-    if (swsCtx) {
+    if (swsCtx != nullptr) {
         sws_freeContext(swsCtx);
         swsCtx = nullptr;
     }
 }
 
 void FreeRemux(AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx) {
-    if (ifmt_ctx) {
+    if (ifmt_ctx != nullptr) {
         avformat_close_input(&ifmt_ctx);
     }
-    if (ofmt_ctx && !(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+    if ((ofmt_ctx != nullptr) && ((ofmt_ctx->oformat->flags & AVFMT_NOFILE) == 0)) {
         avio_closep(&ofmt_ctx->pb);
     }
-    if (ofmt_ctx) {
+    if (ofmt_ctx != nullptr) {
         avformat_free_context(ofmt_ctx);
     }
 }
 
 void Mp4VideoSaver::remux() {
-    AVFormatContext *ifmt_ctx = nullptr, *ofmt_ctx = nullptr;
+    AVFormatContext *ifmt_ctx = nullptr;
+    AVFormatContext *ofmt_ctx = nullptr;
     int err = avformat_open_input(&ifmt_ctx, VIDEO_TMP_FILE, nullptr, nullptr);
     if (err < 0) {
         std::cout << "Failed to open input file for remuxing (" << err << ")" << std::endl;
@@ -97,7 +98,7 @@ void Mp4VideoSaver::remux() {
     avcodec_parameters_copy(outVideoStream->codecpar, inVideoStream->codecpar);
     outVideoStream->codecpar->codec_tag = 0;
 
-    if (!(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+    if ((ofmt_ctx->oformat->flags & AVFMT_NOFILE) == 0) {
         if ((err = avio_open(&ofmt_ctx->pb, videoFileName.c_str(), AVIO_FLAG_WRITE)) < 0) {
             std::cout << "Failed to open output file (" << err << ")" << std::endl;
             FreeRemux(ifmt_ctx, ofmt_ctx);
@@ -105,7 +106,7 @@ void Mp4VideoSaver::remux() {
         }
     }
 
-    if ((err = avformat_write_header(ofmt_ctx, 0)) < 0) {
+    if ((err = avformat_write_header(ofmt_ctx, nullptr)) < 0) {
         std::cout << "Failed to write header to output file (" << err << ")" << std::endl;
         FreeRemux(ifmt_ctx, ofmt_ctx);
         return;
@@ -191,7 +192,7 @@ bool Mp4VideoSaver::doInit() {
     if (videoStream->codecpar->codec_id == AV_CODEC_ID_H264) {
         av_opt_set(cctx, "preset", "ultrafast", 0);
     }
-    if (ofctx->oformat->flags & AVFMT_GLOBALHEADER) {
+    if ((ofctx->oformat->flags & AVFMT_GLOBALHEADER) != 0) {
         cctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     }
     avcodec_parameters_from_context(videoStream->codecpar, cctx);
@@ -202,7 +203,7 @@ bool Mp4VideoSaver::doInit() {
         return false;
     }
 
-    if (!(oformat->flags & AVFMT_NOFILE)) {
+    if ((oformat->flags & AVFMT_NOFILE) == 0) {
         if ((err = avio_open(&ofctx->pb, VIDEO_TMP_FILE, AVIO_FLAG_WRITE)) < 0) {
             std::cout << "Failed to open file (" << err << ")" << std::endl;
             free();
@@ -237,7 +238,7 @@ void Mp4VideoSaver::cleanUp() {
     }
 
     av_write_trailer(ofctx);
-    if (!(oformat->flags & AVFMT_NOFILE)) {
+    if ((oformat->flags & AVFMT_NOFILE) == 0) {
         int err = avio_close(ofctx->pb);
         if (err < 0) {
             std::cout << "Failed to close file (" << err << ")" << std::endl;
@@ -281,7 +282,7 @@ void Mp4VideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
     }
 
     // Using a negative stride to flip the image with sws_scale
-    int stride[1] = {-1 * (int)frame->channels * cctx->width};
+    int stride[1] = {-1 * static_cast<int>(frame->channels) * cctx->width};
 
     // Creating a pointer to the pointer that contains the actual start position.
     // The start position is at the end of the buffer, so that the image is flipped with sws_scale
@@ -318,7 +319,7 @@ void Mp4VideoSaver::save() {
 
 GifVideoSaver::~GifVideoSaver() { delete gifWriter; }
 
-bool GifVideoSaver::doInit() {
+auto GifVideoSaver::doInit() -> bool {
     if (gifWriter == nullptr) {
         gifWriter = new GifWriter();
     }
@@ -342,7 +343,7 @@ void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) 
     *dest = r + (g << 8) + (b << 16);
 }
 
-void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsigned int newHeight = 600) {
+void scaleDownFrame(Frame *frame, const unsigned int newWidth, const unsigned int newHeight) {
     auto buffer = static_cast<unsigned char *>(malloc(newWidth * newHeight * frame->channels * sizeof(unsigned char)));
 
     const unsigned int oldWidth = frame->width;
@@ -353,12 +354,12 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsig
 
     for (unsigned int y = 0; y < frame->height; y++) {
         for (unsigned int x = 0; x < frame->width; x++) {
-            auto xF = (float)x;
-            auto yF = (float)y;
-            float downScaledX = xF / (float)frame->width;
-            float downScaledY = yF / (float)frame->height;
-            float upScaledX = downScaledX * (float)oldWidth;
-            float upScaledY = downScaledY * (float)oldHeight;
+            auto xF = static_cast<float>(x);
+            auto yF = static_cast<float>(y);
+            float downScaledX = xF / static_cast<float>(frame->width);
+            float downScaledY = yF / static_cast<float>(frame->height);
+            float upScaledX = downScaledX * static_cast<float>(oldWidth);
+            float upScaledY = downScaledY * static_cast<float>(oldHeight);
 
             unsigned int xLeft = std::floor(upScaledX);
             unsigned int xRight = std::ceil(upScaledX);
@@ -366,14 +367,14 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsig
             unsigned int yBottom = std::ceil(upScaledY);
 
             unsigned int index = (xLeft + yTop * oldWidth) * frame->channels;
-            unsigned int topLeft = *(unsigned int *)(frame->buffer + index);
+            unsigned int topLeft = *reinterpret_cast<unsigned int *>(frame->buffer + index);
             index = (xRight + yTop * oldWidth) * frame->channels;
-            unsigned int topRight = *(unsigned int *)(frame->buffer + index);
+            unsigned int topRight = *reinterpret_cast<unsigned int *>(frame->buffer + index);
 
             index = (xLeft + yBottom * oldWidth) * frame->channels;
-            unsigned int bottomLeft = *(unsigned int *)(frame->buffer + index);
+            unsigned int bottomLeft = *reinterpret_cast<unsigned int *>(frame->buffer + index);
             index = (xRight + yBottom * oldWidth) * frame->channels;
-            unsigned int bottomRight = *(unsigned int *)(frame->buffer + index);
+            unsigned int bottomRight = *reinterpret_cast<unsigned int *>(frame->buffer + index);
 
             unsigned int top;
             averagePixel(topLeft, topRight, &top);
@@ -381,7 +382,7 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsig
             averagePixel(bottomLeft, bottomRight, &bottom);
 
             unsigned int baseIndex = (x + y * frame->width) * frame->channels;
-            auto *pixel = (unsigned int *)(buffer + baseIndex);
+            auto *pixel = reinterpret_cast<unsigned int *>(buffer + baseIndex);
             averagePixel(top, bottom, pixel);
         }
     }
@@ -391,7 +392,7 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth = 800, const unsig
 }
 
 void GifVideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
-    scaleDownFrame(frame.get());
+    scaleDownFrame(frame.get(), 800, 600);
     GifWriteFrame(gifWriter, frame->buffer, frame->width, frame->height, delay);
 }
 

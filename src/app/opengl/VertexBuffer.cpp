@@ -30,7 +30,7 @@ VertexBuffer::~VertexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
 
 void VertexBuffer::bind() const { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, id)); }
 
-void VertexBuffer::unbind() const { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, 0)); }
+void VertexBuffer::unbind() { GL_Call(glBindBuffer(GL_ARRAY_BUFFER, 0)); }
 
 void VertexBuffer::update(const void *data, unsigned int sizeInBytes) {
     bind();

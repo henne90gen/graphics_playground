@@ -17,11 +17,11 @@ Timer::~Timer() {
     auto end = std::chrono::high_resolution_clock::now();
     auto endNs = NANOSECONDS(end);
     auto startNs = NANOSECONDS(start);
-    if (performanceTracker) {
+    if (performanceTracker != nullptr) {
         performanceTracker->recordValue(name, startNs, endNs);
     } else {
         long long duration = endNs - startNs;
-        double ms = (double)duration * 0.001 * 0.001;
+        double ms = static_cast<double>(duration) * 0.001 * 0.001;
         std::cout << name << ": " << ms << "ms" << std::endl;
     }
 }
@@ -46,7 +46,7 @@ void PerformanceCounter::recordValue(const std::string &name, long long start, l
     if (dataPoints.find(name) == dataPoints.end()) {
         dataPoints[name] = {};
     }
-    double valueMicro = (double)(end - start) * 0.001;
+    double valueMicro = static_cast<double>(end - start) * 0.001;
     double value = valueMicro * 0.001;
 
     auto &dp = dataPoints[name];
@@ -63,7 +63,7 @@ void PerformanceCounter::recordValue(const std::string &name, long long start, l
 #if PROFILING
     unsigned int processId = 0;
     unsigned int threadId = 0;
-    double startMicro = (double)(start - NANOSECONDS(programStart)) * 0.001;
+    double startMicro = static_cast<double>(start - NANOSECONDS(programStart)) * 0.001;
     if (hasWrittenValuesToFile) {
         fileOutput << ",";
     }
