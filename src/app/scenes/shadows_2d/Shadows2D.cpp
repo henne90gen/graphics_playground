@@ -5,6 +5,9 @@
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
 
+const int stencilMask = 0xFF;
+const int inverseStencilMask = 0x00;
+
 void Shadows2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
@@ -30,11 +33,12 @@ void Shadows2D::onAspectRatioChange() {
 }
 
 void Shadows2D::tick() {
+    const float dragSpeed = 0.001F;
     static DrawToggles drawToggles = {};
     static ColorConfig colorConfig = {};
     static glm::vec2 lightPosition = glm::vec2();
     static glm::vec3 cameraPosition = glm::vec3();
-    static float zoom = 2.5F;
+    static float zoom = 2.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool runAsync = false;
 
     ImGui::Begin("Settings");
@@ -48,16 +52,24 @@ void Shadows2D::tick() {
     ImGui::Checkbox("Draw Shadow", &drawToggles.drawShadow);
     ImGui::Checkbox("Show Shadow Area", &drawToggles.showShadowArea);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Light", reinterpret_cast<float *>(&colorConfig.light));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Light Source", reinterpret_cast<float *>(&colorConfig.lightSource));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Walls", reinterpret_cast<float *>(&colorConfig.walls));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Rays", reinterpret_cast<float *>(&colorConfig.rays));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Intersections", reinterpret_cast<float *>(&colorConfig.intersections));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Closest Intersections", reinterpret_cast<float *>(&colorConfig.closestIntersections));
 
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);
-    ImGui::DragFloat("Zoom", &zoom, 0.001F);
-    ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
+    ImGui::DragFloat("Zoom", &zoom, dragSpeed);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
 
     ImGui::Checkbox("Run async", &runAsync);
 
@@ -152,7 +164,7 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
     }
 
     if (drawToggles.drawShadow) {
-        glStencilMask(0xFF);
+        glStencilMask(stencilMask);
         glDisable(GL_STENCIL_TEST);
     }
 }
@@ -164,8 +176,8 @@ void Shadows2D::renderShadow(const DrawToggles &drawToggles, const ColorConfig &
 
     // set up the stencil buffer for writing to it
     glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 1, stencilMask);
+    glStencilMask(stencilMask);
 
     shader->setUniform("u_Color", colorConfig.light);
     shadowPolygonVA->bind();
@@ -173,28 +185,30 @@ void Shadows2D::renderShadow(const DrawToggles &drawToggles, const ColorConfig &
 
     // set up the stencil buffer for reading from it
     if (drawToggles.showShadowArea) {
-        glStencilFunc(GL_EQUAL, 1, 0xFF);
+        glStencilFunc(GL_EQUAL, 1, stencilMask);
     } else {
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilFunc(GL_NOTEQUAL, 1, stencilMask);
     }
-    glStencilMask(0x00);
+    glStencilMask(inverseStencilMask);
     glDisable(GL_DEPTH_TEST);
 }
 
 void Shadows2D::createLightSourceVA() {
     lightSourceVA = std::make_shared<VertexArray>(shader);
 
-    std::vector<glm::vec2> vertices = {{-0.01, -0.01}, //
-                                       {0.01, -0.01},  //
-                                       {0.01, 0.01},   //
-                                       {-0.01, 0.01}};
+    std::vector<glm::vec2> vertices = {
+          {-0.01, -0.01}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0.01, -0.01},  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0.01, 0.01},   // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {-0.01, 0.01},  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    };
     BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     lightSourceVA->addVertexBuffer(vertexBuffer);
 
     std::vector<glm::ivec3> indices = {
-          {0, 1, 2}, //
-          {0, 2, 3},
+          {0, 1, 2}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0, 2, 3}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
     std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(indices);
     lightSourceVA->setIndexBuffer(indexBuffer);
@@ -226,15 +240,20 @@ void Shadows2D::createWallVA() {
 }
 
 void Shadows2D::addWalls() {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     glm::vec2 offset = {-0.375F, -0.25F};
-    for (int y = 0; y < 10; y++) {
-        for (int x = 0; x < 10; x++) {
-            glm::vec2 position = glm::vec2(static_cast<float>(x) * 0.1F, static_cast<float>(y) * 0.1F);
+    const float wallScale = 0.02F;
+    const float positionScale = 0.1F;
+    const unsigned int xWallCount = 10;
+    const unsigned int yWallCount = 10;
+    for (unsigned int y = 0; y < yWallCount; y++) {
+        for (unsigned int x = 0; x < xWallCount; x++) {
+            glm::vec2 position =
+                  glm::vec2(static_cast<float>(x) * positionScale, static_cast<float>(y) * positionScale);
             position += offset;
-            float scale = 0.02;
             auto transformMatrix = glm::identity<glm::mat4>();
             transformMatrix = glm::translate(transformMatrix, glm::vec3(position.x, position.y, 0.0F));
-            transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
+            transformMatrix = glm::scale(transformMatrix, glm::vec3(wallScale, wallScale, wallScale));
 
             auto wall = RayTracer2D::Polygon();
             wall.transformMatrix = transformMatrix;
@@ -281,7 +300,8 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<RayTracer2D::Ray>
     for (auto &ray : rays) {
         if (drawToggles.drawRays) {
             vertices.push_back(ray.startingPoint);
-            vertices.push_back(ray.startingPoint + ray.direction * 10.0F);
+            const float scaleFactor = 10.0F;
+            vertices.push_back(ray.startingPoint + ray.direction * scaleFactor);
             indices.push_back(currentIndex);
             indices.push_back(currentIndex + 1);
             currentIndex += 2;
@@ -338,8 +358,11 @@ unsigned long Shadows2D::getNumIntersections(const std::vector<RayTracer2D::Ray>
 void Shadows2D::createCircleData() {
     const float circleSize = 0.005F;
     unsigned int circleIndex = 1;
-    for (unsigned int i = 0; i < 360; i += 36) {
-        auto rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians(static_cast<float>(i)), glm::vec3(0.0, 0.0, 1.0));
+    const unsigned int fullCircle = 360;
+    const unsigned int stepWidth = 36;
+    for (unsigned int i = 0; i < fullCircle; i += stepWidth) {
+        auto rotationMatrix =
+              glm::rotate(glm::identity<glm::mat4>(), glm::radians(static_cast<float>(i)), glm::vec3(0.0, 0.0, 1.0));
         glm::vec4 direction = {1.0, 0.0, 0.0, 0.0};
         direction = rotationMatrix * direction;
         direction = glm::normalize(direction);
