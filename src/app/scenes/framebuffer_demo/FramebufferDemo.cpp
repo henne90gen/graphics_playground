@@ -16,17 +16,18 @@ void FramebufferDemo::setup() {
     Object cube1 = {createCubeVA(shader), glm::vec3(0, 0, -1), glm::vec3(0.5, 1.0, 0.75), 0.25};
     Object cube2 = {createCubeVA(shader), glm::vec3(0.5, 0, -1), glm::vec3(0.75, 0.0, 0.5), 0.25};
     Object cube3 = {createCubeVA(shader), glm::vec3(0, 0.5, -1), glm::vec3(0.0, 0.5, 0.75), 0.25};
-    Object sphere1 = {createSphereVA(shader), glm::vec3(0, 1, 1), glm::vec3(1.0, 0.75, 0.5), 0.5};
-    Object sphere2 = {createSphereVA(shader), glm::vec3(0, 0, 0), glm::vec3(0.0, 0.75, 0.5), 0.1};
 
     objects.push_back(cube1);
     objects.push_back(cube2);
     objects.push_back(cube3);
-    objects.push_back(sphere1);
 
     mirrorVA = createQuadVA(shader);
 
     initFramebuffer();
+}
+
+void FramebufferDemo::onAspectRatioChange() {
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
 void FramebufferDemo::destroy() {}
@@ -34,8 +35,8 @@ void FramebufferDemo::destroy() {}
 void FramebufferDemo::tick() {
     static glm::vec3 cameraPosition = {0.0F, 0.0F, 0.0F};
     static glm::vec3 cameraRotation = {0.0F, 0.0F, 0.0F};
-    static glm::vec3 mirrorPosition = {-0.35F, 0.0F, -1.0F};
-    static glm::vec3 mirrorRotation = {0.0F, 1.0F, 0.0F};
+    static glm::vec3 mirrorPosition = {-0.4F, -0.2F, -0.995F};
+    static glm::vec3 mirrorRotation = {-0.6F, 0.85F, 0.0F};
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);

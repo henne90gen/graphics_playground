@@ -20,10 +20,9 @@ class FramebufferDemo : public Scene {
     ~FramebufferDemo() override = default;
 
     void setup() override;
-
     void tick() override;
-
     void destroy() override;
+    void onAspectRatioChange() override;
 
   private:
     std::shared_ptr<Shader> shader;
