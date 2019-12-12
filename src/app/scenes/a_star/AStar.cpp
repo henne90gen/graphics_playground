@@ -26,7 +26,7 @@ void AStar::setup() {
 void AStar::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void AStar::tick() {
-    // TODO move camera so that whole canvas can be seen
+    // TODO(henne): move camera so that whole canvas can be seen
     static float zoom = 1.0F;
     static glm::vec3 position = {0.5F, 0.5F, 0.0F};
     static bool animate = false;

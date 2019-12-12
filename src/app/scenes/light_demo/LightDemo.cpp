@@ -60,7 +60,7 @@ void LightDemo::tick() {
 void LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
                              glm::vec3 &modelRotation, float &scale, glm::vec3 &ambientColor, glm::vec3 &specularColor,
                              glm::vec3 &lightPosition, glm::vec3 &lightColor, bool &rotate, bool &useAmbient,
-                             bool &useDiffuse, bool &useSpecular) const {
+                             bool &useDiffuse, bool &useSpecular) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)

@@ -145,7 +145,7 @@ void FramebufferDemo::initFramebuffer() {
     checkFramebufferStatus();
 }
 
-void FramebufferDemo::checkFramebufferStatus() const {
+void FramebufferDemo::checkFramebufferStatus() {
     GLenum status;
     GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
     if (status != GL_FRAMEBUFFER_COMPLETE) {

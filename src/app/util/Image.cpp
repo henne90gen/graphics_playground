@@ -23,7 +23,7 @@ bool hasExtension(const std::string &fileName, std::string extension) {
 }
 
 int loadPng(Image &image) {
-    FILE *fp = fopen(image.fileName.c_str(), "rb");
+    FILE *fp = fopen(image.fileName.c_str(), "rbe");
     if (fp == nullptr) {
         std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
         return 1;
@@ -118,7 +118,7 @@ int loadPng(Image &image) {
 }
 
 int loadJpg(Image &image) {
-    FILE *infile = fopen(image.fileName.c_str(), "rb");
+    FILE *infile = fopen(image.fileName.c_str(), "rbe");
     if (infile == nullptr) {
         std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
         return 1;

@@ -82,7 +82,7 @@ void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
     if (isRecording()) {
         std::unique_ptr<Frame> frame = captureFrame(windowWidth, windowHeight);
         videoSaver->acceptFrame(frame);
-        free(frame->buffer);
+        free(frame->buffer); // NOLINT(cppcoreguidelines-no-malloc)
         frame = nullptr;
     }
 }

@@ -135,7 +135,7 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
     character.texture.bind();
 
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
-    character.texture.unbind();
+    Texture::unbind();
 }
 
 void FontDemo::loadFont(std::string &fontPath, const unsigned int characterHeight) {

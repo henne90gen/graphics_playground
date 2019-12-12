@@ -229,7 +229,7 @@ void Shadows2D::addWalls() {
     glm::vec2 offset = {-0.375F, -0.25F};
     for (int y = 0; y < 10; y++) {
         for (int x = 0; x < 10; x++) {
-            glm::vec2 position = glm::vec2((float)x * 0.1F, (float)y * 0.1F);
+            glm::vec2 position = glm::vec2(static_cast<float>(x) * 0.1F, static_cast<float>(y) * 0.1F);
             position += offset;
             float scale = 0.02;
             auto transformMatrix = glm::identity<glm::mat4>();
@@ -339,7 +339,7 @@ void Shadows2D::createCircleData() {
     const float circleSize = 0.005F;
     unsigned int circleIndex = 1;
     for (unsigned int i = 0; i < 360; i += 36) {
-        auto rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians((float)i), glm::vec3(0.0, 0.0, 1.0));
+        auto rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians(static_cast<float>(i)), glm::vec3(0.0, 0.0, 1.0));
         glm::vec4 direction = {1.0, 0.0, 0.0, 0.0};
         direction = rotationMatrix * direction;
         direction = glm::normalize(direction);
@@ -350,7 +350,7 @@ void Shadows2D::createCircleData() {
     circleIndices.push_back(1);
 }
 
-void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
+void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 & /*viewMatrix*/,
                                       const glm::vec2 &lightPosition, unsigned int &numVertices,
                                       unsigned int &numIndices) {
     // sort all vertices in a circle

@@ -141,7 +141,8 @@ void BloomEffect::tick() {
 
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
-    bool horizontal = true, first_iteration = true;
+    bool horizontal = true;
+    bool first_iteration = true;
     unsigned int amount = 10;
     shaderBlur->bind();
     for (unsigned int i = 0; i < amount; i++) {
@@ -233,8 +234,8 @@ void BloomEffect::renderQuad(const std::shared_ptr<Shader> &s) {
 
 void BloomEffect::renderAllQuads(const glm::vec3 &pos) {
     glm::mat4 modelMatrix = glm::mat4(1.0);
-    float scale = 0.25F;
-//    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
+    //    float scale = 0.25F;
+    //    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
 
     textureShader->setUniform("u_Texture", 0);
 

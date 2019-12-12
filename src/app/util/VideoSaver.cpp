@@ -139,8 +139,8 @@ void Mp4VideoSaver::remux() {
 }
 
 bool Mp4VideoSaver::doInit() {
-    int width = (int)frameWidth;
-    int height = (int)frameHeight;
+    int width = static_cast<int>(frameWidth);
+    int height = static_cast<int>(frameHeight);
 
     oformat = av_guess_format(nullptr, VIDEO_TMP_FILE, nullptr);
     if (oformat == nullptr) {
@@ -387,7 +387,7 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth, const unsigned in
         }
     }
 
-    free(frame->buffer);
+    free(frame->buffer); // NOLINT(cppcoreguidelines-no-malloc)
     frame->buffer = buffer;
 }
 

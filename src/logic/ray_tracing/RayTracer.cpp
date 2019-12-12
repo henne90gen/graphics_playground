@@ -90,7 +90,7 @@ bool intersectsPlane(const Ray &ray, const Object &object, glm::vec3 &hitPoint, 
 #endif
 }
 
-bool intersectsCuboid(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::vec3 &hitNormal) {
+bool intersectsCuboid(const Ray & /*ray*/, const Object &object, glm::vec3 & /*hitPoint*/, glm::vec3 & /*hitNormal*/) {
     if (object.type != Object::Cuboid) {
         return false;
     }
@@ -112,7 +112,7 @@ bool intersects(const Ray &ray, const Object &object, glm::vec3 &hitPoint, glm::
     return false;
 }
 
-bool isPositionInShadow(const std::vector<Object> &objects, const Object &object, const Light &light,
+bool isPositionInShadow(const std::vector<Object> &objects, const Object & /*object*/, const Light &light,
                         const glm::vec3 &position) {
     Ray shadowRay = {};
     shadowRay.direction = glm::normalize(light.position - position);
@@ -160,7 +160,7 @@ Ray createRefractionRay(const glm::vec3 &direction, const glm::vec3 &hitPoint, c
 
 glm::vec3 traceGlass(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition,
                      const std::vector<Object> &objects, const Object &object, const glm::vec3 &hitPoint,
-                     const glm::vec3 &hitNormal, unsigned int depth, const unsigned int maxRayDepth) -> glm::vec3 {
+                     const glm::vec3 &hitNormal, unsigned int depth, const unsigned int maxRayDepth) {
     Ray reflectionRay = createReflectionRay(ray.direction, hitPoint, hitNormal);
     // TODO(henne): create multiple rays that go out in a circle around the actual direction
     auto color = trace(reflectionRay, light, cameraPosition, objects, depth + 1, maxRayDepth);
@@ -206,7 +206,7 @@ std::optional<HitResult> hitCheck(const Ray &ray, const glm::vec3 &cameraPositio
 bool isTransparentOrReflective(const Object &object) { return object.transparency > 0.0F || object.reflection > 0.0F; }
 
 auto trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
-                unsigned int depth, const unsigned int maxRayDepth) -> glm::vec3 {
+           unsigned int depth, const unsigned int maxRayDepth) -> glm::vec3 {
     auto hitOpt = hitCheck(ray, cameraPosition, objects);
     if (!hitOpt.has_value()) {
         return BACKGROUND_COLOR;

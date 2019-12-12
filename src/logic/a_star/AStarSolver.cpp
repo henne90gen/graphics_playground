@@ -74,7 +74,7 @@ void AStarSolver::nextStep(Board &board) {
     }
 }
 
-glm::ivec2 AStarSolver::findGoal(const Board &board) const {
+glm::ivec2 AStarSolver::findGoal(const Board &board) {
     for (unsigned int y = 0; y < board.height; y++) {
         for (unsigned int x = 0; x < board.width; x++) {
             if (board.pixels[x + y * board.width] == finishColor) {

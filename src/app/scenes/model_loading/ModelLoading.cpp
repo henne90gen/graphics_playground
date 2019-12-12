@@ -56,7 +56,7 @@ void ModelLoading::tick() {
     if (rotateWithMouse) {
         if (getInput()->mouse.left) {
             auto mousePos = getInput()->mouse.pos;
-            glm::vec2 adjustedPos = {mousePos.x / (float)getWidth(), 1.0F - (mousePos.y / (float)getHeight())};
+            glm::vec2 adjustedPos = {mousePos.x / static_cast<float>(getWidth()), 1.0F - (mousePos.y / static_cast<float>(getHeight()))};
             glm::vec2 diff = lastMousePos - adjustedPos;
 
             modelRotation.x += diff.y * mouseRotationSpeed;
@@ -64,7 +64,7 @@ void ModelLoading::tick() {
         }
 
         auto mousePos = getInput()->mouse.pos;
-        glm::vec2 adjustedPos = {mousePos.x / (float)getWidth(), 1.0F - (mousePos.y / (float)getHeight())};
+        glm::vec2 adjustedPos = {mousePos.x / static_cast<float>(getWidth()), 1.0F - (mousePos.y / static_cast<float>(getHeight()))};
         lastMousePos = adjustedPos;
     }
 }
