@@ -21,7 +21,8 @@ Timer::~Timer() {
         performanceTracker->recordValue(name, startNs, endNs);
     } else {
         long long duration = endNs - startNs;
-        double ms = static_cast<double>(duration) * 0.001 * 0.001;
+        const double conversionFactor = 0.001;
+        double ms = static_cast<double>(duration) * conversionFactor * conversionFactor;
         std::cout << name << ": " << ms << "ms" << std::endl;
     }
 }
