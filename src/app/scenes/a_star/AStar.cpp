@@ -28,7 +28,7 @@ void AStar::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 void AStar::tick() {
     // TODO(henne): move camera so that whole canvas can be seen
     static float zoom = 1.0F;
-    static glm::vec3 position = {0.5F, 0.5F, 0.0F};
+    static glm::vec3 position = {0.5F, 0.5F, 0.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool animate = false;
     static bool init = false;
     static bool renderDirectionArrows = true;
@@ -39,8 +39,9 @@ void AStar::tick() {
     }
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat("Zoom", &zoom, 0.001F);
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), 0.001F);
+    const float dragSpeed = 0.001F;
+    ImGui::DragFloat("Zoom", &zoom, dragSpeed);
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), dragSpeed);
     if (ImGui::Button("Reset")) {
         setupDefaultProblem();
         animate = false;
@@ -63,7 +64,7 @@ void AStar::tick() {
     }
     ImGui::Text("Total Estimated Distance: %f", estimatedDistance);
     ImGui::Text("Solved: %d", static_cast<int>(solver->solved));
-    ImGui::Text("Final Node: %p", (void *)solver->finalNode);
+    ImGui::Text("Final Node: %p", reinterpret_cast<void*>(solver->finalNode));
     if (solver->finalNode != nullptr) {
         ImGui::Text("Total Distance Traveled: %d", solver->finalNode->g);
     }
@@ -98,19 +99,24 @@ void AStar::visualizeNodeSet(const std::vector<Node *> &nodes, const glm::mat4 &
         glm::vec3 start = {node->position.x, node->position.y, 0.0F};
         glm::vec3 end = {node->predecessor->position.x, node->predecessor->position.y, 0.0F};
 
+        //  NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         start += glm::vec3(0.5, 0.5, 0.0);
         start = {start.x / static_cast<float>(board.width), start.y / static_cast<float>(board.height), start.z};
+        //  NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         start *= 2.0F;
         start -= glm::vec3(1, 1, 0);
 
+        //  NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         end += glm::vec3(0.5, 0.5, 0.0);
         end = {end.x / static_cast<float>(board.width), end.y / static_cast<float>(board.height), end.z};
+        //  NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
         end *= 2.0F;
         end -= glm::vec3(1, 1, 0);
 
+        const float shortenArrowFactor = 0.8F;
         glm::vec3 arrowDir = end - start;
-        arrowDir *= 0.8F;
-        glm::vec3 arrowCenter = start + (arrowDir * 0.75F);
+        arrowDir *= shortenArrowFactor;
+        glm::vec3 arrowCenter = start + (arrowDir * 0.75F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
         glm::vec3 arrowNormal = {arrowDir.y, -arrowDir.x, arrowDir.z};
         const float arrowWidth = glm::length(arrowDir) * 0.25F;
         arrowNormal = glm::normalize(arrowNormal) * arrowWidth;
@@ -130,11 +136,13 @@ void AStar::visualizeNodeSet(const std::vector<Node *> &nodes, const glm::mat4 &
         auto vb = std::make_shared<VertexBuffer>(vertices, layout);
         va.addVertexBuffer(vb);
 
-        std::vector<unsigned int> indices = {0, 1, //
-                                             1, 2, //
-                                             2, 3, //
-                                             3, 4, //
-                                             4, 5};
+        std::vector<unsigned int> indices = {
+              0, 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+              1, 2, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+              2, 3, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+              3, 4, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+              4, 5, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+        };
         auto ib = std::make_shared<IndexBuffer>(indices);
         va.setIndexBuffer(ib);
 
@@ -170,7 +178,8 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
     auto mappedMousePos = mapMouseOntoCanvas(input, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
     auto canvasPos = mappedMousePos.canvasPos;
 
-    if ((canvasPos.x < 0.0F || canvasPos.x >= canvasWidth) || (canvasPos.y < 0.0F || canvasPos.y >= canvasHeight)) {
+    if ((canvasPos.x < 0.0F || canvasPos.x >= static_cast<float>(canvasWidth)) ||
+        (canvasPos.y < 0.0F || canvasPos.y >= static_cast<float>(canvasHeight))) {
         return;
     }
 
@@ -188,6 +197,6 @@ void AStar::setupDefaultProblem() {
     for (auto &color : board.pixels) {
         color = backgroundColor;
     }
-    board.pixels[10 * board.width + 10] = startColor;
-    board.pixels[100 * board.width + 100] = finishColor;
+    board.pixels[10 * board.width + 10] = startColor;    // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    board.pixels[100 * board.width + 100] = finishColor; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 }
