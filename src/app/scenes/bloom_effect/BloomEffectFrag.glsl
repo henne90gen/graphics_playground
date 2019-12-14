@@ -17,6 +17,7 @@ uniform sampler2D u_TextureSampler;
 uniform vec3 u_AmbientColor;
 uniform vec3 u_SpecularColor;
 uniform Light u_Light;
+uniform float u_Threshold;
 
 void main() {
     vec3 surfaceToLight = u_Light.position - v_Position;
@@ -42,7 +43,7 @@ void main() {
 
     // check whether fragment output is higher than threshold, if so output as brightness color
     brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-    if (brightness > 1.0) {
+    if (brightness > u_Threshold) {
         BrightColor = vec4(FragColor.rgb, 1.0);
     } else {
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);

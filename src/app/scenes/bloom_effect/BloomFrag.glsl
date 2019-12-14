@@ -4,18 +4,19 @@ in vec2 UV;
 
 out vec4 FragColor;
 
-uniform sampler2D u_Scene;
-uniform sampler2D u_BloomBlur;
+uniform sampler2D u_SceneTexture;
+uniform sampler2D u_BloomBlurTexture;
 
+uniform bool u_DoBloom = true;
+uniform bool u_DoGammaCorrection = true;
 uniform float u_Exposure;
-uniform bool u_Bloom;
 
 void main() {
     const float gamma = 2.2;
-    vec3 hdrColor = texture(u_Scene, UV).rgb;
+    vec3 hdrColor = texture(u_SceneTexture, UV).rgb;
 
-    if (u_Bloom) {
-        vec3 bloomColor = texture(u_BloomBlur, UV).rgb;
+    if (u_DoBloom) {
+        vec3 bloomColor = texture(u_BloomBlurTexture, UV).rgb;
         // additive blending
         hdrColor += bloomColor;
     }
@@ -24,6 +25,8 @@ void main() {
     vec3 result = vec3(1.0) - exp(-hdrColor * u_Exposure);
 
     // also gamma correct while we're at it
-    result = pow(result, vec3(1.0 / gamma));
+    if (u_DoGammaCorrection) {
+        result = pow(result, vec3(1.0 / gamma));
+    }
     FragColor = vec4(result, 1.0);
 }

@@ -27,6 +27,23 @@ void BloomEffect::setup() {
     model->loadFromFile("scenes/bloom_effect/models/monkey.obj", shader);
 
     quadVA = createQuadVA(shader);
+    cubeVA = createCubeVA(textureShader);
+    cubeVA->bind();
+    std::vector<glm::vec2> uvs = {};
+    for (unsigned int i = 0; i < 6; i++) {
+        uvs.emplace_back(0, 0);
+        uvs.emplace_back(1, 0);
+        uvs.emplace_back(1, 1);
+        uvs.emplace_back(0, 1);
+    }
+    BufferLayout layout = {
+          {ShaderDataType::Float2, "a_UV"},
+    };
+    std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(uvs, layout);
+    cubeVA->addVertexBuffer(vb);
+    staticRedTexture = std::make_shared<Texture>();
+    std::vector<glm::vec3> pixels = {{1.0, 0.0, 0.0}};
+    staticRedTexture->update(pixels, 1, 1);
 
     // set up two color buffers to render to
     GL_Call(glGenFramebuffers(1, &hdrFBO));
@@ -104,31 +121,52 @@ void BloomEffect::setup() {
 }
 
 void BloomEffect::onAspectRatioChange() {
+    // TODO reinitialize the color and depth buffers
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
 void BloomEffect::destroy() {}
 
 void BloomEffect::tick() {
-    static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3();
     static auto modelPosition = glm::vec3();
     static auto modelRotation = glm::vec3();
-    static float scale = 1.0F;
-    static bool drawWireframe = false;
-    static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);   // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto lightColor = glm::vec3(1.0F);
-    static bool bloom = true;
-    static float exposure = 1.0;
-    static bool drawSteps = true;
+    static auto lightPosition = glm::vec3(0.5F, -0.6F, 1.5F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static bool drawSteps = false;
+    static bool doBloom = true;
+    static bool doGammaCorrection = true;
+    static float exposure = 1.0F;
+    static float threshold = 1.0F;
+    const float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&modelPosition), 0.001F);
+    ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
+    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
     ImGui::Checkbox("Draw Steps", &drawSteps);
-    ImGui::Checkbox("Use Bloom", &bloom);
+    ImGui::Checkbox("Use Bloom", &doBloom);
+    ImGui::Checkbox("Do Gamma Correction", &doGammaCorrection);
+    ImGui::DragFloat("Exposure", &exposure, dragSpeed);
+    ImGui::DragFloat("Threshold", &threshold, dragSpeed);
     ImGui::End();
+
+    renderSceneToFramebuffer(modelPosition, modelRotation, lightPosition, threshold);
+
+    unsigned int finalBlurTextureId = blurRenderedScene();
+
+    applyBloomAndRenderAgain(finalBlurTextureId, doBloom, doGammaCorrection, exposure);
+
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    GL_Call(glClearColor(0.0F, 0.0F, 0.0F, 1.0F));
+    GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    renderAllQuads(drawSteps);
+}
+
+void BloomEffect::renderSceneToFramebuffer(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
+                                           const glm::vec3 &lightPosition, float threshold) {
+    static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto cameraRotation = glm::vec3();
+    static auto ambientColor = glm::vec3(0.005F, 0.005F, 0.005F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);   // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto lightColor = glm::vec3(1.0F);
 
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -138,10 +176,32 @@ void BloomEffect::tick() {
     shader->setUniform("u_SpecularColor", specularColor);
     shader->setUniform("u_Light.position", lightPosition);
     shader->setUniform("u_Light.color", lightColor);
-    drawModel(scale, modelPosition, modelRotation, cameraRotation, cameraTranslation, drawWireframe);
+    shader->setUniform("u_Threshold", threshold);
 
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    const bool drawWireframe = false;
+    const float scale = 1.0F;
+    drawModel(scale, modelPosition, modelRotation, cameraTranslation, cameraRotation, drawWireframe);
 
+    const float cubeScale = 0.5F;
+    textureShader->bind();
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    staticRedTexture->bind();
+    glm::mat4 viewMatrix = createViewMatrix(cameraTranslation, cameraRotation);
+    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0F), lightPosition);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(cubeScale));
+    textureShader->setUniform("u_ProjectionMatrix", projectionMatrix);
+    textureShader->setUniform("u_ViewMatrix", viewMatrix);
+    textureShader->setUniform("u_ModelMatrix", modelMatrix);
+    textureShader->setUniform("u_Texture", 0);
+    cubeVA->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    cubeVA->unbind();
+    textureShader->setUniform("u_ProjectionMatrix", glm::mat4(1.0F));
+    textureShader->setUniform("u_ViewMatrix", glm::mat4(1.0F));
+    textureShader->unbind();
+}
+
+unsigned int BloomEffect::blurRenderedScene() {
     bool horizontal = true;
     bool first_iteration = true;
     unsigned int amount = 10;
@@ -163,7 +223,11 @@ void BloomEffect::tick() {
             first_iteration = false;
         }
     }
+    return pingpongColorbuffers[!horizontal];
+}
 
+void BloomEffect::applyBloomAndRenderAgain(const unsigned int blurTexture, bool doBloom, bool doGammaCorrection,
+                                           float exposure) {
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, finalFbo));
     GL_Call(glClearColor(0.2F, 0.2F, 0.2F, 1.0F));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -171,24 +235,24 @@ void BloomEffect::tick() {
     GL_Call(glActiveTexture(GL_TEXTURE0));
     GL_Call(glBindTexture(GL_TEXTURE_2D, colorBuffers[0]));
     GL_Call(glActiveTexture(GL_TEXTURE1));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]));
-    shaderBloom->setUniform("u_Scene", 0);
-    shaderBloom->setUniform("u_BloomBlur", 1);
-    shaderBloom->setUniform("u_Bloom", bloom);
+    GL_Call(glBindTexture(GL_TEXTURE_2D, blurTexture));
+    shaderBloom->setUniform("u_SceneTexture", 0);
+    shaderBloom->setUniform("u_BloomBlurTexture", 1);
+    shaderBloom->setUniform("u_DoBloom", doBloom);
+    shaderBloom->setUniform("u_DoGammaCorrection", doGammaCorrection);
     shaderBloom->setUniform("u_Exposure", exposure);
     shaderBloom->setUniform("u_ModelMatrix", glm::scale(glm::mat4(1.0F), glm::vec3(2.0F)));
     renderQuad(shaderBloom);
-
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-    GL_Call(glClearColor(0.0F, 0.0F, 0.0F, 1.0F));
-    GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    renderAllQuads(drawSteps);
 }
 
 void BloomEffect::drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
-                            const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation,
+                            const glm::vec3 &cameraTranslation, const glm::vec3 &cameraRotation,
                             const bool drawWireframe) const {
     shader->bind();
+    glm::mat4 viewMatrix = createViewMatrix(cameraTranslation, cameraRotation);
+    shader->setUniform("u_View", viewMatrix);
+    shader->setUniform("u_Projection", projectionMatrix);
+    shader->setUniform("u_TextureSampler", 0);
     for (auto &mesh : model->getMeshes()) {
         if (!mesh->visible) {
             continue;
@@ -203,13 +267,9 @@ void BloomEffect::drawModel(float scale, const glm::vec3 &modelTranslation, cons
         modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
         modelMatrix = glm::translate(modelMatrix, modelTranslation);
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-        glm::mat4 viewMatrix = createViewMatrix(cameraTranslation, cameraRotation);
         shader->setUniform("u_Model", modelMatrix);
         shader->setUniform("u_NormalMatrix", normalMatrix);
-        shader->setUniform("u_View", viewMatrix);
-        shader->setUniform("u_Projection", projectionMatrix);
 
-        shader->setUniform("u_TextureSampler", 0);
         mesh->texture->bind();
 
         if (drawWireframe) {
@@ -251,6 +311,7 @@ void BloomEffect::renderAllQuads(bool drawSteps) {
         textureShader->setUniform("u_ModelMatrix", topRight);
         renderQuad(textureShader);
 
+        textureShader->setUniform("u_ColorAmplifier", 10.0F);
         glm::mat4 bottomLeft = glm::translate(glm::mat4(1.0), glm::vec3(-0.5, -0.5, 0.0));
         GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[0]));
         textureShader->setUniform("u_ModelMatrix", bottomLeft);
@@ -260,6 +321,7 @@ void BloomEffect::renderAllQuads(bool drawSteps) {
         GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[1]));
         textureShader->setUniform("u_ModelMatrix", bottomRight);
         renderQuad(textureShader);
+        textureShader->setUniform("u_ColorAmplifier", 1.0F);
     } else {
         glm::mat4 modelMatrix = glm::mat4(1.0);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0F));

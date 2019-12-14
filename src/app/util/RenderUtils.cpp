@@ -5,16 +5,84 @@
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader) {
     static std::vector<glm::vec3> vertices = {
           // back
-          {-0.5F, -0.5F, -0.5F}, // 0 NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {0.5F, -0.5F, -0.5F},  // 1 NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {0.5F, 0.5F, -0.5F},   // 2 NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {-0.5F, 0.5F, -0.5F},  // 3 NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {-0.5F, -0.5F, -0.5F},
+          {0, 0, -1.0}, // 0
+          {-0.5F, 0.5F, -0.5F},
+          {0, 0, -1.0}, // 1
+          {0.5F, 0.5F, -0.5F},
+          {0, 0, -1.0}, // 2
+          {0.5F, -0.5F, -0.5F},
+          {0, 0, -1.0}, // 3
 
           // front
-          {-0.5F, -0.5F, 0.5F}, // 4 NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {0.5F, -0.5F, 0.5F},  // 5 NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {0.5F, 0.5F, 0.5F},   // 6 NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {-0.5F, 0.5F, 0.5F},  // 7 NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          // 4
+          {-0.5F, -0.5F, 0.5F},
+          {0, 0, 1.0},
+          // 5
+          {0.5F, -0.5F, 0.5F},
+          {0, 0, 1.0},
+          // 6
+          {0.5F, 0.5F, 0.5F},
+          {0, 0, 1.0},
+          // 7
+          {-0.5F, 0.5F, 0.5F},
+          {0, 0, 1.0},
+
+          // left
+          // 8
+          {-0.5F, -0.5F, -0.5F},
+          {1.0, 0, 0},
+          // 9
+          {-0.5F, -0.5F, 0.5F},
+          {1.0, 0, 0},
+          // 10
+          {-0.5F, 0.5F, 0.5F},
+          {1.0, 0, 0},
+          // 11
+          {-0.5F, 0.5F, -0.5F},
+          {1.0, 0, 0},
+
+          // right
+          // 12
+          {0.5F, -0.5F, 0.5F},
+          {-1.0, 0, 0},
+          // 13
+          {0.5F, -0.5F, -0.5F},
+          {-1.0, 0, 0},
+          // 14
+          {0.5F, 0.5F, -0.5F},
+          {-1.0, 0, 0},
+          // 15
+          {0.5F, 0.5F, 0.5F},
+          {-1.0, 0, 0},
+
+          // top
+          // 16
+          {-0.5F, 0.5F, 0.5F},
+          {0, 1.0, 0},
+          // 17
+          {0.5F, 0.5F, 0.5F},
+          {0, 1.0, 0},
+          // 18
+          {0.5F, 0.5F, -0.5F},
+          {0, 1.0, 0},
+          // 19
+          {-0.5F, 0.5F, -0.5F},
+          {0, 1.0, 0},
+
+          // bottom
+          // 20
+          {-0.5F, -0.5F, 0.5F},
+          {0, -1.0, 0},
+          // 21
+          {-0.5F, -0.5F, -0.5F},
+          {0, -1.0, 0},
+          // 22
+          {0.5F, -0.5F, -0.5F},
+          {0, -1.0, 0},
+          // 23
+          {0.5F, -0.5F, 0.5F},
+          {0, -1.0, 0},
     };
     static std::vector<glm::ivec3> indices = {
           // front
@@ -25,26 +93,27 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
           {4, 5, 6}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {4, 6, 7}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
-          // right
-          {5, 1, 2}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {5, 2, 6}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-
           // left
-          {0, 4, 7}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {0, 7, 3}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {8, 9, 10},  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {8, 10, 11}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+
+          // right
+          {12, 13, 14}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {12, 14, 15}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
           // top
-          {7, 6, 2}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {7, 2, 3}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {16, 17, 18}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {16, 18, 19}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
           // bottom
-          {4, 5, 1}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {4, 1, 0}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {20, 21, 22}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {20, 22, 23}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
 
     auto result = std::make_shared<VertexArray>(shader);
     BufferLayout layout = {
           {ShaderDataType::Float3, "a_Position"},
+          {ShaderDataType::Float3, "a_Normal"},
     };
     std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(vertices, layout);
     result->addVertexBuffer(vb);
