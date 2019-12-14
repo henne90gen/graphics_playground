@@ -46,8 +46,10 @@ class BloomEffect : public Scene {
                                   const glm::vec3 &lightPosition, float threshold);
     unsigned int blurRenderedScene();
     void applyBloomAndRenderAgain(unsigned int blurTexture, bool doBloom, bool doGammaCorrection, float exposure);
-    void drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
-                   const glm::vec3 &cameraTranslation, const glm::vec3 &cameraRotation, bool drawWireframe) const;
+    void drawModel(const glm::mat4 &viewMatrix, const glm::vec3 &modelTranslation,
+                   const glm::vec3 &modelRotation) const;
     void renderQuad(const std::shared_ptr<Shader> &s);
-    void renderAllQuads(bool drawSteps);
+    void renderStepsOrFinal(bool drawSteps);
+    void initLightCubeData();
+    void drawLightCube(const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition) const;
 };
