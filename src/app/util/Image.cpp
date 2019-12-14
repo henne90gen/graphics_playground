@@ -29,7 +29,7 @@ int loadPng(Image &image) {
         return 1;
     }
 
-    char header[8];    // 8 is the maximum size that can be checked
+    char header[8]; // 8 is the maximum size that can be checked
     fread(header, 1, 8, fp);
     if (png_sig_cmp(reinterpret_cast<png_bytep>(header), 0, 8) != 0) {
         std::cout << "File '" << image.fileName << "' is not recognized as a PNG file" << std::endl;
@@ -130,8 +130,8 @@ int loadJpg(Image &image) {
     cinfo.err = jpeg_std_error(&err);
     jpeg_create_decompress(&cinfo);
     jpeg_stdio_src(&cinfo, infile);
-    (void) jpeg_read_header(&cinfo, TRUE);
-    (void) jpeg_start_decompress(&cinfo);
+    (void)jpeg_read_header(&cinfo, TRUE);
+    (void)jpeg_start_decompress(&cinfo);
     image.width = cinfo.output_width;
     image.height = cinfo.output_height;
     image.channels = cinfo.actual_number_of_colors;
@@ -145,7 +145,7 @@ int loadJpg(Image &image) {
     char g;
     char b;
     while (cinfo.output_scanline < cinfo.output_height) {
-        (void) jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
+        (void)jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
         for (unsigned int x = 0; x < image.width; x++) {
             r = pJpegBuffer[0][cinfo.output_components * x];
             if (cinfo.output_components > 2) {
@@ -163,7 +163,7 @@ int loadJpg(Image &image) {
     }
 
     fclose(infile);
-    (void) jpeg_finish_decompress(&cinfo);
+    (void)jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
 
     return 0;
@@ -223,15 +223,15 @@ void writePng(Image &image) {
     }
 
     // Output is 8bit depth, RGBA format.
-    png_set_IHDR(
-            png,
-            info,
-            image.width, image.height,
-            image.bitDepth,
-            colorType,
-            PNG_INTERLACE_NONE,
-            PNG_COMPRESSION_TYPE_DEFAULT,
-            PNG_FILTER_TYPE_DEFAULT
+    png_set_IHDR(                       //
+          png,                          //
+          info,                         //
+          image.width, image.height,    //
+          image.bitDepth,               //
+          colorType,                    //
+          PNG_INTERLACE_NONE,           //
+          PNG_COMPRESSION_TYPE_DEFAULT, //
+          PNG_FILTER_TYPE_DEFAULT       //
     );
     png_write_info(png, info);
 
@@ -247,9 +247,7 @@ void writePng(Image &image) {
     png_destroy_write_struct(&png, &info);
 }
 
-void writeJpg(Image & /*image*/) {
-    std::cerr << "Writing JPEG files is not supported yet" << std::endl;
-}
+void writeJpg(const Image & /*image*/) { std::cerr << "Writing JPEG files is not supported yet" << std::endl; }
 
 void ImageOps::save(Image &image) {
     if (hasExtension(image.fileName, "png")) {
