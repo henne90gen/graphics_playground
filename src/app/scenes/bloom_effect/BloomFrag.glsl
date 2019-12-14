@@ -1,25 +1,27 @@
 #version 330 core
 
-out vec4 FragColor;
-
 in vec2 UV;
 
-uniform sampler2D scene;
-uniform sampler2D bloomBlur;
-uniform float exposure;
-uniform bool bloom;
+out vec4 FragColor;
+
+uniform sampler2D u_Scene;
+uniform sampler2D u_BloomBlur;
+
+uniform float u_Exposure;
+uniform bool u_Bloom;
 
 void main() {
     const float gamma = 2.2;
-    vec3 hdrColor = texture(scene, UV).rgb;
+    vec3 hdrColor = texture(u_Scene, UV).rgb;
 
-    if (bloom) {
-        vec3 bloomColor = texture(bloomBlur, UV).rgb;
-        hdrColor += bloomColor;// additive blending
+    if (u_Bloom) {
+        vec3 bloomColor = texture(u_BloomBlur, UV).rgb;
+        // additive blending
+        hdrColor += bloomColor;
     }
 
     // tone mapping
-    vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+    vec3 result = vec3(1.0) - exp(-hdrColor * u_Exposure);
 
     // also gamma correct while we're at it
     result = pow(result, vec3(1.0 / gamma));

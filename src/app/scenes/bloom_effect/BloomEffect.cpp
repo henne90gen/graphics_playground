@@ -112,7 +112,7 @@ void BloomEffect::destroy() {}
 void BloomEffect::tick() {
     static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3();
-    static auto modelTranslation = glm::vec3();
+    static auto modelPosition = glm::vec3();
     static auto modelRotation = glm::vec3();
     static float scale = 1.0F;
     static bool drawWireframe = false;
@@ -122,10 +122,11 @@ void BloomEffect::tick() {
     static auto lightColor = glm::vec3(1.0F);
     static bool bloom = true;
     static float exposure = 1.0;
-    static glm::vec3 pos = {0.0F, 0.0F, 0.0F};
+    static bool drawSteps = true;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&pos), 0.001F);
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&modelPosition), 0.001F);
+    ImGui::Checkbox("Draw Steps", &drawSteps);
     ImGui::Checkbox("Use Bloom", &bloom);
     ImGui::End();
 
@@ -137,7 +138,7 @@ void BloomEffect::tick() {
     shader->setUniform("u_SpecularColor", specularColor);
     shader->setUniform("u_Light.position", lightPosition);
     shader->setUniform("u_Light.color", lightColor);
-    drawModel(scale, modelTranslation, modelRotation, cameraRotation, cameraTranslation, drawWireframe);
+    drawModel(scale, modelPosition, modelRotation, cameraRotation, cameraTranslation, drawWireframe);
 
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
@@ -155,7 +156,6 @@ void BloomEffect::tick() {
             GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]));
         }
 
-        shaderBlur->setUniform("u_ModelMatrix", glm::mat4(1.0));
         renderQuad(shaderBlur);
 
         horizontal = !horizontal;
@@ -172,14 +172,17 @@ void BloomEffect::tick() {
     GL_Call(glBindTexture(GL_TEXTURE_2D, colorBuffers[0]));
     GL_Call(glActiveTexture(GL_TEXTURE1));
     GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]));
-    shaderBloom->setUniform("bloom", bloom);
-    shaderBloom->setUniform("exposure", exposure);
+    shaderBloom->setUniform("u_Scene", 0);
+    shaderBloom->setUniform("u_BloomBlur", 1);
+    shaderBloom->setUniform("u_Bloom", bloom);
+    shaderBloom->setUniform("u_Exposure", exposure);
+    shaderBloom->setUniform("u_ModelMatrix", glm::scale(glm::mat4(1.0F), glm::vec3(2.0F)));
     renderQuad(shaderBloom);
 
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL_Call(glClearColor(0.0F, 0.0F, 0.0F, 1.0F));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    renderAllQuads(pos);
+    renderAllQuads(drawSteps);
 }
 
 void BloomEffect::drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
@@ -232,25 +235,36 @@ void BloomEffect::renderQuad(const std::shared_ptr<Shader> &s) {
     quadVA->unbind();
 }
 
-void BloomEffect::renderAllQuads(const glm::vec3 &pos) {
-    glm::mat4 modelMatrix = glm::mat4(1.0);
-    //    float scale = 0.25F;
-    //    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
-
+void BloomEffect::renderAllQuads(bool drawSteps) {
+    textureShader->bind();
     textureShader->setUniform("u_Texture", 0);
+    GL_Call(glActiveTexture(GL_TEXTURE0));
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
-    textureShader->setUniform("u_ModelMatrix", modelMatrix);
-    //    renderQuad(textureShader);
+    if (drawSteps) {
+        glm::mat4 topLeft = glm::translate(glm::mat4(1.0), glm::vec3(-0.5, 0.5, 0.0));
+        GL_Call(glBindTexture(GL_TEXTURE_2D, colorBuffers[0]));
+        textureShader->setUniform("u_ModelMatrix", topLeft);
+        renderQuad(textureShader);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, colorBuffers[1]);
-    textureShader->setUniform("u_ModelMatrix", modelMatrix);
-    //    renderQuad(textureShader);
+        glm::mat4 topRight = glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.0));
+        GL_Call(glBindTexture(GL_TEXTURE_2D, colorBuffers[1]));
+        textureShader->setUniform("u_ModelMatrix", topRight);
+        renderQuad(textureShader);
 
-    glBindTexture(GL_TEXTURE_2D, finalTexture);
-    glm::mat4 topLeft = glm::translate(modelMatrix, pos);
-    textureShader->setUniform("u_ModelMatrix", topLeft);
-    renderQuad(textureShader);
+        glm::mat4 bottomLeft = glm::translate(glm::mat4(1.0), glm::vec3(-0.5, -0.5, 0.0));
+        GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[0]));
+        textureShader->setUniform("u_ModelMatrix", bottomLeft);
+        renderQuad(textureShader);
+
+        glm::mat4 bottomRight = glm::translate(glm::mat4(1.0), glm::vec3(0.5, -0.5, 0.0));
+        GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[1]));
+        textureShader->setUniform("u_ModelMatrix", bottomRight);
+        renderQuad(textureShader);
+    } else {
+        glm::mat4 modelMatrix = glm::mat4(1.0);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0F));
+        GL_Call(glBindTexture(GL_TEXTURE_2D, finalTexture));
+        textureShader->setUniform("u_ModelMatrix", modelMatrix);
+        renderQuad(textureShader);
+    }
 }

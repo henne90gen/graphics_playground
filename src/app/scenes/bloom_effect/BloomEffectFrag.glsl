@@ -1,4 +1,4 @@
-#version 130
+#version 330 core
 
 struct Light {
     vec3 position;
@@ -10,8 +10,8 @@ in vec3 v_Normal;
 in vec2 v_UV;
 in vec3 v_CameraPosition;
 
-out vec4 FragColor;
-out vec4 BrightColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 uniform sampler2D u_TextureSampler;
 uniform vec3 u_AmbientColor;

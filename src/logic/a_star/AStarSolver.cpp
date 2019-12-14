@@ -10,7 +10,9 @@ inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
     board.pixels[pos.x + pos.y * board.height] = color;
 }
 
-inline glm::vec3 getPixelValue(const Board &board, glm::ivec2 &pos) { return board.pixels[pos.x + pos.y * board.height]; }
+inline glm::vec3 getPixelValue(const Board &board, glm::ivec2 &pos) {
+    return board.pixels[pos.x + pos.y * board.height];
+}
 
 bool compareNodes(Node *n1, Node *n2) { return n1->f > n2->f; }
 
