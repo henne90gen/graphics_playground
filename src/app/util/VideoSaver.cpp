@@ -7,6 +7,9 @@
 
 #define VIDEO_TMP_FILE "tmp.h264"
 
+const unsigned int SCALED_DOWN_WIDTH = 800;
+const unsigned int SCALED_DOWN_HEIGHT = 600;
+
 void VideoSaver::init(unsigned int frameWidth, unsigned int frameHeight) {
     this->frameWidth = frameWidth;
     this->frameHeight = frameHeight;
@@ -31,6 +34,13 @@ void VideoSaver::acceptFrame(const std::unique_ptr<Frame> &frame) {
     }
 
     doAcceptFrame(frame);
+}
+void VideoSaver::save() {
+    if (!doSave()) {
+        std::cerr << "Could not save video " << videoFileName << std::endl;
+        return;
+    }
+    std::cout << "Save video " << videoFileName << std::endl;
 }
 
 void Mp4VideoSaver::free() {
@@ -311,10 +321,12 @@ void Mp4VideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
     }
 }
 
-void Mp4VideoSaver::save() {
+bool Mp4VideoSaver::doSave() {
     cleanUp();
 
     remux();
+
+    return true;
 }
 
 GifVideoSaver::~GifVideoSaver() { delete gifWriter; }
@@ -323,7 +335,13 @@ auto GifVideoSaver::doInit() -> bool {
     if (gifWriter == nullptr) {
         gifWriter = new GifWriter();
     }
-    if (!GifBegin(gifWriter, videoFileName.c_str(), frameWidth, frameHeight, delay)) {
+    unsigned int width = frameWidth;
+    unsigned int height = frameHeight;
+    if (scaleDown) {
+        width = SCALED_DOWN_WIDTH;
+        height = SCALED_DOWN_HEIGHT;
+    }
+    if (!GifBegin(gifWriter, videoFileName.c_str(), width, height, delay)) {
         std::cerr << "Could not open " << videoFileName << " for writing." << std::endl;
         return false;
     }
@@ -392,12 +410,10 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth, const unsigned in
 }
 
 void GifVideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
-    scaleDownFrame(frame.get(), 800, 600);
+    if (scaleDown) {
+        scaleDownFrame(frame.get(), SCALED_DOWN_WIDTH, SCALED_DOWN_HEIGHT);
+    }
     GifWriteFrame(gifWriter, frame->buffer, frame->width, frame->height, delay);
 }
 
-void GifVideoSaver::save() {
-    if (!GifEnd(gifWriter)) {
-        std::cerr << "Could not save to " << videoFileName << std::endl;
-    }
-}
+bool GifVideoSaver::doSave() { return GifEnd(gifWriter); }

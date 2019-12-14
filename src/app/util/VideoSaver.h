@@ -53,12 +53,13 @@ class VideoSaver {
 
     virtual bool doInit() = 0;
     virtual void doAcceptFrame(const std::unique_ptr<Frame> &frame) = 0;
-    virtual void save() = 0;
+    virtual bool doSave() = 0;
+
+    void init(unsigned int frameWidth, unsigned int frameHeight);
+    void acceptFrame(const std::unique_ptr<Frame> &frame);
+    void save();
 
     bool isInitialized() { return initialized; }
-    void init(unsigned int frameWidth, unsigned int frameHeight);
-
-    void acceptFrame(const std::unique_ptr<Frame> &frame);
 
   protected:
     const std::string videoFileName;
@@ -76,7 +77,7 @@ class Mp4VideoSaver : public VideoSaver {
 
     bool doInit() override;
     void doAcceptFrame(const std::unique_ptr<Frame> &frame) override;
-    void save() override;
+    bool doSave() override;
 
   private:
     const int fps = 60; // FIXME maybe calculate fps?
@@ -102,9 +103,10 @@ class GifVideoSaver : public VideoSaver {
 
     bool doInit() override;
     void doAcceptFrame(const std::unique_ptr<Frame> &frame) override;
-    void save() override;
+    bool doSave() override;
 
   private:
     int delay = 1;
+    bool scaleDown = true;
     GifWriter *gifWriter = nullptr;
 };

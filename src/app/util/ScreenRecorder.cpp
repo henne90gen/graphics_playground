@@ -13,7 +13,7 @@
 std::string generateScreenshotFilename() {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
-    buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H:%M:%S");
+    buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H-%M-%S");
     return "../../../screenshot-" + buffer.str() + ".png";
 }
 
@@ -66,6 +66,7 @@ std::unique_ptr<Frame> captureFrame(unsigned int screenWidth, unsigned int scree
     const unsigned int numberOfPixels = frame->width * frame->height;
     frame->buffer = static_cast<unsigned char *>(malloc(numberOfPixels * frame->channels * sizeof(unsigned char)));
 
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
     GL_Call(glReadBuffer(GL_FRONT));
     GL_Call(glReadPixels(0, 0, frame->width, frame->height, GL_RGBA, GL_UNSIGNED_BYTE, frame->buffer));
