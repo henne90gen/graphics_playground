@@ -43,16 +43,10 @@ private:
     glm::ivec2 goal = {-1, -1};
 
     static glm::ivec2 findGoal(const Board &board) ;
-
     Node *findStart(const Board &board);
-
     float h(const glm::ivec2 &pos1, const glm::ivec2 &pos2);
-
-    bool isValidNeighbor(Board &board, glm::ivec2 &pos);
-
+    bool isValidNeighbor(const Board &board, glm::ivec2 &pos);
     void drawFinalPath(Board &board);
-
-    static std::vector<Node *> getNeighbors(Board &board, Node *pNode);
-
+    static std::vector<Node *> getNeighbors(const Board &board, Node *pNode);
     Node *getNodeFromWorkingSet(Node *pNode);
 };
