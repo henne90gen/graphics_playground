@@ -169,9 +169,34 @@ This can be simulated by creating new rays, which go off into the scene and reco
 In nature this would happen infinitely often, but since we only have limited computation time, we need to restrict this process.
 This is done by only doing this light bounce a certain number of times and simply stopping after a certain depth is reached.
 
+### Bloom Effect
+
+When bright light sources illuminate a scene, they tend to "bleed" into their surroundings.
+
+![Bloom](screenshots/bloom.gif)
+
+![Bloom Enabled](screenshots/bloom.png)
+![Bloom Enabled](screenshots/bloom_disabled.png)
+
+As you can see the red light seems to leek light into its surroundings and the features on the face of the monkey are being highlighted.
+The second image does not have the bloom effect applied to it and thus the light looks quite flat.
+
+How it works:
+
+![Bloom Enabled](screenshots/bloom_steps.png)
+
+First, we render our scene into two buffers.
+The first buffer will receive the colors normally.
+The second buffer however will only receive colors that are brighter than a certain threshold.
+The result can be seen in the image above, in the top two quarters.
+
+In the next step we take the image with only the bright colors and blur it with a gaussian blur.
+
+Lastly, we can combine the blurred image and our original scene again.
+This will yield a subtle bloom effect around bright lights. and also some highlights on surrounding objects.
+
 ## Ideas
 
--   [Bloom Effect](https://learnopengl.com/Advanced-Lighting/Bloom)
 -   Water Demo
 -   Graph Visualization
 
@@ -180,14 +205,14 @@ This is done by only doing this light bounce a certain number of times and simpl
 ### Screenshots
 
 The back menu offers the option to take screenshots of the current scene.
-The screenshot is then saved to the projects working directory as `screenshot-%year%-%month%-%day%-%hour%:%minute%:%second%.png`.
+The screenshot is then saved to the projects working directory as `screenshot-%year%-%month%-%day%-%hour%-%minute%-%second%.png`.
 
 ### Screen Recording
 
 The back menu offers the option to take screen recordings of the current scene.
 Choose one of GIF or MP4 and press the `Start Recording` button.
 After you're done recording, just press the `Stop Recording` button.
-The recording is then stored in the projects working directory as `screenrecording-%year%-%month%-%day%-%hour%:%minute%:%second%.%extension%`
+The recording is then stored in the projects working directory as `screenrecording-%year%-%month%-%day%-%hour%-%minute%-%second%.%extension%`
 The extension is determined by the recording type you chose.
 
 ### Timing Utility
