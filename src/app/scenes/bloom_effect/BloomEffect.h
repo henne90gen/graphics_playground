@@ -42,6 +42,11 @@ class BloomEffect : public Scene {
     unsigned int pingpongColorbuffers[2];
     unsigned int finalTexture;
 
+    void setupFramebuffers();
+    void setupHdrFramebuffer();
+    void setupBlurringFramebuffers();
+    void setupFinalFramebuffer();
+
     void renderSceneToFramebuffer(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                                   const glm::vec3 &lightPosition, float threshold);
     unsigned int blurRenderedScene();

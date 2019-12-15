@@ -1,5 +1,6 @@
 #include "BloomEffect.h"
 
+#include "util/OpenGLUtils.h"
 #include "util/RenderUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
@@ -29,79 +30,7 @@ void BloomEffect::setup() {
     quadVA = createQuadVA(shader);
     initLightCubeData();
 
-    // set up two color buffers to render to
-    GL_Call(glGenFramebuffers(1, &hdrFBO));
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
-    GL_Call(glGenTextures(2, colorBuffers));
-    for (unsigned int i = 0; i < 2; i++) {
-        GL_Call(glBindTexture(GL_TEXTURE_2D, colorBuffers[i]));
-        GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, getWidth(), getHeight(), 0, GL_RGB, GL_FLOAT, nullptr));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-        // attach texture to framebuffer
-        GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0));
-    }
-
-    // create and attach depth buffer (renderbuffer)
-    unsigned int rboDepth;
-    GL_Call(glGenRenderbuffers(1, &rboDepth));
-    GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, rboDepth));
-    GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, getWidth(), getHeight()));
-    GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth));
-
-    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-    GL_Call(glDrawBuffers(2, attachments));
-
-    // finally check if framebuffer is complete
-    GLenum status;
-    GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "Framebuffer not complete! (" << status << ")" << std::endl;
-    }
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-
-    // ping-pong-framebuffer for blurring
-    GL_Call(glGenFramebuffers(2, pingpongFBO));
-    GL_Call(glGenTextures(2, pingpongColorbuffers));
-    for (unsigned int i = 0; i < 2; i++) {
-        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]));
-        GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]));
-        GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, getWidth(), getHeight(), 0, GL_RGB, GL_FLOAT, nullptr));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-        GL_Call(
-              glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0));
-        // also check if framebuffer is complete (no need for depth buffer)
-        GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
-            std::cout << "Framebuffer not complete!" << std::endl;
-        }
-    }
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-
-    GL_Call(glGenFramebuffers(1, &finalFbo));
-    GL_Call(glGenTextures(1, &finalTexture));
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, finalFbo));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, finalTexture));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, getWidth(), getHeight(), 0, GL_RGB, GL_FLOAT, nullptr));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, finalTexture, 0));
-    // also check if framebuffer is complete (no need for depth buffer)
-    GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "Framebuffer not complete!" << std::endl;
-    }
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    setupFramebuffers();
 }
 
 void BloomEffect::onAspectRatioChange() {
@@ -151,6 +80,83 @@ void BloomEffect::tick() {
     GL_Call(glClearColor(0.0F, 0.0F, 0.0F, 1.0F));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     renderStepsOrFinal(drawSteps);
+}
+
+void BloomEffect::setupFramebuffers() {
+    setupHdrFramebuffer();
+    setupBlurringFramebuffers();
+    setupFinalFramebuffer();
+}
+
+void BloomEffect::setupHdrFramebuffer() {
+    // set up two color buffers to render to
+    GL_Call(glGenFramebuffers(1, &hdrFBO));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
+    GL_Call(glGenTextures(2, colorBuffers));
+    for (unsigned int i = 0; i < 2; i++) {
+        GL_Call(glBindTexture(GL_TEXTURE_2D, colorBuffers[i]));
+        GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, getWidth(), getHeight(), 0, GL_RGB, GL_FLOAT, nullptr));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        // attach texture to framebuffer
+        GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0));
+    }
+
+    // create and attach depth buffer (renderbuffer)
+    unsigned int rboDepth;
+    GL_Call(glGenRenderbuffers(1, &rboDepth));
+    GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, rboDepth));
+    GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, getWidth(), getHeight()));
+    GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth));
+
+    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+    GL_Call(glDrawBuffers(2, attachments));
+
+    checkFramebufferStatus();
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+void BloomEffect::setupBlurringFramebuffers() {
+    // ping-pong-framebuffer for blurring
+    GL_Call(glGenFramebuffers(2, pingpongFBO));
+    GL_Call(glGenTextures(2, pingpongColorbuffers));
+
+    for (unsigned int i = 0; i < 2; i++) {
+        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]));
+        GL_Call(glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]));
+        GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, getWidth(), getHeight(), 0, GL_RGB, GL_FLOAT, nullptr));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_Call(
+              glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0));
+        // also check if framebuffer is complete (no need for depth buffer)
+        checkFramebufferStatus();
+    }
+
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+void BloomEffect::setupFinalFramebuffer() {
+    GL_Call(glGenFramebuffers(1, &finalFbo));
+    GL_Call(glGenTextures(1, &finalTexture));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, finalFbo));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, finalTexture));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, getWidth(), getHeight(), 0, GL_RGB, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, finalTexture, 0));
+
+    checkFramebufferStatus();
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 void BloomEffect::renderSceneToFramebuffer(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,

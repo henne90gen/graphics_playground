@@ -1,6 +1,7 @@
 #include "FramebufferDemo.h"
 
 #include "util/RenderUtils.h"
+#include "util/OpenGLUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -143,42 +144,4 @@ void FramebufferDemo::initFramebuffer() {
     GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo));
 
     checkFramebufferStatus();
-}
-
-void FramebufferDemo::checkFramebufferStatus() {
-    GLenum status;
-    GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Framebuffer is not complete: ";
-        switch (status) {
-        case GL_FRAMEBUFFER_UNDEFINED:
-            std::cerr << "Could not define a framebuffer";
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            std::cerr << "Some attachment is incomplete";
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-            std::cerr << "Some attachment is missing";
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-            std::cerr << "A draw buffer is incomplete";
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-            std::cerr << "A read buffer is incomplete";
-            break;
-        case GL_FRAMEBUFFER_UNSUPPORTED:
-            std::cerr << "Framebuffers are not supported";
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-            std::cerr << "Multisample is incomplete";
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-            std::cerr << "Layer targets are incomplete";
-            break;
-        default:
-            std::cerr << "Unknown error";
-            break;
-        }
-        std::cerr << std::endl;
-    }
 }

@@ -32,9 +32,9 @@ glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cam
     return viewMatrix;
 }
 
-MappedMousePosition
-mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix, unsigned int canvasWidth,
-                   unsigned int canvasHeight, unsigned int displayWidth, unsigned int displayHeight) {
+MappedMousePosition mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix,
+                                       unsigned int canvasWidth, unsigned int canvasHeight, unsigned int displayWidth,
+                                       unsigned int displayHeight) {
     const auto widthF = static_cast<float>(canvasWidth);
     const auto heightF = static_cast<float>(canvasHeight);
     const auto displayWidthF = static_cast<float>(displayWidth);
@@ -47,8 +47,44 @@ mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix
 
     auto adjustedDisplayPos = glm::inverse(transformationMatrix) * glm::vec4(mouseDisplaySpace, 0.0F, 1.0F);
     auto canvasPos = (glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y) + glm::vec2(1.0F, 1.0F)) / 2.0F;
-    return {
-            glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF)),
-            glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y)
-    };
+    return {glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF)),
+            glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y)};
+}
+
+void checkFramebufferStatus() {
+    GLenum status;
+    GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Framebuffer is not complete: ";
+        switch (status) {
+        case GL_FRAMEBUFFER_UNDEFINED:
+            std::cerr << "Could not define a framebuffer";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            std::cerr << "Some attachment is incomplete";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            std::cerr << "Some attachment is missing";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            std::cerr << "A draw buffer is incomplete";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+            std::cerr << "A read buffer is incomplete";
+            break;
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            std::cerr << "Framebuffers are not supported";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+            std::cerr << "Multisample is incomplete";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+            std::cerr << "Layer targets are incomplete";
+            break;
+        default:
+            std::cerr << "Unknown error";
+            break;
+        }
+        std::cerr << std::endl;
+    }
 }

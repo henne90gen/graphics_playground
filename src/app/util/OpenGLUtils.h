@@ -1,25 +1,25 @@
 #pragma once
 
-#include <glm/ext.hpp>
 #include <glad/glad.h>
+#include <glm/ext.hpp>
 
 #include "InputData.h"
 
 #ifdef DEBUG
 #ifdef WIN32
-#define ASSERT(x)             \
-        if (!(x))                 \
-            __debugbreak()
+#define ASSERT(x)                                                                                                      \
+    if (!(x))                                                                                                          \
+    __debugbreak()
 #else
-#define ASSERT(x)             \
-        if (!(x))                  \
-            __builtin_trap()
+#define ASSERT(x)                                                                                                      \
+    if (!(x))                                                                                                          \
+    __builtin_trap()
 #endif
 #else
 #define ASSERT(x)
 #endif
 
-#define GL_UnsafeCall(x, error)                                                                                                     \
+#define GL_UnsafeCall(x, error)                                                                                        \
     GL_ClearError();                                                                                                   \
     x;                                                                                                                 \
     error = !GL_LogCall(#x, __FILE__, __LINE__)
@@ -41,6 +41,8 @@ struct MappedMousePosition {
     glm::vec2 worldPos;
 };
 
-MappedMousePosition
-mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix, unsigned int canvasWidth,
-                   unsigned int canvasHeight, unsigned int displayWidth, unsigned int displayHeight);
+MappedMousePosition mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix,
+                                       unsigned int canvasWidth, unsigned int canvasHeight, unsigned int displayWidth,
+                                       unsigned int displayHeight);
+
+void checkFramebufferStatus();
