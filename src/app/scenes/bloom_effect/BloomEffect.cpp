@@ -83,12 +83,14 @@ void BloomEffect::tick() {
 }
 
 void BloomEffect::setupFramebuffers() {
+    RECORD_SCOPE();
     setupHdrFramebuffer();
     setupBlurringFramebuffers();
     setupFinalFramebuffer();
 }
 
 void BloomEffect::setupHdrFramebuffer() {
+    RECORD_SCOPE();
     // set up two color buffers to render to
     GL_Call(glGenFramebuffers(1, &hdrFBO));
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
@@ -120,6 +122,7 @@ void BloomEffect::setupHdrFramebuffer() {
 }
 
 void BloomEffect::setupBlurringFramebuffers() {
+    RECORD_SCOPE();
     // ping-pong-framebuffer for blurring
     GL_Call(glGenFramebuffers(2, pingpongFBO));
     GL_Call(glGenTextures(2, pingpongColorbuffers));
@@ -143,6 +146,7 @@ void BloomEffect::setupBlurringFramebuffers() {
 }
 
 void BloomEffect::setupFinalFramebuffer() {
+    RECORD_SCOPE();
     GL_Call(glGenFramebuffers(1, &finalFbo));
     GL_Call(glGenTextures(1, &finalTexture));
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, finalFbo));
@@ -161,6 +165,7 @@ void BloomEffect::setupFinalFramebuffer() {
 
 void BloomEffect::renderSceneToFramebuffer(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                                            const glm::vec3 &lightPosition, float threshold) {
+    RECORD_SCOPE();
     static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3();
     static auto ambientColor = glm::vec3(0.005F, 0.005F, 0.005F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -184,6 +189,7 @@ void BloomEffect::renderSceneToFramebuffer(const glm::vec3 &modelPosition, const
 }
 
 unsigned int BloomEffect::blurRenderedScene() {
+    RECORD_SCOPE();
     bool horizontal = true;
     bool first_iteration = true;
     unsigned int amount = 10;
