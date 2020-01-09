@@ -52,9 +52,9 @@ void Scene::renderMetrics() {
 void Scene::setup(unsigned int windowWidth, unsigned int windowHeight) {
     RECORD_SCOPE();
 
-    setDimensions(windowWidth, windowHeight);
-
     setup();
+
+    setDimensions(windowWidth, windowHeight);
 }
 
 void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
