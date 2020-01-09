@@ -197,6 +197,7 @@ This will yield a subtle bloom effect around bright lights. and also some highli
 
 ## Ideas
 
+-   Spot light demo (flash light and tunnels to explore)
 -   Water Demo
 -   Graph Visualization
 

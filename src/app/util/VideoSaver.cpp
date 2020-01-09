@@ -40,7 +40,7 @@ void VideoSaver::save() {
         std::cerr << "Could not save video " << videoFileName << std::endl;
         return;
     }
-    std::cout << "Save video " << videoFileName << std::endl;
+    std::cout << "Saved video " << videoFileName << std::endl;
 }
 
 void Mp4VideoSaver::free() {
