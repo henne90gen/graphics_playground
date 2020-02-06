@@ -195,9 +195,13 @@ In the next step we take the image with only the bright colors and blur it with 
 Lastly, we can combine the blurred image and our original scene again.
 This will yield a subtle bloom effect around bright lights. and also some highlights on surrounding objects.
 
+### Spot light demo
+
+- flash light
+- tunnels to explore
+
 ## Ideas
 
--   Spot light demo (flash light and tunnels to explore)
 -   Water Demo
 -   Graph Visualization
 

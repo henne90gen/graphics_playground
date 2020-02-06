@@ -1,22 +1,22 @@
 
-set(SOURCES
+add_executable(${PROJECT_NAME}
         Main.cpp
-        util/MainMenu.cpp
-        util/ImGuiUtils.cpp
-        util/OpenGLUtils.cpp
         util/Image.cpp
+        util/ImGuiUtils.cpp
+        util/MainMenu.cpp
+        util/OpenGLUtils.cpp
         util/RenderUtils.cpp
         util/ScreenRecorder.cpp
         util/VideoSaver.cpp
-        opengl/VertexBuffer.cpp
-        opengl/IndexBuffer.cpp
         opengl/BufferLayout.cpp
         opengl/BufferLayoutElement.cpp
-        opengl/VertexArray.cpp
-        opengl/Texture.cpp
-        opengl/Shader.cpp
+        opengl/IndexBuffer.cpp
         opengl/Model.cpp
         scenes/Scene.cpp
+        opengl/Shader.cpp
+        opengl/Texture.cpp
+        opengl/VertexBuffer.cpp
+        opengl/VertexArray.cpp
         scenes/test_scene/TestScene.cpp
         scenes/legacy_triangle/LegacyTriangle.cpp
         scenes/triangle/Triangle.cpp
@@ -36,10 +36,9 @@ set(SOURCES
         scenes/surface_smoothing/SurfaceSmoothing.cpp
         scenes/water_demo/WaterDemo.cpp
         scenes/ray_tracing/RayTracing.cpp
+        scenes/shadows_2d/Shadows2D.cpp
         scenes/bloom_effect/BloomEffect.cpp
-        scenes/shadows_2d/Shadows2D.cpp)
-
-add_executable(${PROJECT_NAME} ${SOURCES})
+        scenes/spot_light/SpotLight.cpp)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_compile_options(${PROJECT_NAME} PRIVATE /std:c++17)
@@ -103,7 +102,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GIF_H_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
 
-
 set(RESOURCES
         scenes/a_star/AStarFrag.glsl
         scenes/a_star/AStarVert.glsl
@@ -142,6 +140,8 @@ set(RESOURCES
         scenes/normal_mapping/models
         scenes/shadows_2d/Shadows2DFrag.glsl
         scenes/shadows_2d/Shadows2DVert.glsl
+        scenes/spot_light/SpotLightVert.glsl
+        scenes/spot_light/SpotLightFrag.glsl
         scenes/ray_tracing/RayTracingFrag.glsl
         scenes/ray_tracing/RayTracingVert.glsl
         scenes/rubiks_cube/RubiksCubeFrag.glsl
