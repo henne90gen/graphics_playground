@@ -1,11 +1,13 @@
 #pragma once
 
-#include <glm/ext.hpp>
-#include <vector>
-#include <map>
-#include <set>
-#include <queue>
 #include <functional>
+#include <glm/ext.hpp>
+#include <map>
+#include <queue>
+#include <set>
+#include <vector>
+
+#include "util/TimeUtils.h"
 
 const glm::vec3 startColor = {0.0, 1.0, 0.0};
 const glm::vec3 finishColor = {1.0, 0.0, 0.0};
@@ -28,9 +30,8 @@ struct Node {
     Node *predecessor;
 };
 
-
 class AStarSolver {
-public:
+  public:
     void nextStep(Board &board);
 
     std::vector<Node *> workingSet;
@@ -39,14 +40,32 @@ public:
     bool solved = false;
     Node *finalNode = nullptr;
     bool useManhattenDistance = false;
-private:
-    glm::ivec2 goal = {-1, -1};
 
-    static glm::ivec2 findGoal(const Board &board) ;
+    double getTotalTime() {
+        const auto &itr = perfCounter.dataPoints.find("TotalTime");
+        if (itr == perfCounter.dataPoints.end()) {
+            return 0.0;
+        }
+        return itr->second._sum;
+    }
+
+    unsigned int getTotalSteps() {
+        const auto &itr = perfCounter.dataPoints.find("TotalTime");
+        if (itr == perfCounter.dataPoints.end()) {
+            return 0.0;
+        }
+        return itr->second.timerCount;
+    }
+
+    void drawFinalPath(Board &board);
+  private:
+    glm::ivec2 goal = {-1, -1};
+    PerformanceCounter perfCounter = {};
+
+    static glm::ivec2 findGoal(const Board &board);
     Node *findStart(const Board &board);
     float h(const glm::ivec2 &pos1, const glm::ivec2 &pos2);
-    bool isValidNeighbor(const Board &board, glm::ivec2 &pos);
-    void drawFinalPath(Board &board);
     static std::vector<Node *> getNeighbors(const Board &board, Node *pNode);
     Node *getNodeFromWorkingSet(Node *pNode);
+    inline PerformanceCounter *getPerformanceCounter() { return &perfCounter; }
 };

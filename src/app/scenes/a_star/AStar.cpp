@@ -10,7 +10,7 @@ void AStar::setup() {
     shader = std::make_shared<Shader>("scenes/a_star/AStarVert.glsl", "scenes/a_star/AStarFrag.glsl");
     shader->bind();
 
-    vertexArray = createQuadVA(shader);
+    vertexArray = createQuadVA(shader, {2.0F, 2.0F});
     vertexArray->bind();
 
     texture = std::make_shared<Texture>();
@@ -26,10 +26,9 @@ void AStar::setup() {
 void AStar::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void AStar::tick() {
-    // TODO(henne): move camera so that whole canvas can be seen
     static float zoom = 1.0F;
-    static glm::vec3 position = {0.5F, 0.5F, 0.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static bool animate = false;
+    static glm::vec3 position = {0.0F, 0.0F, 0.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static bool runSolver = false;
     static bool init = false;
     static bool renderDirectionArrows = true;
 
@@ -42,17 +41,21 @@ void AStar::tick() {
     const float dragSpeed = 0.001F;
     ImGui::DragFloat("Zoom", &zoom, dragSpeed);
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&position), dragSpeed);
-    if (ImGui::Button("Reset")) {
+    if (ImGui::Button("Reset Map")) {
         setupDefaultProblem();
-        animate = false;
+        runSolver = false;
     }
-    if (animate) {
+    if (ImGui::Button("Reset Solver")) {
+        resetSolver();
+        runSolver = false;
+    }
+    if (runSolver) {
         if (ImGui::Button("Stop Animation")) {
-            animate = false;
+            runSolver = false;
         }
     } else {
         if (ImGui::Button("Start Animation")) {
-            animate = true;
+            runSolver = true;
         }
     }
     ImGui::Checkbox("Use Manhatten-Distance", &solver->useManhattenDistance);
@@ -63,15 +66,23 @@ void AStar::tick() {
         estimatedDistance = solver->workingSet.back()->f;
     }
     ImGui::Text("Total Estimated Distance: %f", estimatedDistance);
+    ImGui::Text("Total Time: %fms", solver->getTotalTime());
+    ImGui::Text("Total Steps: %d", solver->getTotalSteps());
     ImGui::Text("Solved: %d", static_cast<int>(solver->solved));
-    ImGui::Text("Final Node: %p", reinterpret_cast<void*>(solver->finalNode));
+    ImGui::Text("Final Node: %p", reinterpret_cast<void *>(solver->finalNode));
     if (solver->finalNode != nullptr) {
         ImGui::Text("Total Distance Traveled: %d", solver->finalNode->g);
     }
     ImGui::End();
 
-    if (animate) {
+    if (runSolver && !solver->solved) {
+        RECORD_SCOPE_NAME("SolveStep");
         solver->nextStep(board);
+
+        if (solver->solved) {
+            runSolver = false;
+            solver->drawFinalPath(board);
+        }
     }
 
     auto viewMatrix = glm::translate(glm::identity<glm::mat4>(), position);
@@ -156,7 +167,9 @@ void AStar::renderCanvas(const glm::mat4 &viewMatrix) {
     vertexArray->bind();
     texture->bind();
 
-    checkForMouseClick(board.width, board.height, viewMatrix);
+    if (!solver->solved) {
+        checkForMouseClick(board.width, board.height, viewMatrix);
+    }
     texture->update(board.pixels, board.width, board.height);
 
     shader->setUniform("u_ViewMatrix", viewMatrix);
@@ -175,7 +188,8 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
         return;
     }
 
-    auto mappedMousePos = mapMouseOntoCanvas(input, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
+    auto &mousePos = input->mouse.pos;
+    auto mappedMousePos = mapMouseOntoCanvas(mousePos, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
     auto canvasPos = mappedMousePos.canvasPos;
 
     if ((canvasPos.x < 0.0F || canvasPos.x >= static_cast<float>(canvasWidth)) ||
@@ -191,12 +205,28 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
     }
 }
 
+void AStar::resetSolver() {
+    bool useManhattenDist = solver->useManhattenDistance;
+    solver = std::make_unique<AStarSolver>();
+    solver->useManhattenDistance = useManhattenDist;
+    for (auto &color : board.pixels) {
+        if (color != obstacleColor) {
+            color = backgroundColor;
+        }
+    }
+    setStartAndFinish();
+}
+
 void AStar::setupDefaultProblem() {
     solver = std::make_unique<AStarSolver>();
     board.pixels = std::vector<glm::vec3>(board.width * board.height);
     for (auto &color : board.pixels) {
         color = backgroundColor;
     }
+    setStartAndFinish();
+}
+
+void AStar::setStartAndFinish() {
     board.pixels[10 * board.width + 10] = startColor;    // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     board.pixels[100 * board.width + 100] = finishColor; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 }

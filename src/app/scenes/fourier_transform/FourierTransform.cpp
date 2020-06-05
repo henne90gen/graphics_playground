@@ -212,7 +212,8 @@ void FourierTransform::drawCanvas(std::vector<glm::vec4> &colors, std::vector<gl
 
     InputData *input = getInput();
     if (input->mouse.left) {
-        auto mappedMousePos = mapMouseOntoCanvas(input, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
+        auto &mousePos = input->mouse.pos;
+        auto mappedMousePos = mapMouseOntoCanvas(mousePos, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
         auto canvasPos = mappedMousePos.canvasPos;
         auto worldPos = mappedMousePos.worldPos;
 
