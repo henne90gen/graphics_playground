@@ -15,7 +15,7 @@ void Shadows2D::setup() {
     shader->bind();
     onAspectRatioChange();
 
-    addWalls();
+    createWalls(10, 10);
 
     createLightSourceVA();
     createWallVA();
@@ -28,8 +28,7 @@ void Shadows2D::setup() {
 void Shadows2D::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void Shadows2D::onAspectRatioChange() {
-    auto projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
-    shader->setUniform("u_Projection", projectionMatrix);
+    projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
 }
 
 void Shadows2D::tick() {
@@ -38,8 +37,10 @@ void Shadows2D::tick() {
     static ColorConfig colorConfig = {};
     static glm::vec2 lightPosition = glm::vec2();
     static glm::vec3 cameraPosition = glm::vec3();
+    static unsigned int xWallCount = 5;
+    static unsigned int yWallCount = 5;
     static float zoom = 2.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static bool runAsync = false;
+    static bool runAsync = true;
 
     ImGui::Begin("Settings");
 
@@ -71,6 +72,14 @@ void Shadows2D::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
 
+    int tmp[2] = {static_cast<int>(xWallCount), static_cast<int>(yWallCount)};
+    ImGui::SliderInt2("Walls", tmp, 0, 10);
+    if (xWallCount != static_cast<unsigned int>(tmp[0]) || yWallCount != static_cast<unsigned int>(tmp[1])) {
+        xWallCount = tmp[0];
+        yWallCount = tmp[1];
+        createWalls(xWallCount, yWallCount);
+    }
+
     ImGui::Checkbox("Run async", &runAsync);
 
     ImGui::End();
@@ -95,7 +104,7 @@ void Shadows2D::tick() {
     }
 
     {
-        RECORD_SCOPE_NAME("render");
+        RECORD_SCOPE_NAME("Render");
         renderScene(drawToggles, viewMatrix, lightPosition, colorConfig);
     }
 
@@ -115,6 +124,7 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
 
     shader->bind();
     shader->setUniform("u_View", viewMatrix);
+    shader->setUniform("u_Projection", projectionMatrix);
     if (drawToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
@@ -239,13 +249,12 @@ void Shadows2D::createWallVA() {
     wallsVA->setIndexBuffer(indexBuffer);
 }
 
-void Shadows2D::addWalls() {
+void Shadows2D::createWalls(const unsigned int xWallCount, const unsigned int yWallCount) {
+    walls = {};
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     glm::vec2 offset = {-0.375F, -0.25F};
     const float wallScale = 0.02F;
     const float positionScale = 0.1F;
-    const unsigned int xWallCount = 10;
-    const unsigned int yWallCount = 10;
     for (unsigned int y = 0; y < yWallCount; y++) {
         for (unsigned int x = 0; x < xWallCount; x++) {
             glm::vec2 position =
@@ -297,28 +306,32 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<RayTracer2D::Ray>
     std::vector<glm::vec2> vertices = {};
     std::vector<unsigned int> indices = {};
     unsigned int currentIndex = 0;
-    for (auto &ray : rays) {
-        if (drawToggles.drawRays) {
-            vertices.push_back(ray.startingPoint);
-            const float scaleFactor = 10.0F;
-            vertices.push_back(ray.startingPoint + ray.direction * scaleFactor);
-            indices.push_back(currentIndex);
-            indices.push_back(currentIndex + 1);
-            currentIndex += 2;
-        }
-
-        for (auto &intersection : ray.intersections) {
-            if (drawToggles.drawClosestIntersections && intersection == ray.closestIntersection) {
-                continue;
+    {
+        RECORD_SCOPE_NAME("Core Loop");
+        for (auto &ray : rays) {
+            RECORD_SCOPE_NAME("Core Loop Local");
+            if (drawToggles.drawRays) {
+                vertices.push_back(ray.startingPoint);
+                const float scaleFactor = 10.0F;
+                vertices.push_back(ray.startingPoint + ray.direction * scaleFactor);
+                indices.push_back(currentIndex);
+                indices.push_back(currentIndex + 1);
+                currentIndex += 2;
             }
-            auto va = createIntersectionVA(intersection);
-            intersectionVAs.push_back(va);
-        }
 
-        if (!ray.intersections.empty()) {
-            auto va = createIntersectionVA(ray.closestIntersection);
-            closestIntersectionVAs.push_back(va);
-            shadowPolygon.push_back(ray.closestIntersection);
+            for (auto &intersection : ray.intersections) {
+                if (drawToggles.drawClosestIntersections && intersection == ray.closestIntersection) {
+                    continue;
+                }
+                auto va = createIntersectionVA(intersection);
+                intersectionVAs.push_back(va);
+            }
+
+            if (!ray.intersections.empty()) {
+                auto va = createIntersectionVA(ray.closestIntersection);
+                closestIntersectionVAs.push_back(va);
+                shadowPolygon.push_back(ray.closestIntersection);
+            }
         }
     }
 

@@ -57,8 +57,10 @@ class Timer {
 #define FUNCTION_NAME __PRETTY_FUNCTION__
 #endif
 
-#define TIME_SCOPE() auto timer##__LINE__ = Timer(nullptr, FUNCTION_NAME)
-#define TIME_SCOPE_NAME(name) auto timer##__LINE__ = Timer(nullptr, name)
+#define COMBINE(X, Y) X##Y
 
-#define RECORD_SCOPE() auto timer##__LINE__ = Timer(getPerformanceCounter(), FUNCTION_NAME)
-#define RECORD_SCOPE_NAME(name) auto timer##__LINE__ = Timer(getPerformanceCounter(), name)
+#define TIME_SCOPE() auto COMBINE(timer, __LINE__) = Timer(nullptr, FUNCTION_NAME)
+#define TIME_SCOPE_NAME(name) auto COMBINE(timer, __LINE__) = Timer(nullptr, name)
+
+#define RECORD_SCOPE() auto COMBINE(timer, __LINE__) = Timer(getPerformanceCounter(), FUNCTION_NAME)
+#define RECORD_SCOPE_NAME(name) auto COMBINE(timer, __LINE__) = Timer(getPerformanceCounter(), name)
