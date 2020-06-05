@@ -9,13 +9,15 @@
 
 #include "util/TimeUtils.h"
 
-const glm::vec3 startColor = {0.0, 1.0, 0.0};
-const glm::vec3 finishColor = {1.0, 0.0, 0.0};
-const glm::vec3 obstacleColor = {0.0, 0.0, 0.0};
-const glm::vec3 pathColor = {0.0, 0.0, 1.0};
-const glm::vec3 visitedColor = {0.8, 0.8, 0.8};
-const glm::vec3 backgroundColor = {1.0, 0.0, 1.0};
-const glm::vec3 workingSetColor = {0.0, 1.0, 1.0};
+const glm::vec3 startColor = {53.0 / 255.0, 210.0 / 255.0, 141.0 / 255.0};
+const glm::vec3 finishColor = {235.0 / 255.0, 51.0 / 255.0, 37.0 / 255.0};
+const glm::vec3 backgroundColor = {156.0 / 255.0, 140.0 / 255.0, 135.0 / 255.0};
+
+const glm::vec3 obstacleColor = {45.0 / 255.0, 57.0 / 255.0, 66.0 / 255.0};
+const glm::vec3 pathColor = {74.0 / 255.0, 102.0 / 255.0, 248.0 / 255.0};
+
+const glm::vec3 visitedColor = {85.0 / 255.0, 191.0 / 255.0, 240.0 / 255.0};
+const glm::vec3 workingSetColor = {65.0 / 255.0, 209.0 / 255.0, 217.0 / 255.0};
 
 struct Board {
     unsigned int width;
@@ -58,6 +60,7 @@ class AStarSolver {
     }
 
     void drawFinalPath(Board &board);
+
   private:
     glm::ivec2 goal = {-1, -1};
     PerformanceCounter perfCounter = {};
