@@ -41,7 +41,7 @@ struct MappedMousePosition {
     glm::vec2 worldPos;
 };
 
-MappedMousePosition mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix,
+MappedMousePosition mapMouseOntoCanvas(const glm::vec2 &mousePos, const glm::mat4 &transformationMatrix,
                                        unsigned int canvasWidth, unsigned int canvasHeight, unsigned int displayWidth,
                                        unsigned int displayHeight);
 

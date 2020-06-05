@@ -32,15 +32,13 @@ glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cam
     return viewMatrix;
 }
 
-MappedMousePosition mapMouseOntoCanvas(const InputData *input, const glm::mat4 &transformationMatrix,
+MappedMousePosition mapMouseOntoCanvas(const glm::vec2& mousePos, const glm::mat4 &transformationMatrix,
                                        unsigned int canvasWidth, unsigned int canvasHeight, unsigned int displayWidth,
                                        unsigned int displayHeight) {
     const auto widthF = static_cast<float>(canvasWidth);
     const auto heightF = static_cast<float>(canvasHeight);
     const auto displayWidthF = static_cast<float>(displayWidth);
     const auto displayHeightF = static_cast<float>(displayHeight);
-
-    auto &mousePos = input->mouse.pos;
 
     auto mouseDisplaySpace = glm::vec2(mousePos.x / displayWidthF, (displayHeightF - mousePos.y) / displayHeightF);
     mouseDisplaySpace = mouseDisplaySpace * 2.0F - glm::vec2(1.0F, 1.0F);
