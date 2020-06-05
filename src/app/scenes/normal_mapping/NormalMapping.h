@@ -31,6 +31,7 @@ class NormalMapping : public Scene {
     std::shared_ptr<Texture> texture;
     std::shared_ptr<Texture> normalMap;
     std::unique_ptr<Model> model = {};
+    glm::mat4 projectionMatrix;
 
     static void interleaveVertexData(const std::vector<glm::vec3> &tangents, const std::vector<glm::vec3> &biTangents,
                                      std::vector<float> &output);
