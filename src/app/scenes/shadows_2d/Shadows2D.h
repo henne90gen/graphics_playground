@@ -54,6 +54,7 @@ class Shadows2D : public Scene {
     std::vector<RayTracer2D::Polygon> walls;
     std::vector<glm::vec2> circleVertices = {{0.0, 0.0}};
     std::vector<unsigned int> circleIndices = {0};
+    glm::mat4 projectionMatrix;
 
     void createLightSourceVA();
 
@@ -67,7 +68,7 @@ class Shadows2D : public Scene {
 
     std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
 
-    void addWalls();
+    void createWalls(const unsigned int xWallCount, const unsigned int yWallCount);
     RayTracer2D::Polygon createScreenBorder(float scale);
 
     void renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,

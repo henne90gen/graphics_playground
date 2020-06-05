@@ -84,6 +84,7 @@ void NormalMapping::tick() {
     shader->setUniform("u_Light.color", lightColor);
     shader->setUniform("u_UseNormalMap", useNormalMap);
     shader->setUniform("u_View", viewMatrix);
+    shader->setUniform("u_Projection", projectionMatrix);
 
     {
         RECORD_SCOPE_NAME("Render");
@@ -138,8 +139,7 @@ void NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &tangents,
 }
 
 void NormalMapping::onAspectRatioChange() {
-    auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-    shader->setUniform("u_Projection", projectionMatrix);
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
 void NormalMapping::calculateTangentsAndBiTangents(const std::vector<glm::ivec3> &indices,
