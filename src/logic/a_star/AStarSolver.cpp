@@ -2,9 +2,7 @@
 
 #include "AStarSolver.h"
 
-#include <algorithm>
 #include <functional>
-#include <iostream>
 
 inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {
     board.pixels[pos.x + pos.y * board.height] = color;
@@ -17,11 +15,7 @@ inline glm::vec3 getPixelValue(const Board &board, glm::ivec2 &pos) {
 bool compareNodes(Node *n1, Node *n2) { return n1->f > n2->f; }
 
 void AStarSolver::nextStep(Board &board) {
-
-    if (solved) {
-        drawFinalPath(board);
-        return;
-    }
+    RECORD_SCOPE_NAME("TotalTime");
 
     if (goal.x == -1 && goal.y == -1) {
         goal = findGoal(board);

@@ -32,6 +32,8 @@ private:
     void checkForMouseClick(unsigned int canvasWidth, unsigned int canvasHeight, const glm::mat4 &viewMatrix);
 
     void setupDefaultProblem();
+    void resetSolver();
+    void setStartAndFinish();
 
     void renderCanvas(const glm::mat4 &viewMatrix);
 

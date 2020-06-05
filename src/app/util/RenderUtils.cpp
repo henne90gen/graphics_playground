@@ -183,14 +183,15 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
     return array;
 }
 
-std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader) {
+std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader,
+                                          const glm::vec2 &scale) {
     glm::vec2 uvMin = {0.0F, 0.0F};
     glm::vec2 uvMax = {1.0F, 1.0F};
     std::vector<float> vertices = {
-          -0.5, -0.5, 0.0, uvMin.x, uvMin.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          0.5,  -0.5, 0.0, uvMax.x, uvMin.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          0.5,  0.5,  0.0, uvMax.x, uvMax.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          -0.5, 0.5,  0.0, uvMin.x, uvMax.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          -0.5F * scale.x, -0.5F * scale.y, 0.0, uvMin.x, uvMin.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          0.5F * scale.x,  -0.5F * scale.y, 0.0, uvMax.x, uvMin.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          0.5F * scale.x,  0.5F * scale.y,  0.0, uvMax.x, uvMax.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          -0.5F * scale.x, 0.5F * scale.y,  0.0, uvMin.x, uvMax.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
 
     auto result = std::make_shared<VertexArray>(shader);
