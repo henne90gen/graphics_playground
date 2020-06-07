@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <unordered_map>
 
 struct MouseData {
     bool left = false;
@@ -9,7 +10,7 @@ struct MouseData {
 };
 
 struct KeyboardData {
-
+    std::unordered_map<char, bool> keys = {};
 };
 
 struct InputData {

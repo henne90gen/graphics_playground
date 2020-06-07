@@ -61,6 +61,11 @@ void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
 
     setDimensions(windowWidth, windowHeight);
 
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto currentTimeNs = std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime).time_since_epoch().count();
+    timeDelta = (double)(currentTimeNs - lastTimeNs) / 1000000000.0;
+    lastTimeNs = currentTimeNs;
+
     tick();
 
     renderBackMenu();

@@ -39,8 +39,7 @@ void RayTracing::setup() {
 }
 
 void RayTracing::onAspectRatioChange() {
-    auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-    shader->setUniform("u_Projection", projectionMatrix);
+    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
 void RayTracing::destroy() {}
@@ -104,6 +103,7 @@ void RayTracing::tick() {
         shader->bind();
         auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
         shader->setUniform("u_View", viewMatrix);
+        shader->setUniform("u_Projection", projectionMatrix);
 
         renderRayTracedTexture(pixels, width, height, rayTracerCameraPosition, zDistance);
         renderScene(rayTracerCameraPosition, zDistance, rays, rayColor, shouldRenderRays);
