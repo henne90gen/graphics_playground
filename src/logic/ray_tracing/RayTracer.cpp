@@ -9,7 +9,6 @@
 #include "util/VectorUtils.h"
 
 #define USE_GLM_INTERSECT 1
-#define MAX_RAY_DEPTH 10
 
 const glm::vec3 BACKGROUND_COLOR = {0.1F, 0.1F, 0.1F};
 
@@ -270,6 +269,8 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
               const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
               const unsigned int height, const unsigned int maxRayDepth, std::vector<Ray> &rays, bool runAsync) {
     pixels.resize(width * height);
+//    unsigned long size = pixels.size();
+//    rays.resize(size);
 
     if (runAsync) {
         rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height, maxRayDepth, rays);

@@ -22,6 +22,7 @@
 #include "scenes/ray_tracing/RayTracing.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
 #include "scenes/shadows_2d/Shadows2D.h"
+#include "scenes/spot_light/SpotLight.h"
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
@@ -61,6 +62,9 @@ void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int 
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
         auto sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
         sceneData->recorder.takeScreenshot();
+    } else {
+        bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
+        input.keyboard.keys[key] = isDown;
     }
 }
 
@@ -142,9 +146,10 @@ int main() {
     scenes.push_back(new RayTracing(sceneData));         // 16
     scenes.push_back(new FramebufferDemo(sceneData));    // 17
     scenes.push_back(new BloomEffect(sceneData));        // 18
+    scenes.push_back(new SpotLight(sceneData));          // 19
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(15);
+//    mainMenu.goToScene(16);
 
     enableOpenGLDebugging();
 

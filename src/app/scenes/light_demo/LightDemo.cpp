@@ -37,6 +37,8 @@ void LightDemo::tick() {
     static bool useDiffuse = true;
     static bool useSpecular = true;
 
+    // TODO make 'shininess' configurable (how much specular reflection the surface has)
+
     static const float rotationSpeed = 0.01F;
     if (rotate) {
         modelRotation.y += rotationSpeed;
