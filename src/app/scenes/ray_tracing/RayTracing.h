@@ -7,6 +7,7 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <future>
 #include <memory>
 #include <util/TimeUtils.h>
 
@@ -26,9 +27,11 @@ class RayTracing : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> rayTracedTextureArray;
     std::shared_ptr<Texture> texture;
+    glm::mat4 projectionMatrix;
 
     std::vector<RayTracer::Object> objects = {};
     RayTracer::Light light = {};
+    std::future<void> currentResult = std::future<void>();
 
     void onAspectRatioChange() override;
 

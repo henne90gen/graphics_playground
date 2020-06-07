@@ -183,21 +183,21 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
     return array;
 }
 
-std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader,
-                                          const glm::vec2 &scale) {
+std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader, const glm::vec2 &scale) {
     glm::vec2 uvMin = {0.0F, 0.0F};
     glm::vec2 uvMax = {1.0F, 1.0F};
     std::vector<float> vertices = {
-          -0.5F * scale.x, -0.5F * scale.y, 0.0, uvMin.x, uvMin.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          0.5F * scale.x,  -0.5F * scale.y, 0.0, uvMax.x, uvMin.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          0.5F * scale.x,  0.5F * scale.y,  0.0, uvMax.x, uvMax.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          -0.5F * scale.x, 0.5F * scale.y,  0.0, uvMin.x, uvMax.y, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          -0.5F * scale.x, -0.5F * scale.y, 0.0, uvMin.x, uvMin.y, 0.0F, 0.0F, 1.0F,
+          0.5F * scale.x,  -0.5F * scale.y, 0.0, uvMax.x, uvMin.y, 0.0F, 0.0F, 1.0F,
+          0.5F * scale.x,  0.5F * scale.y,  0.0, uvMax.x, uvMax.y, 0.0F, 0.0F, 1.0F,
+          -0.5F * scale.x, 0.5F * scale.y,  0.0, uvMin.x, uvMax.y, 0.0F, 0.0F, 1.0F,
     };
 
     auto result = std::make_shared<VertexArray>(shader);
     BufferLayout bufferLayout = {
           {ShaderDataType::Float3, "a_Position"},
           {ShaderDataType::Float2, "a_UV"},
+          {ShaderDataType::Float3, "a_Normal"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     result->addVertexBuffer(buffer);
