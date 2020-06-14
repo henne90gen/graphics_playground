@@ -32,6 +32,7 @@ void SpotLight::tick() {
     static bool useAmbient = true;
     static bool useDiffuse = true;
     static bool useSpecular = true;
+    static int falloffType = 0;
     static float falloffPosition = 0.4F;
     static float falloffSpeed = 10.0F;
     static float walkSpeed = 2.0F;
@@ -48,8 +49,10 @@ void SpotLight::tick() {
     ImGui::Checkbox("Use Ambient", &useAmbient);
     ImGui::Checkbox("Use Diffuse", &useDiffuse);
     ImGui::Checkbox("Use Specular", &useSpecular);
+    static const std::array<const char *, 3> items = {"Cosine", "Sigmoid", "Linear"};
+    ImGui::Combo("Falloff Type", &falloffType, items.data(), items.size());
     ImGui::SliderFloat("Falloff Position", &falloffPosition, 0.0F, 1.0F);
-    ImGui::SliderFloat("Falloff Speed", &falloffSpeed, 1.0F, 20.0F);
+    ImGui::SliderFloat("Falloff Speed", &falloffSpeed, 1.0F, 50.0F);
     ImGui::DragFloat("Walk Speed", &walkSpeed, dragSpeed);
     ImGui::DragFloat("Rotation Speed", &rotationSpeed, dragSpeed);
     ImGui::End();
@@ -71,6 +74,7 @@ void SpotLight::tick() {
     shader->setUniform("u_ViewMatrix", viewMatrix);
     shader->setUniform("u_ProjectionMatrix", projectionMatrix);
     shader->setUniform("u_AmbientColor", ambientColor);
+    //    shader->setUniform("u_SpecularColor", specularColor);
     shader->setUniform("u_UseAmbient", useAmbient);
     shader->setUniform("u_UseDiffuse", useDiffuse);
     shader->setUniform("u_UseSpecular", useSpecular);
@@ -81,6 +85,7 @@ void SpotLight::tick() {
     auto cameraDirection = calculateDirectionFromRotation(cameraRotation);
     cameraDirection.z *= -1.0F;
     shader->setUniform("u_LightDirection", cameraDirection);
+    shader->setUniform("u_FalloffType", falloffType);
     shader->setUniform("u_FalloffPosition", falloffPosition);
     shader->setUniform("u_FalloffSpeed", falloffSpeed);
 

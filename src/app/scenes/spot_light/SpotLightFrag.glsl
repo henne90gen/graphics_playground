@@ -13,6 +13,7 @@ uniform vec3 u_SpecularColor;
 uniform bool u_UseAmbient;
 uniform bool u_UseDiffuse;
 uniform bool u_UseSpecular;
+uniform int u_FalloffType;
 uniform float u_FalloffPosition;
 uniform float u_FalloffSpeed;
 
@@ -30,7 +31,31 @@ void main() {
     vec4 surfaceColor = vec4(1.0, 1.0, 1.0, 1.0);
     float cosTheta = dot(-1 * normalize(surfaceToLight), normalize(u_LightDirection));
     float theta = acos(cosTheta);
-    float falloff = 1 - 1 / (1 + exp(-1.0 * (u_FalloffSpeed * u_FalloffSpeed * (theta - u_FalloffPosition))));
+    float falloff;
+    if (u_FalloffType == 0) {
+        // cosine falloff
+        float piHalf = PI / 2.0F;
+        float widthHalf = piHalf * (1/u_FalloffSpeed);
+        if (theta <= u_FalloffPosition - widthHalf) {
+            falloff = 1;
+        } else if (theta >= u_FalloffPosition + widthHalf) {
+            falloff = 0;
+        } else {
+            falloff = 0.5F * (1 + cos(u_FalloffSpeed * (theta - u_FalloffPosition) + piHalf));
+        }
+    } else if (u_FalloffType == 1) {
+        // sigmoid falloff
+        falloff = 1 - 1 / (1 + exp(-1.0F * (u_FalloffSpeed * u_FalloffSpeed * (theta - u_FalloffPosition))));
+    } else if (u_FalloffType == 2) {
+        // linear falloff
+        if (theta <= -1.0F / u_FalloffSpeed + u_FalloffPosition) {
+            falloff = 1;
+        } else if (theta >= 1.0F / u_FalloffSpeed + u_FalloffPosition) {
+            falloff = 0;
+        } else {
+            falloff = 0.5F + -0.5F * u_FalloffSpeed * (theta - u_FalloffPosition);
+        }
+    }
     vec3 diffuseColor = brightness * u_LightColor * surfaceColor.rgb * falloff;
 
     vec3 reflectionDirection = reflect(surfaceToLight, v_Normal);
