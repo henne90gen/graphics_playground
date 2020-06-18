@@ -1,16 +1,16 @@
-#version 130
+#version 410
 
-attribute vec3 a_Position;
-attribute vec3 a_Normal;
+in vec3 a_Position;
+in vec3 a_Normal;
 
 uniform mat4 u_ModelMatrix;
 uniform mat3 u_NormalMatrix;
 uniform mat4 u_ViewMatrix;
 uniform mat4 u_ProjectionMatrix;
 
-varying vec3 v_Position;
-varying vec3 v_Normal;
-varying vec3 v_CameraPosition;
+out vec3 v_Position;
+out vec3 v_Normal;
+out vec3 v_CameraPosition;
 
 void main() {
     vec4 worldPosition = u_ModelMatrix * vec4(a_Position, 1);

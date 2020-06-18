@@ -1,8 +1,8 @@
-#version 130
+#version 410
 
-varying vec3 v_Position;
-varying vec3 v_Normal;
-varying vec3 v_CameraPosition;
+in vec3 v_Position;
+in vec3 v_Normal;
+in vec3 v_CameraPosition;
 
 uniform vec3 u_LightPosition;
 uniform vec3 u_LightDirection;
@@ -16,6 +16,8 @@ uniform bool u_UseSpecular;
 uniform int u_FalloffType;
 uniform float u_FalloffPosition;
 uniform float u_FalloffSpeed;
+
+out vec4 o_Color;
 
 #define PI 3.1415926535897932384626433832795
 
@@ -72,5 +74,5 @@ void main() {
     if (u_UseSpecular) {
         color += specularColor;
     }
-    gl_FragColor = vec4(color, surfaceColor.a);
+    o_Color = vec4(color, surfaceColor.a);
 }
