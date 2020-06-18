@@ -149,7 +149,7 @@ int main() {
     scenes.push_back(new SpotLight(sceneData));          // 19
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-//    mainMenu.goToScene(16);
+    //    mainMenu.goToScene(16);
 
     enableOpenGLDebugging();
 
@@ -187,7 +187,8 @@ void GLAPIENTRY MessageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, G
 }
 
 void enableOpenGLDebugging() {
-    GL_Call(glEnable(GL_DEBUG_OUTPUT));
-    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    GL_Call(glDebugMessageCallback(MessageCallback, nullptr));
+    // TODO this does not work on MacOS
+    //    GL_Call(glEnable(GL_DEBUG_OUTPUT));
+    //    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+    //    GL_Call(glDebugMessageCallback(MessageCallback, nullptr));
 }
