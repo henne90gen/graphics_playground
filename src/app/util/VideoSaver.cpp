@@ -1,6 +1,8 @@
 #include "VideoSaver.h"
 
 #include <iostream>
+#include <sstream>
+#include <cmath>
 
 #define GIF_FLIP_VERT
 #include <gif.h>
