@@ -68,15 +68,16 @@ endif ()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} glad)
-target_link_libraries(${PROJECT_NAME} imgui)
-target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${LIBPNG_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${LIBJPEG_LIBRARY})
-target_link_libraries(${PROJECT_NAME} FastNoise)
-target_link_libraries(${PROJECT_NAME} freetype)
-target_link_libraries(${PROJECT_NAME} logic)
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES}
+        glad
+        imgui
+        ${ZLIB_LIBRARY}
+        ${LIBPNG_LIBRARY}
+        ${LIBJPEG_LIBRARY}
+        FastNoise
+        freetype
+        ${FFMPEG_LIBRARY}
+        logic)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_package(OpenGL REQUIRED)
@@ -84,9 +85,6 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
 else ()
     target_link_libraries(${PROJECT_NAME} stdc++fs)
-
-    # linking FFMPEG
-    target_link_libraries(${PROJECT_NAME} x264 swscale avutil avformat avcodec)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -100,6 +98,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBJPEG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GIF_H_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
 
 set(RESOURCES
