@@ -23,6 +23,7 @@ set_target_properties(
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+elseif (APPLE)
 else ()
     target_link_libraries(logic PRIVATE stdc++fs)
 endif ()
