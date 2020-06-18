@@ -58,31 +58,31 @@ add_subdirectory(${FREETYPE_DIR})
 set(SKIP_INSTALL_EXPORT TRUE)
 set(ZLIB_DIR ${VENDOR_DIR}/zlib)
 add_subdirectory(${ZLIB_DIR})
-GET_DIRECTORY_PROPERTY(
-	ZLIB_BUILD_DIRECTORY
-	DIRECTORY
-	${ZLIB_DIR}
-	DEFINITION
-	CMAKE_CURRENT_BINARY_DIR
+get_directory_property(
+        ZLIB_BUILD_DIRECTORY
+        DIRECTORY
+        ${ZLIB_DIR}
+        DEFINITION
+        CMAKE_CURRENT_BINARY_DIR
 )
-GET_DIRECTORY_PROPERTY(
-	ZLIB_SHARED
-	DIRECTORY
-	${ZLIB_DIR}
-	DEFINITION
-	zlib
+get_directory_property(
+        ZLIB_SHARED
+        DIRECTORY
+        ${ZLIB_DIR}
+        DEFINITION
+        zlib
 )
-GET_DIRECTORY_PROPERTY(
-	ZLIB_STATIC
-	DIRECTORY
-	${ZLIB_DIR}
-	DEFINITION
-	zlibstatic
+get_directory_property(
+        ZLIB_STATIC
+        DIRECTORY
+        ${ZLIB_DIR}
+        DEFINITION
+        zlibstatic
 )
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	set(ZLIB_LIBRARY zlibstatic)
+    set(ZLIB_LIBRARY zlibstatic)
 else ()
-	set(ZLIB_LIBRARY ${ZLIB_STATIC})
+    set(ZLIB_LIBRARY ${ZLIB_STATIC})
 endif ()
 set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
 
@@ -93,25 +93,25 @@ set(PNG_BUILD_ZLIB ON CACHE INTERNAL "")
 set(PNG_TESTS OFF CACHE INTERNAL "")
 add_subdirectory(${LIBPNG_DIR})
 get_directory_property(
-	LIBPNG_BUILD_DIR
-	DIRECTORY
-	${LIBPNG_DIR}
-	DEFINITION
-	CMAKE_CURRENT_BINARY_DIR
+        LIBPNG_BUILD_DIR
+        DIRECTORY
+        ${LIBPNG_DIR}
+        DEFINITION
+        CMAKE_CURRENT_BINARY_DIR
 )
 get_directory_property(
-	LIBPNG_STATIC
-	DIRECTORY
-	${LIBPNG_DIR}
-	DEFINITION
-	PNG_LIB_NAME_STATIC
+        LIBPNG_STATIC
+        DIRECTORY
+        ${LIBPNG_DIR}
+        DEFINITION
+        PNG_LIB_NAME_STATIC
 )
 get_directory_property(
-	LIBPNG_SHARED
-	DIRECTORY
-	${LIBPNG_DIR}
-	DEFINITION
-	PNG_LIB_NAME
+        LIBPNG_SHARED
+        DIRECTORY
+        ${LIBPNG_DIR}
+        DEFINITION
+        PNG_LIB_NAME
 )
 set(LIBPNG_LIBRARY ${LIBPNG_STATIC})
 set(LIBPNG_INCLUDE_DIR ${LIBPNG_DIR} ${LIBPNG_BUILD_DIR})
@@ -120,25 +120,25 @@ set(LIBPNG_INCLUDE_DIR ${LIBPNG_DIR} ${LIBPNG_BUILD_DIR})
 set(LIBJPEG_DIR ${VENDOR_DIR}/libjpeg)
 add_subdirectory(${LIBJPEG_DIR})
 get_directory_property(
-		LIBJPEG_BUILD_DIR
-		DIRECTORY
-		${LIBJPEG_DIR}
-		DEFINITION
-		CMAKE_CURRENT_BINARY_DIR
+        LIBJPEG_BUILD_DIR
+        DIRECTORY
+        ${LIBJPEG_DIR}
+        DEFINITION
+        CMAKE_CURRENT_BINARY_DIR
 )
 get_directory_property(
-		LIBJPEG_STATIC
-		DIRECTORY
-		${LIBJPEG_DIR}
-		DEFINITION
-		JPEG_LIB_NAME_STATIC
+        LIBJPEG_STATIC
+        DIRECTORY
+        ${LIBJPEG_DIR}
+        DEFINITION
+        JPEG_LIB_NAME_STATIC
 )
 get_directory_property(
-		LIBJPEG_SHARED
-		DIRECTORY
-		${LIBJPEG_DIR}
-		DEFINITION
-		JPEG_LIB_NAME
+        LIBJPEG_SHARED
+        DIRECTORY
+        ${LIBJPEG_DIR}
+        DEFINITION
+        JPEG_LIB_NAME
 )
 set(LIBJPEG_LIBRARY ${LIBJPEG_STATIC})
 set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
@@ -149,6 +149,32 @@ set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
 # Catch
 set(CATCH_DIR ${VENDOR_DIR}/catch)
 add_subdirectory(${CATCH_DIR})
+
+# FFMPEG
+function(find_ffmpeg_libraries)
+    foreach (lib ${ARGV})
+        find_path("${lib}_INCLUDE_DIR" lib${lib}/${lib}.h)
+        string(APPEND FFMPEG_INCLUDE_DIR " ${${lib}_INCLUDE_DIR}")
+        message("Found ${lib} include dir: ${${lib}_INCLUDE_DIR}")
+
+        find_library("${lib}_LIBRARY" ${lib})
+        message("Found ${lib} library: ${${lib}_LIBRARY}")
+        add_library(${lib} SHARED IMPORTED)
+        set_target_properties(${lib} PROPERTIES IMPORTED_LOCATION "${${lib}_LIBRARY}")
+        string(APPEND FFMPEG_LIBRARY " ${lib}")
+    endforeach ()
+    string(SUBSTRING "${FFMPEG_INCLUDE_DIR}" 1 -1 FFMPEG_INCLUDE_DIR)
+    set(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} PARENT_SCOPE)
+
+    string(SUBSTRING "${FFMPEG_LIBRARY}" 1 -1 FFMPEG_LIBRARY)
+    set(FFMPEG_LIBRARY ${FFMPEG_LIBRARY} PARENT_SCOPE)
+endfunction()
+
+find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
+message(${FFMPEG_INCLUDE_DIR})
+message(${FFMPEG_LIBRARY})
+
+message(${LIBJPEG_LIBRARY})
 
 enable_testing()
 add_subdirectory(src)
