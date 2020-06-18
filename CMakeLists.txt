@@ -153,28 +153,31 @@ add_subdirectory(${CATCH_DIR})
 # FFMPEG
 function(find_ffmpeg_libraries)
     foreach (lib ${ARGV})
-        find_path("${lib}_INCLUDE_DIR" lib${lib}/${lib}.h)
-        string(APPEND FFMPEG_INCLUDE_DIR " ${${lib}_INCLUDE_DIR}")
-        message("Found ${lib} include dir: ${${lib}_INCLUDE_DIR}")
+        message("-- Looking for ${lib}")
+        find_library(${lib}_LIBRARY ${lib})
 
-        find_library("${lib}_LIBRARY" ${lib})
-        message("Found ${lib} library: ${${lib}_LIBRARY}")
+        if (NOT ${lib}_LIBRARY)
+                message("-- Loooking for ${lib} - not found")
+                continue()
+        endif ()
+
         add_library(${lib} SHARED IMPORTED)
-        set_target_properties(${lib} PROPERTIES IMPORTED_LOCATION "${${lib}_LIBRARY}")
-        string(APPEND FFMPEG_LIBRARY " ${lib}")
-    endforeach ()
-    string(SUBSTRING "${FFMPEG_INCLUDE_DIR}" 1 -1 FFMPEG_INCLUDE_DIR)
-    set(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} PARENT_SCOPE)
+        set_target_properties(${lib} PROPERTIES IMPORTED_LOCATION ${${lib}_LIBRARY})
+        list(APPEND FFMPEG_LIBRARY ${lib})
 
-    string(SUBSTRING "${FFMPEG_LIBRARY}" 1 -1 FFMPEG_LIBRARY)
+        find_path(${lib}_INCLUDE_DIR lib${lib}/${lib}.h)
+        if (${lib}_INCLUDE_DIR)
+                list(APPEND FFMPEG_INCLUDE_DIR ${${lib}_INCLUDE_DIR})
+        endif ()
+
+        message("-- Looking for ${lib} - found")
+    endforeach ()
+
+    set(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} PARENT_SCOPE)
     set(FFMPEG_LIBRARY ${FFMPEG_LIBRARY} PARENT_SCOPE)
 endfunction()
 
 find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
-message(${FFMPEG_INCLUDE_DIR})
-message(${FFMPEG_LIBRARY})
-
-message(${LIBJPEG_LIBRARY})
 
 enable_testing()
 add_subdirectory(src)
