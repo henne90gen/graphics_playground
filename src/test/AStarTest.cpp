@@ -24,9 +24,9 @@ void positionEquals(Board &board, glm::ivec2 pos, glm::vec3 expectedColor) {
     REQUIRE(actualColor.z == Approx(expectedColor.z));
 }
 
-std::function<void(glm::ivec2)> createNextVisitFunc(Board &board, AStarSolver &solver) {
-    return [&board, &solver](glm::ivec2 pos) {
-        solver.nextStep(board);
+std::function<void(glm::ivec2)> createNextVisitFunc(Board &board, AStarSolver *solver) {
+    return [&board, solver](glm::ivec2 pos) {
+        solver->nextStep(board);
         positionEquals(board, pos, visitedColor);
     };
 }
@@ -35,10 +35,10 @@ TEST_CASE("Start and Finish right next to each other") {
     Board board = initBoard(4, 4);
     setColor(board, {1, 1}, startColor);
     setColor(board, {2, 1}, finishColor);
-    auto solver = AStarSolver();
-    solver.nextStep(board);
-    solver.nextStep(board);
-    REQUIRE(solver.solved);
+    auto solver = new AStarSolver();
+    solver->nextStep(board);
+    solver->nextStep(board);
+    REQUIRE(solver->solved);
 }
 
 TEST_CASE("Start and Finish one field apart") {
@@ -46,11 +46,11 @@ TEST_CASE("Start and Finish one field apart") {
     setColor(board, {1, 1}, startColor);
     setColor(board, {3, 1}, finishColor);
 
-    auto solver = AStarSolver();
-    solver.nextStep(board);
+    auto solver = new AStarSolver();
+    solver->nextStep(board);
     createNextVisitFunc(board, solver)({2, 1});
-    solver.nextStep(board);
-    REQUIRE(solver.solved);
+    solver->nextStep(board);
+    REQUIRE(solver->solved);
 }
 
 TEST_CASE("Start and Finish two straight fields apart") {
@@ -58,13 +58,13 @@ TEST_CASE("Start and Finish two straight fields apart") {
     setColor(board, {1, 1}, startColor);
     setColor(board, {4, 1}, finishColor);
 
-    auto solver = AStarSolver();
-    solver.nextStep(board);
+    auto solver = new AStarSolver();
+    solver->nextStep(board);
     const std::function<void(glm::ivec2)> &assertNextVisit = createNextVisitFunc(board, solver);
     assertNextVisit({2, 1});
     assertNextVisit({3, 1});
-    solver.nextStep(board);
-    REQUIRE(solver.solved);
+    solver->nextStep(board);
+    REQUIRE(solver->solved);
 }
 
 TEST_CASE("Start and Finish are separated by a small wall") {
@@ -74,15 +74,15 @@ TEST_CASE("Start and Finish are separated by a small wall") {
     setColor(board, {2, 1}, obstacleColor);
     setColor(board, {4, 1}, finishColor);
 
-    auto solver = AStarSolver();
-    solver.nextStep(board);
+    auto solver = new AStarSolver();
+    solver->nextStep(board);
 
     const std::function<void(glm::ivec2)> &assertNextVisit = createNextVisitFunc(board, solver);
     assertNextVisit({2, 2});
     assertNextVisit({3, 1});
 
-    solver.nextStep(board);
-    REQUIRE(solver.solved);
+    solver->nextStep(board);
+    REQUIRE(solver->solved);
 }
 
 TEST_CASE("Start and Finish are separated by a big wall") {
@@ -94,8 +94,8 @@ TEST_CASE("Start and Finish are separated by a big wall") {
     setColor(board, {2, 3}, obstacleColor);
     setColor(board, {4, 1}, finishColor);
 
-    auto solver = AStarSolver();
-    solver.nextStep(board);
+    auto solver = new AStarSolver();
+    solver->nextStep(board);
 
     const std::function<void(glm::ivec2)> &assertNextVisit = createNextVisitFunc(board, solver);
 
@@ -110,6 +110,6 @@ TEST_CASE("Start and Finish are separated by a big wall") {
     assertNextVisit({3, 3});
     assertNextVisit({4, 2});
 
-    solver.nextStep(board);
-    REQUIRE(solver.solved);
+    solver->nextStep(board);
+    REQUIRE(solver->solved);
 }
