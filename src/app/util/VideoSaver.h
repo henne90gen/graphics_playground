@@ -28,11 +28,6 @@ extern "C" {
 #include <libavutil/samplefmt.h>
 #include <libavutil/time.h>
 
-// hwaccel
-#include "libavcodec/vdpau.h"
-#include "libavutil/hwcontext.h"
-#include "libavutil/hwcontext_vdpau.h"
-
 // lib swresample
 #include <libswscale/swscale.h>
 }
