@@ -18,7 +18,7 @@ void Shader::compile() {
     lastModTimeFragment = getLastModifiedTime(fragmentPath);
     uniformLocations.clear();
 
-    GLuint newProgramId;
+    GLuint newProgramId = 0;
     GL_Call(newProgramId = glCreateProgram());
     GLuint vertexShaderId = load(GL_VERTEX_SHADER, vertexPath);
     GLuint fragmentShaderId = load(GL_FRAGMENT_SHADER, fragmentPath);
@@ -30,8 +30,8 @@ void Shader::compile() {
 
     GL_Call(glLinkProgram(newProgramId));
 
-    int success;
-    int infoLogLength;
+    int success = 0;
+    int infoLogLength = 0;
     GL_Call(glGetProgramiv(newProgramId, GL_LINK_STATUS, &success));
     GL_Call(glGetProgramiv(newProgramId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
@@ -65,7 +65,7 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
         return 0;
     }
 
-    GLuint shaderId;
+    GLuint shaderId = 0;
     GL_Call(shaderId = glCreateShader(shaderType));
 
     // TODO(henne): process shader source into lines, so that error reporting works properly
@@ -73,8 +73,8 @@ GLuint Shader::load(GLuint shaderType, std::string &filePath) {
     GL_Call(glShaderSource(shaderId, 1, &sourcePointer, nullptr));
     GL_Call(glCompileShader(shaderId));
 
-    int success;
-    int infoLogLength;
+    int success = 0;
+    int infoLogLength = 0;
     GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
     GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
@@ -105,7 +105,7 @@ int Shader::getUniformLocation(const std::string &name) {
         return locationItr->second;
     }
 
-    int location;
+    int location = 0;
     GL_Call(location = glGetUniformLocation(id, name.c_str()));
     if (location == -1) {
         std::cout << "Warning: Could not find uniform '" << name << "'" << std::endl;
@@ -121,7 +121,7 @@ int Shader::getAttributeLocation(const std::string &name) {
         return locationItr->second;
     }
 
-    int location;
+    int location = 0;
     GL_Call(location = glGetAttribLocation(id, name.c_str()));
     if (location == -1) {
         std::cout << "Warning: Could not find attribute '" << name << "'" << std::endl;

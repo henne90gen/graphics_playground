@@ -85,7 +85,7 @@ void installCallbacks(GLFWwindow *window) {
 }
 
 int main() {
-    GLFWwindow *window;
+    GLFWwindow *window = nullptr;
 
     if (glfwInit() == 0) {
         return 1;
@@ -162,8 +162,8 @@ int main() {
         if (mainMenu.isActive()) {
             mainMenu.render();
         } else {
-            int windowWidth;
-            int windowHeight;
+            int windowWidth = 0;
+            int windowHeight = 0;
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
             scenes[currentSceneIndex]->tick(windowWidth, windowHeight);
 
@@ -187,7 +187,7 @@ void GLAPIENTRY MessageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, G
 }
 
 void enableOpenGLDebugging() {
-    // TODO this does not work on MacOS
+    // TODO(henne): this does not work on MacOS
     //    GL_Call(glEnable(GL_DEBUG_OUTPUT));
     //    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
     //    GL_Call(glDebugMessageCallback(MessageCallback, nullptr));

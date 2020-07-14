@@ -14,7 +14,7 @@ void SpotLight::setup() {
     shader->bind();
     onAspectRatioChange();
 
-    quadVA = createWalls(shader);
+    quadVA = createWalls();
 }
 
 void SpotLight::onAspectRatioChange() {
