@@ -59,7 +59,7 @@ class AStarSolver {
         return itr->second.timerCount;
     }
 
-    void drawFinalPath(Board &board);
+    void drawFinalPath(Board &board) const;
 
   private:
     glm::ivec2 goal = {-1, -1};
@@ -67,7 +67,7 @@ class AStarSolver {
 
     static glm::ivec2 findGoal(const Board &board);
     Node *findStart(const Board &board);
-    float h(const glm::ivec2 &pos1, const glm::ivec2 &pos2);
+    float h(const glm::ivec2 &pos1, const glm::ivec2 &pos2) const;
     static std::vector<Node *> getNeighbors(const Board &board, Node *pNode);
     Node *getNodeFromWorkingSet(Node *pNode);
     inline PerformanceCounter *getPerformanceCounter() { return &perfCounter; }

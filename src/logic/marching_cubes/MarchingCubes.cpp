@@ -112,7 +112,7 @@ float MarchingCubes::getSurfaceValue(const glm::vec3 &vec) {
     return result;
 }
 
-glm::vec3 MarchingCubes::interpolateVerts(glm::vec4 v1, glm::vec4 v2) {
+glm::vec3 MarchingCubes::interpolateVerts(glm::vec4 v1, glm::vec4 v2) const {
     if (!interpolate) {
         const float scaleFactor = 2.0F;
         return (v1 + v2) / scaleFactor;

@@ -2,8 +2,6 @@
 
 #include <vector>
 
-#include "math.h"
-
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader) {
     static std::vector<glm::vec3> vertices = {
           // back

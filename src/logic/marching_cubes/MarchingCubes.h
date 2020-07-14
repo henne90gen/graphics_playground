@@ -62,7 +62,7 @@ private:
 
     float getSurfaceValue(const glm::vec3 &vec);
 
-    glm::vec3 interpolateVerts(glm::vec4 v1, glm::vec4 v2);
+    glm::vec3 interpolateVerts(glm::vec4 v1, glm::vec4 v2) const;
 
     void runOneStep();
 
