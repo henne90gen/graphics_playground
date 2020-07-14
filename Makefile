@@ -17,7 +17,7 @@ clang-tidy:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt
 
 analyze-clang-tidy:
-	@. env/bin/activate; python -m scripts analyze
+	@. venv/bin/activate; python -m scripts analyze
 
 docs:
 	@doxygen
