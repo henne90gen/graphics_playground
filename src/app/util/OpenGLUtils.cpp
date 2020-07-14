@@ -50,7 +50,7 @@ MappedMousePosition mapMouseOntoCanvas(const glm::vec2& mousePos, const glm::mat
 }
 
 void checkFramebufferStatus() {
-    GLenum status;
+    GLenum status = 0;
     GL_Call(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Framebuffer is not complete: ";

@@ -141,9 +141,9 @@ int loadJpg(Image &image) {
                                                         1); /* Output row buffer */
 
     image.channels = 4;
-    char r;
-    char g;
-    char b;
+    char r = 0;
+    char g = 0;
+    char b = 0;
     while (cinfo.output_scanline < cinfo.output_height) {
         (void)jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
         for (unsigned int x = 0; x < image.width; x++) {
@@ -208,7 +208,7 @@ void writePng(Image &image) {
 
     png_init_io(png, fp);
 
-    png_byte colorType;
+    png_byte colorType = 0;
     if (image.channels == 1) {
         colorType = 0;
     } else if (image.channels == 2) {
