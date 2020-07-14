@@ -2,8 +2,8 @@
 
 #include "util/RenderUtils.h"
 
-#include <glm/gtx/rotate_vector.hpp>
 #include <array>
+#include <glm/gtx/rotate_vector.hpp>
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -119,7 +119,7 @@ void SpotLight::moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float
     if (forward != 0.0F) {
         auto rot = glm::vec3(rotation.x * -1.0F, rotation.y * -1.0F, rotation.z);
         auto cameraDirection = calculateDirectionFromRotation(rot);
-        const glm::vec3 movement = cameraDirection * (float)(forward * timeDelta * walkSpeed);
+        const glm::vec3 movement = cameraDirection * static_cast<float>(forward * timeDelta * walkSpeed);
         position += movement;
     }
 
@@ -135,9 +135,9 @@ void SpotLight::moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float
 
 void addWall(std::vector<float> &vertices, const glm::vec3 &position, const glm::vec3 &normal) {
 #define ADD_VERTEX(v)                                                                                                  \
-    vertices.push_back(v.x);                                                                                           \
-    vertices.push_back(v.y);                                                                                           \
-    vertices.push_back(v.z);                                                                                           \
+    vertices.push_back((v).x);                                                                                           \
+    vertices.push_back((v).y);                                                                                           \
+    vertices.push_back((v).z);                                                                                           \
     vertices.push_back(normal.x);                                                                                      \
     vertices.push_back(normal.y);                                                                                      \
     vertices.push_back(normal.z)
@@ -168,7 +168,7 @@ void addWall(std::vector<float> &vertices, const glm::vec3 &position, const glm:
     ADD_VERTEX(v4);
 }
 
-std::shared_ptr<VertexArray> SpotLight::createWalls(const std::shared_ptr<Shader> &shared) {
+std::shared_ptr<VertexArray> SpotLight::createWalls() {
     const auto northNormal = glm::vec3(0.0F, 0.0F, -1.0F);
     const auto southNormal = glm::vec3(0.0F, 0.0F, 1.0F);
     const auto eastNormal = glm::vec3(1.0F, 0.0F, 0.0F);

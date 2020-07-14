@@ -43,9 +43,9 @@ class MarchingCubesScene : public Scene {
 
     glm::mat4 projectionMatrix;
 
-    void drawCube();
+    void drawCube() const;
 
-    void drawSurface(bool drawWireframe);
+    void drawSurface(bool drawWireframe) const;
 
     void showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation, float &scale,
                       bool &rotate, bool &drawWireframe) const;
