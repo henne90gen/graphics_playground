@@ -1,10 +1,12 @@
-#version 130
+#version 330 core
+
+in vec3 v_FinalPosition;
 
 uniform vec3 u_Dimensions;
 
-varying vec3 v_FinalPosition;
+out vec4 color;
 
 void main() {
-    vec3 color = v_FinalPosition / u_Dimensions;
-    gl_FragColor = vec4(color, 1.0);
+    vec3 colorv3 = v_FinalPosition / u_Dimensions;
+    color = vec4(colorv3, 1.0);
 }

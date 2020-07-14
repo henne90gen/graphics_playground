@@ -1,13 +1,13 @@
-#version 130
+#version 330 core
 
-attribute vec3 a_Position;
+in vec3 a_Position;
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 uniform vec3 u_Offset;
 
-varying vec3 v_FinalPosition;
+out vec3 v_FinalPosition;
 
 void main() {
     v_FinalPosition = a_Position + u_Offset;

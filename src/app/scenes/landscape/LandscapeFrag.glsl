@@ -1,9 +1,11 @@
-#version 130
+#version 330
+
+in float vHeight;
 
 uniform float maxHeight;
 
-varying float vHeight;
+out vec4 color;
 
 void main() {
-    gl_FragColor = vec4(0.0, vHeight / maxHeight, 0.0, 1.0);
+    color = vec4(0.0, vHeight / maxHeight, 0.0, 1.0);
 }

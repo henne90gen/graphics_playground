@@ -115,6 +115,22 @@ int Shader::getUniformLocation(const std::string &name) {
     return location;
 }
 
+int Shader::getAttributeLocation(const std::string &name) {
+    auto locationItr = attributeLocations.find(name);
+    if (locationItr != attributeLocations.end()) {
+        return locationItr->second;
+    }
+
+    int location;
+    GL_Call(location = glGetAttribLocation(id, name.c_str()));
+    if (location == -1) {
+        std::cout << "Warning: Could not find attribute '" << name << "'" << std::endl;
+    }
+
+    attributeLocations[name] = location;
+    return location;
+}
+
 void Shader::bind() {
     if (hasBeenModified()) {
         compile();

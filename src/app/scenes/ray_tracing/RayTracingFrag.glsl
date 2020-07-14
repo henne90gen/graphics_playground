@@ -1,15 +1,17 @@
-#version 130
+#version 330 core
 
-varying vec2 v_UV;
+in vec2 v_UV;
 
 uniform bool u_UseTexture;
 uniform sampler2D u_TextureSampler;
 uniform vec3 u_Color;
 
+out vec4 color;
+
 void main() {
     if (u_UseTexture) {
-        gl_FragColor = texture(u_TextureSampler, v_UV);
+        color = texture(u_TextureSampler, v_UV);
     } else {
-        gl_FragColor = vec4(u_Color, 1.0);
+        color = vec4(u_Color, 1.0);
     }
 }

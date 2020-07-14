@@ -1,6 +1,6 @@
-#version 130
+#version 330 core
 
-attribute vec2 a_Position;
+in vec2 a_Position;
 
 uniform mat4 u_Model;
 uniform mat4 u_View;

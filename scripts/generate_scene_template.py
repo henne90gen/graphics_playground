@@ -32,7 +32,7 @@ public:
 """
 
 VERTEX_TEMPLATE = """\
-#version 130
+#version 330 core
 
 attribute vec3 a_Position;
 
@@ -42,7 +42,7 @@ void main() {{
 """
 
 FRAGMENT_TEMPLATE = """\
-#version 130
+#version 330 core
 
 void main() {{
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);

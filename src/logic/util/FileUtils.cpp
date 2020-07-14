@@ -20,7 +20,7 @@
 
 void getFilesInDirectory(const std::string &directoryPath, std::vector<std::string> &filePaths) {
 	if (!std::filesystem::exists(directoryPath)) {
-		std::cerr << "Director '" << directoryPath << "' does not exist" << std::endl;
+		std::cerr << "Directory '" << directoryPath << "' does not exist" << std::endl;
 		return;
 	}
 

@@ -1,15 +1,17 @@
-#version 130
+#version 330 core
 
-varying vec2 UV;
+in vec2 UV;
 
 uniform float grayValue;
 uniform bool shouldRenderTexture;
 uniform sampler2D textureSampler;
 
+out vec4 color;
+
 void main() {
     if (shouldRenderTexture) {
-        gl_FragColor = vec4(texture(textureSampler, UV).rgb, 1.0);
+        color = vec4(texture(textureSampler, UV).rgb, 1.0);
     } else {
-        gl_FragColor = vec4(grayValue, grayValue, grayValue, 1.0);
+        color = vec4(grayValue, grayValue, grayValue, 1.0);
     }
 }
