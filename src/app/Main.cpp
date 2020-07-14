@@ -60,7 +60,7 @@ void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
-        auto sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
+        auto *sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
         sceneData->recorder.takeScreenshot();
     } else {
         bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
