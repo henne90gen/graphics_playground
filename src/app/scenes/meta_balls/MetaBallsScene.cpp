@@ -41,13 +41,13 @@ void MetaBallsScene::onAspectRatioChange() {
 void MetaBallsScene::destroy() {}
 
 void showSettings(glm::vec3 &modelRotation, glm::ivec3 &dimensions, MetaBallsScene::MetaBallsFuncType &funcType,
-                  glm::vec3 &position, float &radius, bool &drawWireframe) {
+                  float &animationSpeed, float &radius, bool &drawWireframe) {
     const float dragSpeed = 0.1F;
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Rotation", (float *)&modelRotation, dragSpeed);
     ImGui::DragInt3("Dimensions", (int *)&dimensions);
-    ImGui::DragFloat3("Position", (float *)&position, dragSpeed);
     ImGui::DragFloat("Radius", &radius, dragSpeed);
+    ImGui::DragFloat("Animation Speed", &animationSpeed, dragSpeed);
 
     static const std::array<const char *, 3> items = {"EXP", "INVERSE_DIST", "TEST_SPHERE"};
     ImGui::Combo("MetaBallsScene Function", reinterpret_cast<int *>(&funcType), items.data(), items.size());
@@ -62,28 +62,52 @@ void MetaBallsScene::tick() {
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static float scale = 0.1F;                                 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool drawWireframe = false;
-    static auto dimensions = glm::ivec3(30, 40, 20);
+    static auto dimensions = glm::ivec3(40, 40, 20);
     static float radius = 6.0F;
-    static auto position = glm::vec3(10.0F, 10.0F, 10.0F);
     static auto funcType = MetaBallsScene::INVERSE_DIST;
+    static auto position1 = glm::vec3(10.0F, 10.0F, 10.0F);
+    static auto position2 = glm::vec3(10.0F, 10.0F, 10.0F);
 
-    const auto startPos = glm::vec3(10.0F);
-    const auto endPos = glm::vec3(10.0F, 30.0F, 10.0F);
-    static float t = 0.0F;
-    static float animationSpeed = 0.5F;
+    static float animationSpeed = 0.1F;
     double timeDelta = getLastFrameTime();
-    t += animationSpeed * timeDelta;
-    auto dir = endPos - startPos;
-    position = startPos + t * dir;
-    if (t < 0.0F || t > 1.0F) {
-        animationSpeed *= -1.0F;
+
+    {
+        const auto startPos = glm::vec3(10.0F);
+        const auto endPos = glm::vec3(10.0F, 30.0F, 10.0F);
+        static float t = 0.0F;
+        static float animationDir = 1.0F;
+        t += animationSpeed * animationDir * timeDelta;
+        auto dir = endPos - startPos;
+        position1 = startPos + t * dir;
+        if (t < 0.0F || t > 1.0F) {
+            animationDir *= -1.0F;
+        }
     }
 
-    showSettings(modelRotation, dimensions, funcType, position, radius, drawWireframe);
+    {
+        const auto startPos = glm::vec3(10.0F);
+        const auto endPos = glm::vec3(30.0F, 10.0F, 10.0F);
+        static float t = 0.0F;
+        static float animationDir = 1.0F;
+        t += 2.0F * animationSpeed * animationDir * timeDelta;
+        auto dir = endPos - startPos;
+        position2 = startPos + t * dir;
+        if (t < 0.0F || t > 1.0F) {
+            animationDir *= -1.0F;
+        }
+    }
+
+    showSettings(modelRotation, dimensions, funcType, animationSpeed, radius, drawWireframe);
 
     {
         RECORD_SCOPE_NAME("Update");
-        updateSurface(dimensions, funcType, position, radius);
+        const float radiusSq = radius * radius;
+        std::vector<MetaBall> metaballs = {};
+        metaballs.push_back({glm::vec3(10.0F), radiusSq});
+        metaballs.push_back({position1, radiusSq});
+        metaballs.push_back({position2, radiusSq});
+
+        updateSurface(dimensions, funcType, metaballs);
     }
 
     {
@@ -129,15 +153,10 @@ void MetaBallsScene::drawSurface(const bool drawWireframe) const {
     surfaceVertexArray->unbind();
 }
 
-void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType, const glm::vec3 &position,
-                                   const float &radius) {
+void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType,
+                                   const std::vector<MetaBall> &metaballs) {
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::ivec3> indices = {};
-
-    const float radiusSq = radius * radius;
-    std::vector<MetaBall> metaballs = {};
-    metaballs.push_back({glm::vec3(10.0F), radiusSq});
-    metaballs.push_back({position, radiusSq});
 
     implicit_surface_func func;
     if (funcType == MetaBallsScene::EXP) {
@@ -145,9 +164,14 @@ void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncTy
     } else if (funcType == MetaBallsScene::INVERSE_DIST) {
         func = inverse_dist_func(metaballs);
     } else {
-        func = [&position, &radiusSq](const glm::vec3 &pos) {
-            glm::vec3 final = pos - position;
-            return final.x * final.x + final.y * final.y + final.z * final.z - radiusSq;
+        func = [&metaballs](const glm::vec3 &pos) {
+            float total = 1000.0F;
+            for (const auto &metaball : metaballs) {
+                glm::vec3 final = pos - metaball.position;
+                final *= final;
+                total = std::min(total, final.x + final.y + final.z - metaball.radiusSq);
+            }
+            return total;
         };
     }
 

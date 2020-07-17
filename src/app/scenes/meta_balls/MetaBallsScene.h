@@ -38,7 +38,7 @@ class MetaBallsScene : public Scene {
 
     glm::mat4 projectionMatrix;
 
-    void updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType, const glm::vec3 &position,
-                       const float &radius);
+    void updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType,
+                       const std::vector<MetaBall> &metaballs);
     void drawSurface(bool drawWireframe) const;
 };
