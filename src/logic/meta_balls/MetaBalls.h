@@ -6,7 +6,7 @@
 
 struct MetaBall {
     glm::vec3 position;
-    float radius;
+    float radiusSq;
 };
 
 implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs);

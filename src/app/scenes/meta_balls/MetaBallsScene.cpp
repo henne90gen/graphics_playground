@@ -130,13 +130,14 @@ void MetaBallsScene::drawSurface(const bool drawWireframe) const {
 }
 
 void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType, const glm::vec3 &position,
-                              const float &radius) {
+                                   const float &radius) {
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::ivec3> indices = {};
 
+    const float radiusSq = radius * radius;
     std::vector<MetaBall> metaballs = {};
-    metaballs.push_back({glm::vec3(10.0F), radius});
-    metaballs.push_back({position, radius});
+    metaballs.push_back({glm::vec3(10.0F), radiusSq});
+    metaballs.push_back({position, radiusSq});
 
     implicit_surface_func func;
     if (funcType == MetaBallsScene::EXP) {
@@ -144,7 +145,6 @@ void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncTy
     } else if (funcType == MetaBallsScene::INVERSE_DIST) {
         func = inverse_dist_func(metaballs);
     } else {
-        const float radiusSq = radius * radius;
         func = [&position, &radiusSq](const glm::vec3 &pos) {
             glm::vec3 final = pos - position;
             return final.x * final.x + final.y * final.y + final.z * final.z - radiusSq;
