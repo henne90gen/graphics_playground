@@ -22,7 +22,7 @@ analyze-clang-tidy:
 docs:
 	@doxygen
 
-cmake-bench:
+cmake-release:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DCMAKE_BUILD_TYPE=Release ..
 
 run-bench-marching-cubes: build
