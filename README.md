@@ -207,6 +207,9 @@ They are defined by a metaball function that is summed up over all the metaballs
 In this case we have 3-dimensional metaballs, which means that the metaballs function takes 3 arguments (x, y, z) and produces a single output.
 The implicit surface that is defined by this function is then approximated with the Marching Cubes algorithm.
 
+![Meta Balls 1](screenshots/meta-balls-1.gif)
+![Meta Balls 2](screenshots/meta-balls-2.gif)
+
 ## Ideas
 
 -   Water Demo
