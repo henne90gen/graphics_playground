@@ -64,7 +64,7 @@ void MetaBallsScene::tick() {
     static bool drawWireframe = false;
     static auto dimensions = glm::ivec3(45, 40, 20);
     static float radius = 6.0F;
-    static auto funcType = MetaBallsScene::INVERSE_DIST;
+    static auto funcType = MetaBallsScene::TEST_SPHERE;
     static auto position1 = glm::vec3(10.0F, 10.0F, 10.0F);
     static auto position2 = glm::vec3(10.0F, 10.0F, 10.0F);
 
@@ -164,15 +164,7 @@ void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncTy
     } else if (funcType == MetaBallsScene::INVERSE_DIST) {
         func = inverse_dist_func(metaballs);
     } else {
-        func = [&metaballs](const glm::vec3 &pos) {
-            float total = 1000.0F;
-            for (const auto &metaball : metaballs) {
-                glm::vec3 final = pos - metaball.position;
-                final *= final;
-                total = std::min(total, final.x + final.y + final.z - metaball.radiusSq);
-            }
-            return total;
-        };
+        func = sphere_func(metaballs);
     }
 
     runMarchingCubes(dimensions, vertices, indices, func);
