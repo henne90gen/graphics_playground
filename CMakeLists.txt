@@ -179,5 +179,9 @@ endfunction()
 
 find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
 
+# Google Benchmark
+set(BENCHMARK_ENABLE_TESTING OFF)
+add_subdirectory(vendor/benchmark)
+
 enable_testing()
 add_subdirectory(src)

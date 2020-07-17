@@ -39,6 +39,7 @@ add_executable(${PROJECT_NAME}
         scenes/shadows_2d/Shadows2D.cpp
         scenes/bloom_effect/BloomEffect.cpp
         scenes/spot_light/SpotLight.cpp
+        scenes/meta_balls/MetaBallsScene.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -156,6 +157,8 @@ set(RESOURCES
         scenes/texture_demo/TextureDemoVert.glsl
         scenes/triangle/TriangleFrag.glsl
         scenes/triangle/TriangleVert.glsl
+        scenes/meta_balls/MetaBallsVert.glsl
+        scenes/meta_balls/MetaBallsFrag.glsl
 )
 
 add_custom_target(copy-resources

@@ -21,7 +21,10 @@ struct SceneData {
 
 class Scene {
   public:
-    Scene(SceneData data, std::string name) : name(std::move(name)), data(data){};
+    Scene(SceneData data, std::string name) : name(std::move(name)), data(data) {
+        auto now = std::chrono::high_resolution_clock::now();
+        lastTimeNs = std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count();
+    };
 
     virtual ~Scene() = default;
 

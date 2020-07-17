@@ -7,6 +7,7 @@ set(SOURCES
         rubiks_cube/RubiksCube.cpp
         rubiks_cube/RotationCommandStack.cpp
         marching_cubes/MarchingCubes.cpp
+        meta_balls/MetaBalls.cpp
         model_loading/ModelLoader.cpp
         fourier_transform/Fourier.cpp
         a_star/AStarSolver.cpp
@@ -41,3 +42,30 @@ if (CLANG_TIDY_EXE AND RUN_CLANG_TIDY)
 endif ()
 
 set(LOGIC_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+
+
+# MarchinCubes Benchmark
+add_executable(MarchingCubesBench marching_cubes/MarchingCubesBench.cpp marching_cubes/MarchingCubes.cpp)
+target_link_libraries(MarchingCubesBench PRIVATE FastNoise benchmark::benchmark)
+target_include_directories(MarchingCubesBench PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${GLM_DIR}
+        ${FAST_NOISE_DIR})
+set_target_properties(
+        MarchingCubesBench PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
+
+# MetaBalls Benchmark
+add_executable(MetaBallsBench meta_balls/MetaBallsBench.cpp meta_balls/MetaBalls.cpp)
+target_link_libraries(MetaBallsBench PRIVATE FastNoise benchmark::benchmark)
+target_include_directories(MetaBallsBench PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${GLM_DIR}
+        ${FAST_NOISE_DIR})
+set_target_properties(
+        MetaBallsBench PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)

@@ -22,4 +22,13 @@ analyze-clang-tidy:
 docs:
 	@doxygen
 
+cmake-bench:
+	@mkdir -p build; cd build; cmake -G"Ninja" -DCMAKE_BUILD_TYPE=Release ..
+
+run-bench-marchin-cubes: build
+	@cd build/src/logic; ./MarchingCubesBench --benchmark_repetitions=5
+
+run-bench-meta-balls: build
+	@cd build/src/logic; ./MetaBallsBench
+
 .PHONY: docs build

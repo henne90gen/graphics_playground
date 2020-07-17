@@ -195,10 +195,17 @@ In the next step we take the image with only the bright colors and blur it with 
 Lastly, we can combine the blurred image and our original scene again.
 This will yield a subtle bloom effect around bright lights. and also some highlights on surrounding objects.
 
-### Spot light demo
+### Spot-Light Demo
 
 - flash light
 - tunnels to explore
+
+### Metaballs
+
+Metaballs are a form of implicit surface, which look very organic.
+They are defined by a metaball function that is summed up over all the metaballs and then compared to a threshold.
+In this case we have 3-dimensional metaballs, which means that the metaballs function takes 3 arguments (x, y, z) and produces a single output.
+The implicit surface that is defined by this function is then approximated with the Marching Cubes algorithm.
 
 ## Ideas
 

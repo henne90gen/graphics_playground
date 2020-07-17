@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+#include <iostream>
+
 void Scene::renderBackMenu() {
     ImGui::Begin(name.c_str());
     ImGui::SetWindowPos(ImVec2(0, 0));

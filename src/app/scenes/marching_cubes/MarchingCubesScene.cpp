@@ -23,7 +23,8 @@ void MarchingCubesScene::setup() {
     BufferLayout bufferLayout = {
           {ShaderDataType::Float3, "a_Position"},
     };
-    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCorners, bufferLayout);
+    auto cubeCornersVec = std::vector<glm::vec3>(cubeCorners.begin(), cubeCorners.end());
+    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCornersVec, bufferLayout);
     cubeVertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
