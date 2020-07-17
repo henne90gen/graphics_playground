@@ -16,8 +16,6 @@ implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs) {
     };
 }
 
-#define USE_METABALL_RADIUS 1
-
 implicit_surface_func inverse_dist_func(const std::vector<MetaBall> &metaballs) {
     return [&metaballs](const glm::vec3 &position) {
         float total = 0.0F;
