@@ -15,7 +15,7 @@ static void BM_MarchingCubes(benchmark::State &state) {
     implicit_surface_func func = [](const glm::vec3 &position) {
         return position.x * position.x + position.y * position.y + position.z * position.z - 4;
     };
-    const glm::ivec3 dimensions = {20, 20, 20};
+    const glm::ivec3 dimensions = {state.range(0), state.range(0), state.range(0)};
     for (auto _ : state) {
         runMarchingCubes(dimensions, vertices, indices, func);
         benchmark::DoNotOptimize(vertices);
@@ -23,6 +23,6 @@ static void BM_MarchingCubes(benchmark::State &state) {
         benchmark::ClobberMemory();
     }
 }
-BENCHMARK(BM_MarchingCubes);
+BENCHMARK(BM_MarchingCubes)->DenseRange(10, 60, 10);
 
 BENCHMARK_MAIN();
