@@ -57,12 +57,12 @@ void showSettings(glm::vec3 &modelRotation, glm::ivec3 &dimensions, MetaBallsSce
 }
 
 void MetaBallsScene::tick() {
-    static auto translation = glm::vec3(1.0F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto translation = glm::vec3(0.8F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
     static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static float scale = 0.1F;                                 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool drawWireframe = false;
-    static auto dimensions = glm::ivec3(40, 40, 20);
+    static auto dimensions = glm::ivec3(45, 40, 20);
     static float radius = 6.0F;
     static auto funcType = MetaBallsScene::INVERSE_DIST;
     static auto position1 = glm::vec3(10.0F, 10.0F, 10.0F);
@@ -72,8 +72,8 @@ void MetaBallsScene::tick() {
     double timeDelta = getLastFrameTime();
 
     {
-        const auto startPos = glm::vec3(10.0F);
-        const auto endPos = glm::vec3(10.0F, 30.0F, 10.0F);
+        const auto startPos = glm::vec3(20.0F, 10.0F, 10.0F);
+        const auto endPos = glm::vec3(20.0F, 30.0F, 10.0F);
         static float t = 0.0F;
         static float animationDir = 1.0F;
         t += animationSpeed * animationDir * timeDelta;
@@ -85,8 +85,8 @@ void MetaBallsScene::tick() {
     }
 
     {
-        const auto startPos = glm::vec3(10.0F);
-        const auto endPos = glm::vec3(30.0F, 10.0F, 10.0F);
+        const auto startPos = glm::vec3(10.0F, 20.0F, 10.0F);
+        const auto endPos = glm::vec3(35.0F, 20.0F, 10.0F);
         static float t = 0.0F;
         static float animationDir = 1.0F;
         t += 2.0F * animationSpeed * animationDir * timeDelta;
@@ -103,9 +103,9 @@ void MetaBallsScene::tick() {
         RECORD_SCOPE_NAME("Update");
         const float radiusSq = radius * radius;
         std::vector<MetaBall> metaballs = {};
-        metaballs.push_back({glm::vec3(10.0F), radiusSq});
+        metaballs.push_back({glm::vec3(20.0F, 10.0F, 10.0F), radiusSq});
         metaballs.push_back({position1, radiusSq});
-        metaballs.push_back({position2, radiusSq});
+        metaballs.push_back({position2, radiusSq / 2.0F});
 
         updateSurface(dimensions, funcType, metaballs);
     }
