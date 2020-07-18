@@ -34,7 +34,7 @@ void BloomEffect::setup() {
 }
 
 void BloomEffect::onAspectRatioChange() {
-    // TODO reinitialize the color and depth buffers
+    // TODO(henne): reinitialize the color and depth buffers
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 }
 
@@ -107,7 +107,7 @@ void BloomEffect::setupHdrFramebuffer() {
     }
 
     // create and attach depth buffer (renderbuffer)
-    unsigned int rboDepth;
+    unsigned int rboDepth = 0;
     GL_Call(glGenRenderbuffers(1, &rboDepth));
     GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, rboDepth));
     GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, getWidth(), getHeight()));

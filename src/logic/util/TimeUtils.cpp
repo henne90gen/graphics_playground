@@ -1,8 +1,8 @@
 #include "TimeUtils.h"
 
-#include <utility>
 #include <cmath>
 #include <iostream>
+#include <utility>
 
 #define NANOSECONDS(timePoint)                                                                                         \
     std::chrono::time_point_cast<std::chrono::nanoseconds>(timePoint).time_since_epoch().count()

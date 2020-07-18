@@ -1,8 +1,8 @@
 #include "VideoSaver.h"
 
+#include <cmath>
 #include <iostream>
 #include <sstream>
-#include <cmath>
 
 #define GIF_FLIP_VERT
 #include <gif.h>
@@ -261,7 +261,7 @@ void Mp4VideoSaver::cleanUp() {
 }
 
 void Mp4VideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
-    int err;
+    int err = 0;
     if (videoFrame == nullptr) {
         videoFrame = av_frame_alloc();
         videoFrame->format = AV_PIX_FMT_YUV420P;
@@ -396,9 +396,9 @@ void scaleDownFrame(Frame *frame, const unsigned int newWidth, const unsigned in
             index = (xRight + yBottom * oldWidth) * frame->channels;
             unsigned int bottomRight = *reinterpret_cast<unsigned int *>(frame->buffer + index);
 
-            unsigned int top;
+            unsigned int top = 0;
             averagePixel(topLeft, topRight, &top);
-            unsigned int bottom;
+            unsigned int bottom = 0;
             averagePixel(bottomLeft, bottomRight, &bottom);
 
             unsigned int baseIndex = (x + y * frame->width) * frame->channels;

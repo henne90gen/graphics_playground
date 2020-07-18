@@ -28,3 +28,6 @@
 [submodule "vendor/gif-h"]
 	path = vendor/gif-h
 	url = git@github.com:ginsweater/gif-h.git
+[submodule "vendor/benchmark"]
+	path = vendor/benchmark
+	url = git@github.com:google/benchmark.git

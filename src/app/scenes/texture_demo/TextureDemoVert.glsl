@@ -1,9 +1,9 @@
-#version 130
+#version 330 core
 
-attribute vec2 position;
-attribute vec2 vertexUV;
+in vec2 position;
+in vec2 vertexUV;
 
-varying vec2 UV;
+out vec2 UV;
 
 void main() {
     UV = vertexUV;

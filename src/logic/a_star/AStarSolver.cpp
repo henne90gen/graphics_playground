@@ -106,7 +106,7 @@ float absoluteDistance(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
     return std::sqrt(xDiff * xDiff + yDiff * yDiff);
 }
 
-float AStarSolver::h(const glm::ivec2 &pos1, const glm::ivec2 &pos2) {
+float AStarSolver::h(const glm::ivec2 &pos1, const glm::ivec2 &pos2) const {
     if (useManhattenDistance) {
         return manhattenDistance(pos1, pos2);
     }
@@ -122,7 +122,7 @@ bool isValidNeighbor(const Board &board, glm::ivec2 &pos) {
     return color != obstacleColor && color != startColor && color != visitedColor;
 }
 
-void AStarSolver::drawFinalPath(Board &board) {
+void AStarSolver::drawFinalPath(Board &board) const {
     Node *currentNode = finalNode;
     while (currentNode->predecessor != nullptr) {
         setPixelValue(board, currentNode->position, pathColor);

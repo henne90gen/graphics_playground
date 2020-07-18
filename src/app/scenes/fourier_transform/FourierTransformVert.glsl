@@ -1,12 +1,12 @@
-#version 130
+#version 330 core
 
-attribute vec2 a_Position;
-attribute vec2 a_UV;
-
-varying vec2 v_UV;
+in vec2 a_Position;
+in vec2 a_UV;
 
 uniform bool u_RenderCanvas;
 uniform mat4 u_View;
+
+out vec2 v_UV;
 
 void main() {
     if (u_RenderCanvas) {

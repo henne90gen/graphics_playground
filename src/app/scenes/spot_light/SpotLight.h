@@ -23,7 +23,7 @@ class SpotLight : public Scene {
     std::shared_ptr<VertexArray> quadVA;
     glm::mat4 projectionMatrix;
     void moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float walkSpeed, float rotationSpeed);
-    std::shared_ptr<VertexArray> createWalls(const std::shared_ptr<Shader>& shared);
+    std::shared_ptr<VertexArray> createWalls();
 };
 
 glm::vec3 calculateDirectionFromRotation(const glm::vec3 &rotation);

@@ -17,6 +17,7 @@
 #include "scenes/legacy_triangle/LegacyTriangle.h"
 #include "scenes/light_demo/LightDemo.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
+#include "scenes/meta_balls/MetaBallsScene.h"
 #include "scenes/model_loading/ModelLoading.h"
 #include "scenes/normal_mapping/NormalMapping.h"
 #include "scenes/ray_tracing/RayTracing.h"
@@ -60,7 +61,7 @@ void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
-        auto sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
+        auto *sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
         sceneData->recorder.takeScreenshot();
     } else {
         bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
@@ -85,7 +86,7 @@ void installCallbacks(GLFWwindow *window) {
 }
 
 int main() {
-    GLFWwindow *window;
+    GLFWwindow *window = nullptr;
 
     if (glfwInit() == 0) {
         return 1;
@@ -148,8 +149,10 @@ int main() {
     scenes.push_back(new BloomEffect(sceneData));        // 18
     scenes.push_back(new SpotLight(sceneData));          // 19
 
+    scenes.push_back(new MetaBallsScene(sceneData));          // 20
+
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    //    mainMenu.goToScene(16);
+    // mainMenu.goToScene(8);
 
     enableOpenGLDebugging();
 
@@ -162,8 +165,8 @@ int main() {
         if (mainMenu.isActive()) {
             mainMenu.render();
         } else {
-            int windowWidth;
-            int windowHeight;
+            int windowWidth = 0;
+            int windowHeight = 0;
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
             scenes[currentSceneIndex]->tick(windowWidth, windowHeight);
 
@@ -187,7 +190,7 @@ void GLAPIENTRY MessageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, G
 }
 
 void enableOpenGLDebugging() {
-    // TODO this does not work on MacOS
+    // TODO(henne): this does not work on MacOS
     //    GL_Call(glEnable(GL_DEBUG_OUTPUT));
     //    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
     //    GL_Call(glDebugMessageCallback(MessageCallback, nullptr));

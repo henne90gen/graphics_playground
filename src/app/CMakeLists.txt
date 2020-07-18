@@ -38,7 +38,9 @@ add_executable(${PROJECT_NAME}
         scenes/ray_tracing/RayTracing.cpp
         scenes/shadows_2d/Shadows2D.cpp
         scenes/bloom_effect/BloomEffect.cpp
-        scenes/spot_light/SpotLight.cpp)
+        scenes/spot_light/SpotLight.cpp
+        scenes/meta_balls/MetaBallsScene.cpp
+)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_compile_options(${PROJECT_NAME} PRIVATE /std:c++17)
@@ -68,16 +70,19 @@ endif ()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES}
+target_link_libraries(${PROJECT_NAME}
+        logic
+        glfw
         glad
         imgui
+        FastNoise
+        freetype
+        ${GLFW_LIBRARIES}
         ${ZLIB_LIBRARY}
         ${LIBPNG_LIBRARY}
         ${LIBJPEG_LIBRARY}
-        FastNoise
-        freetype
         ${FFMPEG_LIBRARY}
-        logic)
+)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_package(OpenGL REQUIRED)
@@ -88,19 +93,21 @@ else ()
         target_link_libraries(${PROJECT_NAME} stdc++fs)
 endif ()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_DIR}/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${GLAD_DIR}/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${FAST_NOISE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${ZLIB_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${LIBPNG_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${LIBJPEG_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${GIF_H_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${LOGIC_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${GLFW_DIR}/include
+        ${GLAD_DIR}/include
+        ${GLM_DIR}
+        ${IMGUI_DIR}
+        ${FAST_NOISE_DIR}
+        ${ZLIB_INCLUDE_DIR}
+        ${LIBPNG_INCLUDE_DIR}
+        ${LIBJPEG_INCLUDE_DIR}
+        ${GIF_H_DIR}
+        ${FREETYPE_DIR}
+        ${FFMPEG_INCLUDE_DIR}
+        ${LOGIC_DIR}
+)
 
 set(RESOURCES
         scenes/a_star/AStarFrag.glsl
@@ -149,7 +156,10 @@ set(RESOURCES
         scenes/texture_demo/TextureDemoFrag.glsl
         scenes/texture_demo/TextureDemoVert.glsl
         scenes/triangle/TriangleFrag.glsl
-        scenes/triangle/TriangleVert.glsl)
+        scenes/triangle/TriangleVert.glsl
+        scenes/meta_balls/MetaBallsVert.glsl
+        scenes/meta_balls/MetaBallsFrag.glsl
+)
 
 add_custom_target(copy-resources
         COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_CURRENT_BINARY_DIR})

@@ -20,9 +20,9 @@ public:
                                       indexBuffer(std::move(indexBuffer)), texture(std::move(texture)),
                                       visible(visible) {}
 
-    void updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader);
+    void updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) const;
 
-    void updateTexture(ModelLoader::RawMesh &mesh);
+    void updateTexture(ModelLoader::RawMesh &mesh) const;
 
     static void createCheckerBoard(Image &image);
 

@@ -4,13 +4,13 @@
 
 Texture::Texture(unsigned int dataType) : dataType(dataType) { GL_Call(glGenTextures(1, &id)); }
 
-Texture::~Texture() = default;
+
 
 void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }
 
 void Texture::unbind() { GL_Call(glBindTexture(GL_TEXTURE_2D, 0)); }
 
-void Texture::update(const unsigned char *data, unsigned int width, unsigned int height, unsigned int unpackAlignment) {
+void Texture::update(const unsigned char *data, unsigned int width, unsigned int height, unsigned int unpackAlignment) const {
     bind();
     if (unpackAlignment != 4) {
         ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 8);
@@ -25,7 +25,7 @@ void Texture::update(const unsigned char *data, unsigned int width, unsigned int
 }
 
 void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, unsigned int height,
-                     unsigned int unpackAlignment) {
+                     unsigned int unpackAlignment) const {
     bind();
     if (unpackAlignment != 4) {
         ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 8);
@@ -42,7 +42,7 @@ void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, uns
 void Texture::update(Image &image) { update(image.pixels.data(), image.width, image.height); }
 
 void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, unsigned int height,
-                     unsigned int unpackAlignment) {
+                     unsigned int unpackAlignment) const {
     bind();
     if (unpackAlignment != 4) {
         ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 8);

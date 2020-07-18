@@ -26,7 +26,7 @@ void AStar::setup() {
 void AStar::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void AStar::tick() {
-    // TODO: don't allow diagonal moves any more
+    // TODO(henne): don't allow diagonal moves any more
     static float zoom = 1.0F;
     static glm::vec3 position = {0.0F, 0.0F, 0.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool runSolver = false;
