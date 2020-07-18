@@ -108,7 +108,7 @@ void FourierTransform::tick() {
     drawConnectedPoints(drawnPoints);
 }
 
-std::vector<glm::vec4> FourierTransform::createColors() {
+std::vector<glm::vec4> FourierTransform::createColors() const {
     auto colors = std::vector<glm::vec4>(canvasWidth * canvasHeight);
 
     const glm::vec4 borderColor = glm::vec4(0.5, 0.5, 0.5, 1);

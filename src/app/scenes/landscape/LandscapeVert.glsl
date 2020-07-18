@@ -1,13 +1,13 @@
-#version 130
+#version 330 core
 
-attribute vec2 position;
-attribute float height;
+in vec2 position;
+in float height;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
-varying float vHeight;
+out float vHeight;
 
 void main() {
     vHeight = height;

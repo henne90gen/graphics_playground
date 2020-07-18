@@ -32,7 +32,7 @@ public:
 """
 
 VERTEX_TEMPLATE = """\
-#version 130
+#version 330 core
 
 attribute vec3 a_Position;
 
@@ -42,10 +42,12 @@ void main() {{
 """
 
 FRAGMENT_TEMPLATE = """\
-#version 130
+#version 330 core
+
+out vec4 color;
 
 void main() {{
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    color = vec4(1.0, 1.0, 1.0, 1.0);
 }}\
 """
 
@@ -100,7 +102,7 @@ def add_to_cmake_lists(cpp_path: str, vertex_path: str, fragment_path: str):
                 result_lines.append(vertex_path)
                 result_lines.append(fragment_path)
 
-        if "set(SOURCES" in line:
+        if "add_executable(${PROJECT_NAME}" in line:
             inside_sources = True
 
         if "set(RESOURCES" in line:

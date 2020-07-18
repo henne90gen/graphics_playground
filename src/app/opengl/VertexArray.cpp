@@ -18,11 +18,7 @@ void VertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer> &buffer) {
 }
 
 int getLocation(const std::shared_ptr<Shader> &shader, const std::string &name) {
-    GL_Call(int location = glGetAttribLocation(shader->getId(), name.c_str()));
-    if (location == -1) {
-        std::cout << "Warning: Could not find attribute '" << name << "'" << std::endl;
-    }
-    return location;
+    return shader->getAttributeLocation(name);
 }
 
 void VertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer) {

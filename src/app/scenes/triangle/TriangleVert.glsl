@@ -1,10 +1,10 @@
-#version 130
+#version 330 core
 
-attribute vec2 position;
-attribute vec3 color;
+in vec2 position;
+in vec3 color;
 
-varying vec3 passColor;
-varying vec3 v_Position;
+out vec3 passColor;
+out vec3 v_Position;
 
 void main() {
     passColor = color;

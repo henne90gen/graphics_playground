@@ -44,5 +44,5 @@ private:
     void
     updateCoefficients(const std::vector<glm::vec2> &mousePositions, bool useMousePositions, int &fourierResolution);
 
-    std::vector<glm::vec4, std::allocator<glm::vec4>> createColors();
+    std::vector<glm::vec4, std::allocator<glm::vec4>> createColors() const;
 };

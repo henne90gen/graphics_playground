@@ -28,6 +28,7 @@ private:
     long lastModTimeVertex;
     long lastModTimeFragment;
     std::unordered_map<std::string, int> uniformLocations;
+    std::unordered_map<std::string, int> attributeLocations;
 
 public:
     Shader(std::string vertexPath, std::string fragmentPath);
@@ -67,6 +68,8 @@ public:
     void setUniform(const std::string &name, glm::mat3 m) {
         GL_Call(glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, (float *) &m));
     }
+
+    int getAttributeLocation(const std::string &name);
 
 private:
     void compile();

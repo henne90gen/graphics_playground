@@ -18,13 +18,13 @@ public:
 
     ~VertexBuffer();
 
-    void update(const void *data, unsigned int sizeInBytes);
+    void update(const void *data, unsigned int sizeInBytes) const;
 
-    void update(const std::vector<float> &data);
+    void update(const std::vector<float> &data) const;
 
-    void update(const std::vector<glm::vec3> &data);
+    void update(const std::vector<glm::vec3> &data) const;
 
-    void update(const std::vector<glm::vec2> &data);
+    void update(const std::vector<glm::vec2> &data) const;
 
     void setLayout(const BufferLayout &l) { this->layout = l; };
 

@@ -6,7 +6,6 @@
 #include <glad/glad.h>
 #include <memory>
 
-#include "marching_cubes/MarchingCubes.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
@@ -14,39 +13,32 @@
 #include "opengl/VertexBuffer.h"
 #include "util/TimeUtils.h"
 
-class MarchingCubesScene : public Scene {
-  public:
-    explicit MarchingCubesScene(SceneData data) : Scene(data, "MarchingCubes"){};
+#include "meta_balls/MetaBalls.h"
 
-    ~MarchingCubesScene() override = default;
+class MetaBallsScene : public Scene {
+  public:
+    enum MetaBallsFuncType { EXP = 0, INVERSE_DIST = 1, TEST_SPHERE = 2 };
+
+    explicit MetaBallsScene(SceneData &data) : Scene(data, "MetaBalls"){};
+    ~MetaBallsScene() override = default;
 
     void setup() override;
-
     void tick() override;
-
     void destroy() override;
 
   protected:
     void onAspectRatioChange() override;
 
-  public:
+  private:
     std::shared_ptr<Shader> shader;
-
-    std::shared_ptr<VertexArray> cubeVertexArray;
-    std::shared_ptr<IndexBuffer> cubeIndexBuffer;
 
     std::shared_ptr<VertexArray> surfaceVertexArray;
     std::shared_ptr<VertexBuffer> surfaceVertexBuffer;
     std::shared_ptr<IndexBuffer> surfaceIndexBuffer;
 
-    std::shared_ptr<MarchingCubes> marchingCubes;
-
     glm::mat4 projectionMatrix;
 
-    void drawCube() const;
-
+    void updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType,
+                       const std::vector<MetaBall> &metaballs);
     void drawSurface(bool drawWireframe) const;
-
-    void showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation, float &scale,
-                      bool &rotate, bool &drawWireframe) const;
 };

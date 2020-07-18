@@ -1,13 +1,13 @@
-#version 130
+#version 330 core
 
-attribute vec3 a_Position;
-attribute vec2 a_UV;
+in vec3 a_Position;
+in vec2 a_UV;
 
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_ViewMatrix;
 uniform mat4 u_ProjectionMatrix;
 
-varying vec2 v_UV;
+out vec2 v_UV;
 
 void main() {
     v_UV = a_UV;

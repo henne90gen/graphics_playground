@@ -1,14 +1,14 @@
-#version 130
+#version 330 core
 
 struct Light {
     vec3 position;
     vec3 color;
 };
 
-varying vec3 v_Position;
-varying vec3 v_Normal;
-varying vec2 v_UV;
-varying vec3 v_CameraPosition;
+in vec3 v_Position;
+in vec3 v_Normal;
+in vec2 v_UV;
+in vec3 v_CameraPosition;
 
 uniform sampler2D u_TextureSampler;
 uniform vec3 u_AmbientColor;
@@ -17,6 +17,8 @@ uniform Light u_Light;
 uniform bool u_UseAmbient;
 uniform bool u_UseDiffuse;
 uniform bool u_UseSpecular;
+
+out vec4 color;
 
 void main() {
     vec3 surfaceToLight = u_Light.position - v_Position;
@@ -34,15 +36,15 @@ void main() {
 
     vec3 specularColor = u_SpecularColor * u_Light.color * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
 
-    vec3 color = vec3(0.0);
+    vec3 colorv3 = vec3(0.0);
     if (u_UseAmbient) {
-        color += u_AmbientColor;
+        colorv3 += u_AmbientColor;
     }
     if (u_UseDiffuse) {
-        color += diffuseColor;
+        colorv3 += diffuseColor;
     }
     if (u_UseSpecular) {
-        color += specularColor;
+        colorv3 += specularColor;
     }
-    gl_FragColor = vec4(color, surfaceColor.a);
+    color = vec4(colorv3, surfaceColor.a);
 }

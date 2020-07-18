@@ -23,7 +23,8 @@ void MarchingCubesScene::setup() {
     BufferLayout bufferLayout = {
           {ShaderDataType::Float3, "a_Position"},
     };
-    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCorners, bufferLayout);
+    auto cubeCornersVec = std::vector<glm::vec3>(cubeCorners.begin(), cubeCorners.end());
+    auto positionBuffer = std::make_shared<VertexBuffer>(cubeCornersVec, bufferLayout);
     cubeVertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<unsigned int> indices = {
@@ -159,14 +160,14 @@ void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraR
     ImGui::End();
 }
 
-void MarchingCubesScene::drawCube() {
+void MarchingCubesScene::drawCube() const {
     shader->setUniform("u_Offset", marchingCubes->getCubeTranslation());
     cubeVertexArray->bind();
     GL_Call(glDrawElements(GL_LINE_LOOP, cubeIndexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
     cubeVertexArray->unbind();
 }
 
-void MarchingCubesScene::drawSurface(bool drawWireframe) {
+void MarchingCubesScene::drawSurface(bool drawWireframe) const {
     surfaceVertexArray->bind();
 
     surfaceVertexBuffer->update(marchingCubes->getVertices());

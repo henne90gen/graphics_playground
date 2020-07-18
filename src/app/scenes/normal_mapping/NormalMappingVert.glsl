@@ -1,20 +1,20 @@
-#version 130
+#version 330 core
 
-attribute vec3 a_Position;
-attribute vec2 a_UV;
-attribute vec3 a_Normal;
-attribute vec3 a_Tangent;
-attribute vec3 a_BiTangent;
+in vec3 a_Position;
+in vec2 a_UV;
+in vec3 a_Normal;
+in vec3 a_Tangent;
+in vec3 a_BiTangent;
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 
-varying vec3 v_Position;
-varying vec2 v_UV;
-varying vec3 v_Normal;
-varying mat3 v_TBN;
-varying vec3 v_CameraPosition;
+out vec3 v_Position;
+out vec2 v_UV;
+out vec3 v_Normal;
+out mat3 v_TBN;
+out vec3 v_CameraPosition;
 
 void main() {
     vec3 T = normalize(vec3(u_Model * vec4(a_Tangent, 0.0)));

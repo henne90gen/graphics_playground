@@ -1,7 +1,7 @@
 #include "FramebufferDemo.h"
 
-#include "util/RenderUtils.h"
 #include "util/OpenGLUtils.h"
+#include "util/RenderUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -135,7 +135,7 @@ void FramebufferDemo::initFramebuffer() {
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mirrorTextureId, 0));
 
     // Create a renderbuffer for the depth and stencil attachment of the fbo
-    unsigned int rbo;
+    unsigned int rbo = 0;
     GL_Call(glGenRenderbuffers(1, &rbo));
     GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, rbo));
     GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));

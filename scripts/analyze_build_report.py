@@ -77,7 +77,7 @@ def warning_type_count(warnings):
 
 
 def show_counter(counter):
-    for elem, count in sorted(counter.items(), key=lambda k: k[1], reverse=True):
+    for elem, count in sorted(counter.items(), key=lambda k: k[1], reverse=False):
         print(count, elem)
 
 

@@ -5,83 +5,87 @@
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader) {
     static std::vector<glm::vec3> vertices = {
           // back
-          {-0.5F, -0.5F, -0.5F},
-          {0, 0, -1.0}, // 0
-          {-0.5F, 0.5F, -0.5F},
-          {0, 0, -1.0}, // 1
-          {0.5F, 0.5F, -0.5F},
-          {0, 0, -1.0}, // 2
-          {0.5F, -0.5F, -0.5F},
-          {0, 0, -1.0}, // 3
+          // 0
+          {-0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0, 0, -1.0},
+          // 1
+          {-0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0, 0, -1.0},
+          // 2
+          {0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0, 0, -1.0},
+          // 3
+          {0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0, 0, -1.0},
 
           // front
           // 4
-          {-0.5F, -0.5F, 0.5F},
+          {-0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 0, 1.0},
           // 5
-          {0.5F, -0.5F, 0.5F},
+          {0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 0, 1.0},
           // 6
-          {0.5F, 0.5F, 0.5F},
+          {0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 0, 1.0},
           // 7
-          {-0.5F, 0.5F, 0.5F},
+          {-0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 0, 1.0},
 
           // left
           // 8
-          {-0.5F, -0.5F, -0.5F},
+          {-0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {1.0, 0, 0},
           // 9
-          {-0.5F, -0.5F, 0.5F},
+          {-0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {1.0, 0, 0},
           // 10
-          {-0.5F, 0.5F, 0.5F},
+          {-0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {1.0, 0, 0},
           // 11
-          {-0.5F, 0.5F, -0.5F},
+          {-0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {1.0, 0, 0},
 
           // right
           // 12
-          {0.5F, -0.5F, 0.5F},
+          {0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {-1.0, 0, 0},
           // 13
-          {0.5F, -0.5F, -0.5F},
+          {0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {-1.0, 0, 0},
           // 14
-          {0.5F, 0.5F, -0.5F},
+          {0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {-1.0, 0, 0},
           // 15
-          {0.5F, 0.5F, 0.5F},
+          {0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {-1.0, 0, 0},
 
           // top
           // 16
-          {-0.5F, 0.5F, 0.5F},
+          {-0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 1.0, 0},
           // 17
-          {0.5F, 0.5F, 0.5F},
+          {0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 1.0, 0},
           // 18
-          {0.5F, 0.5F, -0.5F},
+          {0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 1.0, 0},
           // 19
-          {-0.5F, 0.5F, -0.5F},
+          {-0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, 1.0, 0},
 
           // bottom
           // 20
-          {-0.5F, -0.5F, 0.5F},
+          {-0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, -1.0, 0},
           // 21
-          {-0.5F, -0.5F, -0.5F},
+          {-0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, -1.0, 0},
           // 22
-          {0.5F, -0.5F, -0.5F},
+          {0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, -1.0, 0},
           // 23
-          {0.5F, -0.5F, 0.5F},
+          {0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {0, -1.0, 0},
     };
     static std::vector<glm::ivec3> indices = {
@@ -130,30 +134,24 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
 
     float sectorStep = glm::two_pi<float>() / static_cast<float>(sectorCount);
     float stackStep = glm::pi<float>() / static_cast<float>(stackCount);
-    float sectorAngle;
-    float stackAngle;
-    float x;
-    float y;
-    float z;
-    float xy;
 
     for (int i = 0; i <= stackCount; i++) {
-        stackAngle = glm::half_pi<float>() - static_cast<float>(i) * stackStep; // starting from pi/2 to -pi/2
-        xy = glm::cos(stackAngle);
-        z = glm::sin(stackAngle);
+        float stackAngle = glm::half_pi<float>() - static_cast<float>(i) * stackStep; // starting from pi/2 to -pi/2
+        float xy = glm::cos(stackAngle);
+        float z = glm::sin(stackAngle);
 
         // add (sectorCount+1) vertices per stack
         // the first and last vertices have same position and normal, but different tex coords
         for (int j = 0; j <= sectorCount; j++) {
-            sectorAngle = static_cast<float>(j) * sectorStep;
-            x = xy * glm::cos(sectorAngle);
-            y = xy * glm::sin(sectorAngle);
+            float sectorAngle = static_cast<float>(j) * sectorStep;
+            float x = xy * glm::cos(sectorAngle);
+            float y = xy * glm::sin(sectorAngle);
             vertices.emplace_back(x, y, z);
         }
     }
 
-    int k1;
-    int k2;
+    int k1 = 0;
+    int k2 = 0;
     for (int i = 0; i < stackCount; ++i) {
         k1 = i * (sectorCount + 1); // beginning of current stack
         k2 = k1 + sectorCount + 1;  // beginning of next stack

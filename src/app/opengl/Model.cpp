@@ -38,7 +38,7 @@ void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shad
     }
 }
 
-void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) {
+void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) const {
     bool hasNormals = !mesh.normals.empty();
     shader->setUniform("u_HasNormals", hasNormals);
     bool hasTexture = !mesh.textureCoordinates.empty();
@@ -78,7 +78,7 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
     vertexArray->addVertexBuffer(vertexBuffer);
 }
 
-void OpenGLMesh::updateTexture(ModelLoader::RawMesh &mesh) {
+void OpenGLMesh::updateTexture(ModelLoader::RawMesh &mesh) const {
     Image image = {};
     if (!mesh.material || !ImageOps::load(mesh.material->diffuseTextureMap, image)) {
         createCheckerBoard(image);
