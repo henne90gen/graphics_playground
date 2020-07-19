@@ -31,4 +31,10 @@ run-bench-marching-cubes: build
 run-bench-meta-balls: build
 	@cd build/src/logic; ./MetaBallsBench
 
+cpu-performance:
+	sudo cpupower frequency-set --governor performance
+
+cpu-powersave:
+	sudo cpupower frequency-set --governor powersave
+
 .PHONY: docs build

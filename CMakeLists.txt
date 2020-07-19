@@ -183,5 +183,7 @@ find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
 set(BENCHMARK_ENABLE_TESTING OFF)
 add_subdirectory(vendor/benchmark)
 
+find_package(OpenMP)
+
 enable_testing()
 add_subdirectory(src)

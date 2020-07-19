@@ -1,6 +1,7 @@
 #include "MetaBalls.h"
 
 #include <iostream>
+#include <math.h>
 
 implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs) {
     return [&metaballs](const glm::vec3 &position) {
@@ -11,7 +12,7 @@ implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs) {
             float distSq = dir.x + dir.y + dir.z;
             float exponent = (-1.0F * distSq) / metaball.radiusSq;
             float h = glm::exp(exponent);
-            total += h;
+            total +=  h;
         }
         float invE = 1 / glm::e<float>();
         return invE - total;
