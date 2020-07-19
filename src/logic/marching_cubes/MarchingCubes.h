@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 
 #include <FastNoise.h>
 #include <glm/ext.hpp>

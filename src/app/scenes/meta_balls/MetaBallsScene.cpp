@@ -46,8 +46,8 @@ void showSettings(glm::vec3 &modelRotation, glm::ivec3 &dimensions, MetaBallsSce
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Rotation", (float *)&modelRotation, dragSpeed);
     ImGui::DragInt3("Dimensions", (int *)&dimensions);
-    ImGui::DragFloat("Radius", &radius, dragSpeed);
     ImGui::DragFloat("Animation Speed", &animationSpeed, dragSpeed);
+    ImGui::DragFloat("Radius", &radius, dragSpeed);
 
     static const std::array<const char *, 3> items = {"EXP", "INVERSE_DIST", "TEST_SPHERE"};
     ImGui::Combo("MetaBallsScene Function", reinterpret_cast<int *>(&funcType), items.data(), items.size());
@@ -64,9 +64,11 @@ void MetaBallsScene::tick() {
     static bool drawWireframe = false;
     static auto dimensions = glm::ivec3(45, 40, 20);
     static float radius = 6.0F;
-    static auto funcType = MetaBallsScene::TEST_SPHERE;
+    static auto funcType = MetaBallsScene::EXP;
     static auto position1 = glm::vec3(10.0F, 10.0F, 10.0F);
     static auto position2 = glm::vec3(10.0F, 10.0F, 10.0F);
+
+    // TODO add unmodified speres for metaballs
 
     static float animationSpeed = 0.1F;
     double timeDelta = getLastFrameTime();

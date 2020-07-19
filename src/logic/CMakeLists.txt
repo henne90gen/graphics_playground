@@ -15,7 +15,7 @@ set(SOURCES
         ray_tracing/RayTracer.cpp)
 
 add_library(logic ${SOURCES})
-target_link_libraries(logic PRIVATE FastNoise pthread)
+target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
 
 set_target_properties(
         logic PROPERTIES
@@ -46,7 +46,7 @@ set(LOGIC_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 
 # MarchinCubes Benchmark
 add_executable(MarchingCubesBench marching_cubes/MarchingCubesBench.cpp marching_cubes/MarchingCubes.cpp)
-target_link_libraries(MarchingCubesBench PRIVATE FastNoise benchmark::benchmark)
+target_link_libraries(MarchingCubesBench PRIVATE FastNoise benchmark::benchmark OpenMP::OpenMP_CXX)
 target_include_directories(MarchingCubesBench PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${GLM_DIR}
