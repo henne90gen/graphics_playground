@@ -115,7 +115,8 @@ inline glm::vec3 getVertexOnEdge(const glm::vec3 &v1, const float &w1, const glm
     return v1 + t * (v2 - v1);
 }
 
-#if 0
+#define MARCHING_CUBES_SEQUENTIAL 0
+#if MARCHING_CUBES_SEQUENTIAL
 // --------------------------------------------------------------
 // Benchmark                    Time             CPU   Iterations
 // --------------------------------------------------------------
@@ -212,8 +213,6 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
 
         auto tmpVertices = std::vector<glm::vec3>();
         tmpVertices.reserve(dimensions.x * dimensions.y * maxTrianglesPerCube * 3);
-        auto tmpIndices = std::vector<glm::ivec3>();
-        tmpIndices.reserve(dimensions.x * dimensions.y * maxTrianglesPerCube);
 
         for (cubePosition.y = 0; cubePosition.y < dimensions.y; cubePosition.y++) {
             for (cubePosition.x = 0; cubePosition.x < dimensions.x; cubePosition.x++) {
