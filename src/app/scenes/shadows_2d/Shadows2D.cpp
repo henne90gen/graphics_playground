@@ -15,7 +15,7 @@ void Shadows2D::setup() {
     shader->bind();
     onAspectRatioChange();
 
-    createWalls(10, 10);
+    createWalls(glm::ivec2(10, 10));
 
     createLightSourceVA();
     createWallVA();
@@ -31,16 +31,9 @@ void Shadows2D::onAspectRatioChange() {
     projectionMatrix = glm::ortho(-getAspectRatio(), getAspectRatio(), -1.0F, 1.0F);
 }
 
-void Shadows2D::tick() {
+void showSettings(DrawToggles &drawToggles, ColorConfig &colorConfig, glm::vec3 &cameraPosition, float &zoom,
+                  glm::vec2 &lightPosition, glm::ivec2 &wallCount, bool &runAsync) {
     const float dragSpeed = 0.001F;
-    static DrawToggles drawToggles = {};
-    static ColorConfig colorConfig = {};
-    static glm::vec2 lightPosition = glm::vec2();
-    static glm::vec3 cameraPosition = glm::vec3();
-    static unsigned int xWallCount = 5;
-    static unsigned int yWallCount = 5;
-    static float zoom = 2.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static bool runAsync = true;
 
     ImGui::Begin("Settings");
 
@@ -72,17 +65,27 @@ void Shadows2D::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat2("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
 
-    int tmp[2] = {static_cast<int>(xWallCount), static_cast<int>(yWallCount)};
-    ImGui::SliderInt2("Walls", tmp, 0, 10);
-    if (xWallCount != static_cast<unsigned int>(tmp[0]) || yWallCount != static_cast<unsigned int>(tmp[1])) {
-        xWallCount = tmp[0];
-        yWallCount = tmp[1];
-        createWalls(xWallCount, yWallCount);
-    }
+    ImGui::SliderInt2("Walls", reinterpret_cast<int *>(&wallCount), 0, 10);
 
     ImGui::Checkbox("Run async", &runAsync);
 
     ImGui::End();
+}
+
+void Shadows2D::tick() {
+    static DrawToggles drawToggles = {};
+    static ColorConfig colorConfig = {};
+    static glm::vec2 lightPosition = glm::vec2();
+    static glm::vec3 cameraPosition = glm::vec3();
+    static glm::ivec2 wallCount = {5, 5};
+    static float zoom = 2.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static bool runAsync = true;
+
+    glm::ivec2 prevWallCount = wallCount;
+    showSettings(drawToggles, colorConfig, cameraPosition, zoom, lightPosition, wallCount, runAsync);
+    if (prevWallCount != wallCount) {
+        createWalls(wallCount);
+    }
 
     std::vector<RayTracer2D::Ray> rays = {};
     auto screenBorder = createScreenBorder(1.0F / zoom);
@@ -249,14 +252,14 @@ void Shadows2D::createWallVA() {
     wallsVA->setIndexBuffer(indexBuffer);
 }
 
-void Shadows2D::createWalls(const unsigned int xWallCount, const unsigned int yWallCount) {
+void Shadows2D::createWalls(const glm::ivec2 &wallCount) {
     walls = {};
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     glm::vec2 offset = {-0.375F, -0.25F};
     const float wallScale = 0.02F;
     const float positionScale = 0.1F;
-    for (unsigned int y = 0; y < yWallCount; y++) {
-        for (unsigned int x = 0; x < xWallCount; x++) {
+    for (int y = 0; y < wallCount.y; y++) {
+        for (int x = 0; x < wallCount.x; x++) {
             glm::vec2 position =
                   glm::vec2(static_cast<float>(x) * positionScale, static_cast<float>(y) * positionScale);
             position += offset;

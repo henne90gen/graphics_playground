@@ -125,22 +125,11 @@ std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon 
     calculateRaysForPolygon(screenBorder, rays, lineSegments, lightPosition);
 
     if (runAsync) {
-        TIME_SCOPE_NAME("intersectionsAsync");
-        std::vector<std::future<void>> results = {};
-        // FIXME what do we do, if we have an odd number of rays?
-        int numCores = 8;
-        unsigned long numRaysPerCore = rays.size() / numCores;
-        for (unsigned int i = 0; i < numCores; i++) {
-            unsigned long startIndex = numRaysPerCore * i;
-            unsigned long endIndex = numRaysPerCore * (i + 1);
-            results.push_back(std::async(std::launch::async, findIntersections, std::ref(lineSegments), std::ref(rays),
-                                         startIndex, endIndex));
-        }
-        for (auto &result : results) {
-            result.get();
+#pragma omp parallel for
+        for (unsigned int i = 0; i < rays.size(); i++) {
+            findIntersections(lineSegments, rays, i, i + 1);
         }
     } else {
-        TIME_SCOPE_NAME("intersections");
         findIntersections(lineSegments, rays, 0, rays.size());
     }
     return rays;
