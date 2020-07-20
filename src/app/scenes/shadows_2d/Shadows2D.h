@@ -48,8 +48,8 @@ class Shadows2D : public Scene {
     std::shared_ptr<VertexArray> lightSourceVA;
     std::shared_ptr<VertexArray> wallsVA;
     std::shared_ptr<VertexArray> raysVA;
-    std::vector<std::shared_ptr<VertexArray>> intersectionVAs = {};
-    std::vector<std::shared_ptr<VertexArray>> closestIntersectionVAs = {};
+    std::shared_ptr<VertexArray> intersectionVA;
+    std::shared_ptr<VertexArray> closestIntersectionVA;
     std::shared_ptr<VertexArray> shadowPolygonVA;
     std::vector<RayTracer2D::Polygon> walls;
     std::vector<glm::vec2> circleVertices = {{0.0, 0.0}};
@@ -66,13 +66,16 @@ class Shadows2D : public Scene {
     void createShadowPolygonVA(std::vector<glm::vec2> &vertices, const glm::mat4 &viewMatrix,
                                const glm::vec2 &lightPosition, unsigned int &numVertices, unsigned int &numIndices);
 
-    std::shared_ptr<VertexArray> createIntersectionVA(const glm::vec2 &intersection);
+    void addIntersection(const glm::vec2 &intersection, std::vector<glm::vec2> &vertices,
+                         std::vector<unsigned int> &indices, unsigned int &startingIndex);
+    std::shared_ptr<VertexArray> createVertexArray(const std::vector<glm::vec2> &vertices,
+                                                   const std::vector<unsigned int> &indices);
 
     void createWalls(const glm::ivec2 &wallCount);
     RayTracer2D::Polygon createScreenBorder(float scale);
 
     void renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
-                     const ColorConfig &colorConfig) const;
+                     const ColorConfig &colorConfig);
 
     static unsigned long getNumIntersections(const std::vector<RayTracer2D::Ray> &rays);
 

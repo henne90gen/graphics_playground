@@ -10,6 +10,8 @@ const int inverseStencilMask = 0x00;
 
 void Shadows2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
+    GL_Call(glEnable(GL_PRIMITIVE_RESTART));
+    GL_Call(glPrimitiveRestartIndex(~0));
 
     shader = std::make_shared<Shader>("scenes/shadows_2d/Shadows2DVert.glsl", "scenes/shadows_2d/Shadows2DFrag.glsl");
     shader->bind();
@@ -77,7 +79,7 @@ void Shadows2D::tick() {
     static ColorConfig colorConfig = {};
     static glm::vec2 lightPosition = glm::vec2();
     static glm::vec3 cameraPosition = glm::vec3();
-    static glm::ivec2 wallCount = {5, 5};
+    static glm::ivec2 wallCount = {10, 10};
     static float zoom = 2.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool runAsync = true;
 
@@ -121,7 +123,7 @@ void Shadows2D::tick() {
 }
 
 void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &viewMatrix, const glm::vec2 &lightPosition,
-                            const ColorConfig &colorConfig) const {
+                            const ColorConfig &colorConfig) {
     auto lightMatrix = glm::identity<glm::mat4>();
     lightMatrix = glm::translate(lightMatrix, glm::vec3(lightPosition.x, lightPosition.y, 0.0F));
 
@@ -156,20 +158,16 @@ void Shadows2D::renderScene(const DrawToggles &drawToggles, const glm::mat4 &vie
 
     if (drawToggles.drawIntersections) {
         shader->setUniform("u_Color", colorConfig.intersections);
-        for (auto &intersectionVA : intersectionVAs) {
-            intersectionVA->bind();
-            GL_Call(glDrawElements(GL_TRIANGLE_FAN, intersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
-                                   nullptr));
-        }
+        intersectionVA->bind();
+        GL_Call(
+              glDrawElements(GL_TRIANGLE_FAN, intersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
 
     if (drawToggles.drawClosestIntersections) {
         shader->setUniform("u_Color", colorConfig.closestIntersections);
-        for (auto &intersectionVA : closestIntersectionVAs) {
-            intersectionVA->bind();
-            GL_Call(glDrawElements(GL_TRIANGLE_FAN, intersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
-                                   nullptr));
-        }
+        closestIntersectionVA->bind();
+        GL_Call(glDrawElements(GL_TRIANGLE_FAN, closestIntersectionVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
+                               nullptr));
     }
 
     if (drawToggles.drawWireframe) {
@@ -302,23 +300,25 @@ RayTracer2D::Polygon Shadows2D::createScreenBorder(float scale) {
 
 void Shadows2D::createRaysAndIntersectionsVA(const std::vector<RayTracer2D::Ray> &rays, const DrawToggles &drawToggles,
                                              std::vector<glm::vec2> &shadowPolygon) {
-    intersectionVAs = {};
-    closestIntersectionVAs = {};
-    raysVA = std::make_shared<VertexArray>(shader);
-
-    std::vector<glm::vec2> vertices = {};
-    std::vector<unsigned int> indices = {};
+    std::vector<glm::vec2> rayVertices = {};
+    std::vector<unsigned int> rayIndices = {};
+    std::vector<glm::vec2> intersectionVertices = {};
+    std::vector<unsigned int> intersectionIndices = {};
+    std::vector<glm::vec2> closestIntersectionVertices = {};
+    std::vector<unsigned int> closestIntersectionIndices = {};
     unsigned int currentIndex = 0;
+    unsigned int intersectionIndex = 0;
+    unsigned int closestIntersectionIndex = 0;
     {
         RECORD_SCOPE_NAME("Core Loop");
         for (auto &ray : rays) {
             RECORD_SCOPE_NAME("Core Loop Local");
             if (drawToggles.drawRays) {
-                vertices.push_back(ray.startingPoint);
+                rayVertices.push_back(ray.startingPoint);
                 const float scaleFactor = 10.0F;
-                vertices.push_back(ray.startingPoint + ray.direction * scaleFactor);
-                indices.push_back(currentIndex);
-                indices.push_back(currentIndex + 1);
+                rayVertices.push_back(ray.startingPoint + ray.direction * scaleFactor);
+                rayIndices.push_back(currentIndex);
+                rayIndices.push_back(currentIndex + 1);
                 currentIndex += 2;
             }
 
@@ -326,41 +326,45 @@ void Shadows2D::createRaysAndIntersectionsVA(const std::vector<RayTracer2D::Ray>
                 if (drawToggles.drawClosestIntersections && intersection == ray.closestIntersection) {
                     continue;
                 }
-                auto va = createIntersectionVA(intersection);
-                intersectionVAs.push_back(va);
+                addIntersection(intersection, intersectionVertices, intersectionIndices, intersectionIndex);
             }
 
             if (!ray.intersections.empty()) {
-                auto va = createIntersectionVA(ray.closestIntersection);
-                closestIntersectionVAs.push_back(va);
+                addIntersection(ray.closestIntersection, closestIntersectionVertices, closestIntersectionIndices,
+                                closestIntersectionIndex);
                 shadowPolygon.push_back(ray.closestIntersection);
             }
         }
     }
 
-    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
-    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
-    raysVA->addVertexBuffer(vertexBuffer);
-
-    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(indices);
-    raysVA->setIndexBuffer(indexBuffer);
+    raysVA = createVertexArray(rayVertices, rayIndices);
+    intersectionVA = createVertexArray(intersectionVertices, intersectionIndices);
+    closestIntersectionVA = createVertexArray(closestIntersectionVertices, closestIntersectionIndices);
 }
 
-std::shared_ptr<VertexArray> Shadows2D::createIntersectionVA(const glm::vec2 &intersection) {
-    std::vector<glm::vec2> vertices = {};
-    vertices.reserve(circleVertices.size());
-    for (auto &vertex : circleVertices) {
+void Shadows2D::addIntersection(const glm::vec2 &intersection, std::vector<glm::vec2> &vertices,
+                                std::vector<unsigned int> &indices, unsigned int &startingIndex) {
+    for (const auto &vertex : circleVertices) {
         vertices.push_back(vertex + intersection);
     }
 
-    std::shared_ptr<VertexArray> intersectionVA = std::make_shared<VertexArray>(shader);
+    for (const auto &index : circleIndices) {
+        indices.push_back(index + startingIndex);
+    }
+    startingIndex += circleVertices.size();
+    indices.push_back(~0);
+}
+
+std::shared_ptr<VertexArray> Shadows2D::createVertexArray(const std::vector<glm::vec2> &vertices,
+                                                          const std::vector<unsigned int> &indices) {
+    std::shared_ptr<VertexArray> va = std::make_shared<VertexArray>(shader);
     BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
-    intersectionVA->addVertexBuffer(vertexBuffer);
+    va->addVertexBuffer(vertexBuffer);
 
-    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(circleIndices);
-    intersectionVA->setIndexBuffer(indexBuffer);
-    return intersectionVA;
+    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(indices);
+    va->setIndexBuffer(indexBuffer);
+    return va;
 }
 
 unsigned long Shadows2D::getNumIntersections(const std::vector<RayTracer2D::Ray> &rays) {
