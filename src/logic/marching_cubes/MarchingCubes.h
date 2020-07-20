@@ -22,7 +22,7 @@ class MarchingCubes {
 
     std::vector<glm::vec3> &getVertices() { return vertices; }
 
-    std::vector<unsigned int> &getIndices() { return indices; }
+    std::vector<glm::ivec3> &getIndices() { return indices; }
 
     bool animate = false;
     int animationSpeed = 15;
@@ -40,7 +40,7 @@ class MarchingCubes {
     bool isRunning = false;
     FastNoise noise = FastNoise();
     std::vector<glm::vec3> vertices;
-    std::vector<unsigned int> indices;
+    std::vector<glm::ivec3> indices;
 
     float getSurfaceValue(const glm::vec3 &vec);
 
