@@ -15,7 +15,7 @@ class VertexArray {
     void addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer);
 
     void bind() const;
-    static void unbind() ;
+    static void unbind();
 
     void setShader(std::shared_ptr<Shader> s);
 
