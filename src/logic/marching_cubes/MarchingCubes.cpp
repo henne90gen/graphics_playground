@@ -10,7 +10,7 @@ void MarchingCubes::reset() {
     isRunning = false;
     cubePosition = glm::vec3(0.0F);
     vertices = std::vector<glm::vec3>();
-    indices = std::vector<unsigned int>();
+    indices = std::vector<glm::ivec3>();
 }
 
 void MarchingCubes::step() {
@@ -49,7 +49,7 @@ void MarchingCubes::runOneStep() {
     unsigned int cubeIndex = 0;
     std::array<float, cornerCount> surfaceValues = {};
     for (unsigned long i = 0; i < surfaceValues.size(); i++) {
-        surfaceValues[i] = getSurfaceValue(cubeCorners[i]);
+        surfaceValues[i] = getSurfaceValue(cubeCorners[i] + cubePosition);
         cubeIndex |= (surfaceValues[i] < surfaceLevel) * (1 << i);
     }
 
@@ -76,15 +76,13 @@ void MarchingCubes::runOneStep() {
         vertices.push_back(v1 + cubePosition);
         vertices.push_back(v2 + cubePosition);
 
-        indices.push_back(indices.size());
-        indices.push_back(indices.size());
-        indices.push_back(indices.size());
+        unsigned int index = indices.size() * 3;
+        indices.emplace_back(index, index + 1, index + 2);
     }
 }
 
 float MarchingCubes::getSurfaceValue(const glm::vec3 &vec) {
-    auto translated = vec + cubePosition;
-    float result = noise.GetNoise(translated.x, translated.y, translated.z);
+    float result = noise.GetNoise(vec.x, vec.y, vec.z);
     const float offset = 1.0F;
     const float scaleFactor = 2.0F;
     result += offset;
@@ -104,9 +102,19 @@ glm::vec3 MarchingCubes::interpolateVerts(glm::vec4 v1, glm::vec4 v2) const {
 
 void MarchingCubes::runComplete() {
     reset();
-    isRunning = true;
-    while (isRunning) {
-        runOneStep();
+    if (!interpolate) {
+        isRunning = true;
+        while (isRunning) {
+            runOneStep();
+        }
+    } else {
+        const float threshold = surfaceLevel * 2.0F - 1.0F;
+        const glm::ivec3 dimensions = {width, height, depth};
+        implicit_surface_func func = [this, &threshold](const glm::vec3 &translated) {
+            float result = noise.GetNoise(translated.x, translated.y, translated.z);
+            return result - threshold;
+        };
+        runMarchingCubes(dimensions, vertices, indices, func);
     }
 }
 
@@ -234,14 +242,14 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
                 for (unsigned int i = 0; triangulation[cubeIndex][i] != -1; i += 3) {
                     // Get indices of corner points A and B for each of the three edges
                     // of the cube that need to be joined to form the triangle.
-                    int a0 = cornerIndexAFromEdge[triangulation[cubeIndex][i]];
-                    int b0 = cornerIndexBFromEdge[triangulation[cubeIndex][i]];
+                    auto a0 = cornerIndexAFromEdge[triangulation[cubeIndex][i]];
+                    auto b0 = cornerIndexBFromEdge[triangulation[cubeIndex][i]];
 
-                    int a1 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 1]];
-                    int b1 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 1]];
+                    auto a1 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 1]];
+                    auto b1 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 1]];
 
-                    int a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 2]];
-                    int b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 2]];
+                    auto a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 2]];
+                    auto b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 2]];
 
                     const glm::vec3 v0 =
                           getVertexOnEdge(cubeCorners[a0], surfaceValues[a0], cubeCorners[b0], surfaceValues[b0]);

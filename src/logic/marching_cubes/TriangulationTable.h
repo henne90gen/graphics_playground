@@ -16,11 +16,11 @@ const std::array<glm::vec3, 8> cubeCorners = {
         glm::vec3(0.0F, 1.0F, 1.0F)  // 7
 };
 
-static const std::array<int, 12> cornerIndexAFromEdge = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
+static const std::array<int8_t, 12> cornerIndexAFromEdge = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
 
-static const std::array<int, 12> cornerIndexBFromEdge = {1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7};
+static const std::array<int8_t, 12> cornerIndexBFromEdge = {1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7};
 
-static const std::array<std::array<int, 16>, 256> triangulation = {
+static const std::array<std::array<int8_t, 16>, 256> triangulation = {
       {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
        {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
        {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
