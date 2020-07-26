@@ -202,7 +202,7 @@ std::optional<HitResult> hitCheck(const Ray &ray, const glm::vec3 &cameraPositio
     return result;
 }
 
-bool isTransparentOrReflective(const Object &object) { return object.transparency > 0.0F || object.reflection > 0.0F; }
+bool isTransparentOrReflective(const Object &object) { return object.reflection > 0.0F; }
 
 auto trace(const Ray &ray, const Light &light, const glm::vec3 &cameraPosition, const std::vector<Object> &objects,
            unsigned int depth, const unsigned int maxRayDepth) -> glm::vec3 {
@@ -237,43 +237,25 @@ void traceMultiple(const std::vector<Ray> &rays, const std::vector<Object> &obje
     }
 }
 
-void rayTraceAsync(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
-                   const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
-                   const unsigned int height, const unsigned int maxRayDepth, std::vector<Ray> &rays) {
-    rays.resize(pixels.size());
-    for (unsigned int row = 0; row < height; row++) {
-        for (unsigned int col = 0; col < width; col++) {
-            Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
-            rays[row * width + col] = ray;
-        }
-    }
-
-    std::vector<std::future<void>> results = {};
-    // FIXME what do we do, if we have an odd number of rays?
-    int numCores = 8;
-    unsigned long numRaysPerCore = rays.size() / numCores;
-    for (unsigned long i = 0; i < numCores; i++) {
-        unsigned long startIndex = numRaysPerCore * i;
-        unsigned long endIndex = numRaysPerCore * (i + 1);
-        results.push_back(std::async(std::launch::async, traceMultiple, std::ref(rays), std::ref(objects),
-                                     std::ref(light), cameraPosition, std::ref(pixels), maxRayDepth, startIndex,
-                                     endIndex));
-    }
-
-    for (auto &result : results) {
-        result.get();
-    }
-}
-
 void rayTrace(const std::vector<Object> &objects, const Light &light, const glm::vec3 &cameraPosition,
               const float zDistance, std::vector<glm::vec3> &pixels, const unsigned int width,
               const unsigned int height, const unsigned int maxRayDepth, std::vector<Ray> &rays, bool runAsync) {
     pixels.resize(width * height);
-//    unsigned long size = pixels.size();
-//    rays.resize(size);
 
     if (runAsync) {
-        rayTraceAsync(objects, light, cameraPosition, zDistance, pixels, width, height, maxRayDepth, rays);
+        rays.resize(pixels.size());
+        for (unsigned int row = 0; row < height; row++) {
+            for (unsigned int col = 0; col < width; col++) {
+                Ray ray = createRay(row, col, cameraPosition, zDistance, width, height);
+                rays[row * width + col] = ray;
+            }
+        }
+
+#pragma omp parallel for
+        for (unsigned int i = 0; i < rays.size(); i++) {
+            pixels[i] = trace(rays[i], light, cameraPosition, objects, 0, maxRayDepth);
+        }
+
     } else {
         for (unsigned int row = 0; row < height; row++) {
             for (unsigned int col = 0; col < width; col++) {
@@ -285,13 +267,11 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
     }
 }
 
-Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float radius, const float transparency,
-              const float reflection) {
+Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float radius, const float reflection) {
     Object result = {};
     result.type = Object::Sphere;
     result.position = position;
     result.color = color;
-    result.transparency = transparency;
     result.reflection = reflection;
     result.data = {radius};
     return result;
