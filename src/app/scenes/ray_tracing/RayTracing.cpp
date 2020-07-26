@@ -29,7 +29,7 @@ void RayTracing::setup() {
     objects.push_back(RayTracer::plane({0, 0, -5}, {1, 1, 0}, {0, 0, 1}));
     objects.push_back(RayTracer::plane({0, 2, 0}, {1, 0, 1}, {0, -1, 0}));
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5, 0.0, 1.0));
+    objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5, 1.0));
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::sphere({1, 0, -1.5}, {0, 1, 0}, 0.25));
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
@@ -86,7 +86,7 @@ void RayTracing::tick() {
     const double lightRadius = 0.1;
     objects[0] = RayTracer::sphere(light.position, {1, 1, 1}, lightRadius);
     const int glassSphereIndex = 4;
-    objects[glassSphereIndex] = RayTracer::sphere(glassSpherePosition, {1, 0, 0}, 0.5, 0.0, 1.0);
+    objects[glassSphereIndex] = RayTracer::sphere(glassSpherePosition, {1, 0, 0}, 0.5, 1.0);
 
     std::vector<glm::vec3> pixels = {};
     unsigned int width = dimensions[0];
