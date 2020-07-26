@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <omp.h>
+#include <thread>
 #include <util/ScreenRecorder.h>
 #include <vector>
 
@@ -36,7 +38,27 @@ const unsigned int INITIAL_WINDOW_HEIGHT = 900;
 
 InputData input = {};
 
-void enableOpenGLDebugging();
+void setOmpThreadLimit() {
+    auto coreCount = std::thread::hardware_concurrency();
+    if (coreCount == 0) {
+        coreCount = 2;
+    }
+    // setting to one less than the core count, to leave one core empty for the graphics thread
+    omp_set_num_threads(coreCount - 1);
+}
+
+void GLAPIENTRY messageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/,
+                                const GLchar *message, const void * /*userParam*/) {
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
+}
+
+void enableOpenGLDebugging() {
+    // TODO(henne): this does not work on MacOS
+    //    GL_Call(glEnable(GL_DEBUG_OUTPUT));
+    //    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+    //    GL_Call(glDebugMessageCallback(messageCallback, nullptr));
+}
 
 void mouseButtonCallback(GLFWwindow * /*window*/, int button, int action, int /*mods*/) {
     // std::cout << "Mouse " << button << std::endl;
@@ -86,6 +108,8 @@ void installCallbacks(GLFWwindow *window) {
 }
 
 int main() {
+    setOmpThreadLimit();
+
     GLFWwindow *window = nullptr;
 
     if (glfwInit() == 0) {
@@ -151,7 +175,7 @@ int main() {
     scenes.push_back(new MetaBallsScene(sceneData));     // 20
 
     // mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(16);
+    mainMenu.goToScene(15);
 
     enableOpenGLDebugging();
 
@@ -180,17 +204,4 @@ int main() {
 
     glfwTerminate();
     return 0;
-}
-
-void GLAPIENTRY MessageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/,
-                                const GLchar *message, const void * /*userParam*/) {
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
-}
-
-void enableOpenGLDebugging() {
-    // TODO(henne): this does not work on MacOS
-    //    GL_Call(glEnable(GL_DEBUG_OUTPUT));
-    //    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    //    GL_Call(glDebugMessageCallback(MessageCallback, nullptr));
 }
