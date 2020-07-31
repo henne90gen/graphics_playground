@@ -74,13 +74,6 @@ void TerrainErosion::tick() {
         noise3->SetSeed(seed);
         updateHeightBuffer();
     }
-    if (ImGui::Button("Choose new starting position")) {
-        unsigned int i = std::rand() % (WIDTH * HEIGHT);
-        auto x = static_cast<float>(i % WIDTH);
-        auto y = heightMap[i];
-        auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
-        startingPosition = glm::vec3(x, y, z);
-    }
 
     ImGui::Text("Point count: %d", WIDTH * HEIGHT);
     ImGui::End();
@@ -106,6 +99,16 @@ void TerrainErosion::tick() {
     renderTerrain(wireframe);
 
     std::vector<glm::vec3> path = {};
+
+    static unsigned int counter = 0;
+    counter++;
+    if (counter % 10 == 0) {
+        unsigned int i = std::rand() % (WIDTH * HEIGHT);
+        auto x = static_cast<float>(i % WIDTH);
+        auto y = heightMap[i];
+        auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
+        startingPosition = glm::vec3(x, y, z);
+    }
 
     simulateRainDrop(path, startingPosition);
 
@@ -233,32 +236,71 @@ void TerrainErosion::renderPath(const std::vector<glm::vec3> &path) {
     pathShader->unbind();
 }
 
+bool isInBound(unsigned int row, unsigned int column) { return row < HEIGHT && column < WIDTH; }
+
 void TerrainErosion::simulateRainDrop(std::vector<glm::vec3> &path, const glm::vec3 &start) {
+#define COMPARE_AND_UPDATE(row, column)                                                                                \
+    if (isInBound(row, column)) {                                                                                      \
+        glm::vec3 vec = glm::vec3(column, heightMap[row * WIDTH + column], row);                                       \
+        float gradient = current.y - vec.y;                                                                            \
+        if (gradient > 0.0F && gradient < smallestGradient) {                                                          \
+            smallestGradient = gradient;                                                                               \
+            smallestGradientVec = vec;                                                                                 \
+        }                                                                                                              \
+    }
+
     path.push_back(start);
 
     glm::vec3 current = start;
-    for (unsigned int i = 0; i < 100; i++) {
+    while (true) {
         float smallestGradient = std::numeric_limits<float>::max();
         glm::vec3 smallestGradientVec = {};
 
+        // left
         unsigned int row = current.z;
         unsigned int column = current.x - 1.0F;
-        glm::vec3 left = glm::vec3(column, heightMap[row * WIDTH + column], row);
+        COMPARE_AND_UPDATE(row, column)
 
+        // right
         row = current.z;
         column = current.x + 1.0F;
-        glm::vec3 right = glm::vec3(column, heightMap[row * WIDTH + column], row);
+        COMPARE_AND_UPDATE(row, column)
 
+        // top
         row = current.z - 1.0F;
         column = current.x;
-        glm::vec3 top = glm::vec3(column, heightMap[row * WIDTH + column], row);
+        COMPARE_AND_UPDATE(row, column)
 
+        // bottom
+        row = current.z + 1.0F;
+        column = current.x;
+        COMPARE_AND_UPDATE(row, column)
+
+        // top-left
+        row = current.z - 1.0F;
+        column = current.x - 1.0F;
+        COMPARE_AND_UPDATE(row, column)
+
+        // top-right
+        row = current.z - 1.0F;
+        column = current.x + 1.0F;
+        COMPARE_AND_UPDATE(row, column)
+
+        // bottom-left
         row = current.z + 1.0F;
         column = current.x - 1.0F;
-        glm::vec3 bottom = glm::vec3(column, heightMap[row * WIDTH + column], row);
+        COMPARE_AND_UPDATE(row, column)
 
-        path.push_back(smallesGradientVec);
+        // bottom-right
+        row = current.z + 1.0F;
+        column = current.x + 1.0F;
+        COMPARE_AND_UPDATE(row, column)
 
-        current = left;
+        if (smallestGradient == std::numeric_limits<float>::max()) {
+            break;
+        }
+
+        path.push_back(smallestGradientVec);
+        current = smallestGradientVec;
     }
 }
