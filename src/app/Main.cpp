@@ -22,6 +22,7 @@
 #include "scenes/meta_balls/MetaBallsScene.h"
 #include "scenes/model_loading/ModelLoading.h"
 #include "scenes/normal_mapping/NormalMapping.h"
+#include "scenes/terrain_erosion/TerrainErosion.h"
 #include "scenes/ray_tracing/RayTracing.h"
 #include "scenes/rubiks_cube/RubiksCubeScene.h"
 #include "scenes/shadows_2d/Shadows2D.h"
@@ -173,9 +174,10 @@ int main() {
     scenes.push_back(new BloomEffect(sceneData));        // 18
     scenes.push_back(new SpotLight(sceneData));          // 19
     scenes.push_back(new MetaBallsScene(sceneData));     // 20
+    scenes.push_back(new TerrainErosion(sceneData));     // 21
 
-    // mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(15);
+    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    // mainMenu.goToScene(20);
 
     enableOpenGLDebugging();
 

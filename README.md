@@ -214,6 +214,7 @@ The implicit surface that is defined by this function is then approximated with 
 
 -   Water Demo
 -   Graph Visualization
+-   Hydraulic Erosion (simulate rain to generate more realistic terrain)
 
 ## Additional Features
 

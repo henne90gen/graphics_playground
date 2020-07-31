@@ -7,12 +7,12 @@
 
 #include <FastNoise.h>
 
-#include "opengl/VertexArray.h"
 #include "opengl/IndexBuffer.h"
+#include "opengl/VertexArray.h"
 
 class Landscape : public Scene {
-public:
-    explicit Landscape(SceneData data) : Scene(data, "Landscape") {};
+  public:
+    explicit Landscape(SceneData data) : Scene(data, "Landscape"){};
 
     ~Landscape() override = default;
 
@@ -22,7 +22,7 @@ public:
 
     void destroy() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
 
     std::shared_ptr<VertexArray> vertexArray;

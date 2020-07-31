@@ -40,6 +40,7 @@ add_executable(${PROJECT_NAME}
         scenes/bloom_effect/BloomEffect.cpp
         scenes/spot_light/SpotLight.cpp
         scenes/meta_balls/MetaBallsScene.cpp
+        scenes/terrain_erosion/TerrainErosion.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -159,6 +160,10 @@ set(RESOURCES
         scenes/triangle/TriangleVert.glsl
         scenes/meta_balls/MetaBallsVert.glsl
         scenes/meta_balls/MetaBallsFrag.glsl
+        scenes/terrain_erosion/TerrainErosionVert.glsl
+        scenes/terrain_erosion/TerrainErosionFrag.glsl
+        scenes/terrain_erosion/PathVert.glsl
+        scenes/terrain_erosion/PathFrag.glsl
 )
 
 add_custom_target(copy-resources
