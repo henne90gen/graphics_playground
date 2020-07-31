@@ -18,8 +18,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
 void Landscape::setup() {
-    shader = std::make_shared<Shader>("scenes/landscape/LandscapeVert.glsl",
-                                      "scenes/landscape/LandscapeFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/landscape/LandscapeVert.glsl", "scenes/landscape/LandscapeFrag.glsl");
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);
@@ -45,18 +44,14 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     }
 
     const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    BufferLayout positionLayout = {
-            {ShaderDataType::Float2, "position"}
-    };
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     const unsigned int heightMapCount = width * height;
     heightMap = std::vector<float>(heightMapCount);
     heightBuffer = std::make_shared<VertexBuffer>();
-    BufferLayout heightLayout = {
-            {ShaderDataType::Float, "height"}
-    };
+    BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
     heightBuffer->setLayout(heightLayout);
     vertexArray->addVertexBuffer(heightBuffer);
 
@@ -77,9 +72,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
 }
 
-void Landscape::destroy() {
-    delete noise;
-}
+void Landscape::destroy() { delete noise; }
 
 void Landscape::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
