@@ -6,7 +6,6 @@
 #include "marching_cubes/MarchingCubes.h"
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
-#include "util/VectorUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
