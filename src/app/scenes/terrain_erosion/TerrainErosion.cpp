@@ -18,6 +18,9 @@ const float Z_FAR = 1000.0F;
 void TerrainErosion::setup() {
     std::srand(std::time(nullptr));
 
+    GL_Call(glEnable(GL_PRIMITIVE_RESTART));
+    GL_Call(glPrimitiveRestartIndex(~0));
+
     pathShader =
           std::make_shared<Shader>("scenes/terrain_erosion/PathVert.glsl", "scenes/terrain_erosion/PathFrag.glsl");
 
@@ -25,7 +28,7 @@ void TerrainErosion::setup() {
                                       "scenes/terrain_erosion/TerrainErosionFrag.glsl");
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>(shader);
+    terrainVA = std::make_shared<VertexArray>(shader);
     generatePoints();
 
     noise1 = new FastNoise();
@@ -56,7 +59,7 @@ void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(0.65F, 0.0F, 0.0F);
     static bool wireframe = false;
-    static glm::vec3 startingPosition = {100.0F, 0.0F, 0.0F};
+    static std::vector<glm::vec3> startingPositions = {};
 
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
@@ -98,43 +101,52 @@ void TerrainErosion::tick() {
 
     renderTerrain(wireframe);
 
-    std::vector<glm::vec3> path = {};
-
     static unsigned int counter = 0;
     counter++;
     if (counter % 10 == 0) {
-        unsigned int i = std::rand() % (WIDTH * HEIGHT);
-        auto x = static_cast<float>(i % WIDTH);
-        auto y = heightMap[i];
-        auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
-        startingPosition = glm::vec3(x, y, z);
+        startingPositions.clear();
+        int startingPositionCount = 100;
+        startingPositions.reserve(startingPositionCount);
+        for (unsigned int j = 0; j < startingPositionCount; j++) {
+            unsigned int i = std::rand() % (WIDTH * HEIGHT);
+            auto x = static_cast<float>(i % WIDTH);
+            auto y = heightMap[i];
+            auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
+            startingPositions.emplace_back(x, y, z);
+        }
     }
 
-    simulateRainDrop(path, startingPosition);
+    auto paths = std::vector<Path>();
+    paths.reserve(startingPositions.size());
+    for (const auto &startingPosition : startingPositions) {
+        std::vector<glm::vec3> path = {};
+        simulateRainDrop(path, startingPosition);
+        paths.push_back({path});
+    }
 
-    renderPath(path);
+    renderPaths(paths);
 }
 
 void TerrainErosion::renderTerrain(const bool wireframe) {
     shader->bind();
-    vertexArray->bind();
+    terrainVA->bind();
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glDrawElements(GL_TRIANGLES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 
-    vertexArray->unbind();
+    terrainVA->unbind();
     shader->unbind();
 }
 
 void TerrainErosion::generatePoints() {
-    vertexArray->bind();
+    terrainVA->bind();
 
     const unsigned int verticesCount = WIDTH * HEIGHT;
     std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
@@ -146,13 +158,13 @@ void TerrainErosion::generatePoints() {
 
     BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
-    vertexArray->addVertexBuffer(positionBuffer);
+    terrainVA->addVertexBuffer(positionBuffer);
 
     heightMap = std::vector<float>(verticesCount);
     heightBuffer = std::make_shared<VertexBuffer>();
     BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
     heightBuffer->setLayout(heightLayout);
-    vertexArray->addVertexBuffer(heightBuffer);
+    terrainVA->addVertexBuffer(heightBuffer);
 
     const unsigned int indicesPerQuad = 6;
     unsigned int indicesCount = WIDTH * HEIGHT * indicesPerQuad;
@@ -169,7 +181,7 @@ void TerrainErosion::generatePoints() {
         }
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
-    vertexArray->setIndexBuffer(indexBuffer);
+    terrainVA->setIndexBuffer(indexBuffer);
 }
 
 float generateHeight(const FastNoise *noise, const float x, const float y, const float z) {
@@ -210,22 +222,35 @@ void TerrainErosion::updateHeightBuffer() {
     shader->setUniform("maxHeight", maxHeight);
 }
 
-void TerrainErosion::renderPath(const std::vector<glm::vec3> &path) {
+void TerrainErosion::renderPaths(const std::vector<Path> &paths) {
     pathShader->bind();
 
     auto va = std::make_shared<VertexArray>(pathShader);
-    auto vertices = std::vector<glm::vec3>(path.size());
-    for (unsigned int i = 0; i < path.size(); i++) {
-        vertices[i] = path[i] + glm::vec3(0.0F, 0.1F, 0.0F);
+    unsigned int verticesCount = 0;
+    for (const auto &path : paths) {
+        verticesCount += path.vertices.size();
+    }
+    auto vertices = std::vector<glm::vec3>();
+    vertices.reserve(verticesCount);
+    for (const auto &path : paths) {
+        for (const auto &vertex : path.vertices) {
+            vertices.push_back(vertex + glm::vec3(0.0F, 0.1F, 0.0F));
+        }
     }
 
     BufferLayout layout = {{ShaderDataType::Float3, "position"}};
     auto vb = std::make_shared<VertexBuffer>(vertices, layout);
     va->addVertexBuffer(vb);
 
-    auto indices = std::vector<unsigned int>(path.size());
-    for (unsigned int i = 0; i < path.size(); i++) {
-        indices[i] = i;
+    auto indices = std::vector<unsigned int>();
+    indices.reserve(verticesCount + paths.size());
+    unsigned int currentIndex = 0;
+    for (const auto &path : paths) {
+        for (const auto &vertex : path.vertices) {
+            indices.push_back(currentIndex);
+            currentIndex++;
+        }
+        indices.push_back(~0);
     }
     auto ib = std::make_shared<IndexBuffer>(indices);
     va->setIndexBuffer(ib);

@@ -10,6 +10,10 @@
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
 
+struct Path {
+    std::vector<glm::vec3> vertices = {};
+};
+
 class TerrainErosion : public Scene {
   public:
     explicit TerrainErosion(SceneData &data) : Scene(data, "TerrainErosion"){};
@@ -23,7 +27,7 @@ class TerrainErosion : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Shader> pathShader;
 
-    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<VertexArray> terrainVA;
     std::vector<float> heightMap = std::vector<float>();
 
     std::shared_ptr<VertexBuffer> heightBuffer;
@@ -33,7 +37,7 @@ class TerrainErosion : public Scene {
     FastNoise *noise3;
 
     void renderTerrain(bool wireframe);
-    void renderPath(const std::vector<glm::vec3> &path);
+    void renderPaths(const std::vector<Path> &paths);
 
     void generatePoints();
 
