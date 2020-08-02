@@ -8,8 +8,8 @@
 
 #include "util/ImGuiUtils.h"
 
-const unsigned int WIDTH = 15 * 15;
-const unsigned int HEIGHT = 15 * 15;
+const unsigned int WIDTH = 300;
+const unsigned int HEIGHT = 300;
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -51,7 +51,7 @@ void TerrainErosion::destroy() {}
 
 void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto modelScale = glm::vec3(0.5F, 2.0F, 0.5F);
+    static auto modelScale = glm::vec3(0.4F, 2.0F, 0.4F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraPosition = glm::vec3(-50.0F, -100.0F, -160.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
