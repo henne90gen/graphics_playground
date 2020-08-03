@@ -10,8 +10,12 @@
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
 
-struct Path {
-    std::vector<glm::vec3> vertices = {};
+struct Raindrop {
+    glm::vec3 startingPosition = {};
+    float acceleration = 0.0F;
+    float velocity = 0.0F;
+    float sediment = 0.0F;
+    std::vector<glm::vec3> path = {};
 };
 
 class TerrainErosion : public Scene {
@@ -37,10 +41,13 @@ class TerrainErosion : public Scene {
     FastNoise *noise3;
 
     void renderTerrain(bool wireframe);
-    void renderPaths(const std::vector<Path> &paths);
+    void renderPaths(const std::vector<Raindrop> &paths);
 
     void generatePoints();
 
     void updateHeightBuffer();
-    void simulateRainDrop(std::vector<glm::vec3> &path, const glm::vec3 &start);
+    void simulateRaindrop(Raindrop &path);
+    void regenerateTerrain();
+    void regenerateRaindrops(std::vector<Raindrop> &paths) const;
+    void adjustRaindropsToTerrain(std::vector<Raindrop> &raindrops);
 };
