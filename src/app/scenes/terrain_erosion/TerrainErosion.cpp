@@ -59,7 +59,12 @@ void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(0.65F, 0.0F, 0.0F);
     static bool wireframe = false;
-    static std::vector<glm::vec3> startingPositions = {};
+    static auto raindrops = std::vector<Raindrop>();
+    static bool pathsInitialized = false;
+    if (!pathsInitialized) {
+        pathsInitialized = true;
+        regenerateRaindrops(raindrops);
+    }
 
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
@@ -70,14 +75,12 @@ void TerrainErosion::tick() {
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
     ImGui::Checkbox("Wireframe", &wireframe);
     if (ImGui::Button("Regenerate Terrain")) {
-        auto now = std::chrono::high_resolution_clock::now();
-        int seed = std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count();
-        noise1->SetSeed(seed);
-        noise2->SetSeed(seed);
-        noise3->SetSeed(seed);
-        updateHeightBuffer();
+        regenerateTerrain();
+        adjustRaindropsToTerrain(raindrops);
     }
-
+    if (ImGui::Button("Regenerate Raindrop Starting Positions")) {
+        regenerateRaindrops(raindrops);
+    }
     ImGui::Text("Point count: %d", WIDTH * HEIGHT);
     ImGui::End();
 
@@ -101,30 +104,41 @@ void TerrainErosion::tick() {
 
     renderTerrain(wireframe);
 
-    static unsigned int counter = 0;
-    counter++;
-    if (counter % 10 == 0) {
-        startingPositions.clear();
-        int startingPositionCount = 100;
-        startingPositions.reserve(startingPositionCount);
-        for (unsigned int j = 0; j < startingPositionCount; j++) {
-            unsigned int i = std::rand() % (WIDTH * HEIGHT);
-            auto x = static_cast<float>(i % WIDTH);
-            auto y = heightMap[i];
-            auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
-            startingPositions.emplace_back(x, y, z);
-        }
+    for (auto &raindrop : raindrops) {
+        simulateRaindrop(raindrop);
     }
+    renderPaths(raindrops);
+}
 
-    auto paths = std::vector<Path>();
-    paths.reserve(startingPositions.size());
-    for (const auto &startingPosition : startingPositions) {
-        std::vector<glm::vec3> path = {};
-        simulateRainDrop(path, startingPosition);
-        paths.push_back({path});
+void TerrainErosion::regenerateRaindrops(std::vector<Raindrop> &paths) const {
+    unsigned int pathCount = 100;
+    paths.clear();
+    paths.reserve(pathCount);
+    for (unsigned int j = 0; j < pathCount; j++) {
+        unsigned int i = rand() % (WIDTH * HEIGHT);
+        auto x = static_cast<float>(i % WIDTH);
+        auto y = heightMap[i];
+        auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
+        Raindrop path = {};
+        path.startingPosition = glm::vec3(x, y, z);
+        paths.push_back(path);
     }
+}
 
-    renderPaths(paths);
+void TerrainErosion::regenerateTerrain() {
+    auto now = std::chrono::high_resolution_clock::now();
+    int seed = std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count();
+    noise1->SetSeed(seed);
+    noise2->SetSeed(seed);
+    noise3->SetSeed(seed);
+    updateHeightBuffer();
+}
+
+void TerrainErosion::adjustRaindropsToTerrain(std::vector<Raindrop> &raindrops) {
+    for (auto &raindrop : raindrops) {
+        unsigned int index = raindrop.startingPosition.z * WIDTH + raindrop.startingPosition.x;
+        raindrop.startingPosition.y = heightMap[index];
+    }
 }
 
 void TerrainErosion::renderTerrain(const bool wireframe) {
@@ -222,18 +236,18 @@ void TerrainErosion::updateHeightBuffer() {
     shader->setUniform("maxHeight", maxHeight);
 }
 
-void TerrainErosion::renderPaths(const std::vector<Path> &paths) {
+void TerrainErosion::renderPaths(const std::vector<Raindrop> &paths) {
     pathShader->bind();
 
     auto va = std::make_shared<VertexArray>(pathShader);
     unsigned int verticesCount = 0;
     for (const auto &path : paths) {
-        verticesCount += path.vertices.size();
+        verticesCount += path.path.size();
     }
     auto vertices = std::vector<glm::vec3>();
     vertices.reserve(verticesCount);
     for (const auto &path : paths) {
-        for (const auto &vertex : path.vertices) {
+        for (const auto &vertex : path.path) {
             vertices.push_back(vertex + glm::vec3(0.0F, 0.1F, 0.0F));
         }
     }
@@ -246,7 +260,7 @@ void TerrainErosion::renderPaths(const std::vector<Path> &paths) {
     indices.reserve(verticesCount + paths.size());
     unsigned int currentIndex = 0;
     for (const auto &path : paths) {
-        for (const auto &vertex : path.vertices) {
+        for (unsigned int i = 0; i < path.path.size(); i++) {
             indices.push_back(currentIndex);
             currentIndex++;
         }
@@ -263,7 +277,7 @@ void TerrainErosion::renderPaths(const std::vector<Path> &paths) {
 
 bool isInBound(unsigned int row, unsigned int column) { return row < HEIGHT && column < WIDTH; }
 
-void TerrainErosion::simulateRainDrop(std::vector<glm::vec3> &path, const glm::vec3 &start) {
+void TerrainErosion::simulateRaindrop(Raindrop &path) {
 #define COMPARE_AND_UPDATE(row, column)                                                                                \
     if (isInBound(row, column)) {                                                                                      \
         glm::vec3 vec = glm::vec3(column, heightMap[row * WIDTH + column], row);                                       \
@@ -274,9 +288,10 @@ void TerrainErosion::simulateRainDrop(std::vector<glm::vec3> &path, const glm::v
         }                                                                                                              \
     }
 
-    path.push_back(start);
+    path.path.clear();
+    path.path.push_back(path.startingPosition);
 
-    glm::vec3 current = start;
+    glm::vec3 current = path.startingPosition;
     while (true) {
         float smallestGradient = std::numeric_limits<float>::max();
         glm::vec3 smallestGradientVec = {};
@@ -325,7 +340,7 @@ void TerrainErosion::simulateRainDrop(std::vector<glm::vec3> &path, const glm::v
             break;
         }
 
-        path.push_back(smallestGradientVec);
+        path.path.push_back(smallestGradientVec);
         current = smallestGradientVec;
     }
 }
