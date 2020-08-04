@@ -8,8 +8,8 @@
 
 #include "util/ImGuiUtils.h"
 
-const unsigned int WIDTH = 300;
-const unsigned int HEIGHT = 300;
+const int WIDTH = 300;
+const int HEIGHT = 300;
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -29,7 +29,7 @@ void TerrainErosion::setup() {
     shader->bind();
 
     terrainVA = std::make_shared<VertexArray>(shader);
-    generatePoints();
+    generateTerrainMesh();
 
     noise1 = new FastNoise();
     noise2 = new FastNoise();
@@ -44,7 +44,7 @@ void TerrainErosion::setup() {
     noise2->SetNoiseType(noiseType);
     noise3->SetNoiseType(noiseType);
 
-    updateHeightBuffer();
+    regenerateTerrain();
 }
 
 void TerrainErosion::destroy() {}
@@ -102,27 +102,37 @@ void TerrainErosion::tick() {
     pathShader->setUniform("viewMatrix", viewMatrix);
     pathShader->setUniform("projectionMatrix", projectionMatrix);
 
-    renderTerrain(wireframe);
-
+    regenerateRaindrops(raindrops);
     for (auto &raindrop : raindrops) {
         simulateRaindrop(raindrop);
     }
     renderPaths(raindrops);
+
+    renderTerrain(wireframe);
 }
 
-void TerrainErosion::regenerateRaindrops(std::vector<Raindrop> &paths) const {
+void TerrainErosion::regenerateRaindrops(std::vector<Raindrop> &raindrops) const {
     unsigned int pathCount = 100;
-    paths.clear();
-    paths.reserve(pathCount);
+    raindrops.clear();
+    raindrops.reserve(pathCount);
     for (unsigned int j = 0; j < pathCount; j++) {
         unsigned int i = rand() % (WIDTH * HEIGHT);
         auto x = static_cast<float>(i % WIDTH);
         auto y = heightMap[i];
         auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
-        Raindrop path = {};
-        path.startingPosition = glm::vec3(x, y, z);
-        paths.push_back(path);
+        Raindrop raindrop = {};
+        raindrop.startingPosition = glm::vec3(x, y, z);
+        raindrops.push_back(raindrop);
     }
+}
+
+float generateHeight(const FastNoise *noise, const float x, const float y, const float z) {
+    float generatedHeight = noise->GetNoise(x, y, z);
+    const float offset = 1.0F;
+    generatedHeight += offset;
+    const float scaleFactor = 2.0F;
+    generatedHeight /= scaleFactor;
+    return generatedHeight;
 }
 
 void TerrainErosion::regenerateTerrain() {
@@ -131,7 +141,33 @@ void TerrainErosion::regenerateTerrain() {
     noise1->SetSeed(seed);
     noise2->SetSeed(seed);
     noise3->SetSeed(seed);
-    updateHeightBuffer();
+
+    const glm::vec3 scale = {15.0F, 5.0F, 1.0F};
+    const glm::vec3 frequencyScale = {15.0F, 5.0F, 1.0F};
+
+    float maxHeight = 0;
+    auto width = static_cast<unsigned int>(WIDTH);
+    auto height = static_cast<unsigned int>(HEIGHT);
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float realX = static_cast<float>(x) / scale.x;
+            float realY = static_cast<float>(y) / scale.y;
+
+            float generatedHeight = 0.0F;
+            generatedHeight += generateHeight(noise1, realX, realY, scale.z) * frequencyScale.x;
+            generatedHeight += generateHeight(noise2, realX, realY, scale.z) * frequencyScale.y;
+            generatedHeight += generateHeight(noise3, realX, realY, scale.z) * frequencyScale.z;
+
+            heightMap[y * width + x] = generatedHeight;
+            if (heightMap[y * width + x] > maxHeight) {
+                maxHeight = heightMap[y * width + x];
+            }
+        }
+    }
+    heightBuffer->update(heightMap);
+
+    shader->bind();
+    shader->setUniform("maxHeight", maxHeight);
 }
 
 void TerrainErosion::adjustRaindropsToTerrain(std::vector<Raindrop> &raindrops) {
@@ -149,6 +185,7 @@ void TerrainErosion::renderTerrain(const bool wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
+    heightBuffer->update(heightMap);
     GL_Call(glDrawElements(GL_TRIANGLES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
     if (wireframe) {
@@ -159,7 +196,7 @@ void TerrainErosion::renderTerrain(const bool wireframe) {
     shader->unbind();
 }
 
-void TerrainErosion::generatePoints() {
+void TerrainErosion::generateTerrainMesh() {
     terrainVA->bind();
 
     const unsigned int verticesCount = WIDTH * HEIGHT;
@@ -196,44 +233,6 @@ void TerrainErosion::generatePoints() {
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
     terrainVA->setIndexBuffer(indexBuffer);
-}
-
-float generateHeight(const FastNoise *noise, const float x, const float y, const float z) {
-    float generatedHeight = noise->GetNoise(x, y, z);
-    const float offset = 1.0F;
-    generatedHeight += offset;
-    const float scaleFactor = 2.0F;
-    generatedHeight /= scaleFactor;
-    return generatedHeight;
-}
-
-void TerrainErosion::updateHeightBuffer() {
-    const glm::vec3 scale = {15.0F, 5.0F, 1.0F};
-    const glm::vec3 frequencyScale = {15.0F, 5.0F, 1.0F};
-
-    float maxHeight = 0;
-    auto width = static_cast<unsigned int>(WIDTH);
-    auto height = static_cast<unsigned int>(HEIGHT);
-    for (unsigned int y = 0; y < height; y++) {
-        for (unsigned int x = 0; x < width; x++) {
-            float realX = static_cast<float>(x) / scale.x;
-            float realY = static_cast<float>(y) / scale.y;
-
-            float generatedHeight = 0.0F;
-            generatedHeight += generateHeight(noise1, realX, realY, scale.z) * frequencyScale.x;
-            generatedHeight += generateHeight(noise2, realX, realY, scale.z) * frequencyScale.y;
-            generatedHeight += generateHeight(noise3, realX, realY, scale.z) * frequencyScale.z;
-
-            heightMap[y * width + x] = generatedHeight;
-            if (heightMap[y * width + x] > maxHeight) {
-                maxHeight = heightMap[y * width + x];
-            }
-        }
-    }
-    heightBuffer->update(heightMap);
-
-    shader->bind();
-    shader->setUniform("maxHeight", maxHeight);
 }
 
 void TerrainErosion::renderPaths(const std::vector<Raindrop> &paths) {
@@ -275,72 +274,181 @@ void TerrainErosion::renderPaths(const std::vector<Raindrop> &paths) {
     pathShader->unbind();
 }
 
-bool isInBound(unsigned int row, unsigned int column) { return row < HEIGHT && column < WIDTH; }
+void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
+    float Kq = 10;          // constant parameter for soil carry capacity formula
+    float Kw = 0.001f;      // water evaporation speed
+    float Kr = 0.9f;        // erosion speed
+    float Kd = 0.02f;       // deposition speed
+    float Ki = 0.1F;        // direction inertia
+    float minSlope = 0.05f; // minimum slope for soil carry capacity formula
+    float g = 20;           // gravity
 
-void TerrainErosion::simulateRaindrop(Raindrop &path) {
-#define COMPARE_AND_UPDATE(row, column)                                                                                \
-    if (isInBound(row, column)) {                                                                                      \
-        glm::vec3 vec = glm::vec3(column, heightMap[row * WIDTH + column], row);                                       \
-        float gradient = current.y - vec.y;                                                                            \
-        if (gradient > 0.0F && gradient < smallestGradient) {                                                          \
-            smallestGradient = gradient;                                                                               \
-            smallestGradientVec = vec;                                                                                 \
-        }                                                                                                              \
+#define HMAP(X, Z) heightMap[std::min((Z), HEIGHT - 1) * WIDTH + std::min((X), WIDTH - 1)]
+
+#define DEPOSIT_AT(X, Z, W)                                                                                            \
+    {                                                                                                                  \
+        float delta = ds * (W);                                                                                        \
+        HMAP((X), (Z)) += delta;                                                                                       \
     }
 
-    path.path.clear();
-    path.path.push_back(path.startingPosition);
+#if 1
+#define DEPOSIT(H)                                                                                                     \
+    DEPOSIT_AT(xi, zi, (1 - xf) * (1 - zf))                                                                            \
+    DEPOSIT_AT(xi + 1, zi, xf * (1 - zf))                                                                              \
+    DEPOSIT_AT(xi, zi + 1, (1 - xf) * zf)                                                                              \
+    DEPOSIT_AT(xi + 1, zi + 1, xf * zf)                                                                                \
+    (H) += ds;
+#else
+#define DEPOSIT(H)                                                                                                     \
+    DEPOSIT_AT(xi, zi, 0.25f)                                                                                          \
+    DEPOSIT_AT(xi + 1, zi, 0.25f)                                                                                      \
+    DEPOSIT_AT(xi, zi + 1, 0.25f)                                                                                      \
+    DEPOSIT_AT(xi + 1, zi + 1, 0.25f)                                                                                  \
+    (H) += ds;
+#endif
 
-    glm::vec3 current = path.startingPosition;
-    while (true) {
-        float smallestGradient = std::numeric_limits<float>::max();
-        glm::vec3 smallestGradientVec = {};
+    raindrop.velocity = 0.0F;
+    raindrop.acceleration = 0.0F;
+    raindrop.water = 1.0F;
+    raindrop.sediment = 0.0F;
+    raindrop.path.clear();
 
-        // left
-        unsigned int row = current.z;
-        unsigned int column = current.x - 1.0F;
-        COMPARE_AND_UPDATE(row, column)
+    glm::vec3 current = raindrop.startingPosition;
+    float xp = current.x;
+    float zp = current.z;
+    float xf = 0, zf = 0;
+    float dx = 0.0F;
+    float dz = 0.0F;
+    auto xi = static_cast<int>(current.x);
+    auto zi = static_cast<int>(current.z);
+    float h00 = HMAP(xi, zi);
+    float h10 = HMAP(xi + 1, zi);
+    float h01 = HMAP(xi, zi + 1);
+    float h11 = HMAP(xi + 1, (zi + 1));
+    float h = h00;
 
-        // right
-        row = current.z;
-        column = current.x + 1.0F;
-        COMPARE_AND_UPDATE(row, column)
+    const int maxPathLength = WIDTH * 4;
+    for (unsigned int i = 0; i < maxPathLength; i++) {
+        raindrop.path.emplace_back(xp, h, zp);
 
-        // top
-        row = current.z - 1.0F;
-        column = current.x;
-        COMPARE_AND_UPDATE(row, column)
+        float gradientX = (h00 + h01) - (h10 + h11);
+        float gradientZ = (h00 + h10) - (h01 - h11);
 
-        // bottom
-        row = current.z + 1.0F;
-        column = current.x;
-        COMPARE_AND_UPDATE(row, column)
+        dx = (dx - gradientX) * Ki + gradientX;
+        dz = (dz - gradientZ) * Ki + gradientZ;
 
-        // top-left
-        row = current.z - 1.0F;
-        column = current.x - 1.0F;
-        COMPARE_AND_UPDATE(row, column)
-
-        // top-right
-        row = current.z - 1.0F;
-        column = current.x + 1.0F;
-        COMPARE_AND_UPDATE(row, column)
-
-        // bottom-left
-        row = current.z + 1.0F;
-        column = current.x - 1.0F;
-        COMPARE_AND_UPDATE(row, column)
-
-        // bottom-right
-        row = current.z + 1.0F;
-        column = current.x + 1.0F;
-        COMPARE_AND_UPDATE(row, column)
-
-        if (smallestGradient == std::numeric_limits<float>::max()) {
-            break;
+        float dl = std::sqrt(dx * dx + dz * dz);
+        if (dl <= FLT_EPSILON) {
+            // pick random dir
+            float a = (((float)std::rand() / (float)(RAND_MAX))) * glm::two_pi<float>();
+            dx = cosf(a);
+            dz = sinf(a);
+        } else {
+            dx /= dl;
+            dz /= dl;
         }
 
-        path.path.push_back(smallestGradientVec);
-        current = smallestGradientVec;
+        float nxp = xp + dx;
+        float nzp = zp + dz;
+
+        int nxi = std::floor(nxp);
+        int nzi = std::floor(nzp);
+        float nxf = nxp - (float)nxi;
+        float nzf = nzp - (float)nzi;
+
+        float nh00 = HMAP(nxi, nzi);
+        float nh01 = HMAP(nxi, nzi + 1);
+        float nh10 = HMAP(nxi + 1, nzi);
+        float nh11 = HMAP(nxi + 1, nzi + 1);
+
+        float nh = (nh00 * (1 - nxf) + nh10 * nxf) * (1 - nzf) + (nh01 * (1 - nxf) + nh11 * nxf) * nzf;
+
+        // if higher than current, try to deposit sediment up to neighbour height
+        if (nh >= h) {
+            float ds = (nh - h) + 0.001f;
+
+            if (ds >= raindrop.sediment) {
+                // deposit all sediment and stop
+                ds = raindrop.sediment;
+                DEPOSIT(h)
+                raindrop.sediment = 0.0F;
+                break;
+            }
+
+            DEPOSIT(h)
+            raindrop.sediment -= ds;
+            raindrop.velocity = 0.0F;
+        }
+
+        // compute transport capacity
+        float dh = h - nh;
+        //        float slope = dh;
+        float slope = dh / sqrtf(dh * dh + 1);
+
+        float q = std::max(slope, minSlope) * raindrop.velocity * raindrop.water * Kq;
+        float ds = raindrop.sediment - q;
+        if (ds >= 0) {
+            // deposit
+            ds *= Kd;
+            // ds=minval(ds, 1.0f);
+
+            DEPOSIT(dh)
+            raindrop.sediment -= ds;
+        } else {
+            // erode
+            ds *= -Kr;
+            ds = std::min(ds, dh * 0.99f);
+
+#define ERODE(X, Z, W)                                                                                                 \
+    {                                                                                                                  \
+        float delta = ds * (W);                                                                                        \
+        HMAP((X), (Z)) -= delta;                                                                                       \
+    }
+#if 1
+            for (int z = zi - 1; z <= zi + 2; ++z) {
+                float zo = z - zp;
+                float zo2 = zo * zo;
+
+                for (int x = xi - 1; x <= xi + 2; ++x) {
+                    float xo = x - xp;
+
+                    float w = 1 - (xo * xo + zo2) * 0.25f;
+                    if (w <= 0)
+                        continue;
+                    w *= 0.1591549430918953f;
+
+                    ERODE(x, z, w)
+                }
+            }
+#else
+            ERODE(xi, zi, (1 - xf) * (1 - zf))
+            ERODE(xi + 1, zi, xf * (1 - zf))
+            ERODE(xi, zi + 1, (1 - xf) * zf)
+            ERODE(xi + 1, zi + 1, xf * zf)
+#endif
+
+            dh -= ds;
+
+#undef ERODE
+
+            raindrop.sediment += ds;
+        }
+
+        // move to the neighbour
+        raindrop.velocity = std::sqrt(raindrop.velocity * raindrop.velocity + g * dh);
+        raindrop.water *= 1 - Kw;
+
+        xp = nxp;
+        zp = nzp;
+        xi = nxi;
+        zi = nzi;
+        xf = nxf;
+        zf = nzf;
+
+        h = nh;
+        h00 = nh00;
+        h10 = nh10;
+        h01 = nh01;
+        h11 = nh11;
     }
 }
