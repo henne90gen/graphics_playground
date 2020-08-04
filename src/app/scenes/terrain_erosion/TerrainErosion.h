@@ -14,6 +14,7 @@ struct Raindrop {
     glm::vec3 startingPosition = {};
     float acceleration = 0.0F;
     float velocity = 0.0F;
+    float water = 0.0F;
     float sediment = 0.0F;
     std::vector<glm::vec3> path = {};
 };
@@ -43,11 +44,11 @@ class TerrainErosion : public Scene {
     void renderTerrain(bool wireframe);
     void renderPaths(const std::vector<Raindrop> &paths);
 
-    void generatePoints();
+    void generateTerrainMesh();
 
     void updateHeightBuffer();
-    void simulateRaindrop(Raindrop &path);
+    void simulateRaindrop(Raindrop &raindrop);
     void regenerateTerrain();
-    void regenerateRaindrops(std::vector<Raindrop> &paths) const;
+    void regenerateRaindrops(std::vector<Raindrop> &raindrops) const;
     void adjustRaindropsToTerrain(std::vector<Raindrop> &raindrops);
 };
