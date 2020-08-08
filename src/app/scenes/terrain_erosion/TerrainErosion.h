@@ -19,6 +19,16 @@ struct Raindrop {
     std::vector<glm::vec3> path = {};
 };
 
+struct SimulationParams {
+    float Kq = 10;          // constant parameter for soil carry capacity formula
+    float Kw = 0.001f;      // water evaporation speed
+    float Kr = 0.9f;        // erosion speed
+    float Kd = 0.02f;       // deposition speed
+    float Ki = 0.1F;        // direction inertia
+    float minSlope = 0.05f; // minimum slope for soil carry capacity formula
+    float g = 20;           // gravity
+};
+
 class TerrainErosion : public Scene {
   public:
     explicit TerrainErosion(SceneData &data) : Scene(data, "TerrainErosion"){};
@@ -46,9 +56,10 @@ class TerrainErosion : public Scene {
 
     void generateTerrainMesh();
 
-    void updateHeightBuffer();
-    void simulateRaindrop(Raindrop &raindrop);
+    void setHeightMapValue(int x, int z, float value);
+    float getHeightMapValue(int x, int z);
+    void simulateRaindrop(const SimulationParams &params, Raindrop &raindrop);
     void regenerateTerrain();
-    void regenerateRaindrops(std::vector<Raindrop> &raindrops) const;
+    void regenerateRaindrops(std::vector<Raindrop> &raindrops, unsigned int raindropCount) const;
     void adjustRaindropsToTerrain(std::vector<Raindrop> &raindrops);
 };
