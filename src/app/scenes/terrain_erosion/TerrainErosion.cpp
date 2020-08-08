@@ -59,11 +59,14 @@ void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(0.65F, 0.0F, 0.0F);
     static bool wireframe = false;
+    static auto params = SimulationParams();
+    static int raindropCount = 100;
+    static int simulationSpeed = 10;
     static auto raindrops = std::vector<Raindrop>();
     static bool pathsInitialized = false;
     if (!pathsInitialized) {
         pathsInitialized = true;
-        regenerateRaindrops(raindrops);
+        regenerateRaindrops(raindrops, raindropCount);
     }
 
     const float dragSpeed = 0.01F;
@@ -78,10 +81,22 @@ void TerrainErosion::tick() {
         regenerateTerrain();
         adjustRaindropsToTerrain(raindrops);
     }
-    if (ImGui::Button("Regenerate Raindrop Starting Positions")) {
-        regenerateRaindrops(raindrops);
-    }
     ImGui::Text("Point count: %d", WIDTH * HEIGHT);
+
+    ImGui::Text("Simulation Parameters");
+    ImGui::DragInt("Raindrop Count", &raindropCount);
+    ImGui::SliderInt("Simulation Speed", &simulationSpeed, 1, 50);
+    ImGui::DragFloat("Kq", &params.Kq, dragSpeed);
+    ImGui::DragFloat("Kw", &params.Kw, dragSpeed);
+    ImGui::DragFloat("Kr", &params.Kr, dragSpeed);
+    ImGui::DragFloat("Kd", &params.Kd, dragSpeed);
+    ImGui::DragFloat("Ki", &params.Ki, dragSpeed);
+    ImGui::DragFloat("minSlope", &params.minSlope, dragSpeed);
+    ImGui::DragFloat("g", &params.g, dragSpeed);
+    if (ImGui::Button("Reset Parameters")) {
+        params = SimulationParams();
+    }
+
     ImGui::End();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
@@ -102,20 +117,23 @@ void TerrainErosion::tick() {
     pathShader->setUniform("viewMatrix", viewMatrix);
     pathShader->setUniform("projectionMatrix", projectionMatrix);
 
-    regenerateRaindrops(raindrops);
-    for (auto &raindrop : raindrops) {
-        simulateRaindrop(raindrop);
+    static int counter = 0;
+    counter++;
+    if (counter % simulationSpeed == 0) {
+        regenerateRaindrops(raindrops, raindropCount);
+        for (auto &raindrop : raindrops) {
+            simulateRaindrop(params, raindrop);
+        }
     }
     renderPaths(raindrops);
 
     renderTerrain(wireframe);
 }
 
-void TerrainErosion::regenerateRaindrops(std::vector<Raindrop> &raindrops) const {
-    unsigned int pathCount = 100;
+void TerrainErosion::regenerateRaindrops(std::vector<Raindrop> &raindrops, unsigned int raindropCount) const {
     raindrops.clear();
-    raindrops.reserve(pathCount);
-    for (unsigned int j = 0; j < pathCount; j++) {
+    raindrops.reserve(raindropCount);
+    for (unsigned int j = 0; j < raindropCount; j++) {
         unsigned int i = rand() % (WIDTH * HEIGHT);
         auto x = static_cast<float>(i % WIDTH);
         auto y = heightMap[i];
@@ -274,36 +292,51 @@ void TerrainErosion::renderPaths(const std::vector<Raindrop> &paths) {
     pathShader->unbind();
 }
 
-void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
-    float Kq = 10;          // constant parameter for soil carry capacity formula
-    float Kw = 0.001f;      // water evaporation speed
-    float Kr = 0.9f;        // erosion speed
-    float Kd = 0.02f;       // deposition speed
-    float Ki = 0.1F;        // direction inertia
-    float minSlope = 0.05f; // minimum slope for soil carry capacity formula
-    float g = 20;           // gravity
+void TerrainErosion::setHeightMapValue(int x, int z, float value) {
+    unsigned long safeZ = std::min(std::max(z, 0), HEIGHT - 1);
+    unsigned long safeX = std::min(std::max(x, 0), WIDTH - 1);
+    unsigned long index = safeZ * WIDTH + safeX;
+    ASSERT(index < heightMap.size());
+    heightMap[index] = value;
+}
 
-#define HMAP(X, Z) heightMap[std::min((Z), HEIGHT - 1) * WIDTH + std::min((X), WIDTH - 1)]
+float TerrainErosion::getHeightMapValue(int x, int z) {
+    unsigned long safeZ = std::min(std::max(z, 0), HEIGHT - 1);
+    unsigned long safeX = std::min(std::max(x, 0), WIDTH - 1);
+    unsigned long index = safeZ * WIDTH + safeX;
+    ASSERT(index < heightMap.size());
+    return heightMap[index];
+}
+
+void TerrainErosion::simulateRaindrop(const SimulationParams &params, Raindrop &raindrop) {
+    float Kq = params.Kq;
+    float Kw = params.Kw;
+    float Kr = params.Kr;
+    float Kd = params.Kd;
+    float Ki = params.Ki;
+    float minSlope = params.minSlope;
+    float g = params.g;
 
 #define DEPOSIT_AT(X, Z, W)                                                                                            \
     {                                                                                                                  \
         float delta = ds * (W);                                                                                        \
-        HMAP((X), (Z)) += delta;                                                                                       \
+        float newH = getHeightMapValue((X), (Z)) + delta;                                                              \
+        setHeightMapValue((X), (Z), newH);                                                                             \
     }
 
 #if 1
 #define DEPOSIT(H)                                                                                                     \
-    DEPOSIT_AT(xi, zi, (1 - xf) * (1 - zf))                                                                            \
-    DEPOSIT_AT(xi + 1, zi, xf * (1 - zf))                                                                              \
-    DEPOSIT_AT(xi, zi + 1, (1 - xf) * zf)                                                                              \
-    DEPOSIT_AT(xi + 1, zi + 1, xf * zf)                                                                                \
+    DEPOSIT_AT(pi.x, pi.y, (1 - f.x) * (1 - f.y))                                                                      \
+    DEPOSIT_AT(pi.x + 1, pi.y, f.x * (1 - f.y))                                                                        \
+    DEPOSIT_AT(pi.x, pi.y + 1, (1 - f.x) * f.y)                                                                        \
+    DEPOSIT_AT(pi.x + 1, pi.y + 1, f.x * f.y)                                                                          \
     (H) += ds;
 #else
 #define DEPOSIT(H)                                                                                                     \
-    DEPOSIT_AT(xi, zi, 0.25f)                                                                                          \
-    DEPOSIT_AT(xi + 1, zi, 0.25f)                                                                                      \
-    DEPOSIT_AT(xi, zi + 1, 0.25f)                                                                                      \
-    DEPOSIT_AT(xi + 1, zi + 1, 0.25f)                                                                                  \
+    DEPOSIT_AT(pi.x, pi.y, 0.25f)                                                                                      \
+    DEPOSIT_AT(pi.x + 1, pi.y, 0.25f)                                                                                  \
+    DEPOSIT_AT(pi.x, pi.y + 1, 0.25f)                                                                                  \
+    DEPOSIT_AT(pi.x + 1, pi.y + 1, 0.25f)                                                                              \
     (H) += ds;
 #endif
 
@@ -314,54 +347,59 @@ void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
     raindrop.path.clear();
 
     glm::vec3 current = raindrop.startingPosition;
-    float xp = current.x;
-    float zp = current.z;
-    float xf = 0, zf = 0;
-    float dx = 0.0F;
-    float dz = 0.0F;
-    auto xi = static_cast<int>(current.x);
-    auto zi = static_cast<int>(current.z);
-    float h00 = HMAP(xi, zi);
-    float h10 = HMAP(xi + 1, zi);
-    float h01 = HMAP(xi, zi + 1);
-    float h11 = HMAP(xi + 1, (zi + 1));
+    glm::vec2 p = {current.x, current.z};
+    glm::ivec2 pi = {static_cast<int>(p.x), static_cast<int>(p.y)};
+    glm::vec2 f = p - glm::vec2(pi.x, pi.y);
+    glm::vec2 d = {0.0F, 0.0F};
+    float h00 = getHeightMapValue(pi.x, pi.y);
+    float h10 = getHeightMapValue(pi.x + 1, pi.y);
+    float h01 = getHeightMapValue(pi.x, pi.y + 1);
+    float h11 = getHeightMapValue(pi.x + 1, pi.y + 1);
     float h = h00;
 
     const int maxPathLength = WIDTH * 4;
     for (unsigned int i = 0; i < maxPathLength; i++) {
-        raindrop.path.emplace_back(xp, h, zp);
+        raindrop.path.emplace_back(p.x, h, p.y);
 
-        float gradientX = (h00 + h01) - (h10 + h11);
-        float gradientZ = (h00 + h10) - (h01 - h11);
-
-        dx = (dx - gradientX) * Ki + gradientX;
-        dz = (dz - gradientZ) * Ki + gradientZ;
-
-        float dl = std::sqrt(dx * dx + dz * dz);
+#define GERMAN_PAPER 1
+#if GERMAN_PAPER
+        glm::vec2 frac = p - glm::vec2(pi.x, pi.y);
+        glm::vec2 gradient = {
+              (h10 - h00) * (1 - frac.y) + (h11 - h01) * frac.y, //
+              (h01 - h00) * (1 - frac.x) + (h11 - h10) * frac.x  //
+        };
+#else
+        glm::vec2 gradient = {
+              (h00 + h01) - (h10 + h11), //
+              (h00 + h10) - (h01 - h11)  //
+        };
+#endif
+#if GERMAN_PAPER
+        d = d * Ki - g * (1 - Ki);
+#else
+        d = (d - gradient) * Ki + gradient;
+#endif
+        float dl = glm::length(d);
         if (dl <= FLT_EPSILON) {
             // pick random dir
             float a = (((float)std::rand() / (float)(RAND_MAX))) * glm::two_pi<float>();
-            dx = cosf(a);
-            dz = sinf(a);
-        } else {
-            dx /= dl;
-            dz /= dl;
+            d = {std::cos(a), std::sin(a)};
         }
 
-        float nxp = xp + dx;
-        float nzp = zp + dz;
+        d = glm::normalize(d);
 
-        int nxi = std::floor(nxp);
-        int nzi = std::floor(nzp);
-        float nxf = nxp - (float)nxi;
-        float nzf = nzp - (float)nzi;
+        glm::vec2 np = p + d;
+        glm::ivec2 ni = {std::floor(np.x), std::floor(np.y)};
+        glm::vec2 nf = np - glm::vec2(ni.x, ni.y);
 
-        float nh00 = HMAP(nxi, nzi);
-        float nh01 = HMAP(nxi, nzi + 1);
-        float nh10 = HMAP(nxi + 1, nzi);
-        float nh11 = HMAP(nxi + 1, nzi + 1);
+        float nh00 = getHeightMapValue(ni.x, ni.y);
+        float nh01 = getHeightMapValue(ni.x, ni.y + 1);
+        float nh10 = getHeightMapValue(ni.x + 1, ni.y);
+        float nh11 = getHeightMapValue(ni.x + 1, ni.y + 1);
 
-        float nh = (nh00 * (1 - nxf) + nh10 * nxf) * (1 - nzf) + (nh01 * (1 - nxf) + nh11 * nxf) * nzf;
+        float nh0 = nh00 * (1 - nf.x) + nh10 * nf.x;
+        float nh1 = nh01 * (1 - nf.x) + nh11 * nf.x;
+        float nh = nh0 * (1 - nf.y) + nh1 * nf.y;
 
         // if higher than current, try to deposit sediment up to neighbour height
         if (nh >= h) {
@@ -382,11 +420,11 @@ void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
 
         // compute transport capacity
         float dh = h - nh;
-        //        float slope = dh;
-        float slope = dh / sqrtf(dh * dh + 1);
+        float slope = dh;
+        // float slope = dh / sqrtf(dh * dh + 1);
 
-        float q = std::max(slope, minSlope) * raindrop.velocity * raindrop.water * Kq;
-        float ds = raindrop.sediment - q;
+        float carryCapacity = std::max(slope, minSlope) * raindrop.velocity * raindrop.water * Kq;
+        float ds = raindrop.sediment - carryCapacity;
         if (ds >= 0) {
             // deposit
             ds *= Kd;
@@ -402,15 +440,16 @@ void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
 #define ERODE(X, Z, W)                                                                                                 \
     {                                                                                                                  \
         float delta = ds * (W);                                                                                        \
-        HMAP((X), (Z)) -= delta;                                                                                       \
+        float newH = getHeightMapValue((X), (Z)) - delta;                                                              \
+        setHeightMapValue((X), (Z), newH);                                                                             \
     }
 #if 1
-            for (int z = zi - 1; z <= zi + 2; ++z) {
-                float zo = z - zp;
+            for (int z = pi.y - 1; z <= pi.y + 2; z++) {
+                float zo = z - p.y;
                 float zo2 = zo * zo;
 
-                for (int x = xi - 1; x <= xi + 2; ++x) {
-                    float xo = x - xp;
+                for (int x = pi.x - 1; x <= pi.x + 2; x++) {
+                    float xo = x - p.x;
 
                     float w = 1 - (xo * xo + zo2) * 0.25f;
                     if (w <= 0)
@@ -427,10 +466,9 @@ void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
             ERODE(xi + 1, zi + 1, xf * zf)
 #endif
 
-            dh -= ds;
-
 #undef ERODE
 
+            dh -= ds;
             raindrop.sediment += ds;
         }
 
@@ -438,12 +476,9 @@ void TerrainErosion::simulateRaindrop(Raindrop &raindrop) {
         raindrop.velocity = std::sqrt(raindrop.velocity * raindrop.velocity + g * dh);
         raindrop.water *= 1 - Kw;
 
-        xp = nxp;
-        zp = nzp;
-        xi = nxi;
-        zi = nzi;
-        xf = nxf;
-        zf = nzf;
+        p = np;
+        pi = ni;
+        f = nf;
 
         h = nh;
         h00 = nh00;
