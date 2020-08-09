@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <memory>
+#include <random>
 
 #include <FastNoise.h>
 
@@ -11,8 +12,7 @@
 #include "opengl/VertexArray.h"
 
 struct Raindrop {
-    glm::vec3 startingPosition = {};
-    float acceleration = 0.0F;
+    glm::vec2 startingPosition = {};
     float velocity = 0.0F;
     float water = 0.0F;
     float sediment = 0.0F;
@@ -51,8 +51,11 @@ class TerrainErosion : public Scene {
     FastNoise *noise2;
     FastNoise *noise3;
 
+    std::mt19937 randomGenerator;
+    std::uniform_real_distribution<double> randomDistribution;
+
     void renderTerrain(bool wireframe);
-    void renderPaths(const std::vector<Raindrop> &paths);
+    void renderPaths(const std::vector<Raindrop> &raindrops);
 
     void generateTerrainMesh();
 
@@ -60,6 +63,10 @@ class TerrainErosion : public Scene {
     float getHeightMapValue(int x, int z);
     void simulateRaindrop(const SimulationParams &params, Raindrop &raindrop);
     void regenerateTerrain();
-    void regenerateRaindrops(std::vector<Raindrop> &raindrops, unsigned int raindropCount) const;
-    void adjustRaindropsToTerrain(std::vector<Raindrop> &raindrops);
+    void regenerateRaindrops(std::vector<Raindrop> &raindrops, bool onlyRainAroundCenterPoint,
+                             unsigned int raindropCount, const glm::vec2 &centerPoint, float radius);
+    void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, bool &wireframe,
+                      bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
+                      SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
+                      int &simulationSpeed);
 };
