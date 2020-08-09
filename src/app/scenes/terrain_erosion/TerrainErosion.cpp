@@ -439,7 +439,7 @@ void TerrainErosion::simulateRaindrop(const SimulationParams &params, Raindrop &
 
         // if higher than current, try to deposit sediment up to neighbour height
         if (nh >= h) {
-            float ds = (nh - h) + 0.001f;
+            float ds = (nh - h) + 0.001F;
 
             if (ds >= raindrop.sediment) {
                 // deposit all sediment and stop
@@ -487,9 +487,10 @@ void TerrainErosion::simulateRaindrop(const SimulationParams &params, Raindrop &
                 for (int x = pi.x - 1; x <= pi.x + 2; x++) {
                     float xo = static_cast<float>(x) - p.x;
 
-                    float w = 1 - (xo * xo + zo2) * 0.25f;
-                    if (w <= 0)
+                    float w = 1 - (xo * xo + zo2) * 0.25F;
+                    if (w <= 0) {
                         continue;
+                    }
                     w *= 0.1591549430918953f;
 
                     ERODE(x, z, w)
