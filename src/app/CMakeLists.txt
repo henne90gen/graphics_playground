@@ -160,8 +160,8 @@ set(RESOURCES
         scenes/triangle/TriangleVert.glsl
         scenes/meta_balls/MetaBallsVert.glsl
         scenes/meta_balls/MetaBallsFrag.glsl
-        scenes/terrain_erosion/TerrainErosionVert.glsl
-        scenes/terrain_erosion/TerrainErosionFrag.glsl
+        scenes/terrain_erosion/TerrainVert.glsl
+        scenes/terrain_erosion/TerrainFrag.glsl
         scenes/terrain_erosion/PathVert.glsl
         scenes/terrain_erosion/PathFrag.glsl
 )

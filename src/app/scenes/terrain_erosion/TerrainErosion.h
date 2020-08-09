@@ -29,6 +29,13 @@ struct SimulationParams {
     float g = 20;           // gravity
 };
 
+struct TerrainLevels {
+    float waterLevel = 9.0F;
+    float grassLevel = 11.5F;
+    float rockLevel = 17.0F;
+    float blur = 1.0F;
+};
+
 class TerrainErosion : public Scene {
   public:
     explicit TerrainErosion(SceneData &data) : Scene(data, "TerrainErosion"){};
@@ -44,8 +51,10 @@ class TerrainErosion : public Scene {
 
     std::shared_ptr<VertexArray> terrainVA;
     std::vector<float> heightMap = std::vector<float>();
+    std::vector<glm::vec3> normals = std::vector<glm::vec3>();
 
     std::shared_ptr<VertexBuffer> heightBuffer;
+    std::shared_ptr<VertexBuffer> normalBuffer;
 
     FastNoise *noise1;
     FastNoise *noise2;
@@ -54,7 +63,7 @@ class TerrainErosion : public Scene {
     std::mt19937 randomGenerator;
     std::uniform_real_distribution<double> randomDistribution;
 
-    void renderTerrain(bool wireframe);
+    void renderTerrain(bool wireframe, const TerrainLevels &levels);
     void renderPaths(const std::vector<Raindrop> &raindrops);
 
     void generateTerrainMesh();
@@ -68,5 +77,6 @@ class TerrainErosion : public Scene {
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, bool &wireframe,
                       bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
                       SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
-                      int &simulationSpeed);
+                      int &simulationSpeed, TerrainLevels&terrainLevels);
+    void recalculateNormals();
 };
