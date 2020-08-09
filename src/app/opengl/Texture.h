@@ -15,7 +15,7 @@ public:
 
     void update(const std::vector<glm::vec4> &data, unsigned int width, unsigned int height, unsigned int unpackAlignment = 4) const;
 
-    void update(Image &image);
+    void update(Image &image) const;
 
     void bind() const;
 

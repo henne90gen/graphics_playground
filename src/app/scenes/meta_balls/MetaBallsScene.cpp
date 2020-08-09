@@ -43,8 +43,8 @@ void showSettings(glm::vec3 &modelRotation, glm::ivec3 &dimensions, MetaBallsSce
                   float &animationSpeed, float &radius, bool &drawWireframe) {
     const float dragSpeed = 0.1F;
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Rotation", (float *)&modelRotation, dragSpeed);
-    ImGui::DragInt3("Dimensions", (int *)&dimensions);
+    ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
+    ImGui::DragInt3("Dimensions", reinterpret_cast<int *>(&dimensions));
     ImGui::DragFloat("Animation Speed", &animationSpeed, dragSpeed);
     ImGui::DragFloat("Radius", &radius, dragSpeed);
 
@@ -67,7 +67,7 @@ void MetaBallsScene::tick() {
     static auto position1 = glm::vec3(10.0F, 10.0F, 10.0F);
     static auto position2 = glm::vec3(10.0F, 10.0F, 10.0F);
 
-    // TODO add unmodified speres for metaballs
+    // TODO(henne): add unmodified speres for metaballs
 
     static float animationSpeed = 0.1F;
     double timeDelta = getLastFrameTime();

@@ -50,7 +50,7 @@ void MarchingCubes::runOneStep() {
     std::array<float, cornerCount> surfaceValues = {};
     for (unsigned long i = 0; i < surfaceValues.size(); i++) {
         surfaceValues[i] = getSurfaceValue(cubeCorners[i] + cubePosition);
-        cubeIndex |= (surfaceValues[i] < surfaceLevel) * (1 << i);
+        cubeIndex |= static_cast<int>(surfaceValues[i] < surfaceLevel) * (1 << i);
     }
 
     for (int i = 0; triangulation[cubeIndex][i] != -1; i += 3) {
@@ -124,7 +124,7 @@ inline glm::vec3 getVertexOnEdge(const glm::vec3 &v1, const float &w1, const glm
 }
 
 #define MARCHING_CUBES_SEQUENTIAL 0
-#if MARCHING_CUBES_SEQUENTIAL
+// SEQUENTIAL
 // --------------------------------------------------------------
 // Benchmark                    Time             CPU   Iterations
 // --------------------------------------------------------------
@@ -134,6 +134,18 @@ inline glm::vec3 getVertexOnEdge(const glm::vec3 &v1, const float &w1, const glm
 // BM_MarchingCubes/40     201163 ns       198718 ns         3468
 // BM_MarchingCubes/50     451063 ns       449817 ns         1648
 // BM_MarchingCubes/60     698768 ns       697763 ns         1061
+
+// PARALLEL
+// --------------------------------------------------------------
+// Benchmark                    Time             CPU   Iterations
+// --------------------------------------------------------------
+// BM_MarchingCubes/10       5572 ns         5526 ns       126943
+// BM_MarchingCubes/20      12187 ns        11801 ns        57220
+// BM_MarchingCubes/30      28386 ns        27983 ns        24976
+// BM_MarchingCubes/40      61031 ns        60253 ns        10844
+// BM_MarchingCubes/50     119281 ns       118597 ns         5889
+// BM_MarchingCubes/60     197227 ns       195985 ns         3424
+#if MARCHING_CUBES_SEQUENTIAL
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func) {
 
@@ -196,15 +208,6 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
     }
 }
 #else
-// --------------------------------------------------------------
-// Benchmark                    Time             CPU   Iterations
-// --------------------------------------------------------------
-// BM_MarchingCubes/10       5572 ns         5526 ns       126943
-// BM_MarchingCubes/20      12187 ns        11801 ns        57220
-// BM_MarchingCubes/30      28386 ns        27983 ns        24976
-// BM_MarchingCubes/40      61031 ns        60253 ns        10844
-// BM_MarchingCubes/50     119281 ns       118597 ns         5889
-// BM_MarchingCubes/60     197227 ns       195985 ns         3424
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func) {
 
@@ -212,7 +215,7 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
     indices.clear();
 
     const unsigned int cubeCount = dimensions.x * dimensions.y * dimensions.z;
-    unsigned int maxTrianglesPerCube = 5;
+    const unsigned int maxTrianglesPerCube = 5;
     vertices.reserve(cubeCount * maxTrianglesPerCube * 3);
 
 #pragma omp parallel for
@@ -235,7 +238,7 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
                 for (unsigned long i = 0; i < surfaceValues.size(); i++) {
                     auto translated = cubeCorners[i] + cubePosition;
                     float surfaceValue = func(translated);
-                    cubeIndex |= (surfaceValue < 0.0F) * (1 << i);
+                    cubeIndex |= static_cast<int>(surfaceValue < 0.0F) * (1 << i);
                     surfaceValues[i] = surfaceValue;
                 }
 
