@@ -176,14 +176,14 @@ When bright light sources illuminate a scene, they tend to "bleed" into their su
 ![Bloom](screenshots/bloom.gif)
 
 ![Bloom Enabled](screenshots/bloom.png)
-![Bloom Enabled](screenshots/bloom_disabled.png)
+![Bloom Disabled](screenshots/bloom-disabled.png)
 
 As you can see the red light seems to leek light into its surroundings and the features on the face of the monkey are being highlighted.
 The second image does not have the bloom effect applied to it and thus the light looks quite flat.
 
 How it works:
 
-![Bloom Enabled](screenshots/bloom_steps.png)
+![Bloom Steps](screenshots/bloom-steps.png)
 
 First, we render our scene into two buffers.
 The first buffer will receive the colors normally.
@@ -210,11 +210,28 @@ The implicit surface that is defined by this function is then approximated with 
 ![Meta Balls 1](screenshots/meta-balls-1.gif)
 ![Meta Balls 2](screenshots/meta-balls-2.gif)
 
+### Terrain Erosion
+
+This is a method to generate more realistic looking terrain.
+We start out with a terrain that has been generated from a height map by layering noise textures with different frequencies.
+Then we simulate rain falling onto the terrain.
+Water is one of the main causes for erosion in nature (the other being wind).
+Each rain drop is simulated and it will traverse the terrain, following the terrains gradient.
+At each step in the simulation we either erode the terrain, i.e. take sediment away.
+Or we deposit sediment onto the terrain.
+This leads to the formation of nice ridges and smooth valleys.
+
+![Terrain Erosion](screenshots/terrain-erosion.gif)
+
+Sources:
+- https://www.youtube.com/watch?v=eaXk97ujbPQ
+- https://www.firespark.de/resources/downloads/implementation%20of%20a%20methode%20for%20hydraulic%20erosion.pdf
+- http://ranmantaru.com/blog/2011/10/08/water-erosion-on-heightmap-terrain/
+
 ## Ideas
 
 -   Water Demo
 -   Graph Visualization
--   Hydraulic Erosion (simulate rain to generate more realistic terrain)
 
 ## Additional Features
 
