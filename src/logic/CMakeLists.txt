@@ -1,5 +1,5 @@
 
-set(SOURCES
+add_library(logic
         util/FileUtils.cpp
         util/TimeUtils.cpp
         rubiks_cube/RubiksCubeData.cpp
@@ -12,9 +12,9 @@ set(SOURCES
         fourier_transform/Fourier.cpp
         a_star/AStarSolver.cpp
         ray_tracing_2d/RayTracer2D.cpp
-        ray_tracing/RayTracer.cpp)
+        ray_tracing/RayTracer.cpp
+        gis/ShpLoader.cpp)
 
-add_library(logic ${SOURCES})
 target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
 
 set_target_properties(
