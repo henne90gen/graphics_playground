@@ -17,7 +17,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
 void TerrainErosion::setup() {
-    std::random_device global_random_device = {};
+    std::random_device global_random_device;
     randomGenerator = std::mt19937(global_random_device());
     randomDistribution = std::uniform_real_distribution<double>(0.0, 1.0);
 
@@ -61,6 +61,8 @@ void TerrainErosion::tick() {
     static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(0.65F, 0.0F, 0.0F);
+    static glm::vec3 lightPos = {1.0F, 1.0F, 1.0F};
+    static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
     static bool wireframe = false;
     static bool shouldRenderPaths = false;
     static auto terrainLevels = TerrainLevels();
@@ -78,8 +80,9 @@ void TerrainErosion::tick() {
         regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
     }
 
-    showSettings(modelScale, cameraPosition, cameraRotation, wireframe, shouldRenderPaths, onlyRainAroundCenterPoint,
-                 letItRain, params, raindropCount, centerPoint, radius, simulationSpeed, terrainLevels);
+    showSettings(modelScale, cameraPosition, cameraRotation, lightPos, lightColor, wireframe, shouldRenderPaths,
+                 onlyRainAroundCenterPoint, letItRain, params, raindropCount, centerPoint, radius, simulationSpeed,
+                 terrainLevels);
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
@@ -88,16 +91,7 @@ void TerrainErosion::tick() {
     modelMatrix = glm::scale(modelMatrix, modelScale);
     glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-
-    shader->bind();
-    shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
-
-    pathShader->bind();
-    pathShader->setUniform("modelMatrix", modelMatrix);
-    pathShader->setUniform("viewMatrix", viewMatrix);
-    pathShader->setUniform("projectionMatrix", projectionMatrix);
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
     static int counter = 0;
     counter++;
@@ -109,18 +103,20 @@ void TerrainErosion::tick() {
             }
         }
         if (shouldRenderPaths) {
-            renderPaths(raindrops);
+            renderPaths(modelMatrix, viewMatrix, projectionMatrix, raindrops);
         }
     }
 
     recalculateNormals();
-    renderTerrain(wireframe, terrainLevels);
+    renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, lightPos, lightColor, wireframe,
+                  terrainLevels);
 }
 
 void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
-                                  bool &wireframe, bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint,
-                                  bool &letItRain, SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint,
-                                  float &radius, int &simulationSpeed, TerrainLevels &terrainLevels) {
+                                  glm::vec3 &lightPos, glm::vec3 &lightColor, bool &wireframe, bool &shouldRenderPaths,
+                                  bool &onlyRainAroundCenterPoint, bool &letItRain, SimulationParams &params,
+                                  int &raindropCount, glm::vec2 &centerPoint, float &radius, int &simulationSpeed,
+                                  TerrainLevels &terrainLevels) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -128,6 +124,8 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPositi
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&cameraPosition));
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
+    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos), dragSpeed);
+    ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::Checkbox("Wireframe", &wireframe);
     ImGui::Checkbox("Raindrop Paths", &shouldRenderPaths);
     if (ImGui::Button("Regenerate Terrain")) {
@@ -233,12 +231,22 @@ void TerrainErosion::regenerateTerrain() {
     heightBuffer->update(heightMap);
 }
 
-void TerrainErosion::renderTerrain(bool wireframe, const TerrainLevels &levels) {
+void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+                                   const glm::mat4 &projectionMatrix, const glm::mat3 normalMatrix,
+                                   const glm::vec3 &lightPos, const glm::vec3 &lightColor, bool wireframe,
+                                   const TerrainLevels &levels) {
     shader->bind();
+    shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("viewMatrix", viewMatrix);
+    shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("normalMatrix", normalMatrix);
+
     shader->setUniform("waterLevel", levels.waterLevel);
     shader->setUniform("grassLevel", levels.grassLevel);
     shader->setUniform("rockLevel", levels.rockLevel);
     shader->setUniform("blur", levels.blur);
+    shader->setUniform("lightPos", lightPos);
+    shader->setUniform("lightColor", lightColor);
 
     terrainVA->bind();
 
@@ -302,8 +310,12 @@ void TerrainErosion::generateTerrainMesh() {
     terrainVA->setIndexBuffer(indexBuffer);
 }
 
-void TerrainErosion::renderPaths(const std::vector<Raindrop> &raindrops) {
+void TerrainErosion::renderPaths(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+                                 const glm::mat4 &projectionMatrix, const std::vector<Raindrop> &raindrops) {
     pathShader->bind();
+    pathShader->setUniform("modelMatrix", modelMatrix);
+    pathShader->setUniform("viewMatrix", viewMatrix);
+    pathShader->setUniform("projectionMatrix", projectionMatrix);
 
     auto va = std::make_shared<VertexArray>(pathShader);
     unsigned int verticesCount = 0;
