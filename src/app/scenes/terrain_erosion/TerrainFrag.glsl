@@ -12,6 +12,7 @@ uniform float blur;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
+uniform float lightPower;
 
 out vec4 color;
 
@@ -21,7 +22,7 @@ vec4 rockColor = vec4(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F, 1.0F);
 vec4 snowColor = vec4(255.0F/255.0F, 250.0F/255.0F, 250.0F/255.0F, 1.0F);
 
 vec3 specularColor = vec3(0.1F);
-vec3 ambientColor = vec3(0.2F);
+vec3 ambientColor = vec3(0.05F);
 
 void main() {
     float height = vHeight;
@@ -48,6 +49,7 @@ void main() {
     float distanceToLight = length(surfaceToLight);
 
     float brightness = dot(normal_, surfaceToLight) / (distanceToLight * distanceToLight);
+    brightness *= lightPower;
     brightness = clamp(brightness, 0, 1);
 
     vec3 diffuseColor = brightness * lightColor * color.rgb;
@@ -56,11 +58,12 @@ void main() {
     vec3 reflectionDirection = reflect(surfaceToLight, normal_);
     float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0, 1);
 
-    vec3 specularColorFinal = specularColor * lightColor * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
+    vec3 specularColorFinal = specularColor * lightPower * lightColor * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
 
     vec3 colorv3 = vec3(0.0);
     colorv3 += ambientColor;
     colorv3 += diffuseColor;
-    colorv3 += specularColorFinal;
+    // TODO make this configurable and find out whether it makes it look better
+    //  colorv3 += specularColorFinal;
     color = vec4(colorv3, 1.0F);
 }

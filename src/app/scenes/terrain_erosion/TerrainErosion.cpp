@@ -1,13 +1,10 @@
 #include "TerrainErosion.h"
 
 #include <chrono>
-#include <cstdlib>
-#include <ctime>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
 #include "util/ImGuiUtils.h"
-#include "util/VectorUtils.h"
 
 const int WIDTH = 300;
 const int HEIGHT = 300;
@@ -54,15 +51,16 @@ void TerrainErosion::destroy() {}
 
 void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto modelScale = glm::vec3(0.4F, 2.0F, 0.4F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraPosition = glm::vec3(-50.0F, -100.0F, -160.0F);
+    static auto modelScale = glm::vec3(1.0F, 2.0F, 1.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(0.65F, 0.0F, 0.0F);
-    static glm::vec3 lightPos = {1.0F, 1.0F, 1.0F};
+    static auto cameraPosition = glm::vec3(-115.0F, -230.0F, -330.0F);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    static auto cameraRotation = glm::vec3(0.88F, 0.0F, 0.0F);
+    static glm::vec3 lightPos = {WIDTH / 2.0F, 80.0F, HEIGHT / 2.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
+    static float lightPower = 50.0F;
     static bool wireframe = false;
     static bool shouldRenderPaths = false;
     static auto terrainLevels = TerrainLevels();
@@ -80,9 +78,9 @@ void TerrainErosion::tick() {
         regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
     }
 
-    showSettings(modelScale, cameraPosition, cameraRotation, lightPos, lightColor, wireframe, shouldRenderPaths,
-                 onlyRainAroundCenterPoint, letItRain, params, raindropCount, centerPoint, radius, simulationSpeed,
-                 terrainLevels);
+    showSettings(modelScale, cameraPosition, cameraRotation, lightPos, lightColor, lightPower, wireframe,
+                 shouldRenderPaths, onlyRainAroundCenterPoint, letItRain, params, raindropCount, centerPoint, radius,
+                 simulationSpeed, terrainLevels);
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
@@ -108,15 +106,15 @@ void TerrainErosion::tick() {
     }
 
     recalculateNormals();
-    renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, lightPos, lightColor, wireframe,
+    renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, lightPos, lightColor, lightPower, wireframe,
                   terrainLevels);
 }
 
 void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
-                                  glm::vec3 &lightPos, glm::vec3 &lightColor, bool &wireframe, bool &shouldRenderPaths,
-                                  bool &onlyRainAroundCenterPoint, bool &letItRain, SimulationParams &params,
-                                  int &raindropCount, glm::vec2 &centerPoint, float &radius, int &simulationSpeed,
-                                  TerrainLevels &terrainLevels) {
+                                  glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower, bool &wireframe,
+                                  bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
+                                  SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
+                                  int &simulationSpeed, TerrainLevels &terrainLevels) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -124,8 +122,9 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPositi
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&cameraPosition));
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
-    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos), dragSpeed);
+    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
+    ImGui::DragFloat("Light Power", &lightPower, dragSpeed);
     ImGui::Checkbox("Wireframe", &wireframe);
     ImGui::Checkbox("Raindrop Paths", &shouldRenderPaths);
     if (ImGui::Button("Regenerate Terrain")) {
@@ -232,9 +231,9 @@ void TerrainErosion::regenerateTerrain() {
 }
 
 void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
-                                   const glm::mat4 &projectionMatrix, const glm::mat3 normalMatrix,
-                                   const glm::vec3 &lightPos, const glm::vec3 &lightColor, bool wireframe,
-                                   const TerrainLevels &levels) {
+                                   const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
+                                   const glm::vec3 &lightPos, const glm::vec3 &lightColor, float &lightPower,
+                                   bool wireframe, const TerrainLevels &levels) {
     shader->bind();
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
@@ -247,6 +246,7 @@ void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4
     shader->setUniform("blur", levels.blur);
     shader->setUniform("lightPos", lightPos);
     shader->setUniform("lightColor", lightColor);
+    shader->setUniform("lightPower", lightPower);
 
     terrainVA->bind();
 
@@ -552,7 +552,7 @@ void TerrainErosion::recalculateNormals() {
             const float R = getHeightMapValue(x + 1, y);
             const float B = getHeightMapValue(x, y - 1);
             const float T = getHeightMapValue(x, y + 1);
-            const glm::vec3 normal = glm::normalize(glm::vec3(2 * (R - L), 2 * (B - T), -4));
+            const glm::vec3 normal = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
             normals.push_back(normal);
         }
     }
