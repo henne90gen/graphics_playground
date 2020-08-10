@@ -51,16 +51,16 @@ void TerrainErosion::destroy() {}
 
 void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto modelScale = glm::vec3(1.0F, 2.0F, 1.0F);
+    static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraPosition = glm::vec3(-115.0F, -230.0F, -330.0F);
+    static auto cameraPosition = glm::vec3(-120.0F, -155.0F, -375.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(0.88F, 0.0F, 0.0F);
-    static glm::vec3 lightPos = {WIDTH / 2.0F, 80.0F, HEIGHT / 2.0F};
+    static auto cameraRotation = glm::vec3(0.55F, 0.0F, 0.0F);
+    static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
-    static float lightPower = 50.0F;
+    static float lightPower = 13.0F;
     static bool wireframe = false;
     static bool shouldRenderPaths = false;
     static auto terrainLevels = TerrainLevels();
@@ -78,7 +78,7 @@ void TerrainErosion::tick() {
         regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
     }
 
-    showSettings(modelScale, cameraPosition, cameraRotation, lightPos, lightColor, lightPower, wireframe,
+    showSettings(modelScale, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
                  shouldRenderPaths, onlyRainAroundCenterPoint, letItRain, params, raindropCount, centerPoint, radius,
                  simulationSpeed, terrainLevels);
 
@@ -106,8 +106,8 @@ void TerrainErosion::tick() {
     }
 
     recalculateNormals();
-    renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, lightPos, lightColor, lightPower, wireframe,
-                  terrainLevels);
+    renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor, lightPower,
+                  wireframe, terrainLevels);
 }
 
 void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
@@ -209,7 +209,7 @@ void TerrainErosion::regenerateTerrain() {
     noise2->SetSeed(seed);
     noise3->SetSeed(seed);
 
-    const glm::vec3 scale = {15.0F, 5.0F, 1.0F};
+    const glm::vec3 scale = {10.0F, 10.0F, 1.0F};
     const glm::vec3 frequencyScale = {15.0F, 5.0F, 1.0F};
 
     auto width = static_cast<unsigned int>(WIDTH);
@@ -224,7 +224,7 @@ void TerrainErosion::regenerateTerrain() {
             generatedHeight += generateHeight(noise2, realX, realY, scale.z) * frequencyScale.y;
             generatedHeight += generateHeight(noise3, realX, realY, scale.z) * frequencyScale.z;
 
-            heightMap[y * width + x] = generatedHeight;
+            heightMap[y * width + x] = generatedHeight * 3.0F;
         }
     }
     heightBuffer->update(heightMap);
@@ -232,7 +232,7 @@ void TerrainErosion::regenerateTerrain() {
 
 void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                                    const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
-                                   const glm::vec3 &lightPos, const glm::vec3 &lightColor, float &lightPower,
+                                   const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, float &lightPower,
                                    bool wireframe, const TerrainLevels &levels) {
     shader->bind();
     shader->setUniform("modelMatrix", modelMatrix);
@@ -244,9 +244,9 @@ void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4
     shader->setUniform("grassLevel", levels.grassLevel);
     shader->setUniform("rockLevel", levels.rockLevel);
     shader->setUniform("blur", levels.blur);
-    shader->setUniform("lightPos", lightPos);
+    shader->setUniform("surfaceToLight", surfaceToLight);
     shader->setUniform("lightColor", lightColor);
-    shader->setUniform("lightPower", lightPower);
+    shader->setUniform("lightPower", lightPower / 100.0F);
 
     terrainVA->bind();
 
