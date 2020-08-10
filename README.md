@@ -230,8 +230,9 @@ Sources:
 
 ## Ideas
 
--   Water Demo
--   Graph Visualization
+- use real geographic data for terrain erosion
+- Water Demo
+- Graph Visualization
 
 ## Additional Features
 
