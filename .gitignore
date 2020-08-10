@@ -4,7 +4,7 @@
 build/
 build-release/
 build-debug/
-env/
+venv/
 cmake-build-debug/
 cmake-build-release/
 CMakeSettings.json

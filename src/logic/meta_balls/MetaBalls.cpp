@@ -6,8 +6,7 @@
 implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs) {
     return [&metaballs](const glm::vec3 &position) {
         float total = 0.0F;
-        for (unsigned int i = 0; i < metaballs.size(); i++) {
-            const auto &metaball = metaballs[i];
+        for (auto metaball : metaballs) {
             auto dir = position - metaball.position;
             dir *= dir;
             float distSq = dir.x + dir.y + dir.z;
@@ -20,7 +19,7 @@ implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs) {
     };
 }
 
-// TODO this does not correctly use the radius of the balls
+// TODO(henne): this does not correctly use the radius of the balls
 implicit_surface_func inverse_dist_func(const std::vector<MetaBall> &metaballs) {
     return [&metaballs](const glm::vec3 &position) {
         float total = 0.0F;

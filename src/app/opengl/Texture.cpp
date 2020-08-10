@@ -39,7 +39,7 @@ void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, uns
     }
 }
 
-void Texture::update(Image &image) { update(image.pixels.data(), image.width, image.height); }
+void Texture::update(Image &image) const { update(image.pixels.data(), image.width, image.height); }
 
 void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, unsigned int height,
                      unsigned int unpackAlignment) const {
