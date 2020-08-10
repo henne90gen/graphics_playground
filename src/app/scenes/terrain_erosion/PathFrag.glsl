@@ -3,5 +3,6 @@
 out vec4 color;
 
 void main() {
-    color = vec4(1.0F, 0.0F, 0.0F, 1.0F);
+    // a somewhat nice blue
+    color = vec4(0.337254902F, 0.509803922F, 0.639215686F, 1.0F);
 }

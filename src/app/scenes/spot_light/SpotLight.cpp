@@ -134,9 +134,9 @@ void SpotLight::moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float
 
 void addWall(std::vector<float> &vertices, const glm::vec3 &position, const glm::vec3 &normal) {
 #define ADD_VERTEX(v)                                                                                                  \
-    vertices.push_back(v.x);                                                                                           \
-    vertices.push_back(v.y);                                                                                           \
-    vertices.push_back(v.z);                                                                                           \
+    vertices.push_back((v).x);                                                                                           \
+    vertices.push_back((v).y);                                                                                           \
+    vertices.push_back((v).z);                                                                                           \
     vertices.push_back(normal.x);                                                                                      \
     vertices.push_back(normal.y);                                                                                      \
     vertices.push_back(normal.z)
