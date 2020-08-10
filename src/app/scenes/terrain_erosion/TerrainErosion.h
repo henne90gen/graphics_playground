@@ -30,10 +30,10 @@ struct SimulationParams {
 };
 
 struct TerrainLevels {
-    float waterLevel = 9.0F;
-    float grassLevel = 11.5F;
-    float rockLevel = 17.0F;
-    float blur = 1.0F;
+    float waterLevel = 10.0F;
+    float grassLevel = 30.0F;
+    float rockLevel = 45.0F;
+    float blur = 5.0F;
 };
 
 class TerrainErosion : public Scene {
@@ -64,7 +64,7 @@ class TerrainErosion : public Scene {
     std::uniform_real_distribution<double> randomDistribution;
 
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-                       const glm::mat3 &normalMatrix, const glm::vec3 &lightPos, const glm::vec3 &lightColor,
+                       const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
                        float &lightPower, bool wireframe, const TerrainLevels &levels);
     void renderPaths(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                      const std::vector<Raindrop> &raindrops);
