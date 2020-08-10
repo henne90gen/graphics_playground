@@ -1,3 +1,5 @@
+all: cmake-release build test run-bench-marching-cubes run-bench-meta-balls
+
 clean:
 	@rm -rf build
 

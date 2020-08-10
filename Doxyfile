@@ -931,6 +931,7 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       = */vendor/* \
                          */env/* \
+                         */venv/* \
                          */.idea/* \
                          */.git/* \
                          */cmake-build-*
