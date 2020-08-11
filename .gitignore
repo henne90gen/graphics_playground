@@ -11,3 +11,4 @@ CMakeSettings.json
 __pycache__/
 docs/
 src/app/scenes/model_loading/models/
+gis_data/

@@ -69,3 +69,7 @@ set_target_properties(
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 )
+
+# shp loader test
+add_executable(ShpLoaderTest gis/ShpLoaderTest.cpp)
+target_link_libraries(ShpLoaderTest PRIVATE logic)
