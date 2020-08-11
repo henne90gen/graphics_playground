@@ -15,6 +15,15 @@ test: build
 run: build
 	@cd build/src/app; ./Playground
 
+run-bench-marching-cubes: build
+	@cd build/src/logic; ./MarchingCubesBench
+
+run-bench-meta-balls: build
+	@cd build/src/logic; ./MetaBallsBench
+
+run-shp-loader: build
+	@cd build/src/logic; ./ShpLoaderTest
+
 clang-tidy:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt
 
@@ -27,16 +36,13 @@ docs:
 cmake-release:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DCMAKE_BUILD_TYPE=Release ..
 
-run-bench-marching-cubes: build
-	@cd build/src/logic; ./MarchingCubesBench
-
-run-bench-meta-balls: build
-	@cd build/src/logic; ./MetaBallsBench
-
 cpu-performance:
 	sudo cpupower frequency-set --governor performance
 
 cpu-powersave:
 	sudo cpupower frequency-set --governor powersave
+
+download-gis-data:
+	@. venv/bin/activate; python -m scripts download-gis-data
 
 .PHONY: docs build

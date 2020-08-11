@@ -6,6 +6,7 @@ from .analyze_build_report import analyze_build_report
 from .generate_coding_train import generate_coding_train
 from .generate_scene_template import generate_scene_template
 from .copy_resources import run_copy_resources
+from . import gis_data
 
 
 @group()
@@ -36,6 +37,12 @@ def coding_train():
 @argument("dest", required=True, nargs=1)
 def copy_resources(base_dir: str, files: List[str], dest: str):
     run_copy_resources(base_dir, files, dest)
+
+
+@main.command()
+@option("--force", "-f", is_flag=True)
+def download_gis_data(force):
+    gis_data.download(force)
 
 
 if __name__ == "__main__":
