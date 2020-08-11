@@ -14,8 +14,8 @@ class Artifact:
 artifacts = [
     Artifact("gravimetry",
              "https://www.geologie.sachsen.de/download/GravUeK400dig.zip"),
-    # Artifact("dtm",
-    #         "https://geocloud.landesvermessung.sachsen.de/index.php/s/MQq77ZzhgPWqUew/download?path=%2F&files=dgm20_sn.zip")
+    Artifact("dtm",
+             "https://geocloud.landesvermessung.sachsen.de/index.php/s/MQq77ZzhgPWqUew/download?path=%2F&files=dgm20_sn.zip")
 ]
 
 
