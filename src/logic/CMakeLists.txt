@@ -13,7 +13,8 @@ add_library(logic
         a_star/AStarSolver.cpp
         ray_tracing_2d/RayTracer2D.cpp
         ray_tracing/RayTracer.cpp
-        gis/ShpLoader.cpp)
+        gis/ShpLoader.cpp
+        gis/XyzLoader.cpp)
 
 target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
 
@@ -71,5 +72,20 @@ set_target_properties(
 )
 
 # shp loader test
-add_executable(ShpLoaderTest gis/ShpLoaderTest.cpp)
-target_link_libraries(ShpLoaderTest PRIVATE logic)
+#add_executable(ShpLoaderTest gis/ShpLoaderTest.cpp)
+#target_link_libraries(ShpLoaderTest PRIVATE logic)
+#set_target_properties(
+#        ShpLoaderTest PROPERTIES
+#        CXX_STANDARD 17
+#        CXX_STANDARD_REQUIRED ON
+#)
+
+# xyz loader test
+#add_executable(XyzLoaderTest gis/XyzLoaderTest.cpp)
+#target_link_libraries(XyzLoaderTest PRIVATE logic)
+#set_target_properties(
+#        XyzLoaderTest PROPERTIES
+#        CXX_STANDARD 17
+#        CXX_STANDARD_REQUIRED ON
+#)
+#target_include_directories(XyzLoaderTest PRIVATE ${GLM_DIR})
