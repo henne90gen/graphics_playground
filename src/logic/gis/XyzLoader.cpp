@@ -1,8 +1,12 @@
 #include "XyzLoader.h"
 
+#define USE_STRING_STREAM 0
+
 #include <fstream>
 #include <iostream>
+#if USE_STRING_STREAM
 #include <sstream>
+#endif
 
 #include "util/FileUtils.h"
 
@@ -18,8 +22,6 @@
 // Stream-Omp   BM_Load    18314706058 ns   15897039255 ns            1
 // Custom-Omp   BM_Load     4150112235 ns    3929744017 ns            1
 
-
-
 bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
     result.clear();
 
@@ -30,7 +32,7 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
     for (int i = 0; i < files.size(); i++) {
         const auto &fileName = files[i];
 
-#if 0
+#if USE_STRING_STREAM
         std::ifstream file;
         file.open(fileName, std::ios::in);
         if (!file.is_open()) {
