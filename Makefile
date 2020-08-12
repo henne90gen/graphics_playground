@@ -21,6 +21,9 @@ run-bench-marching-cubes: build
 run-bench-meta-balls: build
 	@cd build/src/logic; ./MetaBallsBench
 
+run-bench-xyz-loader: build
+	@cd build/src/logic; ./XyzLoaderBench
+
 clang-tidy:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt
 

@@ -1,9 +1,8 @@
-#include <vector>
-
 #include <benchmark/benchmark.h>
 #include <functional>
 #include <glm/ext.hpp>
 #include <iostream>
+#include <vector>
 
 #include "MetaBalls.h"
 
