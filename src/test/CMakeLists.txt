@@ -9,7 +9,9 @@ add_executable(Tests main.cpp
         FourierTest.cpp
         AStarTest.cpp
         RayTracer2DTest.cpp
-        RayTracer3DTest.cpp)
+        RayTracer3DTest.cpp
+        gis/ShpLoaderTest.cpp
+        gis/XyzLoaderTest.cpp)
 
 set_target_properties(Tests PROPERTIES
         CXX_STANDARD 17
