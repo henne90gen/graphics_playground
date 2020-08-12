@@ -45,5 +45,10 @@ def download_gis_data(force):
     gis_data.download(force)
 
 
+@main.command()
+def analyze_gis_data():
+    gis_data.analyze_dtm_files()
+
+
 if __name__ == "__main__":
     main()
