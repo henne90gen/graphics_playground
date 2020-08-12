@@ -184,6 +184,16 @@ std::istream &operator>>(std::istream &is, DbfData &data) {
         std::cout << "Failed to read dbf header" << std::endl;
         return is;
     }
+
+    size_t fieldDescriptorsSize = data.header.positionOfFirstData - sizeof(DbfHeader) - 1;
+    data.numFieldDescriptors = fieldDescriptorsSize / sizeof(DbfFieldDescriptor);
+    data.fieldDescriptors = reinterpret_cast<DbfFieldDescriptor *>(std::malloc(fieldDescriptorsSize));
+    is.read(reinterpret_cast<char *>(data.fieldDescriptors), fieldDescriptorsSize);
+
+    size_t recordsSize = data.header.numRecords * data.header.numBytesRecord;
+    data.data = std::malloc(recordsSize);
+    is.read(reinterpret_cast<char *>(data.data), recordsSize);
+
     return is;
 }
 

@@ -82,24 +82,48 @@ struct DbfHeader {
     uint8_t fileType;
     DbfLastUpdate lastUpdate;
     int32_t numRecords;
-    int16_t numBytesHeader;
+    int16_t positionOfFirstData;
     int16_t numBytesRecord;
-    std::array<uint8_t, 2> reserved0;
-    uint8_t incompleteTransaction;
-    uint8_t encryptionFlag;
-    std::array<uint8_t, 12> multiUserProcessing;
-    uint8_t mdxFlag;
-    uint8_t languageDriverId;
+    std::array<uint8_t, 16> reserved0;
+    uint8_t tableFlags;
+    uint8_t codePageMark;
     std::array<uint8_t, 2> reserved1;
-    std::array<uint8_t, 32> languageDriverName;
-    std::array<uint8_t, 4> reserved2;
+};
+
+struct DbfFieldDescriptor {
+    std::array<char, 11> fieldName;
+    uint8_t fieldType;
+    uint32_t fieldOffset;
+    uint8_t fieldLength;
+    uint8_t fieldDecimalCount;
+    uint8_t flags;
+    uint32_t autoIncrementNext;
+    uint8_t autoIncrementStep;
+    std::array<uint8_t, 8> reserved2;
 };
 
 struct DbfData {
     DbfHeader header;
+    int32_t numFieldDescriptors;
+    DbfFieldDescriptor *fieldDescriptors;
+    void *data;
+};
+
+struct DbfNumeric {
+    float value;
 };
 
 #pragma pack(pop)
 
 bool loadShpFile(const std::string &fileName, ShpData &data);
 bool loadDbfFile(const std::string &fileName, DbfData &data);
+
+template <typename Raw, typename R>
+std::vector<R> convertTo(const DbfData &data, const std::function<R(const Raw &)> convertFunc) {
+    auto records = std::vector<R>(data.header.numRecords);
+    for (size_t i = 0; i < data.header.numRecords; i++) {
+        auto record = reinterpret_cast<Raw *>(data.data)[i];
+        records[i] = convertFunc(record);
+    }
+    return records;
+}
