@@ -71,21 +71,12 @@ set_target_properties(
         CXX_STANDARD_REQUIRED ON
 )
 
-# shp loader test
-#add_executable(ShpLoaderTest gis/ShpLoaderTest.cpp)
-#target_link_libraries(ShpLoaderTest PRIVATE logic)
-#set_target_properties(
-#        ShpLoaderTest PROPERTIES
-#        CXX_STANDARD 17
-#        CXX_STANDARD_REQUIRED ON
-#)
-
-# xyz loader test
-#add_executable(XyzLoaderTest gis/XyzLoaderTest.cpp)
-#target_link_libraries(XyzLoaderTest PRIVATE logic)
-#set_target_properties(
-#        XyzLoaderTest PROPERTIES
-#        CXX_STANDARD 17
-#        CXX_STANDARD_REQUIRED ON
-#)
-#target_include_directories(XyzLoaderTest PRIVATE ${GLM_DIR})
+# xyz loader benchmark
+add_executable(XyzLoaderBench gis/XyzLoaderBench.cpp)
+target_link_libraries(XyzLoaderBench PRIVATE logic benchmark::benchmark)
+target_include_directories(XyzLoaderBench PRIVATE ${GLM_DIR})
+set_target_properties(
+        XyzLoaderBench PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
