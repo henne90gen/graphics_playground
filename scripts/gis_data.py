@@ -44,14 +44,11 @@ def analyze_dtm_files():
     total = 0
     files = os.listdir(dir_name)
     for file_name in files:
+        if file_name[-4:] != ".xyz":
+            continue
+
         with open(dir_name + file_name) as f:
             lines = f.readlines()
 
-        length = len(lines[0])
-        for line in lines:
-            if len(line) != length:
-                print(f"Analyzing {file_name}")
-                print("We have a problem")
-                break
         total += len(lines)
     print(total, total / len(files))
