@@ -6,9 +6,6 @@
 
 #include "util/ImGuiUtils.h"
 
-const int WIDTH = 300;
-const int HEIGHT = 300;
-
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
@@ -68,7 +65,7 @@ void TerrainErosion::tick() {
     static bool letItRain = true;
     static auto params = SimulationParams();
     static int raindropCount = 100;
-    static auto centerPoint = glm::vec2(WIDTH / 2, HEIGHT / 2);
+    static auto centerPoint = glm::vec2(HEIGHTMAP_WIDTH / 2, HEIGHTMAP_HEIGHT / 2);
     static auto radius = 30.0F;
     static int simulationSpeed = 2;
     static auto raindrops = std::vector<Raindrop>();
@@ -97,7 +94,7 @@ void TerrainErosion::tick() {
         if (counter % simulationSpeed == 0) {
             regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
             for (auto &raindrop : raindrops) {
-                simulateRaindrop(params, raindrop);
+                simulateRaindrop(heightMap, randomGenerator, randomDistribution, params, raindrop);
             }
         }
         if (shouldRenderPaths) {
@@ -183,9 +180,9 @@ void TerrainErosion::regenerateRaindrops(std::vector<Raindrop> &raindrops, bool 
     } else {
         for (unsigned int j = 0; j < raindropCount; j++) {
             double num = randomDistribution(randomGenerator);
-            auto i = static_cast<unsigned int>(num * (WIDTH * HEIGHT));
-            auto x = static_cast<float>(i % WIDTH);
-            auto z = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
+            auto i = static_cast<unsigned int>(num * (HEIGHTMAP_WIDTH * HEIGHTMAP_HEIGHT));
+            auto x = static_cast<float>(i % HEIGHTMAP_WIDTH);
+            auto z = std::floor(static_cast<float>(i) / static_cast<float>(HEIGHTMAP_WIDTH));
             Raindrop raindrop = {};
             raindrop.startingPosition = glm::vec2(x, z);
             raindrops.push_back(raindrop);
@@ -212,8 +209,8 @@ void TerrainErosion::regenerateTerrain() {
     const glm::vec3 scale = {10.0F, 10.0F, 1.0F};
     const glm::vec3 frequencyScale = {15.0F, 5.0F, 1.0F};
 
-    auto width = static_cast<unsigned int>(WIDTH);
-    auto height = static_cast<unsigned int>(HEIGHT);
+    auto width = static_cast<unsigned int>(HEIGHTMAP_WIDTH);
+    auto height = static_cast<unsigned int>(HEIGHTMAP_HEIGHT);
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
             float realX = static_cast<float>(x) / scale.x;
@@ -224,10 +221,10 @@ void TerrainErosion::regenerateTerrain() {
             generatedHeight += generateHeight(noise2, realX, realY, scale.z) * frequencyScale.y;
             generatedHeight += generateHeight(noise3, realX, realY, scale.z) * frequencyScale.z;
 
-            heightMap[y * width + x] = generatedHeight * 3.0F;
+            heightMap.data[y * width + x] = generatedHeight * 3.0F;
         }
     }
-    heightBuffer->update(heightMap);
+    heightBuffer->update(heightMap.data);
 }
 
 void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
@@ -254,7 +251,7 @@ void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    heightBuffer->update(heightMap);
+    heightBuffer->update(heightMap.data);
     GL_Call(glDrawElements(GL_TRIANGLES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
     if (wireframe) {
@@ -268,11 +265,11 @@ void TerrainErosion::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4
 void TerrainErosion::generateTerrainMesh() {
     terrainVA->bind();
 
-    const unsigned int verticesCount = WIDTH * HEIGHT;
+    const unsigned int verticesCount = HEIGHTMAP_WIDTH * HEIGHTMAP_HEIGHT;
     std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
     for (unsigned long i = 0; i < vertices.size(); i++) {
-        auto x = static_cast<float>(i % WIDTH);
-        auto z = std::floor(static_cast<float>(i) / static_cast<float>(HEIGHT));
+        auto x = static_cast<float>(i % HEIGHTMAP_WIDTH);
+        auto z = std::floor(static_cast<float>(i) / static_cast<float>(HEIGHTMAP_HEIGHT));
         vertices[i] = glm::vec2(x, z);
     }
 
@@ -280,7 +277,7 @@ void TerrainErosion::generateTerrainMesh() {
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     terrainVA->addVertexBuffer(positionBuffer);
 
-    heightMap = std::vector<float>(verticesCount);
+    heightMap = {HEIGHTMAP_WIDTH, HEIGHTMAP_HEIGHT, std::vector<float>(verticesCount)};
     heightBuffer = std::make_shared<VertexBuffer>();
     BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
     heightBuffer->setLayout(heightLayout);
@@ -293,17 +290,17 @@ void TerrainErosion::generateTerrainMesh() {
     terrainVA->addVertexBuffer(normalBuffer);
 
     const unsigned int indicesPerQuad = 6;
-    unsigned int indicesCount = WIDTH * HEIGHT * indicesPerQuad;
+    unsigned int indicesCount = HEIGHTMAP_WIDTH * HEIGHTMAP_HEIGHT * indicesPerQuad;
     auto indices = std::vector<unsigned int>(indicesCount);
     unsigned int counter = 0;
-    for (unsigned int y = 0; y < HEIGHT - 1; y++) {
-        for (unsigned int x = 0; x < WIDTH - 1; x++) {
-            indices[counter++] = (y + 1) * WIDTH + x;
-            indices[counter++] = y * WIDTH + (x + 1);
-            indices[counter++] = y * WIDTH + x;
-            indices[counter++] = (y + 1) * WIDTH + x;
-            indices[counter++] = (y + 1) * WIDTH + (x + 1);
-            indices[counter++] = y * WIDTH + (x + 1);
+    for (unsigned int y = 0; y < HEIGHTMAP_HEIGHT - 1; y++) {
+        for (unsigned int x = 0; x < HEIGHTMAP_WIDTH - 1; x++) {
+            indices[counter++] = (y + 1) * HEIGHTMAP_WIDTH + x;
+            indices[counter++] = y * HEIGHTMAP_WIDTH + (x + 1);
+            indices[counter++] = y * HEIGHTMAP_WIDTH + x;
+            indices[counter++] = (y + 1) * HEIGHTMAP_WIDTH + x;
+            indices[counter++] = (y + 1) * HEIGHTMAP_WIDTH + (x + 1);
+            indices[counter++] = y * HEIGHTMAP_WIDTH + (x + 1);
         }
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
@@ -360,198 +357,15 @@ void TerrainErosion::renderPaths(const glm::mat4 &modelMatrix, const glm::mat4 &
     pathShader->unbind();
 }
 
-void TerrainErosion::setHeightMapValue(int x, int z, float value) {
-    unsigned long safeZ = std::min(std::max(z, 0), HEIGHT - 1);
-    unsigned long safeX = std::min(std::max(x, 0), WIDTH - 1);
-    unsigned long index = safeZ * WIDTH + safeX;
-    ASSERT(index < heightMap.size());
-    heightMap[index] = value;
-}
-
-float TerrainErosion::getHeightMapValue(int x, int z) {
-    unsigned long safeZ = std::min(std::max(z, 0), HEIGHT - 1);
-    unsigned long safeX = std::min(std::max(x, 0), WIDTH - 1);
-    unsigned long index = safeZ * WIDTH + safeX;
-    ASSERT(index < heightMap.size());
-    return heightMap[index];
-}
-
-void TerrainErosion::simulateRaindrop(const SimulationParams &params, Raindrop &raindrop) {
-    float Kq = params.Kq;
-    float Kw = params.Kw;
-    float Kr = params.Kr;
-    float Kd = params.Kd;
-    float Ki = params.Ki;
-    float minSlope = params.minSlope;
-    float g = params.g;
-
-#define DEPOSIT_AT(X, Z, W)                                                                                            \
-    {                                                                                                                  \
-        float delta = ds * (W);                                                                                        \
-        float newH = getHeightMapValue((X), (Z)) + delta;                                                              \
-        setHeightMapValue((X), (Z), newH);                                                                             \
-    }
-
-#if 1
-#define DEPOSIT(H)                                                                                                     \
-    DEPOSIT_AT(pi.x, pi.y, (1 - f.x) * (1 - f.y))                                                                      \
-    DEPOSIT_AT(pi.x + 1, pi.y, f.x * (1 - f.y))                                                                        \
-    DEPOSIT_AT(pi.x, pi.y + 1, (1 - f.x) * f.y)                                                                        \
-    DEPOSIT_AT(pi.x + 1, pi.y + 1, f.x * f.y)                                                                          \
-    (H) += ds;
-#else
-#define DEPOSIT(H)                                                                                                     \
-    DEPOSIT_AT(pi.x, pi.y, 0.25f)                                                                                      \
-    DEPOSIT_AT(pi.x + 1, pi.y, 0.25f)                                                                                  \
-    DEPOSIT_AT(pi.x, pi.y + 1, 0.25f)                                                                                  \
-    DEPOSIT_AT(pi.x + 1, pi.y + 1, 0.25f)                                                                              \
-    (H) += ds;
-#endif
-
-    raindrop.velocity = 0.0F;
-    raindrop.water = 1.0F;
-    raindrop.sediment = 0.0F;
-    raindrop.path.clear();
-
-    glm::vec2 p = {raindrop.startingPosition.x, raindrop.startingPosition.y};
-    glm::ivec2 pi = {static_cast<int>(p.x), static_cast<int>(p.y)};
-    glm::vec2 f = p - glm::vec2(pi.x, pi.y);
-    glm::vec2 d = {0.0F, 0.0F};
-    float h00 = getHeightMapValue(pi.x, pi.y);
-    float h10 = getHeightMapValue(pi.x + 1, pi.y);
-    float h01 = getHeightMapValue(pi.x, pi.y + 1);
-    float h11 = getHeightMapValue(pi.x + 1, pi.y + 1);
-    float h = h00;
-
-    const int maxPathLength = WIDTH * 4;
-    for (unsigned int i = 0; i < maxPathLength; i++) {
-        raindrop.path.emplace_back(p.x, h, p.y);
-
-        glm::vec2 gradient = {
-              (h10 - h00) * (1 - f.y) + (h11 - h01) * f.y, //
-              (h01 - h00) * (1 - f.x) + (h11 - h10) * f.x  //
-        };
-        d = d * Ki - gradient * (1.0F - Ki);
-
-        float dl = glm::length(d);
-        if (dl <= FLT_EPSILON) {
-            // pick random dir
-            double a = randomDistribution(randomGenerator) * glm::two_pi<double>();
-            d = {std::cos(a), std::sin(a)};
-        }
-
-        d = glm::normalize(d);
-
-        glm::vec2 np = p + d;
-        glm::ivec2 ni = {std::floor(np.x), std::floor(np.y)};
-        glm::vec2 nf = np - glm::vec2(ni.x, ni.y);
-
-        float nh00 = getHeightMapValue(ni.x, ni.y);
-        float nh01 = getHeightMapValue(ni.x, ni.y + 1);
-        float nh10 = getHeightMapValue(ni.x + 1, ni.y);
-        float nh11 = getHeightMapValue(ni.x + 1, ni.y + 1);
-
-        float nh0 = nh00 * (1 - nf.x) + nh10 * nf.x;
-        float nh1 = nh01 * (1 - nf.x) + nh11 * nf.x;
-        float nh = nh0 * (1 - nf.y) + nh1 * nf.y;
-
-        // if higher than current, try to deposit sediment up to neighbour height
-        if (nh >= h) {
-            float ds = (nh - h) + 0.001F;
-
-            if (ds >= raindrop.sediment) {
-                // deposit all sediment and stop
-                ds = raindrop.sediment;
-                DEPOSIT(h)
-                raindrop.sediment = 0.0F;
-                break;
-            }
-
-            DEPOSIT(h)
-            raindrop.sediment -= ds;
-            raindrop.velocity = 0.0F;
-        }
-
-        // compute transport capacity
-        float dh = h - nh;
-        float slope = dh;
-        //         float slope = dh / sqrtf(dh * dh + 1);
-
-        float carryCapacity = std::max(slope, minSlope) * raindrop.velocity * raindrop.water * Kq;
-        float ds = raindrop.sediment - carryCapacity;
-        if (ds >= 0) {
-            // deposit
-            ds *= Kd;
-            // ds=minval(ds, 1.0f);
-
-            DEPOSIT(dh)
-            raindrop.sediment -= ds;
-        } else {
-            // erode
-            ds *= -Kr;
-            ds = std::min(ds, dh * 0.99f);
-
-#define ERODE(X, Z, W)                                                                                                 \
-    {                                                                                                                  \
-        float delta = ds * (W);                                                                                        \
-        float newH = getHeightMapValue((X), (Z)) - delta;                                                              \
-        setHeightMapValue((X), (Z), newH);                                                                             \
-    }
-#if 1
-            for (int z = pi.y - 1; z <= pi.y + 2; z++) {
-                float zo = static_cast<float>(z) - p.y;
-                float zo2 = zo * zo;
-
-                for (int x = pi.x - 1; x <= pi.x + 2; x++) {
-                    float xo = static_cast<float>(x) - p.x;
-
-                    float w = 1 - (xo * xo + zo2) * 0.25F;
-                    if (w <= 0) {
-                        continue;
-                    }
-                    w *= 0.1591549430918953f;
-
-                    ERODE(x, z, w)
-                }
-            }
-#else
-            ERODE(pi.x, pi.y, (1 - f.x) * (1 - f.y))
-            ERODE(pi.x + 1, pi.y, f.x * (1 - f.y))
-            ERODE(pi.x, pi.y + 1, (1 - f.x) * f.y)
-            ERODE(pi.x + 1, pi.y + 1, f.x * f.y)
-#endif
-
-#undef ERODE
-
-            dh -= ds;
-            raindrop.sediment += ds;
-        }
-
-        // move to the neighbour
-        raindrop.velocity = std::sqrt(raindrop.velocity * raindrop.velocity + g * dh);
-        raindrop.water *= 1 - Kw;
-
-        p = np;
-        pi = ni;
-        f = nf;
-
-        h = nh;
-        h00 = nh00;
-        h10 = nh10;
-        h01 = nh01;
-        h11 = nh11;
-    }
-}
-
 void TerrainErosion::recalculateNormals() {
     normals.clear();
-    normals.reserve(heightMap.size());
-    for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
-            const float L = getHeightMapValue(x - 1, y);
-            const float R = getHeightMapValue(x + 1, y);
-            const float B = getHeightMapValue(x, y - 1);
-            const float T = getHeightMapValue(x, y + 1);
+    normals.reserve(heightMap.data.size());
+    for (int y = 0; y < HEIGHTMAP_HEIGHT; y++) {
+        for (int x = 0; x < HEIGHTMAP_WIDTH; x++) {
+            const float L = getHeightMapValue(heightMap, x - 1, y);
+            const float R = getHeightMapValue(heightMap, x + 1, y);
+            const float B = getHeightMapValue(heightMap, x, y - 1);
+            const float T = getHeightMapValue(heightMap, x, y + 1);
             const glm::vec3 normal = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
             normals.push_back(normal);
         }
