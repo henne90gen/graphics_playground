@@ -13,8 +13,10 @@ add_library(logic
         a_star/AStarSolver.cpp
         ray_tracing_2d/RayTracer2D.cpp
         ray_tracing/RayTracer.cpp
+        terrain_erosion/RainSimulation.cpp
         gis/ShpLoader.cpp
-        gis/XyzLoader.cpp)
+        gis/XyzLoader.cpp
+        gis/Triangulation.cpp)
 
 target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
 

@@ -4,20 +4,7 @@
 #include <glm/ext.hpp>
 
 #include "InputData.h"
-
-#ifdef DEBUG
-#ifdef WIN32
-#define ASSERT(x)                                                                                                      \
-    if (!(x))                                                                                                          \
-    __debugbreak()
-#else
-#define ASSERT(x)                                                                                                      \
-    if (!(x))                                                                                                          \
-    __builtin_trap()
-#endif
-#else
-#define ASSERT(x)
-#endif
+#include "util/AssertUtils.h"
 
 #define GL_UnsafeCall(x, error)                                                                                        \
     GL_ClearError();                                                                                                   \
