@@ -31,6 +31,10 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
 #pragma omp parallel for
     for (int i = 0; i < files.size(); i++) {
         const auto &fileName = files[i];
+        if (fileName[fileName.size() - 4] != '.' || fileName[fileName.size() - 3] != 'x' ||
+            fileName[fileName.size() - 2] != 'y' || fileName[fileName.size() - 1] != 'z') {
+            continue;
+        }
 
 #if USE_STRING_STREAM
         std::ifstream file;
@@ -67,16 +71,7 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
 
         std::vector<glm::vec3> temp = {};
         char *workingBuffer = buffer;
-        while (workingBuffer - buffer < fileSize) {
-            size_t lineLength = 0;
-            while (true) {
-                if (workingBuffer[lineLength] == '\n') {
-                    lineLength++;
-                    break;
-                }
-                lineLength++;
-            }
-
+        while (workingBuffer - buffer < fileSize - 3) {
             glm::vec3 vec;
             char *last = nullptr;
             vec.x = strtof(workingBuffer, &last);
@@ -84,7 +79,7 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
             vec.z = strtof(last, &last);
             temp.push_back(vec);
 
-            workingBuffer = workingBuffer + lineLength;
+            workingBuffer = last;
         }
         std::free(buffer);
 
