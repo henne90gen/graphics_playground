@@ -16,10 +16,10 @@
 #define HEIGHTMAP_HEIGHT 300
 
 struct TerrainLevels {
-    float waterLevel = 10.0F;
-    float grassLevel = 30.0F;
+    float waterLevel = 0.0F;
+    float grassLevel = 25.0F;
     float rockLevel = 45.0F;
-    float blur = 5.0F;
+    float blur = 6.0F;
 };
 
 struct TerrainData {
