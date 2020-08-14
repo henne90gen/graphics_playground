@@ -22,7 +22,9 @@
 // Stream-Omp   BM_Load    18314706058 ns   15897039255 ns            1
 // Custom-Omp   BM_Load     4150112235 ns    3929744017 ns            1
 
-bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
+bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, BoundingBox3 &bb) {
+    bb = {{std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()},
+          {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}};
     result.clear();
 
     auto files = getFilesInDirectory(dirName);
@@ -68,8 +70,25 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
         }
         std::free(buffer);
 
+#define UPDATE(left, op, right)                                                                                        \
+    if ((left)op(right)) {                                                                                             \
+        (right) = (left);                                                                                              \
+    }
+
 #pragma omp critical
-        { result.insert(result.end(), temp.begin(), temp.end()); }
+        {
+            for (unsigned int i = 0; i < temp.size(); i++) {
+                UPDATE(temp[i].x, <, bb.min.x)
+                UPDATE(temp[i].y, <, bb.min.y)
+                UPDATE(temp[i].z, <, bb.min.z)
+
+                UPDATE(temp[i].x, >, bb.max.x)
+                UPDATE(temp[i].y, >, bb.max.y)
+                UPDATE(temp[i].z, >, bb.max.z)
+
+                result.push_back(temp[i]);
+            }
+        }
 
         file.close();
     }

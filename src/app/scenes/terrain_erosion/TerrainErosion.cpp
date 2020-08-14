@@ -19,7 +19,6 @@ void TerrainErosion::setup() {
 
     GL_Call(glEnable(GL_PRIMITIVE_RESTART));
     GL_Call(glPrimitiveRestartIndex(~0));
-    GL_Call(glPointSize(10.0F));
 
     pathShader =
           std::make_shared<Shader>("scenes/terrain_erosion/PathVert.glsl", "scenes/terrain_erosion/PathFrag.glsl");
@@ -58,13 +57,13 @@ void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraPosition = glm::vec3(-120.0F, -155.0F, -375.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(0.55F, 0.87F, 0.0F);
+    static auto cameraRotation = glm::vec3(3.5F, -0.35F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
     static float lightPower = 13.0F;
     static bool wireframe = false;
-    static bool drawTriangles = false;
-    static int verticesPerFrame = 10000;
+    static bool drawTriangles = true;
+    static int verticesPerFrame = 15000;
     static bool shouldRenderPaths = false;
     static auto terrainLevels = TerrainLevels();
     static bool onlyRainAroundCenterPoint = false;
@@ -79,8 +78,9 @@ void TerrainErosion::tick() {
     if (!pathsInitialized) {
         pathsInitialized = true;
         regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
-        cameraPosition = currentTerrain->pointToLookAt + glm::vec3(0.0F, 300.0F, 100.0F);
+        cameraPosition = currentTerrain->pointToLookAt + glm::vec3(1000.0F, 1000.0F, -1500.0F);
         cameraPosition *= -1.0F;
+        cameraPosition.y *= -1.0F;
     }
 
     showSettings(modelScale, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
@@ -467,7 +467,8 @@ void TerrainErosion::runSimulation(TerrainData *terrainData, std::vector<Raindro
 
 void TerrainErosion::loadRealTerrain() {
     std::vector<glm::vec3> realVertices;
-    bool success = loadXyzDir("../../../gis_data/dtm", realVertices);
+    BoundingBox3 bb;
+    bool success = loadXyzDir("../../../gis_data/dtm", realVertices, bb);
     if (!success) {
         std::cout << "Could not load real terrain" << std::endl;
         return;
@@ -476,16 +477,8 @@ void TerrainErosion::loadRealTerrain() {
     std::cout << "Loaded terrain data from disk (" << realVertices.size() << " points)" << std::endl;
 
     float stepWidth = 20.0F;
-    float offsetX = std::numeric_limits<float>::max();
-    float offsetY = std::numeric_limits<float>::max();
-    for (const auto &vertex : realVertices) {
-        if (vertex.x < offsetX) {
-            offsetX = vertex.x;
-        }
-        if (vertex.y < offsetY) {
-            offsetY = vertex.y;
-        }
-    }
+    float offsetX = bb.min.x;
+    float offsetY = bb.min.y;
 
 #define GET_INDEX(x, y) indexMap[(static_cast<long>(x) << 32) | (y)]
 
@@ -505,6 +498,8 @@ void TerrainErosion::loadRealTerrain() {
 
         GET_INDEX(x, y) = i;
     }
+
+    std::cout << "Generated vertices and height map" << std::endl;
 
     auto indices = std::vector<glm::ivec3>();
     for (unsigned int i = 0; i < heightMap.grid.size(); i++) {
@@ -530,8 +525,12 @@ void TerrainErosion::loadRealTerrain() {
         }
     }
 
+    std::cout << "Generated indices" << std::endl;
+
     initTerrainMesh(realTerrain, vertices, heightMap, indices);
     float x = vertices[0].x;
     float y = vertices[0].y;
     realTerrain.pointToLookAt = {vertices[0].x, heightMap.get(x, y), y};
+
+    std::cout << "Finished loading terrain data" << std::endl;
 }
