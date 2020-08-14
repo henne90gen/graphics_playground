@@ -5,7 +5,8 @@
 static void BM_Load(benchmark::State &state) {
     for (auto _ : state) {
         std::vector<glm::vec3> result = {};
-        loadXyzDir("../../../gis_data/dtm", result);
+        BoundingBox3 bb;
+        loadXyzDir("../../../gis_data/dtm", result, bb);
         benchmark::DoNotOptimize(result);
     }
 }
