@@ -22,6 +22,15 @@ struct TerrainLevels {
     float blur = 5.0F;
 };
 
+struct TerrainData {
+    std::shared_ptr<VertexArray> va = nullptr;
+    HeightMap heightMap = {};
+    std::vector<glm::vec3> normals = {};
+
+    std::shared_ptr<VertexBuffer> heightBuffer;
+    std::shared_ptr<VertexBuffer> normalBuffer;
+};
+
 class TerrainErosion : public Scene {
   public:
     explicit TerrainErosion(SceneData &data) : Scene(data, "TerrainErosion"){};
@@ -35,12 +44,9 @@ class TerrainErosion : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Shader> pathShader;
 
-    std::shared_ptr<VertexArray> terrainVA;
-    HeightMap heightMap = {HEIGHTMAP_WIDTH, HEIGHTMAP_HEIGHT, std::vector<float>()};
-    std::vector<glm::vec3> normals = std::vector<glm::vec3>();
-
-    std::shared_ptr<VertexBuffer> heightBuffer;
-    std::shared_ptr<VertexBuffer> normalBuffer;
+    TerrainData noiseTerrain;
+    TerrainData realTerrain;
+    TerrainData *currentTerrain = nullptr;
 
     FastNoise *noise1;
     FastNoise *noise2;
@@ -49,20 +55,26 @@ class TerrainErosion : public Scene {
     std::mt19937 randomGenerator;
     std::uniform_real_distribution<double> randomDistribution;
 
-    void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-                       const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
-                       float &lightPower, bool wireframe, const TerrainLevels &levels);
-    void renderPaths(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-                     const std::vector<Raindrop> &raindrops);
+    void renderTerrain(const TerrainData *terrainData, const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+                       const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
+                       const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, float &lightPower, bool wireframe,
+                       const TerrainLevels &levels);
+    void renderPaths(const std::vector<Raindrop> &raindrops, const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+                     const glm::mat4 &projectionMatrix);
 
-    void generateTerrainMesh();
+    void generateTerrainMesh(TerrainData &terrainData, const std::vector<glm::vec2> &vertices, HeightMap &heightMap,
+                             const std::vector<glm::ivec3> &indices);
 
-    void regenerateTerrain();
+    void regenerateNoiseTerrain();
     void regenerateRaindrops(std::vector<Raindrop> &raindrops, bool onlyRainAroundCenterPoint,
                              unsigned int raindropCount, const glm::vec2 &centerPoint, float radius);
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &shouldRenderPaths,
                       bool &onlyRainAroundCenterPoint, bool &letItRain, SimulationParams &params, int &raindropCount,
                       glm::vec2 &centerPoint, float &radius, int &simulationSpeed, TerrainLevels &terrainLevels);
-    void recalculateNormals();
+    void recalculateNormals(TerrainData *terrainData);
+    void runSimulation(TerrainData *terrainData, std::vector<Raindrop> &raindrops, bool letItRain,
+                       unsigned int simulationSpeed, bool onlyRainAroundCenterPoint, const glm::vec2 &centerPoint,
+                       unsigned int raindropCount, float radius, const SimulationParams &params);
+    void generateNoiseTerrainData();
 };

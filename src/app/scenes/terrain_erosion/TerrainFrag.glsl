@@ -3,7 +3,6 @@
 in float vHeight;
 in vec3 vPosition;
 in vec3 normal;
-in vec3 cameraPosition;
 
 uniform float waterLevel;
 uniform float grassLevel;
