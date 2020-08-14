@@ -230,7 +230,7 @@ Sources:
 
 ## Ideas
 
-- use real geographic data for terrain erosion
+- split terrain erosion into the terrain erosion on generated terrain and a viewer for points clouds and dtms
 - Water Demo
 - Graph Visualization
 
