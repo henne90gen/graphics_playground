@@ -535,8 +535,13 @@ void TerrainErosion::loadRealTerrain() {
     bb.max /= stepWidth;
 
     initTerrainMesh(realTerrain, vertices, heightMap, indices);
+#if 1
+    float x = vertices[0].x;
+    float y = vertices[0].y;
+#else
     float x = bb.min.x;
     float y = bb.min.y;
+#endif
     realTerrain.pointToLookAt = {x, heightMap.get(x, y), y};
 
     initBoundingBox(bb);
