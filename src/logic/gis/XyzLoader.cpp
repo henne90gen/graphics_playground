@@ -26,37 +26,21 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
     result.clear();
 
     auto files = getFilesInDirectory(dirName);
+    if (files.empty()) {
+        return false;
+    }
     result.reserve(files.size() * 10000);
 
+    unsigned long fileCount = files.size();
+    fileCount = 10;
 #pragma omp parallel for
-    for (int i = 0; i < files.size(); i++) {
+    for (int i = 0; i < fileCount; i++) {
         const auto &fileName = files[i];
         if (fileName[fileName.size() - 4] != '.' || fileName[fileName.size() - 3] != 'x' ||
             fileName[fileName.size() - 2] != 'y' || fileName[fileName.size() - 1] != 'z') {
             continue;
         }
 
-#if USE_STRING_STREAM
-        std::ifstream file;
-        file.open(fileName, std::ios::in);
-        if (!file.is_open()) {
-            std::cout << "Could not open file: " << fileName << std::endl;
-            continue;
-        }
-
-        std::vector<glm::vec3> temp = {};
-        std::string line;
-        std::stringstream lineStream;
-        while (std::getline(file, line)) {
-            lineStream = std::stringstream(line);
-            glm::vec3 vec;
-            lineStream >> vec.x >> vec.y >> vec.z;
-            temp.push_back(vec);
-        }
-
-#pragma omp critical
-        { result.insert(result.end(), temp.begin(), temp.end()); }
-#else
         std::ifstream file;
         file.open(fileName, std::ios::in | std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
@@ -85,7 +69,7 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
 
 #pragma omp critical
         { result.insert(result.end(), temp.begin(), temp.end()); }
-#endif
+
         file.close();
     }
 

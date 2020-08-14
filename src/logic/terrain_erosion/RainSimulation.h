@@ -3,12 +3,15 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <random>
+#include <unordered_map>
 #include <vector>
 
 struct HeightMap {
-    unsigned int width;
-    unsigned int height;
-    std::vector<float> data;
+    std::vector<glm::ivec2> grid = {};
+    std::unordered_map<long, float> data = {};
+
+    void set(int x, int z, float height);
+    float get(int x, int z) const;
 };
 
 struct Raindrop {
@@ -32,7 +35,3 @@ struct SimulationParams {
 void simulateRaindrop(HeightMap &heightMap, std::mt19937 randomGenerator,
                       std::uniform_real_distribution<double> randomDistribution, const SimulationParams &params,
                       Raindrop &raindrop);
-
-float getHeightMapValue(const HeightMap &heightMap, int x, int z);
-
-void setHeightMapValue(HeightMap &heightMap, int x, int z, float value);
