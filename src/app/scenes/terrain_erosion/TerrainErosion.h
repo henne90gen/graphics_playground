@@ -25,7 +25,6 @@ struct TerrainLevels {
 struct TerrainData {
     std::shared_ptr<VertexArray> va = nullptr;
     HeightMap heightMap = {};
-    std::vector<glm::vec3> normals = {};
 
     std::shared_ptr<VertexBuffer> heightBuffer;
     std::shared_ptr<VertexBuffer> normalBuffer;
@@ -60,22 +59,22 @@ class TerrainErosion : public Scene {
     void renderTerrain(const TerrainData *terrainData, const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                        const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
                        const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, float lightPower, bool wireframe,
-                       bool drawTriangles, const TerrainLevels &levels);
+                       bool drawTriangles, const int verticesPerFrame, const TerrainLevels &levels);
     void renderPaths(const std::vector<Raindrop> &raindrops, const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                      const glm::mat4 &projectionMatrix);
 
-    void generateTerrainMesh(TerrainData &terrainData, const std::vector<glm::vec2> &vertices, HeightMap &heightMap,
-                             const std::vector<glm::ivec3> &indices);
+    void initTerrainMesh(TerrainData &terrainData, const std::vector<glm::vec2> &vertices, HeightMap &heightMap,
+                         const std::vector<glm::ivec3> &indices);
 
     void regenerateNoiseTerrain();
     void regenerateRaindrops(std::vector<Raindrop> &raindrops, bool onlyRainAroundCenterPoint,
                              unsigned int raindropCount, const glm::vec2 &centerPoint, float radius);
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
+                      int &verticesPerFrame, bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
                       SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
                       int &simulationSpeed, TerrainLevels &terrainLevels);
-    void recalculateNormals(TerrainData *terrainData);
+    void recalculateNormals(TerrainData *terrainData, int verticesPerFrame);
     void runSimulation(TerrainData *terrainData, std::vector<Raindrop> &raindrops, bool letItRain,
                        unsigned int simulationSpeed, bool onlyRainAroundCenterPoint, const glm::vec2 &centerPoint,
                        unsigned int raindropCount, float radius, const SimulationParams &params);

@@ -38,7 +38,7 @@ void main() {
         color = snowColor;
     }
 
-    /*
+
     vec3 position = vPosition;
     vec3 normal_ = normalize(normal);
 
@@ -51,5 +51,4 @@ void main() {
     vec3 colorv3 = vec3(0.0);
     colorv3 += diffuseColor;
     color = vec4(colorv3, 1.0F);
-    */
 }
