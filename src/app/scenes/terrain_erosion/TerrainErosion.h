@@ -7,6 +7,7 @@
 #include <random>
 
 #include <FastNoise.h>
+#include <gis/XyzLoader.h>
 
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
@@ -49,10 +50,11 @@ class TerrainErosion : public Scene {
     TerrainData realTerrain;
     TerrainData *currentTerrain = nullptr;
 
+    std::shared_ptr<VertexArray> bbVA = nullptr;
+
     FastNoise *noise1;
     FastNoise *noise2;
     FastNoise *noise3;
-
     std::mt19937 randomGenerator;
     std::uniform_real_distribution<double> randomDistribution;
 
@@ -80,4 +82,7 @@ class TerrainErosion : public Scene {
                        unsigned int raindropCount, float radius, const SimulationParams &params);
     void generateNoiseTerrainData();
     void loadRealTerrain();
+
+    void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
+void initBoundingBox(const BoundingBox3& box3);
 };

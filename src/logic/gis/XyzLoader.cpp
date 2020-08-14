@@ -1,6 +1,7 @@
 #include "XyzLoader.h"
 
 #define USE_STRING_STREAM 0
+#define CALCULATE_BOUNDING_BOX 1
 
 #include <fstream>
 #include <iostream>
@@ -23,8 +24,8 @@
 // Custom-Omp   BM_Load     4150112235 ns    3929744017 ns            1
 
 bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, BoundingBox3 &bb) {
-    bb = {{std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()},
-          {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}};
+    bb = {{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
+          {std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}};
     result.clear();
 
     auto files = getFilesInDirectory(dirName);
@@ -70,6 +71,7 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, Boun
         }
         std::free(buffer);
 
+#if CALCULATE_BOUNDING_BOX
 #define UPDATE(left, op, right)                                                                                        \
     if ((left)op(right)) {                                                                                             \
         (right) = (left);                                                                                              \
@@ -89,7 +91,10 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, Boun
                 result.push_back(temp[i]);
             }
         }
-
+#else
+#pragma omp critical
+        { result.insert(result.end(), temp.begin(), temp.end()); }
+#endif
         file.close();
     }
 
