@@ -16,8 +16,8 @@ void GL_ClearError() {
 bool GL_LogCall(const char *function, const char *file, int line) {
     bool noErrors = true;
     while (GLenum error = glGetError() != GL_NO_ERROR) {
-        std::cout << "OpenGL error [0x" << std::hex << error << "]: " << file << "/" << function << ":" << line
-                  << std::endl;
+        std::cout << "OpenGL error [0x" << std::hex << error << std::dec << "]: " << file << "/" << function << ": "
+                  << line << std::endl;
         noErrors = false;
     }
     return noErrors;
@@ -32,7 +32,7 @@ glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cam
     return viewMatrix;
 }
 
-MappedMousePosition mapMouseOntoCanvas(const glm::vec2& mousePos, const glm::mat4 &transformationMatrix,
+MappedMousePosition mapMouseOntoCanvas(const glm::vec2 &mousePos, const glm::mat4 &transformationMatrix,
                                        unsigned int canvasWidth, unsigned int canvasHeight, unsigned int displayWidth,
                                        unsigned int displayHeight) {
     const auto widthF = static_cast<float>(canvasWidth);

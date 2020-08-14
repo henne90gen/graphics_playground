@@ -1,20 +1,20 @@
 #pragma once
 
-#include <vector>
-#include <glm/ext.hpp>
 #include "BufferLayout.h"
+#include <glm/ext.hpp>
+#include <vector>
 
 class VertexBuffer {
-public:
+  public:
     VertexBuffer();
 
-    VertexBuffer(const void *data, unsigned int size, const BufferLayout& l);
+    VertexBuffer(const void *data, unsigned int size, const BufferLayout &l);
 
-    explicit VertexBuffer(const std::vector<float> &data, const BufferLayout& l);
+    explicit VertexBuffer(const std::vector<float> &data, const BufferLayout &l);
 
-    explicit VertexBuffer(const std::vector<glm::vec2> &data, const BufferLayout& l);
+    explicit VertexBuffer(const std::vector<glm::vec2> &data, const BufferLayout &l);
 
-    explicit VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout& l);
+    explicit VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout &l);
 
     ~VertexBuffer();
 
@@ -32,9 +32,9 @@ public:
 
     void bind() const;
 
-    static void unbind() ;
+    static void unbind();
 
-private:
+  private:
     unsigned int id = 0;
     BufferLayout layout;
 };

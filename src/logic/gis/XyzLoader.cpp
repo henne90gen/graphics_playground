@@ -29,10 +29,11 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result) {
     if (files.empty()) {
         return false;
     }
-    result.reserve(files.size() * 10000);
 
     unsigned long fileCount = files.size();
-    fileCount = 10;
+    fileCount = 1000;
+
+    result.reserve(files.size() * 10000);
 #pragma omp parallel for
     for (int i = 0; i < fileCount; i++) {
         const auto &fileName = files[i];
