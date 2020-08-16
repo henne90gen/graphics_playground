@@ -39,7 +39,7 @@ void DtmViewer::tick() {
     static bool initialized = false;
     if (!initialized) {
         initialized = true;
-        cameraPosition = terrain.pointToLookAt + glm::vec3(1000.0F, 1000.0F, -2000.0F);
+        cameraPosition = terrain.pointToLookAt + glm::vec3(0.0F, 800.0F, -2000.0F);
         cameraPosition *= -1.0F;
         cameraPosition.y *= -1.0F;
     }
@@ -158,7 +158,7 @@ void DtmViewer::recalculateNormals(int verticesPerFrame) {
 
     auto normals = std::vector<glm::vec3>(verticesPerFrame);
     for (unsigned int i = segment * verticesPerFrame;
-         i < terrain.heightMap.grid.size() && i < (segment + 1) * verticesPerFrame; i++) {
+         i < terrain.heightMap.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame); i++) {
         int x = terrain.heightMap.grid[i].x;
         int y = terrain.heightMap.grid[i].y;
         const float L = terrain.heightMap.get(x - 1, y);
@@ -240,17 +240,12 @@ void DtmViewer::loadRealTerrain() {
     std::cout << "Generated indices" << std::endl;
 
     initTerrainMesh(vertices, indices);
-#if 1
-    glm::vec3 pointToLookAt = vertices[0];
-#else
-    float x = bb.min.x;
-    float z = bb.min.z;
-    glm::vec3 pointToLookAt = {x, terrain.heightMap.get(x, z), z};
-#endif
-    terrain.pointToLookAt = pointToLookAt;
 
     bb.min /= stepWidth;
     bb.max /= stepWidth;
+    glm::vec3 pointToLookAt = (bb.min + bb.max) / 2.0F;
+    terrain.pointToLookAt = pointToLookAt;
+
     initBoundingBox(bb);
 
     std::cout << "Finished loading terrain data" << std::endl;
@@ -273,30 +268,27 @@ void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 
 
 void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
     bbVA = std::make_shared<VertexArray>(simpleShader);
-    const unsigned int verticesCount = 8;
     std::vector<glm::vec3> vertices = {
-          {bb.min.x, bb.min.y, bb.min.z}, //
-          {bb.max.x, bb.min.y, bb.min.z}, //
-          {bb.min.x, bb.max.y, bb.min.z}, //
-          {bb.max.x, bb.max.y, bb.min.z}, //
-          {bb.min.x, bb.min.y, bb.max.z}, //
-          {bb.max.x, bb.min.y, bb.max.z}, //
-          {bb.min.x, bb.max.y, bb.max.z}, //
-          {bb.max.x, bb.max.y, bb.max.z}, //
+          {bb.min.x, bb.min.y, bb.min.z}, // 0 - - -
+          {bb.max.x, bb.min.y, bb.min.z}, // 1 + - -
+          {bb.min.x, bb.max.y, bb.min.z}, // 2 - + -
+          {bb.max.x, bb.max.y, bb.min.z}, // 3 + + -
+          {bb.min.x, bb.min.y, bb.max.z}, // 4 - - +
+          {bb.max.x, bb.min.y, bb.max.z}, // 5 + - +
+          {bb.min.x, bb.max.y, bb.max.z}, // 6 - + +
+          {bb.max.x, bb.max.y, bb.max.z}, // 7 + + +
     };
 
     BufferLayout layout = {{ShaderDataType::Float3, "position"}};
     auto vb = std::make_shared<VertexBuffer>(vertices, layout);
     bbVA->addVertexBuffer(vb);
 
-    auto indices = std::vector<unsigned int>();
-    indices.reserve(verticesCount);
-    unsigned int currentIndex = 0;
-    // TODO this is not correct yet
-    for (const auto &v : vertices) {
-        indices.push_back(currentIndex);
-        currentIndex++;
-    }
+    std::vector<unsigned int> indices = {
+          0, 1, 5, 4, 0,    // bottom layer
+          2, 3, 7, 6, 2,    // top layer
+          3, 1, 5, 7, 6, 4, // remaining edges
+    };
+
     auto ib = std::make_shared<IndexBuffer>(indices);
     bbVA->setIndexBuffer(ib);
 }
