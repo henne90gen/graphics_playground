@@ -11,14 +11,14 @@
 #include "opengl/VertexArray.h"
 #include "terrain_erosion/RainSimulation.h"
 
-struct TerrainDrawSettings {
+struct DtmSettings {
     float waterLevel = 0.0F;
     float grassLevel = 25.0F;
     float rockLevel = 45.0F;
     float blur = 6.0F;
 };
 
-struct Terrain {
+struct Dtm {
     std::shared_ptr<VertexArray> va = nullptr;
 
     std::shared_ptr<VertexBuffer> normalBuffer;
@@ -40,22 +40,22 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Shader> simpleShader;
 
-    Terrain terrain;
+    Dtm dtm;
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                        const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
                        float lightPower, bool wireframe, bool drawTriangles, int verticesPerFrame,
-                       const TerrainDrawSettings &levels);
+                       const DtmSettings &levels);
 
     void initTerrainMesh(const std::vector<glm::vec3> &vertices, const std::vector<glm::ivec3> &indices);
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      int &verticesPerFrame, TerrainDrawSettings &terrainLevels);
+                      int &verticesPerFrame, DtmSettings &terrainLevels);
     void recalculateNormals(int verticesPerFrame);
-    void loadRealTerrain();
+    void loadDtm();
 
     void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                            const glm::mat4 &projectionMatrix);
