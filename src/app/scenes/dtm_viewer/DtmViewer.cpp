@@ -15,7 +15,7 @@ void DtmViewer::setup() {
     shader = std::make_shared<Shader>("scenes/dtm_viewer/TerrainVert.glsl", "scenes/dtm_viewer/TerrainFrag.glsl");
     shader->bind();
 
-    loadRealTerrain();
+    loadDtm();
 }
 
 void DtmViewer::destroy() {}
@@ -35,11 +35,11 @@ void DtmViewer::tick() {
     static bool wireframe = false;
     static bool drawTriangles = true;
     static int verticesPerFrame = 40000;
-    static auto terrainSettings = TerrainDrawSettings();
+    static auto terrainSettings = DtmSettings();
     static bool initialized = false;
     if (!initialized) {
         initialized = true;
-        cameraPosition = terrain.pointToLookAt + glm::vec3(0.0F, 800.0F, -2000.0F);
+        cameraPosition = dtm.pointToLookAt + glm::vec3(0.0F, 800.0F, -2000.0F);
         cameraPosition *= -1.0F;
         cameraPosition.y *= -1.0F;
     }
@@ -64,7 +64,7 @@ void DtmViewer::tick() {
 
 void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
                              glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower, bool &wireframe,
-                             bool &drawTriangles, int &verticesPerFrame, TerrainDrawSettings &terrainSettings) {
+                             bool &drawTriangles, int &verticesPerFrame, DtmSettings &terrainSettings) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -93,7 +93,7 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
                               const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
                               const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, const float lightPower,
                               const bool wireframe, const bool drawTriangles, const int verticesPerFrame,
-                              const TerrainDrawSettings &levels) {
+                              const DtmSettings &levels) {
     // RECORD_SCOPE_NAME("Render Terrain");
 
     shader->bind();
@@ -110,73 +110,73 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
     shader->setUniform("lightColor", lightColor);
     shader->setUniform("lightPower", lightPower / 100.0F);
 
-    terrain.va->bind();
+    dtm.va->bind();
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
     if (drawTriangles) {
-        GL_Call(glDrawElements(GL_TRIANGLES, terrain.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_TRIANGLES, dtm.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     } else {
-        GL_Call(glDrawElements(GL_POINTS, terrain.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_POINTS, dtm.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 
-    terrain.va->unbind();
+    dtm.va->unbind();
     shader->unbind();
 }
 
 void DtmViewer::initTerrainMesh(const std::vector<glm::vec3> &vertices, const std::vector<glm::ivec3> &indices) {
-    terrain.va = std::make_shared<VertexArray>(shader);
-    terrain.va->bind();
+    dtm.va = std::make_shared<VertexArray>(shader);
+    dtm.va->bind();
 
     BufferLayout positionLayout = {{ShaderDataType::Float3, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
-    terrain.va->addVertexBuffer(positionBuffer);
+    dtm.va->addVertexBuffer(positionBuffer);
 
-    terrain.normalBuffer = std::make_shared<VertexBuffer>();
+    dtm.normalBuffer = std::make_shared<VertexBuffer>();
     BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
-    terrain.normalBuffer->setLayout(normalLayout);
-    terrain.normalBuffer->bind();
+    dtm.normalBuffer->setLayout(normalLayout);
+    dtm.normalBuffer->bind();
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
-    terrain.va->addVertexBuffer(terrain.normalBuffer);
+    dtm.va->addVertexBuffer(dtm.normalBuffer);
 
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    terrain.va->setIndexBuffer(indexBuffer);
+    dtm.va->setIndexBuffer(indexBuffer);
 }
 
 void DtmViewer::recalculateNormals(int verticesPerFrame) {
     RECORD_SCOPE_NAME("Calculate Normals");
 
     static int counter = 0;
-    int numSegments = std::ceil(terrain.heightMap.grid.size() / verticesPerFrame);
+    int numSegments = std::ceil(dtm.heightMap.grid.size() / verticesPerFrame);
     int segment = counter % numSegments;
 
     auto normals = std::vector<glm::vec3>(verticesPerFrame);
     for (unsigned int i = segment * verticesPerFrame;
-         i < terrain.heightMap.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame); i++) {
-        int x = terrain.heightMap.grid[i].x;
-        int y = terrain.heightMap.grid[i].y;
-        const float L = terrain.heightMap.get(x - 1, y);
-        const float R = terrain.heightMap.get(x + 1, y);
-        const float B = terrain.heightMap.get(x, y - 1);
-        const float T = terrain.heightMap.get(x, y + 1);
+         i < dtm.heightMap.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame); i++) {
+        int x = dtm.heightMap.grid[i].x;
+        int y = dtm.heightMap.grid[i].y;
+        const float L = dtm.heightMap.get(x - 1, y);
+        const float R = dtm.heightMap.get(x + 1, y);
+        const float B = dtm.heightMap.get(x, y - 1);
+        const float T = dtm.heightMap.get(x, y + 1);
         normals[i - segment * verticesPerFrame] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
     }
     int offset = segment * verticesPerFrame * sizeof(glm::vec3);
     size_t size = normals.size() * sizeof(glm::vec3);
 
-    terrain.normalBuffer->bind();
+    dtm.normalBuffer->bind();
     GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, normals.data()));
 
     counter++;
 }
 
-void DtmViewer::loadRealTerrain() {
+void DtmViewer::loadDtm() {
     std::vector<glm::vec3> realVertices;
     BoundingBox3 bb;
     bool success = loadXyzDir("../../../gis_data/dtm", realVertices, bb);
@@ -191,8 +191,8 @@ void DtmViewer::loadRealTerrain() {
 
     auto vertices = std::vector<glm::vec3>(realVertices.size());
     std::unordered_map<long, unsigned int> indexMap = {};
-    terrain.heightMap = {};
-    terrain.heightMap.grid.resize(realVertices.size());
+    dtm.heightMap = {};
+    dtm.heightMap.grid.resize(realVertices.size());
 
     float stepWidth = 20.0F;
 
@@ -205,8 +205,8 @@ void DtmViewer::loadRealTerrain() {
         int z = vertex.z / stepWidth;
         vertices[i] = {x, y, z};
 
-        terrain.heightMap.grid[i] = {x, z};
-        terrain.heightMap.set(x, z, y);
+        dtm.heightMap.grid[i] = {x, z};
+        dtm.heightMap.set(x, z, y);
 
         GET_INDEX(x, z) = i;
     }
@@ -214,11 +214,11 @@ void DtmViewer::loadRealTerrain() {
     std::cout << "Generated vertices and height map" << std::endl;
 
     auto indices = std::vector<glm::ivec3>();
-    for (unsigned int i = 0; i < terrain.heightMap.grid.size(); i++) {
-        int x = terrain.heightMap.grid[i].x;
-        int y = terrain.heightMap.grid[i].y;
-        float topH = terrain.heightMap.get(x, y + 1);
-        float rightH = terrain.heightMap.get(x + 1, y);
+    for (unsigned int i = 0; i < dtm.heightMap.grid.size(); i++) {
+        int x = dtm.heightMap.grid[i].x;
+        int y = dtm.heightMap.grid[i].y;
+        float topH = dtm.heightMap.get(x, y + 1);
+        float rightH = dtm.heightMap.get(x + 1, y);
         if (topH != 0.0F && rightH != 0.0F) {
             indices.emplace_back(      //
                   GET_INDEX(x, y + 1), //
@@ -226,8 +226,8 @@ void DtmViewer::loadRealTerrain() {
                   GET_INDEX(x, y)      //
             );
         }
-        float bottomH = terrain.heightMap.get(x, y - 1);
-        float leftH = terrain.heightMap.get(x - 1, y);
+        float bottomH = dtm.heightMap.get(x, y - 1);
+        float leftH = dtm.heightMap.get(x - 1, y);
         if (bottomH != 0.0F && leftH != 0.0F) {
             indices.emplace_back(      //
                   GET_INDEX(x - 1, y), //
@@ -244,7 +244,7 @@ void DtmViewer::loadRealTerrain() {
     bb.min /= stepWidth;
     bb.max /= stepWidth;
     glm::vec3 pointToLookAt = (bb.min + bb.max) / 2.0F;
-    terrain.pointToLookAt = pointToLookAt;
+    dtm.pointToLookAt = pointToLookAt;
 
     initBoundingBox(bb);
 
