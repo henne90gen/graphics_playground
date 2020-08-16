@@ -4,7 +4,6 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "gis/XyzLoader.h"
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
 
