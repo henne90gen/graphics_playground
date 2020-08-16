@@ -47,10 +47,6 @@ class TerrainErosion : public Scene {
     std::shared_ptr<Shader> pathShader;
 
     TerrainData noiseTerrain;
-    TerrainData realTerrain;
-    TerrainData *currentTerrain = nullptr;
-
-    std::shared_ptr<VertexArray> bbVA = nullptr;
 
     FastNoise *noise1;
     FastNoise *noise2;
@@ -58,7 +54,7 @@ class TerrainErosion : public Scene {
     std::mt19937 randomGenerator;
     std::uniform_real_distribution<double> randomDistribution;
 
-    void renderTerrain(const TerrainData *terrainData, const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+    void renderTerrain(const TerrainData &terrainData, const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                        const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
                        const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, float lightPower, bool wireframe,
                        bool drawTriangles, const int verticesPerFrame, const TerrainLevels &levels);
@@ -76,13 +72,9 @@ class TerrainErosion : public Scene {
                       int &verticesPerFrame, bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
                       SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
                       int &simulationSpeed, TerrainLevels &terrainLevels);
-    void recalculateNormals(TerrainData *terrainData, int verticesPerFrame);
-    void runSimulation(TerrainData *terrainData, std::vector<Raindrop> &raindrops, bool letItRain,
+    void recalculateNormals(TerrainData &terrainData, int verticesPerFrame);
+    void runSimulation(TerrainData &terrainData, std::vector<Raindrop> &raindrops, bool letItRain,
                        unsigned int simulationSpeed, bool onlyRainAroundCenterPoint, const glm::vec2 &centerPoint,
                        unsigned int raindropCount, float radius, const SimulationParams &params);
     void generateNoiseTerrainData();
-    void loadRealTerrain();
-
-    void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
-void initBoundingBox(const BoundingBox3& box3);
 };

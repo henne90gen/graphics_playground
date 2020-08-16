@@ -41,10 +41,6 @@ void TerrainErosion::setup() {
     noise3->SetNoiseType(noiseType);
 
     generateNoiseTerrainData();
-    currentTerrain = &noiseTerrain;
-
-    loadRealTerrain();
-    currentTerrain = &realTerrain;
 }
 
 void TerrainErosion::destroy() {}
@@ -57,7 +53,7 @@ void TerrainErosion::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraPosition = glm::vec3(-120.0F, -155.0F, -375.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(3.5F, -0.05F, 0.0F);
+    static auto cameraRotation = glm::vec3(0.6F, -0.05F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
     static float lightPower = 13.0F;
@@ -78,9 +74,6 @@ void TerrainErosion::tick() {
     if (!pathsInitialized) {
         pathsInitialized = true;
         regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
-        cameraPosition = currentTerrain->pointToLookAt + glm::vec3(1000.0F, 1000.0F, -2000.0F);
-        cameraPosition *= -1.0F;
-        cameraPosition.y *= -1.0F;
     }
 
     showSettings(modelScale, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
@@ -96,17 +89,16 @@ void TerrainErosion::tick() {
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
-    runSimulation(currentTerrain, raindrops, letItRain, simulationSpeed, onlyRainAroundCenterPoint, centerPoint,
+    runSimulation(noiseTerrain, raindrops, letItRain, simulationSpeed, onlyRainAroundCenterPoint, centerPoint,
                   raindropCount, radius, params);
 
     if (letItRain && shouldRenderPaths) {
         renderPaths(raindrops, modelMatrix, viewMatrix, projectionMatrix);
     }
 
-    recalculateNormals(currentTerrain, verticesPerFrame);
-    renderTerrain(currentTerrain, modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor,
+    recalculateNormals(noiseTerrain, verticesPerFrame);
+    renderTerrain(noiseTerrain, modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor,
                   lightPower, wireframe, drawTriangles, verticesPerFrame, terrainLevels);
-    renderBoundingBox(modelMatrix, viewMatrix, projectionMatrix);
 }
 
 void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
@@ -281,12 +273,38 @@ void TerrainErosion::regenerateNoiseTerrain() {
     noiseTerrain.heightBuffer->update(heights);
 }
 
-void TerrainErosion::renderTerrain(const TerrainData *terrainData, const glm::mat4 &modelMatrix,
+template <typename T>
+void uploadBufferDataStriped(const TerrainData &terrainData, const std::shared_ptr<VertexBuffer> &buffer,
+                             const int counter, int verticesPerFrame,
+                             const std::function<T(const TerrainData &, int)> &func) {
+    int numSegments = 0;
+    if (verticesPerFrame < static_cast<int>(terrainData.heightMap.grid.size())) {
+        numSegments = std::ceil(terrainData.heightMap.grid.size() / verticesPerFrame);
+    } else {
+        numSegments = 1;
+        verticesPerFrame = terrainData.heightMap.grid.size();
+    }
+    int segment = counter % numSegments;
+
+    auto data = std::vector<T>(verticesPerFrame);
+    for (unsigned int i = segment * verticesPerFrame;
+         i < terrainData.heightMap.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame);
+         i++) {
+        data[i - segment * verticesPerFrame] = func(terrainData, i);
+    }
+    int offset = segment * verticesPerFrame * sizeof(T);
+    size_t size = sizeof(T) * data.size();
+
+    buffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, data.data()));
+}
+
+void TerrainErosion::renderTerrain(const TerrainData &terrainData, const glm::mat4 &modelMatrix,
                                    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                                    const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight,
                                    const glm::vec3 &lightColor, const float lightPower, const bool wireframe,
-                                   const bool drawTriangles, const int verticesPerFrame, const TerrainLevels &levels) {
-    // RECORD_SCOPE_NAME("Render Terrain");
+                                   const bool drawTriangles, int verticesPerFrame, const TerrainLevels &levels) {
+    RECORD_SCOPE_NAME("Render Terrain");
 
     shader->bind();
     shader->setUniform("modelMatrix", modelMatrix);
@@ -302,43 +320,31 @@ void TerrainErosion::renderTerrain(const TerrainData *terrainData, const glm::ma
     shader->setUniform("lightColor", lightColor);
     shader->setUniform("lightPower", lightPower / 100.0F);
 
-    terrainData->va->bind();
+    terrainData.va->bind();
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    // TODO maybe merge this with the streaming of the normal buffer
     static int counter = 0;
-    int numSegments = std::ceil(terrainData->heightMap.grid.size() / verticesPerFrame);
-    int segment = counter % numSegments;
-    //    if (!(segment == 0 && counter != 0)) {
-    auto heights = std::vector<float>(verticesPerFrame);
-    for (unsigned int i = segment * verticesPerFrame;
-         i < terrainData->heightMap.grid.size() && i < (segment + 1) * verticesPerFrame; i++) {
-        auto &vec = terrainData->heightMap.grid[i];
-        heights[i - segment * verticesPerFrame] = terrainData->heightMap.get(vec.x, vec.y);
-    }
-    int offset = segment * verticesPerFrame * sizeof(float);
-    size_t size = sizeof(float) * heights.size();
-
-    terrainData->heightBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, heights.data()));
-
+    uploadBufferDataStriped<float>(terrainData, terrainData.heightBuffer, counter, verticesPerFrame,
+                                   [](const TerrainData &td, int i) {
+                                       auto &vec = td.heightMap.grid[i];
+                                       return td.heightMap.get(vec.x, vec.y);
+                                   });
     counter++;
-    // }
 
     if (drawTriangles) {
-        GL_Call(glDrawElements(GL_TRIANGLES, terrainData->va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_TRIANGLES, terrainData.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     } else {
-        GL_Call(glDrawElements(GL_POINTS, terrainData->va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_POINTS, terrainData.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 
-    terrainData->va->unbind();
+    terrainData.va->unbind();
     shader->unbind();
 }
 
@@ -422,38 +428,24 @@ void TerrainErosion::renderPaths(const std::vector<Raindrop> &raindrops, const g
     pathShader->unbind();
 }
 
-void TerrainErosion::recalculateNormals(TerrainData *terrainData, int verticesPerFrame) {
-    // RECORD_SCOPE_NAME("Calculate Normals");
+void TerrainErosion::recalculateNormals(TerrainData &terrainData, int verticesPerFrame) {
+    RECORD_SCOPE_NAME("Calculate Normals");
 
-    // TODO maybe merge this with the streaming of the height buffer
     static int counter = 0;
-    int numSegments = std::ceil(terrainData->heightMap.grid.size() / verticesPerFrame);
-    int segment = counter % numSegments;
-    if (segment == 0 && counter != 0) {
-        // return;
-    }
-
-    auto normals = std::vector<glm::vec3>(verticesPerFrame);
-    for (unsigned int i = segment * verticesPerFrame;
-         i < terrainData->heightMap.grid.size() && i < (segment + 1) * verticesPerFrame; i++) {
-        int x = terrainData->heightMap.grid[i].x;
-        int y = terrainData->heightMap.grid[i].y;
-        const float L = terrainData->heightMap.get(x - 1, y);
-        const float R = terrainData->heightMap.get(x + 1, y);
-        const float B = terrainData->heightMap.get(x, y - 1);
-        const float T = terrainData->heightMap.get(x, y + 1);
-        normals[i - segment * verticesPerFrame] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
-    }
-    int offset = segment * verticesPerFrame * sizeof(glm::vec3);
-    size_t size = normals.size() * sizeof(glm::vec3);
-
-    terrainData->normalBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, normals.data()));
-
+    uploadBufferDataStriped<glm::vec3>(terrainData, terrainData.normalBuffer, counter, verticesPerFrame,
+                                       [](const TerrainData &td, int i) {
+                                           int x = td.heightMap.grid[i].x;
+                                           int y = td.heightMap.grid[i].y;
+                                           const float L = td.heightMap.get(x - 1, y);
+                                           const float R = td.heightMap.get(x + 1, y);
+                                           const float B = td.heightMap.get(x, y - 1);
+                                           const float T = td.heightMap.get(x, y + 1);
+                                           return glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
+                                       });
     counter++;
 }
 
-void TerrainErosion::runSimulation(TerrainData *terrainData, std::vector<Raindrop> &raindrops, bool letItRain,
+void TerrainErosion::runSimulation(TerrainData &terrainData, std::vector<Raindrop> &raindrops, bool letItRain,
                                    unsigned int simulationSpeed, bool onlyRainAroundCenterPoint,
                                    const glm::vec2 &centerPoint, unsigned int raindropCount, float radius,
                                    const SimulationParams &params) {
@@ -466,130 +458,6 @@ void TerrainErosion::runSimulation(TerrainData *terrainData, std::vector<Raindro
     RECORD_SCOPE_NAME("Rain Simulation");
     regenerateRaindrops(raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
     for (auto &raindrop : raindrops) {
-        simulateRaindrop(terrainData->heightMap, randomGenerator, randomDistribution, params, raindrop);
+        simulateRaindrop(terrainData.heightMap, randomGenerator, randomDistribution, params, raindrop);
     }
-}
-
-void TerrainErosion::loadRealTerrain() {
-    std::vector<glm::vec3> realVertices;
-    BoundingBox3 bb;
-    bool success = loadXyzDir("../../../gis_data/dtm", realVertices, bb);
-    if (!success) {
-        std::cout << "Could not load real terrain" << std::endl;
-        return;
-    }
-
-    std::cout << "Loaded terrain data from disk (" << realVertices.size() << " points)" << std::endl;
-
-    float stepWidth = 20.0F;
-
-#define GET_INDEX(x, y) indexMap[(static_cast<long>(x) << 32) | (y)]
-
-    auto vertices = std::vector<glm::vec2>(realVertices.size());
-    std::unordered_map<long, unsigned int> indexMap = {};
-    HeightMap heightMap = {};
-    heightMap.grid.resize(realVertices.size());
-
-#pragma omp parallel for
-    for (unsigned int i = 0; i < realVertices.size(); i++) {
-        const auto &vertex = realVertices[i];
-        int x = (vertex.x - bb.min.x) / stepWidth;
-        int y = (vertex.y - bb.min.y) / stepWidth;
-        float z = vertex.z / stepWidth;
-        vertices[i] = {x, y};
-
-        heightMap.grid[i] = {x, y};
-        heightMap.set(x, y, z);
-
-        GET_INDEX(x, y) = i;
-    }
-
-    std::cout << "Generated vertices and height map" << std::endl;
-
-    auto indices = std::vector<glm::ivec3>();
-    for (unsigned int i = 0; i < heightMap.grid.size(); i++) {
-        int x = heightMap.grid[i].x;
-        int y = heightMap.grid[i].y;
-        float topH = heightMap.get(x, y + 1);
-        float rightH = heightMap.get(x + 1, y);
-        if (topH != 0.0F && rightH != 0.0F) {
-            indices.emplace_back(      //
-                  GET_INDEX(x, y + 1), //
-                  GET_INDEX(x + 1, y), //
-                  GET_INDEX(x, y)      //
-            );
-        }
-        float bottomH = heightMap.get(x, y - 1);
-        float leftH = heightMap.get(x - 1, y);
-        if (bottomH != 0.0F && leftH != 0.0F) {
-            indices.emplace_back(      //
-                  GET_INDEX(x - 1, y), //
-                  GET_INDEX(x, y),     //
-                  GET_INDEX(x, y - 1)  //
-            );
-        }
-    }
-
-    std::cout << "Generated indices" << std::endl;
-    bb.min /= stepWidth;
-    bb.max /= stepWidth;
-
-    initTerrainMesh(realTerrain, vertices, heightMap, indices);
-#if 1
-    float x = vertices[0].x;
-    float y = vertices[0].y;
-#else
-    float x = bb.min.x;
-    float y = bb.min.y;
-#endif
-    realTerrain.pointToLookAt = {x, heightMap.get(x, y), y};
-
-    initBoundingBox(bb);
-
-    std::cout << "Finished loading terrain data" << std::endl;
-}
-
-void TerrainErosion::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
-                                       const glm::mat4 &projectionMatrix) {
-    pathShader->bind();
-    pathShader->setUniform("modelMatrix", modelMatrix);
-    pathShader->setUniform("viewMatrix", viewMatrix);
-    pathShader->setUniform("projectionMatrix", projectionMatrix);
-
-    bbVA->bind();
-
-    GL_Call(glDrawElements(GL_LINE_STRIP, bbVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-
-    bbVA->unbind();
-    pathShader->unbind();
-}
-
-void TerrainErosion::initBoundingBox(const BoundingBox3 &bb) {
-    bbVA = std::make_shared<VertexArray>(pathShader);
-    const unsigned int verticesCount = 8;
-    std::vector<glm::vec3> vertices = {
-          {bb.min.x, bb.min.z, bb.min.y}, //
-          {bb.max.x, bb.min.z, bb.min.y}, //
-          {bb.min.x, bb.max.z, bb.min.y}, //
-          {bb.max.x, bb.max.z, bb.min.y}, //
-          {bb.min.x, bb.min.z, bb.max.y}, //
-          {bb.max.x, bb.min.z, bb.max.y}, //
-          {bb.min.x, bb.max.z, bb.max.y}, //
-          {bb.max.x, bb.max.z, bb.max.y}, //
-    };
-
-    BufferLayout layout = {{ShaderDataType::Float3, "position"}};
-    auto vb = std::make_shared<VertexBuffer>(vertices, layout);
-    bbVA->addVertexBuffer(vb);
-
-    auto indices = std::vector<unsigned int>();
-    indices.reserve(verticesCount);
-    unsigned int currentIndex = 0;
-    // TODO this is not correct yet
-    for (const auto &v : vertices) {
-        indices.push_back(currentIndex);
-        currentIndex++;
-    }
-    auto ib = std::make_shared<IndexBuffer>(indices);
-    bbVA->setIndexBuffer(ib);
 }
