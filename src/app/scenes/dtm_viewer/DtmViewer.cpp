@@ -4,6 +4,7 @@
 
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
+#include "util/VectorUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -186,8 +187,6 @@ void DtmViewer::loadRealTerrain() {
 
     std::cout << "Loaded terrain data from disk (" << realVertices.size() << " points)" << std::endl;
 
-    float stepWidth = 20.0F;
-
 #define GET_INDEX(x, y) indexMap[(static_cast<long>(x) << 32) | (y)]
 
     auto vertices = std::vector<glm::vec3>(realVertices.size());
@@ -195,12 +194,15 @@ void DtmViewer::loadRealTerrain() {
     terrain.heightMap = {};
     terrain.heightMap.grid.resize(realVertices.size());
 
+    float stepWidth = 20.0F;
+
 #pragma omp parallel for
     for (unsigned int i = 0; i < realVertices.size(); i++) {
         const auto &vertex = realVertices[i];
-        int x = (vertex.x - bb.min.x) / stepWidth;
+
+        int x = vertex.x / stepWidth;
         float y = vertex.y / stepWidth;
-        int z = (vertex.z - bb.min.z) / stepWidth;
+        int z = vertex.z / stepWidth;
         vertices[i] = {x, y, z};
 
         terrain.heightMap.grid[i] = {x, z};
@@ -236,8 +238,6 @@ void DtmViewer::loadRealTerrain() {
     }
 
     std::cout << "Generated indices" << std::endl;
-    bb.min /= stepWidth;
-    bb.max /= stepWidth;
 
     initTerrainMesh(vertices, indices);
 #if 1
@@ -249,6 +249,8 @@ void DtmViewer::loadRealTerrain() {
 #endif
     terrain.pointToLookAt = pointToLookAt;
 
+    bb.min /= stepWidth;
+    bb.max /= stepWidth;
     initBoundingBox(bb);
 
     std::cout << "Finished loading terrain data" << std::endl;
@@ -273,14 +275,14 @@ void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
     bbVA = std::make_shared<VertexArray>(simpleShader);
     const unsigned int verticesCount = 8;
     std::vector<glm::vec3> vertices = {
-          {bb.min.x, bb.min.z, bb.min.y}, //
-          {bb.max.x, bb.min.z, bb.min.y}, //
-          {bb.min.x, bb.max.z, bb.min.y}, //
-          {bb.max.x, bb.max.z, bb.min.y}, //
-          {bb.min.x, bb.min.z, bb.max.y}, //
-          {bb.max.x, bb.min.z, bb.max.y}, //
-          {bb.min.x, bb.max.z, bb.max.y}, //
-          {bb.max.x, bb.max.z, bb.max.y}, //
+          {bb.min.x, bb.min.y, bb.min.z}, //
+          {bb.max.x, bb.min.y, bb.min.z}, //
+          {bb.min.x, bb.max.y, bb.min.z}, //
+          {bb.max.x, bb.max.y, bb.min.z}, //
+          {bb.min.x, bb.min.y, bb.max.z}, //
+          {bb.max.x, bb.min.y, bb.max.z}, //
+          {bb.min.x, bb.max.y, bb.max.z}, //
+          {bb.max.x, bb.max.y, bb.max.z}, //
     };
 
     BufferLayout layout = {{ShaderDataType::Float3, "position"}};
