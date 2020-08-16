@@ -63,8 +63,8 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, Boun
             glm::vec3 vec;
             char *last = nullptr;
             vec.x = strtof(workingBuffer, &last);
-            vec.y = strtof(last, &last);
             vec.z = strtof(last, &last);
+            vec.y = strtof(last, &last);
             temp.push_back(vec);
 
             workingBuffer = last;

@@ -7,7 +7,6 @@
 #include <random>
 
 #include <FastNoise.h>
-#include <gis/XyzLoader.h>
 
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"

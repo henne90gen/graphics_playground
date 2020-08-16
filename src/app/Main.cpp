@@ -11,6 +11,7 @@
 #include "scenes/a_star/AStar.h"
 #include "scenes/bloom_effect/BloomEffect.h"
 #include "scenes/cube/Cube.h"
+#include "scenes/dtm_viewer/DtmViewer.h"
 #include "scenes/font_demo/FontDemo.h"
 #include "scenes/fourier_transform/FourierTransform.h"
 #include "scenes/framebuffer_demo/FramebufferDemo.h"
@@ -175,6 +176,7 @@ int main() {
     scenes.push_back(new SpotLight(sceneData));          // 19
     scenes.push_back(new MetaBallsScene(sceneData));     // 20
     scenes.push_back(new TerrainErosion(sceneData));     // 21
+    scenes.push_back(new DtmViewer(sceneData));     // 21
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     // mainMenu.goToScene(20);

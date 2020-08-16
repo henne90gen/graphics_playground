@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
         scenes/spot_light/SpotLight.cpp
         scenes/meta_balls/MetaBallsScene.cpp
         scenes/terrain_erosion/TerrainErosion.cpp
+        scenes/dtm_viewer/DtmViewer.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -164,6 +165,10 @@ set(RESOURCES
         scenes/terrain_erosion/TerrainFrag.glsl
         scenes/terrain_erosion/PathVert.glsl
         scenes/terrain_erosion/PathFrag.glsl
+        scenes/dtm_viewer/TerrainVert.glsl
+        scenes/dtm_viewer/TerrainFrag.glsl
+        scenes/dtm_viewer/PathVert.glsl
+        scenes/dtm_viewer/PathFrag.glsl
 )
 
 add_custom_target(copy-resources
