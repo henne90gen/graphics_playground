@@ -1,42 +1,48 @@
 #include "XyzLoader.h"
 
-#define USE_STRING_STREAM 0
-#define CALCULATE_BOUNDING_BOX 1
-
 #include <fstream>
 #include <iostream>
-#if USE_STRING_STREAM
-#include <sstream>
-#endif
 
 #include "util/FileUtils.h"
 
-// 10
-// Stream-NoOmp BM_Load       52450609 ns      52368904 ns           11
-// Custom-NoOmp BM_Load       16374400 ns      16350382 ns           41
-// Stream-Omp   BM_Load       46006784 ns      37812791 ns           18
-// Custom-Omp   BM_Load       16467553 ns      16050949 ns           40
+#define UPDATE_BB(left, op, right)                                                                                     \
+    if ((left)op(right)) {                                                                                             \
+        (right) = (left);                                                                                              \
+    }
 
-// all
-// Stream-NoOmp BM_Load    56988497077 ns   56825585013 ns            1
-// Custom-NoOmp BM_Load    11108723440 ns   11095611956 ns            1
-// Stream-Omp   BM_Load    18314706058 ns   15897039255 ns            1
-// Custom-Omp   BM_Load     4150112235 ns    3929744017 ns            1
-
-bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, BoundingBox3 &bb) {
-    bb = {{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
-          {std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}};
-    result.clear();
-
+bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::vec3> &result) {
     auto files = getFilesInDirectory(dirName);
     if (files.empty()) {
         return false;
     }
 
-    unsigned long fileCount = files.size();
-    fileCount = 100;
+    bb = {{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
+          {std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}};
 
+    result.clear();
     result.reserve(files.size() * 10000);
+    return loadXyzDir(files, [&bb, &result](const std::vector<glm::vec3> &temp) {
+        for (unsigned int i = 0; i < temp.size(); i++) {
+            UPDATE_BB(temp[i].x, <, bb.min.x)
+            UPDATE_BB(temp[i].y, <, bb.min.y)
+            UPDATE_BB(temp[i].z, <, bb.min.z)
+
+            UPDATE_BB(temp[i].x, >, bb.max.x)
+            UPDATE_BB(temp[i].y, >, bb.max.y)
+            UPDATE_BB(temp[i].z, >, bb.max.z)
+
+            result.push_back(temp[i]);
+        }
+    });
+}
+
+bool loadXyzDir(const std::vector<std::string> &files,
+                const std::function<void(const std::vector<glm::vec3> &)> &takePointsFunc) {
+    unsigned long fileCount = files.size();
+    if (fileCount > 100) {
+        fileCount = 100;
+    }
+
 #pragma omp parallel for
     for (int i = 0; i < fileCount; i++) {
         const auto &fileName = files[i];
@@ -71,30 +77,9 @@ bool loadXyzDir(const std::string &dirName, std::vector<glm::vec3> &result, Boun
         }
         std::free(buffer);
 
-#if CALCULATE_BOUNDING_BOX
-#define UPDATE(left, op, right)                                                                                        \
-    if ((left)op(right)) {                                                                                             \
-        (right) = (left);                                                                                              \
-    }
-
 #pragma omp critical
-        {
-            for (unsigned int i = 0; i < temp.size(); i++) {
-                UPDATE(temp[i].x, <, bb.min.x)
-                UPDATE(temp[i].y, <, bb.min.y)
-                UPDATE(temp[i].z, <, bb.min.z)
+        { takePointsFunc(temp); }
 
-                UPDATE(temp[i].x, >, bb.max.x)
-                UPDATE(temp[i].y, >, bb.max.y)
-                UPDATE(temp[i].z, >, bb.max.z)
-
-                result.push_back(temp[i]);
-            }
-        }
-#else
-#pragma omp critical
-        { result.insert(result.end(), temp.begin(), temp.end()); }
-#endif
         file.close();
     }
 

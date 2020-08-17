@@ -179,7 +179,7 @@ void DtmViewer::recalculateNormals(int verticesPerFrame) {
 void DtmViewer::loadDtm() {
     std::vector<glm::vec3> realVertices;
     BoundingBox3 bb;
-    bool success = loadXyzDir("../../../gis_data/dtm", realVertices, bb);
+    bool success = loadXyzDir("../../../gis_data/dtm", bb, realVertices);
     if (!success) {
         std::cout << "Could not load real terrain" << std::endl;
         return;
