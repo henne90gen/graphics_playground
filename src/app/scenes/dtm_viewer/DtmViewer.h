@@ -55,6 +55,7 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> simpleShader;
 
     Dtm dtm;
+    std::vector<std::vector<glm::vec3>> pointBuffer = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
@@ -68,7 +69,7 @@ class DtmViewer : public Scene {
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
                       int &verticesPerFrame, DtmSettings &terrainLevels);
-    void recalculateNormals(int verticesPerFrame);
+    void calculateNormals(int verticesPerFrame);
     void loadDtm();
 
     void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
