@@ -153,18 +153,18 @@ void DtmViewer::recalculateNormals(int verticesPerFrame) {
     RECORD_SCOPE_NAME("Calculate Normals");
 
     static int counter = 0;
-    int numSegments = std::ceil(dtm.heightMap.grid.size() / verticesPerFrame);
+    int numSegments = std::ceil(dtm.grid.size() / verticesPerFrame);
     int segment = counter % numSegments;
 
     auto normals = std::vector<glm::vec3>(verticesPerFrame);
     for (unsigned int i = segment * verticesPerFrame;
-         i < dtm.heightMap.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame); i++) {
-        int x = dtm.heightMap.grid[i].x;
-        int y = dtm.heightMap.grid[i].y;
-        const float L = dtm.heightMap.get(x - 1, y);
-        const float R = dtm.heightMap.get(x + 1, y);
-        const float B = dtm.heightMap.get(x, y - 1);
-        const float T = dtm.heightMap.get(x, y + 1);
+         i < dtm.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame); i++) {
+        int x = dtm.grid[i].x;
+        int y = dtm.grid[i].y;
+        const float L = dtm.get(x - 1, y);
+        const float R = dtm.get(x + 1, y);
+        const float B = dtm.get(x, y - 1);
+        const float T = dtm.get(x, y + 1);
         normals[i - segment * verticesPerFrame] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
     }
     int offset = segment * verticesPerFrame * sizeof(glm::vec3);
@@ -191,8 +191,7 @@ void DtmViewer::loadDtm() {
 
     auto vertices = std::vector<glm::vec3>(realVertices.size());
     std::unordered_map<long, unsigned int> indexMap = {};
-    dtm.heightMap = {};
-    dtm.heightMap.grid.resize(realVertices.size());
+    dtm.grid.resize(realVertices.size());
 
     float stepWidth = 20.0F;
 
@@ -205,8 +204,8 @@ void DtmViewer::loadDtm() {
         int z = vertex.z / stepWidth;
         vertices[i] = {x, y, z};
 
-        dtm.heightMap.grid[i] = {x, z};
-        dtm.heightMap.set(x, z, y);
+        dtm.grid[i] = {x, z};
+        dtm.set(x, z, y);
 
         GET_INDEX(x, z) = i;
     }
@@ -214,11 +213,11 @@ void DtmViewer::loadDtm() {
     std::cout << "Generated vertices and height map" << std::endl;
 
     auto indices = std::vector<glm::ivec3>();
-    for (unsigned int i = 0; i < dtm.heightMap.grid.size(); i++) {
-        int x = dtm.heightMap.grid[i].x;
-        int y = dtm.heightMap.grid[i].y;
-        float topH = dtm.heightMap.get(x, y + 1);
-        float rightH = dtm.heightMap.get(x + 1, y);
+    for (unsigned int i = 0; i < dtm.grid.size(); i++) {
+        int x = dtm.grid[i].x;
+        int y = dtm.grid[i].y;
+        float topH = dtm.get(x, y + 1);
+        float rightH = dtm.get(x + 1, y);
         if (topH != 0.0F && rightH != 0.0F) {
             indices.emplace_back(      //
                   GET_INDEX(x, y + 1), //
@@ -226,8 +225,8 @@ void DtmViewer::loadDtm() {
                   GET_INDEX(x, y)      //
             );
         }
-        float bottomH = dtm.heightMap.get(x, y - 1);
-        float leftH = dtm.heightMap.get(x - 1, y);
+        float bottomH = dtm.get(x, y - 1);
+        float leftH = dtm.get(x - 1, y);
         if (bottomH != 0.0F && leftH != 0.0F) {
             indices.emplace_back(      //
                   GET_INDEX(x - 1, y), //
