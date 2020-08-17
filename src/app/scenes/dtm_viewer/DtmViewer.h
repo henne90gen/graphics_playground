@@ -9,7 +9,6 @@
 #include "gis/XyzLoader.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
-#include "terrain_erosion/RainSimulation.h"
 
 struct DtmSettings {
     float waterLevel = 0.0F;
@@ -20,11 +19,26 @@ struct DtmSettings {
 
 struct Dtm {
     std::shared_ptr<VertexArray> va = nullptr;
-
     std::shared_ptr<VertexBuffer> normalBuffer;
 
-    HeightMap heightMap;
     glm::vec3 pointToLookAt;
+
+    std::vector<glm::ivec2> grid = {};
+    std::unordered_map<long, float> heights = {};
+
+    void set(int x, int z, float value) {
+        long index = (static_cast<long>(x) << 32) | z;
+        heights[index] = value;
+    }
+
+    float get(int x, int z) const {
+        long index = (static_cast<long>(x) << 32) | z;
+        auto itr = heights.find(index);
+        if (itr == heights.end()) {
+            return 0.0F;
+        }
+        return itr->second;
+    }
 };
 
 class DtmViewer : public Scene {
