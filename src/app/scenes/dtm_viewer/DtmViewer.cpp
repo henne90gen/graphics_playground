@@ -56,7 +56,7 @@ void DtmViewer::tick() {
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
-    recalculateNormals(verticesPerFrame);
+    calculateNormals(verticesPerFrame);
     renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor, lightPower,
                   wireframe, drawTriangles, verticesPerFrame, terrainSettings);
     renderBoundingBox(modelMatrix, viewMatrix, projectionMatrix);
@@ -149,11 +149,17 @@ void DtmViewer::initTerrainMesh(const std::vector<glm::vec3> &vertices, const st
     dtm.va->setIndexBuffer(indexBuffer);
 }
 
-void DtmViewer::recalculateNormals(int verticesPerFrame) {
+void DtmViewer::calculateNormals(int verticesPerFrame) {
     RECORD_SCOPE_NAME("Calculate Normals");
 
     static int counter = 0;
-    int numSegments = std::ceil(dtm.grid.size() / verticesPerFrame);
+    int numSegments = 0;
+    if (verticesPerFrame < static_cast<int>(dtm.grid.size())) {
+        numSegments = std::ceil(dtm.grid.size() / verticesPerFrame);
+    } else {
+        numSegments = 1;
+        verticesPerFrame = dtm.grid.size();
+    }
     int segment = counter % numSegments;
 
     auto normals = std::vector<glm::vec3>(verticesPerFrame);
