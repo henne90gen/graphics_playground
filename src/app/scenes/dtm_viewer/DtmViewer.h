@@ -88,6 +88,7 @@ class DtmViewer : public Scene {
 
     void loadDtm();
     void loadDtmAsync();
+    void uploadSlices();
 
     void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                            const glm::mat4 &projectionMatrix);

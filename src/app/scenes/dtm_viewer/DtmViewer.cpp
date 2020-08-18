@@ -48,6 +48,8 @@ void DtmViewer::tick() {
     showSettings(modelScale, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
                  drawTriangles, verticesPerFrame, terrainSettings);
 
+    uploadSlices();
+
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
@@ -177,15 +179,13 @@ void DtmViewer::loadDtmAsync() {
             float y = vertex.y / stepWidth;
             int z = vertex.z / stepWidth;
             dtm.vertices[dtm.vertexOffset + i] = {x, y, z};
-            dtm.set(x, z, y);
-
-            GET_INDEX(x, z) = i;
+            GET_INDEX(x, z) = dtm.vertexOffset + i;
 
             const float L = dtm.get(x - 1, z);
             const float R = dtm.get(x + 1, z);
             const float B = dtm.get(x, z - 1);
             const float T = dtm.get(x, z + 1);
-            dtm.normals[i] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
+            dtm.normals[dtm.vertexOffset +i] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
         }
         dtm.vertexOffset += points.size();
 #endif
@@ -197,32 +197,24 @@ void DtmViewer::loadDtmAsync() {
             float topH = dtm.get(x, y + 1);
             float rightH = dtm.get(x + 1, y);
             if (topH != 0.0F && rightH != 0.0F) {
-                dtm.indices[dtm.indexOffset++] = glm::ivec3( //
-                      GET_INDEX(x, y + 1),                   //
-                      GET_INDEX(x + 1, y),                   //
-                      GET_INDEX(x, y)                        //
+                dtm.indices[dtm.indexOffset] = glm::ivec3( //
+                      GET_INDEX(x, y + 1),                 //
+                      GET_INDEX(x + 1, y),                 //
+                      GET_INDEX(x, y)                      //
                 );
+                dtm.indexOffset += 1;
             }
             float bottomH = dtm.get(x, y - 1);
             float leftH = dtm.get(x - 1, y);
             if (bottomH != 0.0F && leftH != 0.0F) {
-                dtm.indices[dtm.indexOffset++] = glm::ivec3( //
-                      GET_INDEX(x - 1, y),                   //
-                      GET_INDEX(x, y),                       //
-                      GET_INDEX(x, y - 1)                    //
+                dtm.indices[dtm.indexOffset] = glm::ivec3( //
+                      GET_INDEX(x - 1, y),                 //
+                      GET_INDEX(x, y),                     //
+                      GET_INDEX(x, y - 1)                  //
                 );
+                dtm.indexOffset += 1;
             }
         }
-#endif
-
-#if 0
-        int numSegments = std::ceil(dtm.vertices.size() / verticesPerFrame);
-        int segment = counter % numSegments;
-        int offset = segment * verticesPerFrame * sizeof(glm::vec3);
-        size_t size = normals.size() * sizeof(glm::vec3);
-
-        dtm.normalBuffer->bind();
-        GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, normals.data()));
 #endif
 
         {
@@ -240,8 +232,37 @@ void DtmViewer::loadDtmAsync() {
     }
 }
 
+void DtmViewer::uploadSlices() {
+    if (!uploadsMutex.try_lock()) {
+        return;
+    }
+    if (uploads.empty()) {
+        return;
+    }
+
+    auto slice = uploads.back();
+
+    int offset = slice.startVertex * sizeof(glm::vec3);
+    size_t size = (slice.endVertex - slice.startVertex) * sizeof(glm::vec3);
+
+    dtm.vertexBuffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, dtm.vertices.data()));
+
+    dtm.normalBuffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, dtm.normals.data()));
+
+    int indexOffset = slice.startIndex * sizeof(glm::ivec3);
+    size_t indexSize = (slice.endIndex - slice.startIndex) * sizeof(glm::ivec3);
+    GL_Call(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, dtm.indices.data()));
+
+    uploads.pop_back();
+    uploadsMutex.unlock();
+}
+
 void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                                   const glm::mat4 &projectionMatrix) {
+    // TODO activate bounding box rendering again
+#if 0
     simpleShader->bind();
     simpleShader->setUniform("modelMatrix", modelMatrix);
     simpleShader->setUniform("viewMatrix", viewMatrix);
@@ -253,6 +274,7 @@ void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 
 
     bbVA->unbind();
     simpleShader->unbind();
+#endif
 }
 
 void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
