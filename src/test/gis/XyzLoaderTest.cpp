@@ -16,3 +16,8 @@ TEST_CASE("Can load xyz directory") {
     REQUIRE(bb.min == glm::vec3(278240, 470.22, 5.58986e+06));
     REQUIRE(bb.max == glm::vec3(281980, 633.59, 5.60482e+06));
 }
+
+TEST_CASE("Can count lines in xyz directory") {
+    unsigned long result = countLinesInDir("../../../src/test/gis/dtm");
+    REQUIRE(result == 38220);
+}
