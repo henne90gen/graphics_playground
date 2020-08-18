@@ -45,14 +45,12 @@ void VertexBuffer::update(const std::vector<float> &data) const {
 
 void VertexBuffer::update(const std::vector<glm::vec3> &data) const {
     bind();
-    int numFloatsPerVec3 = 3;
-    unsigned int sizeInBytes = data.size() * numFloatsPerVec3 * sizeof(float);
+    unsigned int sizeInBytes = data.size() * sizeof(glm::vec3);
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
 }
 
 void VertexBuffer::update(const std::vector<glm::vec2> &data) const {
     bind();
-    int numFloatsPerVec2 = 2;
-    unsigned int sizeInBytes = data.size() * numFloatsPerVec2 * sizeof(float);
+    unsigned int sizeInBytes = data.size() * sizeof(glm::vec2);
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
 }

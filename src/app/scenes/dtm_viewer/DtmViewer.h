@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <random>
 
 #include "gis/XyzLoader.h"
@@ -17,27 +18,41 @@ struct DtmSettings {
     float blur = 6.0F;
 };
 
+struct UploadSlice {
+    unsigned long startVertex;
+    unsigned long endVertex; // exclusive
+    unsigned long startIndex;
+    unsigned long endIndex; // exclusive
+};
+
 struct Dtm {
     std::shared_ptr<VertexArray> va = nullptr;
+    std::shared_ptr<VertexBuffer> vertexBuffer;
     std::shared_ptr<VertexBuffer> normalBuffer;
+    std::shared_ptr<IndexBuffer> indexBuffer;
 
     glm::vec3 pointToLookAt;
 
-    std::vector<glm::ivec2> grid = {};
-    std::unordered_map<long, float> heights = {};
+    std::vector<glm::vec3> vertices = {};
+    std::vector<glm::vec3> normals = {};
+    std::vector<glm::ivec3> indices = {};
+    std::unordered_map<long, unsigned int> vertexMap = {};
+
+    unsigned long vertexOffset = 0;
+    unsigned long indexOffset = 0;
 
     void set(int x, int z, float value) {
         long index = (static_cast<long>(x) << 32) | z;
-        heights[index] = value;
+        vertices[vertexMap[index]] = glm::vec3(x, value, z);
     }
 
     float get(int x, int z) const {
         long index = (static_cast<long>(x) << 32) | z;
-        auto itr = heights.find(index);
-        if (itr == heights.end()) {
+        auto itr = vertexMap.find(index);
+        if (itr == vertexMap.end()) {
             return 0.0F;
         }
-        return itr->second;
+        return vertices[itr->second].y;
     }
 };
 
@@ -55,6 +70,8 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> simpleShader;
 
     Dtm dtm;
+    std::vector<UploadSlice> uploads = {};
+    std::mutex uploadsMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
@@ -68,8 +85,9 @@ class DtmViewer : public Scene {
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
                       int &verticesPerFrame, DtmSettings &terrainLevels);
-    void recalculateNormals(int verticesPerFrame);
+
     void loadDtm();
+    void loadDtmAsync();
 
     void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                            const glm::mat4 &projectionMatrix);
