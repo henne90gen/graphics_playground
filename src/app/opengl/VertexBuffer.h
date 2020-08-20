@@ -8,7 +8,7 @@ class VertexBuffer {
   public:
     VertexBuffer();
 
-    VertexBuffer(const void *data, unsigned int size, const BufferLayout &l);
+    VertexBuffer(const void *data, unsigned int sizeInBytes, const BufferLayout &l);
 
     explicit VertexBuffer(const std::vector<float> &data, const BufferLayout &l);
 

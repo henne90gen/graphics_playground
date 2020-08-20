@@ -4,7 +4,6 @@
 
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
-#include "util/VectorUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -13,7 +12,8 @@ const float Z_FAR = 100000.0F;
 void DtmViewer::setup() {
     simpleShader = std::make_shared<Shader>("scenes/dtm_viewer/PathVert.glsl", "scenes/dtm_viewer/PathFrag.glsl");
     shader = std::make_shared<Shader>("scenes/dtm_viewer/TerrainVert.glsl", "scenes/dtm_viewer/TerrainFrag.glsl");
-    shader->bind();
+
+    GL_Call(glPointSize(5));
 
     loadDtm();
 }
@@ -26,75 +26,58 @@ void DtmViewer::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraPosition = glm::vec3(-120.0F, -155.0F, -375.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(3.5F, -0.05F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
     static float lightPower = 13.0F;
     static bool wireframe = false;
     static bool drawTriangles = true;
-    static int verticesPerFrame = 40000;
     static auto terrainSettings = DtmSettings();
-    static bool initialized = false;
-    if (!initialized) {
-        initialized = true;
-        cameraPosition = dtm.pointToLookAt + glm::vec3(0.0F, 800.0F, -2000.0F);
-        cameraPosition *= -1.0F;
-        cameraPosition.y *= -1.0F;
-    }
 
-    showSettings(modelScale, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
-                 drawTriangles, verticesPerFrame, terrainSettings);
+    showSettings(modelScale, dtm.cameraPositionWorld, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
+                 drawTriangles, terrainSettings);
+
+    uploadSlices();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, modelScale);
+    glm::vec3 cameraPosition = dtm.cameraPositionWorld;
+    cameraPosition *= -1.0F;
+    cameraPosition.y *= -1.0F;
     glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
-    calculateNormals(verticesPerFrame);
     renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor, lightPower,
-                  wireframe, drawTriangles, verticesPerFrame, terrainSettings);
+                  wireframe, drawTriangles, terrainSettings);
     renderBoundingBox(modelMatrix, viewMatrix, projectionMatrix);
 }
 
 void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
                              glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower, bool &wireframe,
-                             bool &drawTriangles, int &verticesPerFrame, DtmSettings &terrainSettings) {
+                             bool &drawTriangles, DtmSettings &terrainSettings) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
-
-    cameraPosition.x *= -1.0F;
-    cameraPosition.z *= -1.0F;
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
-    cameraPosition.x *= -1.0F;
-    cameraPosition.z *= -1.0F;
-
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, dragSpeed);
     ImGui::Checkbox("Wireframe", &wireframe);
     ImGui::Checkbox("Draw Triangles", &drawTriangles);
-    ImGui::SliderInt("Vertices Per Frame", &verticesPerFrame, 10, 100000);
     ImGui::DragFloat4("Terrain Levels", reinterpret_cast<float *>(&terrainSettings), dragSpeed);
-
     ImGui::End();
 }
 
 void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                               const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
                               const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, const float lightPower,
-                              const bool wireframe, const bool drawTriangles, const int verticesPerFrame,
-                              const DtmSettings &levels) {
-    // RECORD_SCOPE_NAME("Render Terrain");
+                              const bool wireframe, const bool drawTriangles, const DtmSettings &levels) {
+    RECORD_SCOPE_NAME("Render Terrain");
 
     shader->bind();
     shader->setUniform("modelMatrix", modelMatrix);
@@ -130,134 +113,159 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
     shader->unbind();
 }
 
-void DtmViewer::initTerrainMesh(const std::vector<glm::vec3> &vertices, const std::vector<glm::ivec3> &indices) {
-    dtm.va = std::make_shared<VertexArray>(shader);
-    dtm.va->bind();
-
-    BufferLayout positionLayout = {{ShaderDataType::Float3, "position"}};
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
-    dtm.va->addVertexBuffer(positionBuffer);
-
-    dtm.normalBuffer = std::make_shared<VertexBuffer>();
-    BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
-    dtm.normalBuffer->setLayout(normalLayout);
-    dtm.normalBuffer->bind();
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
-    dtm.va->addVertexBuffer(dtm.normalBuffer);
-
-    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    dtm.va->setIndexBuffer(indexBuffer);
-}
-
-void DtmViewer::calculateNormals(int verticesPerFrame) {
-    RECORD_SCOPE_NAME("Calculate Normals");
-
-    static int counter = 0;
-    int numSegments = 0;
-    if (verticesPerFrame < static_cast<int>(dtm.grid.size())) {
-        numSegments = std::ceil(dtm.grid.size() / verticesPerFrame);
-    } else {
-        numSegments = 1;
-        verticesPerFrame = dtm.grid.size();
-    }
-    int segment = counter % numSegments;
-
-    auto normals = std::vector<glm::vec3>(verticesPerFrame);
-    for (unsigned int i = segment * verticesPerFrame;
-         i < dtm.grid.size() && i < static_cast<unsigned int>((segment + 1) * verticesPerFrame); i++) {
-        int x = dtm.grid[i].x;
-        int y = dtm.grid[i].y;
-        const float L = dtm.get(x - 1, y);
-        const float R = dtm.get(x + 1, y);
-        const float B = dtm.get(x, y - 1);
-        const float T = dtm.get(x, y + 1);
-        normals[i - segment * verticesPerFrame] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
-    }
-    int offset = segment * verticesPerFrame * sizeof(glm::vec3);
-    size_t size = normals.size() * sizeof(glm::vec3);
-
-    dtm.normalBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, normals.data()));
-
-    counter++;
-}
-
 void DtmViewer::loadDtm() {
-    std::vector<glm::vec3> realVertices;
-    BoundingBox3 bb;
-    bool success = loadXyzDir("../../../gis_data/dtm", bb, realVertices);
-    if (!success) {
-        std::cout << "Could not load real terrain" << std::endl;
+    auto files = getFilesInDirectory("../../../gis_data/dtm");
+    auto pointCountEstimate = files.size() * 10000;
+    if (pointCountEstimate < 0) {
+        std::cout << "Could not count points in dtm" << std::endl;
         return;
     }
 
-    std::cout << "Loaded terrain data from disk (" << realVertices.size() << " points)" << std::endl;
+    dtm.vertices = std::vector<glm::vec3>(pointCountEstimate);
+    dtm.normals = std::vector<glm::vec3>(pointCountEstimate);
+    dtm.indices = std::vector<glm::ivec3>(pointCountEstimate * 2);
 
-#define GET_INDEX(x, y) indexMap[(static_cast<long>(x) << 32) | (y)]
+    dtm.va = std::make_shared<VertexArray>(shader);
+    dtm.va->bind();
 
-    auto vertices = std::vector<glm::vec3>(realVertices.size());
-    std::unordered_map<long, unsigned int> indexMap = {};
-    dtm.grid.resize(realVertices.size());
+    dtm.gpuPointCount = 1000000;
+    BufferLayout positionLayout = {{ShaderDataType::Float3, "position"}};
+    unsigned int vertexSize = dtm.gpuPointCount * sizeof(glm::vec3);
+    dtm.vertexBuffer = std::make_shared<VertexBuffer>(nullptr, vertexSize, positionLayout);
+    dtm.va->addVertexBuffer(dtm.vertexBuffer);
 
-    float stepWidth = 20.0F;
+    BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
+    unsigned int normalSize = dtm.gpuPointCount * sizeof(glm::vec3);
+    dtm.normalBuffer = std::make_shared<VertexBuffer>(nullptr, normalSize, normalLayout);
+    dtm.va->addVertexBuffer(dtm.normalBuffer);
+
+    unsigned int indexSize = dtm.gpuPointCount * 2 * sizeof(glm::ivec3);
+    dtm.indexBuffer = std::make_shared<IndexBuffer>(nullptr, indexSize);
+    dtm.va->setIndexBuffer(dtm.indexBuffer);
+
+    std::cout << "Allocated " << vertexSize + normalSize + indexSize << " bytes of GPU memory" << std::endl;
+
+    loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this);
+}
+
+void DtmViewer::loadDtmAsync() {
+    bool success = loadXyzDir("../../../gis_data/dtm", [this](const std::vector<glm::vec3> &points) {
+#define GET_INDEX(x, y) dtm.vertexMap[(static_cast<long>(x) << 32) | (y)]
+        float stepWidth = 20.0F;
+        auto vertexOffsetBefore = dtm.vertexOffset;
+        auto indexOffsetBefore = dtm.indexOffset;
 
 #pragma omp parallel for
-    for (unsigned int i = 0; i < realVertices.size(); i++) {
-        const auto &vertex = realVertices[i];
+        for (unsigned int i = 0; i < points.size(); i++) {
+            const auto &vertex = points[i];
 
-        int x = vertex.x / stepWidth;
-        float y = vertex.y / stepWidth;
-        int z = vertex.z / stepWidth;
-        vertices[i] = {x, y, z};
+            int x = vertex.x / stepWidth;
+            float y = vertex.y / stepWidth;
+            int z = vertex.z / stepWidth;
+            dtm.vertices[dtm.vertexOffset + i] = {x, y, z};
+            GET_INDEX(x, z) = dtm.vertexOffset + i;
+        }
 
-        dtm.grid[i] = {x, z};
-        dtm.set(x, z, y);
+#pragma omp parallel for
+        for (unsigned int i = 0; i < points.size(); i++) {
+            int x = dtm.vertices[dtm.vertexOffset + i].x;
+            int z = dtm.vertices[dtm.vertexOffset + i].z;
 
-        GET_INDEX(x, z) = i;
+            const float L = dtm.get(x - 1, z);
+            const float R = dtm.get(x + 1, z);
+            const float B = dtm.get(x, z - 1);
+            const float T = dtm.get(x, z + 1);
+            dtm.normals[dtm.vertexOffset + i] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
+        }
+
+        for (unsigned int i = 0; i < points.size(); i++) {
+            int x = dtm.vertices[dtm.vertexOffset + i].x;
+            int z = dtm.vertices[dtm.vertexOffset + i].z;
+
+            float topH = dtm.get(x, z + 1);
+            float rightH = dtm.get(x + 1, z);
+            if (topH != 0.0F && rightH != 0.0F) {
+                dtm.indices[dtm.indexOffset++] = glm::ivec3( //
+                      GET_INDEX(x, z + 1),                   //
+                      GET_INDEX(x + 1, z),                   //
+                      GET_INDEX(x, z)                        //
+                );
+            }
+            float bottomH = dtm.get(x, z - 1);
+            float leftH = dtm.get(x - 1, z);
+            if (bottomH != 0.0F && leftH != 0.0F) {
+                dtm.indices[dtm.indexOffset++] = glm::ivec3( //
+                      GET_INDEX(x - 1, z),                   //
+                      GET_INDEX(x, z),                       //
+                      GET_INDEX(x, z - 1)                    //
+                );
+            }
+        }
+
+        dtm.vertexOffset += points.size();
+
+        {
+            const std::lock_guard<std::mutex> guard(uploadsMutex);
+            UploadSlice slice = {vertexOffsetBefore, dtm.vertexOffset, indexOffsetBefore, dtm.indexOffset};
+            uploads.push_back(slice);
+        }
+        std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points" << std::endl;
+    });
+
+    if (!success) {
+        std::cout << "Could not load dtm" << std::endl;
+        return;
     }
 
-    std::cout << "Generated vertices and height map" << std::endl;
+    std::cout << "Finished loading dtm" << std::endl;
+}
 
-    auto indices = std::vector<glm::ivec3>();
-    for (unsigned int i = 0; i < dtm.grid.size(); i++) {
-        int x = dtm.grid[i].x;
-        int y = dtm.grid[i].y;
-        float topH = dtm.get(x, y + 1);
-        float rightH = dtm.get(x + 1, y);
-        if (topH != 0.0F && rightH != 0.0F) {
-            indices.emplace_back(      //
-                  GET_INDEX(x, y + 1), //
-                  GET_INDEX(x + 1, y), //
-                  GET_INDEX(x, y)      //
-            );
-        }
-        float bottomH = dtm.get(x, y - 1);
-        float leftH = dtm.get(x - 1, y);
-        if (bottomH != 0.0F && leftH != 0.0F) {
-            indices.emplace_back(      //
-                  GET_INDEX(x - 1, y), //
-                  GET_INDEX(x, y),     //
-                  GET_INDEX(x, y - 1)  //
-            );
-        }
+void DtmViewer::uploadSlices() {
+    if (!uploadsMutex.try_lock()) {
+        return;
+    }
+    if (uploads.empty()) {
+        uploadsMutex.unlock();
+        return;
     }
 
-    std::cout << "Generated indices" << std::endl;
+    auto slice = uploads.back();
 
-    initTerrainMesh(vertices, indices);
+    if ((slice.endVertex - slice.startVertex) + dtm.vertexOffset > dtm.gpuPointCount) {
+        uploadsMutex.unlock();
+        return;
+    }
 
-    bb.min /= stepWidth;
-    bb.max /= stepWidth;
-    glm::vec3 pointToLookAt = (bb.min + bb.max) / 2.0F;
-    dtm.pointToLookAt = pointToLookAt;
+    int offset = slice.startVertex * sizeof(glm::vec3);
+    size_t size = (slice.endVertex - slice.startVertex) * sizeof(glm::vec3);
 
-    initBoundingBox(bb);
+    dtm.vertexBuffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, dtm.vertices.data()));
 
-    std::cout << "Finished loading terrain data" << std::endl;
+    dtm.normalBuffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, dtm.normals.data()));
+
+    int indexOffset = slice.startIndex * sizeof(glm::ivec3);
+    size_t indexSize = (slice.endIndex - slice.startIndex) * sizeof(glm::ivec3);
+    dtm.indexBuffer->bind();
+    GL_Call(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, dtm.indices.data()));
+
+    dtm.cameraPositionWorld = dtm.vertices[slice.startVertex] + glm::vec3(0.0F, 50.0F, -200.0F);
+
+    std::cout << "Uploaded slice to GPU: " << slice.endVertex - slice.startVertex << " vertices, "
+              << slice.endIndex - slice.startIndex << " indices" << std::endl;
+
+    std::cout << slice.startVertex << " - " << slice.endVertex << " | " << slice.startIndex << " - " << slice.endIndex
+              << std::endl;
+
+    uploads.pop_back();
+    uploadsMutex.unlock();
 }
 
 void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                                   const glm::mat4 &projectionMatrix) {
+    // TODO activate bounding box rendering again
+#if 0
     simpleShader->bind();
     simpleShader->setUniform("modelMatrix", modelMatrix);
     simpleShader->setUniform("viewMatrix", viewMatrix);
@@ -269,9 +277,12 @@ void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 
 
     bbVA->unbind();
     simpleShader->unbind();
+#endif
 }
 
 void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
+    // TODO activate bounding box rendering again
+#if 0
     bbVA = std::make_shared<VertexArray>(simpleShader);
     std::vector<glm::vec3> vertices = {
           {bb.min.x, bb.min.y, bb.min.z}, // 0 - - -
@@ -296,4 +307,5 @@ void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
 
     auto ib = std::make_shared<IndexBuffer>(indices);
     bbVA->setIndexBuffer(ib);
+#endif
 }

@@ -3,7 +3,9 @@
 #include "scenes/Scene.h"
 
 #include <functional>
+#include <future>
 #include <memory>
+#include <mutex>
 #include <random>
 
 #include "gis/XyzLoader.h"
@@ -17,27 +19,43 @@ struct DtmSettings {
     float blur = 6.0F;
 };
 
+struct UploadSlice {
+    unsigned long startVertex;
+    unsigned long endVertex; // exclusive
+    unsigned long startIndex;
+    unsigned long endIndex; // exclusive
+};
+
 struct Dtm {
     std::shared_ptr<VertexArray> va = nullptr;
+    std::shared_ptr<VertexBuffer> vertexBuffer;
     std::shared_ptr<VertexBuffer> normalBuffer;
+    std::shared_ptr<IndexBuffer> indexBuffer;
 
-    glm::vec3 pointToLookAt;
+    glm::vec3 cameraPositionWorld;
 
-    std::vector<glm::ivec2> grid = {};
-    std::unordered_map<long, float> heights = {};
+    std::vector<glm::vec3> vertices = {};
+    std::vector<glm::vec3> normals = {};
+    std::vector<glm::ivec3> indices = {};
+    std::unordered_map<long, unsigned int> vertexMap = {};
 
-    void set(int x, int z, float value) {
-        long index = (static_cast<long>(x) << 32) | z;
-        heights[index] = value;
-    }
+    unsigned long vertexOffset = 0;
+    unsigned long indexOffset = 0;
+    unsigned long gpuPointCount = 0;
+
+    // TODO add tracking information to find out which patch is currently present on the GPU
+    // TODO find a way to store points in patches without having to reorganize points all the time
+    // TODO maybe use a QuadTree data structure to dynamically adjust partitioning
+    // TODO remove normal.y and replace it with a unique id for the file (normals need to be re-normalized anyway and
+    // they always point up)
 
     float get(int x, int z) const {
         long index = (static_cast<long>(x) << 32) | z;
-        auto itr = heights.find(index);
-        if (itr == heights.end()) {
+        auto itr = vertexMap.find(index);
+        if (itr == vertexMap.end()) {
             return 0.0F;
         }
-        return itr->second;
+        return vertices[itr->second].y;
     }
 };
 
@@ -55,22 +73,24 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> simpleShader;
 
     Dtm dtm;
-    std::vector<std::vector<glm::vec3>> pointBuffer = {};
+    std::vector<UploadSlice> uploads = {};
+    std::mutex uploadsMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
+    std::future<void> loadDtmFuture;
+
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                        const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
-                       float lightPower, bool wireframe, bool drawTriangles, int verticesPerFrame,
-                       const DtmSettings &levels);
-
-    void initTerrainMesh(const std::vector<glm::vec3> &vertices, const std::vector<glm::ivec3> &indices);
+                       float lightPower, bool wireframe, bool drawTriangles, const DtmSettings &levels);
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      int &verticesPerFrame, DtmSettings &terrainLevels);
-    void calculateNormals(int verticesPerFrame);
+                      DtmSettings &terrainLevels);
+
     void loadDtm();
+    void loadDtmAsync();
+    void uploadSlices();
 
     void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                            const glm::mat4 &projectionMatrix);
