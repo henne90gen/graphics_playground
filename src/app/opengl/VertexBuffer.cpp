@@ -6,6 +6,11 @@
 
 VertexBuffer::VertexBuffer() { GL_Call(glGenBuffers(1, &id)); }
 
+VertexBuffer::VertexBuffer(const void *data, unsigned int sizeInBytes, const BufferLayout &l) : layout(l) {
+    GL_Call(glGenBuffers(1, &id));
+    update(data, sizeInBytes);
+}
+
 VertexBuffer::VertexBuffer(const std::vector<float> &data, const BufferLayout &l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data);
@@ -19,11 +24,6 @@ VertexBuffer::VertexBuffer(const std::vector<glm::vec2> &data, const BufferLayou
 VertexBuffer::VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout &l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data);
-}
-
-VertexBuffer::VertexBuffer(const void *data, unsigned int size, const BufferLayout &l) : layout(l) {
-    GL_Call(glGenBuffers(1, &id));
-    update(data, size);
 }
 
 VertexBuffer::~VertexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
