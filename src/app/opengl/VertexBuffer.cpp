@@ -6,6 +6,11 @@
 
 VertexBuffer::VertexBuffer() { GL_Call(glGenBuffers(1, &id)); }
 
+VertexBuffer::VertexBuffer(const void *data, unsigned int sizeInBytes, const BufferLayout &l) : layout(l) {
+    GL_Call(glGenBuffers(1, &id));
+    update(data, sizeInBytes);
+}
+
 VertexBuffer::VertexBuffer(const std::vector<float> &data, const BufferLayout &l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data);
@@ -19,11 +24,6 @@ VertexBuffer::VertexBuffer(const std::vector<glm::vec2> &data, const BufferLayou
 VertexBuffer::VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout &l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data);
-}
-
-VertexBuffer::VertexBuffer(const void *data, unsigned int size, const BufferLayout &l) : layout(l) {
-    GL_Call(glGenBuffers(1, &id));
-    update(data, size);
 }
 
 VertexBuffer::~VertexBuffer() { GL_Call(glDeleteBuffers(1, &id)); }
@@ -45,14 +45,12 @@ void VertexBuffer::update(const std::vector<float> &data) const {
 
 void VertexBuffer::update(const std::vector<glm::vec3> &data) const {
     bind();
-    int numFloatsPerVec3 = 3;
-    unsigned int sizeInBytes = data.size() * numFloatsPerVec3 * sizeof(float);
+    unsigned int sizeInBytes = data.size() * sizeof(glm::vec3);
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
 }
 
 void VertexBuffer::update(const std::vector<glm::vec2> &data) const {
     bind();
-    int numFloatsPerVec2 = 2;
-    unsigned int sizeInBytes = data.size() * numFloatsPerVec2 * sizeof(float);
+    unsigned int sizeInBytes = data.size() * sizeof(glm::vec2);
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data.data(), GL_STATIC_DRAW));
 }

@@ -10,7 +10,7 @@ build:
 	@cd build; ninja
 
 test: build
-	@cd build; ninja test
+	@cd build; CTEST_OUTPUT_ON_FAILURE=ON ninja test
 
 run: build
 	@cd build/src/app; ./Playground
