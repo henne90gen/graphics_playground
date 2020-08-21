@@ -15,6 +15,7 @@ void DtmViewer::setup() {
 
     GL_Call(glPointSize(5));
 
+    initBoundingBox();
     loadDtm();
 }
 
@@ -23,8 +24,6 @@ void DtmViewer::destroy() {}
 void DtmViewer::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(3.5F, -0.05F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
@@ -41,9 +40,6 @@ void DtmViewer::tick() {
     uploadSlices();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, modelScale);
     glm::vec3 cameraPosition = dtm.cameraPositionWorld;
     cameraPosition *= -1.0F;
@@ -54,7 +50,7 @@ void DtmViewer::tick() {
 
     renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor, lightPower,
                   wireframe, drawTriangles, showBatchIds, terrainSettings);
-    renderBoundingBox(modelMatrix, viewMatrix, projectionMatrix);
+    renderBoundingBox(viewMatrix, projectionMatrix, dtm.bb);
 }
 
 void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
@@ -258,22 +254,38 @@ void DtmViewer::uploadSlices() {
     dtm.indexBuffer->bind();
     GL_Call(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, dtm.indices.data() + slice.startIndex));
 
-    dtm.cameraPositionWorld = dtm.vertices[slice.startVertex] + glm::vec3(0.0F, 50.0F, -200.0F);
-
     std::cout << "Uploaded slice to GPU: " << slice.endVertex - slice.startVertex << " vertices, "
               << slice.endIndex - slice.startIndex << " indices" << std::endl;
 
     std::cout << "Vertices: " << slice.startVertex << " - " << slice.endVertex << " | Indices: " << slice.startIndex
               << " - " << slice.endIndex << std::endl;
 
+#define UPDATE(left, op, right)                                                                                        \
+    if (left op right) {                                                                                               \
+        right = left;                                                                                                  \
+    }
+    for (unsigned int i = slice.startVertex; i < slice.endVertex; i++) {
+        UPDATE(dtm.vertices[i].x, <, dtm.bb.min.x)
+        UPDATE(dtm.vertices[i].y, <, dtm.bb.min.y)
+        UPDATE(dtm.vertices[i].z, <, dtm.bb.min.z)
+
+        UPDATE(dtm.vertices[i].x, >, dtm.bb.max.x)
+        UPDATE(dtm.vertices[i].y, >, dtm.bb.max.y)
+        UPDATE(dtm.vertices[i].z, >, dtm.bb.max.z)
+    }
+
+    dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 50.0F, -200.0F);
+
     uploads.pop_back();
     uploadsMutex.unlock();
 }
 
-void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
-                                  const glm::mat4 &projectionMatrix) {
-    // TODO activate bounding box rendering again
-#if 0
+void DtmViewer::renderBoundingBox(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+                                  const BoundingBox3 &bb) {
+    glm::mat4 modelMatrix = glm::identity<glm::mat4>();
+    modelMatrix = glm::translate(modelMatrix, (bb.min + bb.max) / 2.0F);
+    modelMatrix = glm::scale(modelMatrix, bb.max - bb.min);
+
     simpleShader->bind();
     simpleShader->setUniform("modelMatrix", modelMatrix);
     simpleShader->setUniform("viewMatrix", viewMatrix);
@@ -285,22 +297,19 @@ void DtmViewer::renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 
 
     bbVA->unbind();
     simpleShader->unbind();
-#endif
 }
 
-void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
-    // TODO activate bounding box rendering again
-#if 0
+void DtmViewer::initBoundingBox() {
     bbVA = std::make_shared<VertexArray>(simpleShader);
     std::vector<glm::vec3> vertices = {
-          {bb.min.x, bb.min.y, bb.min.z}, // 0 - - -
-          {bb.max.x, bb.min.y, bb.min.z}, // 1 + - -
-          {bb.min.x, bb.max.y, bb.min.z}, // 2 - + -
-          {bb.max.x, bb.max.y, bb.min.z}, // 3 + + -
-          {bb.min.x, bb.min.y, bb.max.z}, // 4 - - +
-          {bb.max.x, bb.min.y, bb.max.z}, // 5 + - +
-          {bb.min.x, bb.max.y, bb.max.z}, // 6 - + +
-          {bb.max.x, bb.max.y, bb.max.z}, // 7 + + +
+          {-0.5F, -0.5F, -0.5F}, // 0 - - -
+          {0.5F, -0.5F, -0.5F},  // 1 + - -
+          {-0.5F, 0.5F, -0.5F},  // 2 - + -
+          {0.5F, 0.5F, -0.5F},   // 3 + + -
+          {-0.5F, -0.5F, 0.5F},  // 4 - - +
+          {0.5F, -0.5F, 0.5F},   // 5 + - +
+          {-0.5F, 0.5F, 0.5F},   // 6 - + +
+          {0.5F, 0.5F, 0.5F},    // 7 + + +
     };
 
     BufferLayout layout = {{ShaderDataType::Float3, "position"}};
@@ -315,5 +324,4 @@ void DtmViewer::initBoundingBox(const BoundingBox3 &bb) {
 
     auto ib = std::make_shared<IndexBuffer>(indices);
     bbVA->setIndexBuffer(ib);
-#endif
 }

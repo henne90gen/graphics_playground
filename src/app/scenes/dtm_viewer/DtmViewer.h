@@ -43,11 +43,13 @@ struct Dtm {
     unsigned long indexOffset = 0;
     unsigned long gpuPointCount = 0;
 
+    BoundingBox3 bb = {};
+
     // TODO add tracking information to find out which patch is currently present on the GPU
     // TODO find a way to store points in patches without having to reorganize points all the time
     // TODO maybe use a QuadTree data structure to dynamically adjust partitioning
     // TODO remove normal.y and replace it with a unique id for the file (normals need to be re-normalized anyway and
-    // they always point up)
+    //  they always point up)
 
     float get(int x, int z) const {
         long index = (static_cast<long>(x) << 32) | z;
@@ -93,7 +95,6 @@ class DtmViewer : public Scene {
     void loadDtmAsync();
     void uploadSlices();
 
-    void renderBoundingBox(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
-                           const glm::mat4 &projectionMatrix);
-    void initBoundingBox(const BoundingBox3 &box3);
+    void renderBoundingBox(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const BoundingBox3 &bb);
+    void initBoundingBox();
 };
