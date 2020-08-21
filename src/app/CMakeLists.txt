@@ -167,8 +167,8 @@ set(RESOURCES
         scenes/terrain_erosion/PathFrag.glsl
         scenes/dtm_viewer/TerrainVert.glsl
         scenes/dtm_viewer/TerrainFrag.glsl
-        scenes/dtm_viewer/PathVert.glsl
-        scenes/dtm_viewer/PathFrag.glsl
+        scenes/dtm_viewer/SimpleVert.glsl
+        scenes/dtm_viewer/SimpleFrag.glsl
 )
 
 add_custom_target(copy-resources
