@@ -9,12 +9,14 @@ uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
 
 out float vHeight;
-out vec3 normal;
+out float batchId;
 out vec3 vPosition;
+out vec3 normal;
 
 void main() {
     vHeight = position.y;
-    normal = normalMatrix * in_normal;
+    batchId = in_normal.y;
+    normal = normalMatrix * vec3(in_normal.x, 1.0F, in_normal.z);
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
     vPosition = vec3(worldPosition);
     gl_Position = projectionMatrix * viewMatrix * worldPosition;

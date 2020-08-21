@@ -82,11 +82,12 @@ class DtmViewer : public Scene {
 
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                        const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
-                       float lightPower, bool wireframe, bool drawTriangles, const DtmSettings &levels);
+                       float lightPower, bool wireframe, bool drawTriangles, bool showBatchIds,
+                       const DtmSettings &levels);
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      DtmSettings &terrainLevels);
+                      bool &showBatchIds, DtmSettings &terrainLevels);
 
     void loadDtm();
     void loadDtmAsync();
