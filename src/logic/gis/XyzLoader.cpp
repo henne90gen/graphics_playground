@@ -16,8 +16,7 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
         return false;
     }
 
-    bb = {{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
-          {std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}};
+    bb = {};
 
     result.clear();
     result.reserve(files.size() * 10000);
@@ -48,7 +47,7 @@ bool loadXyzDir(const std::string &dirName, const std::function<void(const std::
 bool loadXyzDir(const std::vector<std::string> &files,
                 const std::function<void(const std::vector<glm::vec3> &)> &takePointsFunc) {
     unsigned long fileCount = files.size();
-    constexpr unsigned int maxFileCount = 10;
+    constexpr unsigned int maxFileCount = 10000;
     if (fileCount > maxFileCount) {
         fileCount = maxFileCount;
     }
