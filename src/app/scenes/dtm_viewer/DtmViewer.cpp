@@ -5,9 +5,9 @@
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
 
-const float FIELD_OF_VIEW = 45.0F;
-const float Z_NEAR = 0.1F;
-const float Z_FAR = 100000.0F;
+constexpr float FIELD_OF_VIEW = 45.0F;
+constexpr float Z_NEAR = 0.1F;
+constexpr float Z_FAR = 100000.0F;
 
 void DtmViewer::setup() {
     simpleShader = std::make_shared<Shader>("scenes/dtm_viewer/SimpleVert.glsl", "scenes/dtm_viewer/SimpleFrag.glsl");
@@ -37,7 +37,7 @@ void DtmViewer::tick() {
     showSettings(modelScale, dtm.cameraPositionWorld, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
                  drawTriangles, showBatchIds, terrainSettings);
 
-    uploadSlices();
+    uploadBatch();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, modelScale);
@@ -71,6 +71,257 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
     ImGui::End();
 }
 
+void DtmViewer::loadDtm() {
+    auto files = getFilesInDirectory("../../../gis_data/dtm");
+    auto pointCountEstimate = files.size() * GPU_POINTS_PER_BATCH;
+    if (pointCountEstimate < 0) {
+        std::cout << "Could not count points in dtm" << std::endl;
+        return;
+    }
+
+    dtm.vertices = std::vector<glm::vec3>(pointCountEstimate);
+    dtm.normals = std::vector<glm::vec3>(pointCountEstimate);
+    dtm.indices = std::vector<glm::ivec3>(pointCountEstimate * 2);
+
+    dtm.va = std::make_shared<VertexArray>(shader);
+    dtm.va->bind();
+
+    BufferLayout positionLayout = {{ShaderDataType::Float3, "position"}};
+    unsigned int vertexSize = GPU_POINT_COUNT * sizeof(glm::vec3);
+    dtm.vertexBuffer = std::make_shared<VertexBuffer>(nullptr, vertexSize, positionLayout);
+    dtm.va->addVertexBuffer(dtm.vertexBuffer);
+
+    BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
+    unsigned int normalSize = GPU_POINT_COUNT * sizeof(glm::vec3);
+    dtm.normalBuffer = std::make_shared<VertexBuffer>(nullptr, normalSize, normalLayout);
+    dtm.va->addVertexBuffer(dtm.normalBuffer);
+
+    unsigned int indexSize = GPU_POINT_COUNT * 2 * sizeof(glm::ivec3);
+    dtm.indexBuffer = std::make_shared<IndexBuffer>(nullptr, indexSize);
+    dtm.va->setIndexBuffer(dtm.indexBuffer);
+
+    std::cout << "Allocated " << vertexSize + normalSize + indexSize << " bytes of GPU memory" << std::endl;
+
+    loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this);
+}
+
+bool DtmViewer::pointExists(Batch &batch, unsigned int &additionalVerticesCount, const int x, const int z) {
+    long index = (static_cast<long>(x) << 32) | z;
+    auto localItr = batch.vertexMap.find(index);
+    if (localItr != batch.vertexMap.end()) {
+        return true;
+    }
+
+    auto itr = dtm.vertexMap.find(index);
+    if (itr == dtm.vertexMap.end()) {
+        return false;
+    }
+
+#if COPY_EDGE_POINTS
+    // copy point into batch
+    unsigned long vertexIndex = dtm.vertexOffset + additionalVerticesCount;
+    dtm.vertices[vertexIndex] = dtm.vertices[itr->second];
+    batch.vertexMap[index] = vertexIndex - batch.indices.startVertex;
+    additionalVerticesCount++;
+    return true;
+#else
+    return false;
+#endif
+}
+
+void DtmViewer::loadDtmAsync() {
+    int completeBatches = 0;
+    bool success = loadXyzDir("../../../gis_data/dtm", [this, &completeBatches](const std::vector<glm::vec3> &points) {
+#define LOOKUP_INDEX(x, y) (static_cast<long>(x) << 32) | (y)
+        constexpr float stepWidth = 20.0F;
+        const unsigned int batchId = dtm.batches.size();
+        dtm.batches.push_back({batchId});
+        Batch &batch = dtm.batches[dtm.batches.size() - 1];
+        batch.indices.startVertex = dtm.vertexOffset;
+        batch.indices.startIndex = dtm.indexOffset;
+
+        ASSERT(points.size() <= GPU_POINTS_PER_BATCH);
+        if (points.size() == GPU_POINTS_PER_BATCH) {
+            completeBatches++;
+        }
+
+#pragma omp parallel for
+        for (unsigned int i = 0; i < points.size(); i++) {
+            const auto &vertex = points[i];
+
+            const int x = vertex.x / stepWidth;
+            const float y = vertex.y / stepWidth;
+            const int z = vertex.z / stepWidth;
+            dtm.vertices[dtm.vertexOffset + i] = {x, y, z};
+            dtm.vertexMap[LOOKUP_INDEX(x, z)] = dtm.vertexOffset + i;
+            batch.vertexMap[LOOKUP_INDEX(x, z)] = i;
+        }
+
+        unsigned int verticesCount = points.size();
+        for (unsigned int i = 0; i < points.size(); i++) {
+            const int x = dtm.vertices[dtm.vertexOffset + i].x;
+            const int z = dtm.vertices[dtm.vertexOffset + i].z;
+
+            // look up a point in the local vertex map
+            //   point found   -> all good, use it
+            //   point missing -> look up a point in the global vertex map
+            //     point found   -> copy it into the local batch, and use that index
+            //     point missing -> add it to the missing points
+
+            if (pointExists(batch, verticesCount, x, z + 1) && //
+                pointExists(batch, verticesCount, x + 1, z)) {
+                dtm.indices[dtm.indexOffset++] = glm::ivec3(   //
+                      batch.vertexMap[LOOKUP_INDEX(x, z + 1)], //
+                      batch.vertexMap[LOOKUP_INDEX(x + 1, z)], //
+                      batch.vertexMap[LOOKUP_INDEX(x, z)]      //
+                );
+            }
+            if (pointExists(batch, verticesCount, x, z - 1) && //
+                pointExists(batch, verticesCount, x - 1, z)) {
+                dtm.indices[dtm.indexOffset++] = glm::ivec3(   //
+                      batch.vertexMap[LOOKUP_INDEX(x - 1, z)], //
+                      batch.vertexMap[LOOKUP_INDEX(x, z)],     //
+                      batch.vertexMap[LOOKUP_INDEX(x, z - 1)]  //
+                );
+            }
+        }
+
+#pragma omp parallel for
+        for (unsigned int i = 0; i < verticesCount; i++) {
+            const int x = dtm.vertices[dtm.vertexOffset + i].x;
+            const float y = dtm.vertices[dtm.vertexOffset + i].y;
+            const int z = dtm.vertices[dtm.vertexOffset + i].z;
+
+            float L = dtm.get(batchId, x - 1, z);
+            float R = dtm.get(batchId, x + 1, z);
+            float B = dtm.get(batchId, x, z - 1);
+            float T = dtm.get(batchId, x, z + 1);
+            if (L == 0.0F) {
+                L = y;
+            }
+            if (R == 0.0F) {
+                R = y;
+            }
+            if (B == 0.0F) {
+                B = y;
+            }
+            if (T == 0.0F) {
+                T = y;
+            }
+#if 0
+                        if (L == 0.0F || R == 0.0F || B == 0.0F || T == 0.0F) {
+#pragma omp critical
+                            {
+                                std::array<std::pair<unsigned long, bool>, 4> missingVertices = {
+                                      std::make_pair(GET_INDEX(x - 1, z), L == 0.0F), //
+                                      std::make_pair(GET_INDEX(x + 1, z), R == 0.0F), //
+                                      std::make_pair(GET_INDEX(x, z - 1), B == 0.0F), //
+                                      std::make_pair(GET_INDEX(x, z + 1), T == 0.0F)  //
+                                };
+                                dtm.missingNormals.push_back({dtm.vertexOffset + i, missingVertices});
+                            }
+                        }
+#endif
+
+            dtm.normals[dtm.vertexOffset + i] = glm::vec3((L - R) / 2.0F, batchId, (B - T) / 2.0F);
+        }
+
+        dtm.vertexOffset += verticesCount;
+        batch.indices.endVertex = dtm.vertexOffset;
+        batch.indices.endIndex = dtm.indexOffset;
+
+        if (points.size() == GPU_POINTS_PER_BATCH) {
+            std::cout << "A complete batch has " << batch.indices.endIndex - batch.indices.startIndex << " triangles"
+                      << std::endl;
+        }
+
+        {
+            const std::lock_guard<std::mutex> guard(uploadsMutex);
+            uploads.push_back(batch.indices);
+        }
+        std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
+    });
+
+    if (!success) {
+        std::cout << "Could not load dtm" << std::endl;
+        return;
+    }
+
+    std::cout << "Finished loading dtm (" << completeBatches << " complete batches)" << std::endl;
+}
+
+void DtmViewer::uploadBatch() {
+    if (!uploadsMutex.try_lock()) {
+        return;
+    }
+    if (uploads.empty()) {
+        uploadsMutex.unlock();
+        return;
+    }
+
+    auto batchIndices = uploads.back();
+
+    uploadBatch(batchIndices);
+
+    uploads.pop_back();
+    uploadsMutex.unlock();
+}
+
+void DtmViewer::uploadBatch(const BatchIndices &batchIndices) {
+    static unsigned int currentGpuBatchIndex = 0;
+    dtm.gpuMemoryMap[currentGpuBatchIndex] = {true, batchIndices};
+
+    unsigned int pointOffset = currentGpuBatchIndex * GPU_POINTS_PER_BATCH;
+    unsigned int indexOffset = pointOffset * 2;
+
+    int offset = pointOffset * sizeof(glm::vec3);
+    size_t size = (batchIndices.endVertex - batchIndices.startVertex) * sizeof(glm::vec3);
+
+    dtm.vertexBuffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, &dtm.vertices[batchIndices.startVertex]));
+
+    dtm.normalBuffer->bind();
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, &dtm.normals[batchIndices.startVertex]));
+
+    unsigned int indexOffsetBytes = indexOffset * sizeof(glm::ivec3);
+    unsigned long triangleCount = batchIndices.endIndex - batchIndices.startIndex;
+    size_t indexSize = triangleCount * sizeof(glm::ivec3);
+    unsigned int *tmpIndices = reinterpret_cast<unsigned int *>(std::malloc(indexSize));
+    for (unsigned int i = 0; i < triangleCount; i++) {
+        tmpIndices[i * 3 + 0] = dtm.indices[batchIndices.startIndex + i].x + pointOffset;
+        tmpIndices[i * 3 + 1] = dtm.indices[batchIndices.startIndex + i].y + pointOffset;
+        tmpIndices[i * 3 + 2] = dtm.indices[batchIndices.startIndex + i].z + pointOffset;
+    }
+    dtm.indexBuffer->bind();
+    GL_Call(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffsetBytes, indexSize, tmpIndices));
+    std::free(tmpIndices);
+
+    std::cout << "Uploaded batch to GPU: " << batchIndices.endVertex - batchIndices.startVertex << " vertices ("
+              << batchIndices.startVertex << " - " << batchIndices.endVertex << "), " << triangleCount << " triangles ("
+              << batchIndices.startIndex << " - " << batchIndices.endIndex << "), indexOffset=" << indexOffsetBytes
+              << std::endl;
+
+#define UPDATE(left, op, right)                                                                                        \
+    if (left op right) {                                                                                               \
+        right = left;                                                                                                  \
+    }
+
+    for (unsigned int i = batchIndices.startVertex; i < batchIndices.endVertex; i++) {
+        UPDATE(dtm.vertices[i].x, <, dtm.bb.min.x)
+        UPDATE(dtm.vertices[i].y, <, dtm.bb.min.y)
+        UPDATE(dtm.vertices[i].z, <, dtm.bb.min.z)
+
+        UPDATE(dtm.vertices[i].x, >, dtm.bb.max.x)
+        UPDATE(dtm.vertices[i].y, >, dtm.bb.max.y)
+        UPDATE(dtm.vertices[i].z, >, dtm.bb.max.z)
+    }
+
+    dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 50.0F, -500.0F);
+
+    currentGpuBatchIndex++;
+    currentGpuBatchIndex %= GPU_BATCH_COUNT;
+}
+
 void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
                               const glm::mat4 &projectionMatrix, const glm::mat3 &normalMatrix,
                               const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor, const float lightPower,
@@ -101,11 +352,22 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    if (drawTriangles) {
-        GL_Call(glDrawElements(GL_TRIANGLES, dtm.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-    } else {
-        GL_Call(glDrawElements(GL_POINTS, dtm.va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    unsigned int mode = drawTriangles ? GL_TRIANGLES : GL_POINTS;
+    std::array<int, GPU_BATCH_COUNT> counts = {};
+    std::array<void *, GPU_BATCH_COUNT> indices = {};
+    unsigned int drawCount = 0;
+    for (unsigned int i = 0; i < dtm.gpuMemoryMap.size(); i++) {
+        if (!dtm.gpuMemoryMap[i].isOccupied) {
+            continue;
+        }
+
+        unsigned long triangleCount = dtm.gpuMemoryMap[i].indices.endIndex - dtm.gpuMemoryMap[i].indices.startIndex;
+        counts[drawCount] = triangleCount * 3;
+        unsigned long indexOffsetInBytes = i * GPU_POINTS_PER_BATCH * 2 * sizeof(glm::ivec3);
+        indices[drawCount] = reinterpret_cast<void *>(indexOffsetInBytes);
+        drawCount++;
     }
+    GL_Call(glMultiDrawElements(mode, counts.data(), GL_UNSIGNED_INT, indices.data(), drawCount));
 
     if (wireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
@@ -113,187 +375,6 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
 
     dtm.va->unbind();
     shader->unbind();
-}
-
-void DtmViewer::loadDtm() {
-    auto files = getFilesInDirectory("../../../gis_data/dtm");
-    auto pointCountEstimate = files.size() * 10000;
-    if (pointCountEstimate < 0) {
-        std::cout << "Could not count points in dtm" << std::endl;
-        return;
-    }
-
-    dtm.vertices = std::vector<glm::vec3>(pointCountEstimate);
-    dtm.normals = std::vector<glm::vec3>(pointCountEstimate);
-    dtm.indices = std::vector<glm::ivec3>(pointCountEstimate * 2);
-
-    dtm.va = std::make_shared<VertexArray>(shader);
-    dtm.va->bind();
-
-    dtm.gpuPointCount = 1000000;
-    BufferLayout positionLayout = {{ShaderDataType::Float3, "position"}};
-    unsigned int vertexSize = dtm.gpuPointCount * sizeof(glm::vec3);
-    dtm.vertexBuffer = std::make_shared<VertexBuffer>(nullptr, vertexSize, positionLayout);
-    dtm.va->addVertexBuffer(dtm.vertexBuffer);
-
-    BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
-    unsigned int normalSize = dtm.gpuPointCount * sizeof(glm::vec3);
-    dtm.normalBuffer = std::make_shared<VertexBuffer>(nullptr, normalSize, normalLayout);
-    dtm.va->addVertexBuffer(dtm.normalBuffer);
-
-    unsigned int indexSize = dtm.gpuPointCount * 2 * sizeof(glm::ivec3);
-    dtm.indexBuffer = std::make_shared<IndexBuffer>(nullptr, indexSize);
-    dtm.va->setIndexBuffer(dtm.indexBuffer);
-
-    std::cout << "Allocated " << vertexSize + normalSize + indexSize << " bytes of GPU memory" << std::endl;
-
-    loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this);
-}
-
-void DtmViewer::loadDtmAsync() {
-    bool success = loadXyzDir("../../../gis_data/dtm", [this](const std::vector<glm::vec3> &points) {
-#define GET_INDEX(x, y) dtm.vertexMap[(static_cast<long>(x) << 32) | (y)]
-        constexpr float stepWidth = 20.0F;
-        const auto vertexOffsetBefore = dtm.vertexOffset;
-        const auto indexOffsetBefore = dtm.indexOffset;
-        const float batchId = dtm.vertexOffset;
-
-#pragma omp parallel for
-        for (unsigned int i = 0; i < points.size(); i++) {
-            const auto &vertex = points[i];
-
-            const int x = vertex.x / stepWidth;
-            const float y = vertex.y / stepWidth;
-            const int z = vertex.z / stepWidth;
-            dtm.vertices[dtm.vertexOffset + i] = {x, y, z};
-            GET_INDEX(x, z) = dtm.vertexOffset + i;
-        }
-
-#pragma omp parallel for
-        for (unsigned int i = 0; i < points.size(); i++) {
-            const int x = dtm.vertices[dtm.vertexOffset + i].x;
-            const int z = dtm.vertices[dtm.vertexOffset + i].z;
-
-            const float L = dtm.get(x - 1, z);
-            const float R = dtm.get(x + 1, z);
-            const float B = dtm.get(x, z - 1);
-            const float T = dtm.get(x, z + 1);
-
-#if 0
-                        if (L == 0.0F || R == 0.0F || B == 0.0F || T == 0.0F) {
-            #pragma omp critical
-                            {
-                                std::array<std::pair<unsigned long, bool>, 4> missingVertices = {
-                                      std::make_pair(GET_INDEX(x - 1, z), L == 0.0F), //
-                                      std::make_pair(GET_INDEX(x + 1, z), R == 0.0F), //
-                                      std::make_pair(GET_INDEX(x, z - 1), B == 0.0F), //
-                                      std::make_pair(GET_INDEX(x, z + 1), T == 0.0F)  //
-                                };
-                                dtm.missingNormals.push_back({dtm.vertexOffset + i, missingVertices});
-                            }
-                        }
-#endif
-
-            dtm.normals[dtm.vertexOffset + i] = glm::vec3((L - R) / 2.0F, batchId, (B - T) / 2.0F);
-        }
-
-        for (unsigned int i = 0; i < points.size(); i++) {
-            const int x = dtm.vertices[dtm.vertexOffset + i].x;
-            const int z = dtm.vertices[dtm.vertexOffset + i].z;
-
-            const float topH = dtm.get(x, z + 1);
-            const float rightH = dtm.get(x + 1, z);
-            if (topH != 0.0F && rightH != 0.0F) {
-                dtm.indices[dtm.indexOffset++] = glm::ivec3( //
-                      GET_INDEX(x, z + 1),                   //
-                      GET_INDEX(x + 1, z),                   //
-                      GET_INDEX(x, z)                        //
-                );
-            }
-            const float bottomH = dtm.get(x, z - 1);
-            const float leftH = dtm.get(x - 1, z);
-            if (bottomH != 0.0F && leftH != 0.0F) {
-                dtm.indices[dtm.indexOffset++] = glm::ivec3( //
-                      GET_INDEX(x - 1, z),                   //
-                      GET_INDEX(x, z),                       //
-                      GET_INDEX(x, z - 1)                    //
-                );
-            }
-        }
-
-        dtm.vertexOffset += points.size();
-
-        {
-            const std::lock_guard<std::mutex> guard(uploadsMutex);
-            UploadSlice slice = {vertexOffsetBefore, dtm.vertexOffset, indexOffsetBefore, dtm.indexOffset};
-            uploads.push_back(slice);
-        }
-        std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points" << std::endl;
-    });
-
-    if (!success) {
-        std::cout << "Could not load dtm" << std::endl;
-        return;
-    }
-
-    std::cout << "Finished loading dtm" << std::endl;
-}
-
-void DtmViewer::uploadSlices() {
-    if (!uploadsMutex.try_lock()) {
-        return;
-    }
-    if (uploads.empty()) {
-        uploadsMutex.unlock();
-        return;
-    }
-
-    auto slice = uploads.back();
-
-    if ((slice.endVertex - slice.startVertex) + dtm.vertexOffset > dtm.gpuPointCount) {
-        uploadsMutex.unlock();
-        return;
-    }
-
-    int offset = slice.startVertex * sizeof(glm::vec3);
-    size_t size = (slice.endVertex - slice.startVertex) * sizeof(glm::vec3);
-
-    dtm.vertexBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, dtm.vertices.data() + slice.startVertex));
-
-    dtm.normalBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, dtm.normals.data() + slice.startVertex));
-
-    int indexOffset = slice.startIndex * sizeof(glm::ivec3);
-    size_t indexSize = (slice.endIndex - slice.startIndex) * sizeof(glm::ivec3);
-    dtm.indexBuffer->bind();
-    GL_Call(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, dtm.indices.data() + slice.startIndex));
-
-    std::cout << "Uploaded slice to GPU: " << slice.endVertex - slice.startVertex << " vertices, "
-              << slice.endIndex - slice.startIndex << " indices" << std::endl;
-
-    std::cout << "Vertices: " << slice.startVertex << " - " << slice.endVertex << " | Indices: " << slice.startIndex
-              << " - " << slice.endIndex << std::endl;
-
-#define UPDATE(left, op, right)                                                                                        \
-    if (left op right) {                                                                                               \
-        right = left;                                                                                                  \
-    }
-
-    for (unsigned int i = slice.startVertex; i < slice.endVertex; i++) {
-        UPDATE(dtm.vertices[i].x, <, dtm.bb.min.x)
-        UPDATE(dtm.vertices[i].y, <, dtm.bb.min.y)
-        UPDATE(dtm.vertices[i].z, <, dtm.bb.min.z)
-
-        UPDATE(dtm.vertices[i].x, >, dtm.bb.max.x)
-        UPDATE(dtm.vertices[i].y, >, dtm.bb.max.y)
-        UPDATE(dtm.vertices[i].z, >, dtm.bb.max.z)
-    }
-
-    dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 500.0F, -2000.0F);
-
-    uploads.pop_back();
-    uploadsMutex.unlock();
 }
 
 void DtmViewer::renderBoundingBox(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
