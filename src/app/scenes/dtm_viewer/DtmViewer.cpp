@@ -137,7 +137,6 @@ void DtmViewer::loadDtmAsync() {
     if (left op right) {                                                                                               \
         right = left;                                                                                                  \
     }
-
         constexpr float stepWidth = 20.0F;
         const unsigned int batchId = dtm.batches.size();
         dtm.batches.push_back({batchId});
@@ -199,6 +198,14 @@ void DtmViewer::loadDtmAsync() {
             UPDATE(dtm.vertices[i].z, >, batch.bb.max.z)
         }
 
+        UPDATE(batch.bb.min.x, <, dtm.bb.min.x)
+        UPDATE(batch.bb.min.y, <, dtm.bb.min.y)
+        UPDATE(batch.bb.min.z, <, dtm.bb.min.z)
+
+        UPDATE(batch.bb.max.x, >, dtm.bb.max.x)
+        UPDATE(batch.bb.max.y, >, dtm.bb.max.y)
+        UPDATE(batch.bb.max.z, >, dtm.bb.max.z)
+
 #pragma omp parallel for
         for (unsigned int i = 0; i < verticesCount; i++) {
             const int x = dtm.vertices[dtm.vertexOffset + i].x;
@@ -245,7 +252,7 @@ void DtmViewer::loadDtmAsync() {
 
         {
             const std::lock_guard<std::mutex> guard(uploadsMutex);
-            uploads.push_back(batch);
+            uploads.push_back(batch.indices);
         }
         std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
     });
@@ -275,51 +282,38 @@ void DtmViewer::uploadBatch() {
     uploadsMutex.unlock();
 }
 
-void DtmViewer::uploadBatch(const Batch &batch) {
+void DtmViewer::uploadBatch(const BatchIndices &batchIndices) {
     static unsigned int currentGpuBatchIndex = 0;
-    dtm.gpuMemoryMap[currentGpuBatchIndex] = {true, batch.indices};
+    dtm.gpuMemoryMap[currentGpuBatchIndex] = {true, batchIndices};
 
     unsigned int pointOffset = currentGpuBatchIndex * GPU_POINTS_PER_BATCH;
     unsigned int indexOffset = pointOffset * 2;
 
     int offset = pointOffset * sizeof(glm::vec3);
-    size_t size = (batch.indices.endVertex - batch.indices.startVertex) * sizeof(glm::vec3);
+    size_t size = (batchIndices.endVertex - batchIndices.startVertex) * sizeof(glm::vec3);
 
     dtm.vertexBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, &dtm.vertices[batch.indices.startVertex]));
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, &dtm.vertices[batchIndices.startVertex]));
 
     dtm.normalBuffer->bind();
-    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, &dtm.normals[batch.indices.startVertex]));
+    GL_Call(glBufferSubData(GL_ARRAY_BUFFER, offset, size, &dtm.normals[batchIndices.startVertex]));
 
     unsigned int indexOffsetBytes = indexOffset * sizeof(glm::ivec3);
-    unsigned long triangleCount = batch.indices.endIndex - batch.indices.startIndex;
+    unsigned long triangleCount = batchIndices.endIndex - batchIndices.startIndex;
     size_t indexSize = triangleCount * sizeof(glm::ivec3);
     unsigned int *tmpIndices = reinterpret_cast<unsigned int *>(std::malloc(indexSize));
     for (unsigned int i = 0; i < triangleCount; i++) {
-        tmpIndices[i * 3 + 0] = dtm.indices[batch.indices.startIndex + i].x + pointOffset;
-        tmpIndices[i * 3 + 1] = dtm.indices[batch.indices.startIndex + i].y + pointOffset;
-        tmpIndices[i * 3 + 2] = dtm.indices[batch.indices.startIndex + i].z + pointOffset;
+        tmpIndices[i * 3 + 0] = dtm.indices[batchIndices.startIndex + i].x + pointOffset;
+        tmpIndices[i * 3 + 1] = dtm.indices[batchIndices.startIndex + i].y + pointOffset;
+        tmpIndices[i * 3 + 2] = dtm.indices[batchIndices.startIndex + i].z + pointOffset;
     }
     dtm.indexBuffer->bind();
     GL_Call(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffsetBytes, indexSize, tmpIndices));
     std::free(tmpIndices);
 
-    std::cout << "Uploaded batch to GPU: " << batch.indices.endVertex - batch.indices.startVertex << " vertices ("
-              << batch.indices.startVertex << " - " << batch.indices.endVertex << "), " << triangleCount
-              << " triangles (" << batch.indices.startIndex << " - " << batch.indices.endIndex << ")" << std::endl;
-
-#define UPDATE(left, op, right)                                                                                        \
-    if (left op right) {                                                                                               \
-        right = left;                                                                                                  \
-    }
-
-    UPDATE(batch.bb.min.x, <, dtm.bb.min.x)
-    UPDATE(batch.bb.min.y, <, dtm.bb.min.y)
-    UPDATE(batch.bb.min.z, <, dtm.bb.min.z)
-
-    UPDATE(batch.bb.max.x, >, dtm.bb.max.x)
-    UPDATE(batch.bb.max.y, >, dtm.bb.max.y)
-    UPDATE(batch.bb.max.z, >, dtm.bb.max.z)
+    std::cout << "Uploaded batch to GPU: " << batchIndices.endVertex - batchIndices.startVertex << " vertices ("
+              << batchIndices.startVertex << " - " << batchIndices.endVertex << "), " << triangleCount
+              << " triangles (" << batchIndices.startIndex << " - " << batchIndices.endIndex << ")" << std::endl;
 
     dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 50.0F, -500.0F);
 
