@@ -26,6 +26,12 @@ struct UploadSlice {
     unsigned long endIndex; // exclusive
 };
 
+struct MissingNormal {
+    unsigned long vertexIndex;
+    // true means that the vertex is missing
+    std::array<std::pair<unsigned long, bool>, 4> missingVertices = {};
+};
+
 struct Dtm {
     std::shared_ptr<VertexArray> va = nullptr;
     std::shared_ptr<VertexBuffer> vertexBuffer;
@@ -44,6 +50,8 @@ struct Dtm {
     unsigned long gpuPointCount = 0;
 
     BoundingBox3 bb = {};
+
+    std::vector<MissingNormal> missingNormals = {};
 
     // TODO add tracking information to find out which patch is currently present on the GPU
     // TODO find a way to store points in patches without having to reorganize points all the time

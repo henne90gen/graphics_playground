@@ -178,7 +178,22 @@ void DtmViewer::loadDtmAsync() {
             const float R = dtm.get(x + 1, z);
             const float B = dtm.get(x, z - 1);
             const float T = dtm.get(x, z + 1);
-            // TODO record which points have inaccurate normals, because they are at the edge of the patch
+
+#if 0
+                        if (L == 0.0F || R == 0.0F || B == 0.0F || T == 0.0F) {
+            #pragma omp critical
+                            {
+                                std::array<std::pair<unsigned long, bool>, 4> missingVertices = {
+                                      std::make_pair(GET_INDEX(x - 1, z), L == 0.0F), //
+                                      std::make_pair(GET_INDEX(x + 1, z), R == 0.0F), //
+                                      std::make_pair(GET_INDEX(x, z - 1), B == 0.0F), //
+                                      std::make_pair(GET_INDEX(x, z + 1), T == 0.0F)  //
+                                };
+                                dtm.missingNormals.push_back({dtm.vertexOffset + i, missingVertices});
+                            }
+                        }
+#endif
+
             dtm.normals[dtm.vertexOffset + i] = glm::vec3((L - R) / 2.0F, batchId, (B - T) / 2.0F);
         }
 
@@ -264,6 +279,7 @@ void DtmViewer::uploadSlices() {
     if (left op right) {                                                                                               \
         right = left;                                                                                                  \
     }
+
     for (unsigned int i = slice.startVertex; i < slice.endVertex; i++) {
         UPDATE(dtm.vertices[i].x, <, dtm.bb.min.x)
         UPDATE(dtm.vertices[i].y, <, dtm.bb.min.y)
@@ -274,7 +290,7 @@ void DtmViewer::uploadSlices() {
         UPDATE(dtm.vertices[i].z, >, dtm.bb.max.z)
     }
 
-    dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 50.0F, -200.0F);
+    dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 500.0F, -2000.0F);
 
     uploads.pop_back();
     uploadsMutex.unlock();
