@@ -176,10 +176,10 @@ int main() {
     scenes.push_back(new SpotLight(sceneData));          // 19
     scenes.push_back(new MetaBallsScene(sceneData));     // 20
     scenes.push_back(new TerrainErosion(sceneData));     // 21
-    scenes.push_back(new DtmViewer(sceneData));     // 21
+    scenes.push_back(new DtmViewer(sceneData));          // 22
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    // mainMenu.goToScene(20);
+    // mainMenu.goToScene(21);
 
     enableOpenGLDebugging();
 
