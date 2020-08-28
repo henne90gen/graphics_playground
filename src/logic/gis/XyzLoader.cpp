@@ -47,7 +47,7 @@ bool loadXyzDir(const std::string &dirName, const std::function<void(const std::
 bool loadXyzDir(const std::vector<std::string> &files,
                 const std::function<void(const std::vector<glm::vec3> &)> &takePointsFunc) {
     unsigned long fileCount = files.size();
-    constexpr unsigned int maxFileCount = 10000;
+    constexpr unsigned int maxFileCount = 100;
     if (fileCount > maxFileCount) {
         fileCount = maxFileCount;
     }

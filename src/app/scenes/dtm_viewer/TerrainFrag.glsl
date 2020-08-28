@@ -1,7 +1,7 @@
 #version 330
 
 in float vHeight;
-in float batchId;
+flat in int batchId;
 in vec3 vPosition;
 in vec3 normal;
 
@@ -45,7 +45,8 @@ void main() {
 
 
     vec3 position = vPosition;
-    vec3 normal_ = normalize(normal);
+    //    vec3 normal_ = normalize(normal);
+    vec3 normal_ = normalize(vec3(0, 1, 0));
 
     float brightness = dot(normal_, surfaceToLight);
     brightness *= lightPower;
@@ -53,7 +54,7 @@ void main() {
 
     vec3 diffuseColor = brightness * lightColor * color.rgb;
 
-    vec3 batchColor = batchColors[int(batchId) % batchColors.length()];
+    vec3 batchColor = batchColors[batchId % batchColors.length()];
     vec3 colorv3 = float(!showBatchIds) * diffuseColor + batchColor * float(showBatchIds);
     color = vec4(colorv3, 1.0F);
 }
