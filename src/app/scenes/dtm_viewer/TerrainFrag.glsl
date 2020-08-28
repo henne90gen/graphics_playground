@@ -45,8 +45,7 @@ void main() {
 
 
     vec3 position = vPosition;
-    //    vec3 normal_ = normalize(normal);
-    vec3 normal_ = normalize(vec3(0, 1, 0));
+    vec3 normal_ = normalize(normal);
 
     float brightness = dot(normal_, surfaceToLight);
     brightness *= lightPower;

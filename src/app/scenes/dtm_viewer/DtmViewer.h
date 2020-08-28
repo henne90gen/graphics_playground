@@ -41,6 +41,7 @@ struct BatchIndices {
 struct Batch {
     unsigned int batchId;
     BatchIndices indices = {};
+    BoundingBox3 bb = {};
     std::unordered_map<long, unsigned int> vertexMap = {};
 };
 
@@ -78,8 +79,6 @@ struct Dtm {
     std::vector<Batch> batches = {};
     std::array<GpuBatch, GPU_BATCH_COUNT> gpuMemoryMap = {};
 
-    // TODO add tracking information to find out which patch is currently present on the GPU
-    // TODO find a way to store points in patches without having to reorganize points all the time
     // TODO maybe use a QuadTree data structure to dynamically adjust partitioning
 
     float get(int batchId, int x, int z) const {
@@ -110,11 +109,12 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Shader> simpleShader;
 
-    Dtm dtm;
-    std::vector<BatchIndices> uploads = {};
+    Dtm dtm = {};
+    std::vector<Batch> uploads = {};
     std::mutex uploadsMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
+    std::array<std::shared_ptr<VertexArray>, GPU_BATCH_COUNT> batchBBVA = {};
 
     std::future<void> loadDtmFuture;
 
@@ -130,7 +130,7 @@ class DtmViewer : public Scene {
     void loadDtm();
     void loadDtmAsync();
     void uploadBatch();
-    void uploadBatch(const BatchIndices &batchIndices);
+    void uploadBatch(const Batch &batch);
 
     bool pointExists(Batch &batch, unsigned int &additionalVerticesCount, int x, int z);
 
