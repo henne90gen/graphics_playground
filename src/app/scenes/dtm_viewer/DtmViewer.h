@@ -110,7 +110,7 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> simpleShader;
 
     Dtm dtm = {};
-    std::vector<Batch> uploads = {};
+    std::vector<BatchIndices> uploads = {};
     std::mutex uploadsMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
@@ -130,7 +130,7 @@ class DtmViewer : public Scene {
     void loadDtm();
     void loadDtmAsync();
     void uploadBatch();
-    void uploadBatch(const Batch &batch);
+    void uploadBatch(const BatchIndices &batchIndices);
 
     bool pointExists(Batch &batch, unsigned int &additionalVerticesCount, int x, int z);
 
