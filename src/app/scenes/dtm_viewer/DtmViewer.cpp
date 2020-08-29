@@ -144,13 +144,13 @@ bool DtmViewer::pointExists(Batch &batch, unsigned int &additionalVerticesCount,
 }
 
 void DtmViewer::loadDtmAsync() {
-    int completeBatches = 0;
-    bool success = loadXyzDir("../../../gis_data/dtm", [this, &completeBatches](const std::vector<glm::vec3> &points) {
 #define LOOKUP_INDEX(x, y) (static_cast<long>(x) << 32) | (y)
 #define UPDATE(left, op, right)                                                                                        \
     if (left op right) {                                                                                               \
-        right = left;                                                                                                  \
+        left = right;                                                                                                  \
     }
+
+    bool success = loadXyzDir("../../../gis_data/dtm", [this](const std::vector<glm::vec3> &points) {
         constexpr float stepWidth = 20.0F;
         const unsigned int batchId = dtm.batches.size();
         dtm.batches.push_back({batchId});
@@ -159,17 +159,14 @@ void DtmViewer::loadDtmAsync() {
         batch.indices.startIndex = dtm.indexOffset;
 
         ASSERT(points.size() <= GPU_POINTS_PER_BATCH);
-        if (points.size() == GPU_POINTS_PER_BATCH) {
-            completeBatches++;
-        }
 
 #pragma omp parallel for
         for (unsigned int i = 0; i < points.size(); i++) {
             const auto &vertex = points[i];
-
             const int x = vertex.x / stepWidth;
             const float y = vertex.y / stepWidth;
             const int z = vertex.z / stepWidth;
+
             dtm.vertices[dtm.vertexOffset + i] = {x, y, z};
             dtm.vertexMap[LOOKUP_INDEX(x, z)] = dtm.vertexOffset + i;
             batch.vertexMap[LOOKUP_INDEX(x, z)] = i;
@@ -177,8 +174,9 @@ void DtmViewer::loadDtmAsync() {
 
         unsigned int verticesCount = points.size();
         for (unsigned int i = 0; i < points.size(); i++) {
-            const int x = dtm.vertices[dtm.vertexOffset + i].x;
-            const int z = dtm.vertices[dtm.vertexOffset + i].z;
+            const glm::vec3 &vertex = dtm.vertices[dtm.vertexOffset + i];
+            const int x = vertex.x;
+            const int z = vertex.z;
 
             // look up a point in the local vertex map
             //   point found   -> all good, use it
@@ -203,22 +201,22 @@ void DtmViewer::loadDtmAsync() {
                 );
             }
 
-            UPDATE(dtm.vertices[i].x, <, batch.bb.min.x)
-            UPDATE(dtm.vertices[i].y, <, batch.bb.min.y)
-            UPDATE(dtm.vertices[i].z, <, batch.bb.min.z)
+            UPDATE(batch.bb.min.x, >, vertex.x)
+            UPDATE(batch.bb.min.y, >, vertex.y)
+            UPDATE(batch.bb.min.z, >, vertex.z)
 
-            UPDATE(dtm.vertices[i].x, >, batch.bb.max.x)
-            UPDATE(dtm.vertices[i].y, >, batch.bb.max.y)
-            UPDATE(dtm.vertices[i].z, >, batch.bb.max.z)
+            UPDATE(batch.bb.max.x, <, vertex.x)
+            UPDATE(batch.bb.max.y, <, vertex.y)
+            UPDATE(batch.bb.max.z, <, vertex.z)
         }
 
-        UPDATE(batch.bb.min.x, <, dtm.bb.min.x)
-        UPDATE(batch.bb.min.y, <, dtm.bb.min.y)
-        UPDATE(batch.bb.min.z, <, dtm.bb.min.z)
+        UPDATE(dtm.bb.min.x, >, batch.bb.min.x)
+        UPDATE(dtm.bb.min.y, >, batch.bb.min.y)
+        UPDATE(dtm.bb.min.z, >, batch.bb.min.z)
 
-        UPDATE(batch.bb.max.x, >, dtm.bb.max.x)
-        UPDATE(batch.bb.max.y, >, dtm.bb.max.y)
-        UPDATE(batch.bb.max.z, >, dtm.bb.max.z)
+        UPDATE(dtm.bb.max.x, <, batch.bb.max.x)
+        UPDATE(dtm.bb.max.y, <, batch.bb.max.y)
+        UPDATE(dtm.bb.max.z, <, batch.bb.max.z)
 
 #pragma omp parallel for
         for (unsigned int i = 0; i < verticesCount; i++) {
@@ -276,7 +274,7 @@ void DtmViewer::loadDtmAsync() {
         return;
     }
 
-    std::cout << "Finished loading dtm (" << completeBatches << " complete batches)" << std::endl;
+    std::cout << "Finished loading dtm" << std::endl;
 }
 
 void DtmViewer::uploadBatch() {
