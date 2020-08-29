@@ -33,9 +33,19 @@ void DtmViewer::tick() {
     static bool drawTriangles = true;
     static bool showBatchIds = false;
     static auto terrainSettings = DtmSettings();
+    static int updateSpeed = 10;
+    static int counter = 0;
+    static int currentBatch = 0;
 
     showSettings(modelScale, dtm.cameraPositionWorld, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
-                 drawTriangles, showBatchIds, terrainSettings);
+                 drawTriangles, showBatchIds, terrainSettings, updateSpeed);
+
+    counter++;
+    if (counter % updateSpeed == 0) {
+        const std::lock_guard<std::mutex> guard(uploadsMutex);
+        uploads.push_back(dtm.batches[currentBatch++].indices);
+        currentBatch %= dtm.batches.size();
+    }
 
     uploadBatch();
 
@@ -55,7 +65,7 @@ void DtmViewer::tick() {
 
 void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
                              glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower, bool &wireframe,
-                             bool &drawTriangles, bool &showBatchIds, DtmSettings &terrainSettings) {
+                             bool &drawTriangles, bool &showBatchIds, DtmSettings &terrainSettings, int &updateSpeed) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
@@ -68,6 +78,10 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
     ImGui::Checkbox("Draw Triangles", &drawTriangles);
     ImGui::Checkbox("Show Batch Ids", &showBatchIds);
     ImGui::DragFloat4("Terrain Levels", reinterpret_cast<float *>(&terrainSettings), dragSpeed);
+    ImGui::SliderInt("Update Speed", &updateSpeed, 1, 100);
+    if (ImGui::Button("Reset Camera to Center")) {
+        dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 500.0F, -2000.0F);
+    }
     ImGui::End();
 }
 
@@ -312,10 +326,8 @@ void DtmViewer::uploadBatch(const BatchIndices &batchIndices) {
     std::free(tmpIndices);
 
     std::cout << "Uploaded batch to GPU: " << batchIndices.endVertex - batchIndices.startVertex << " vertices ("
-              << batchIndices.startVertex << " - " << batchIndices.endVertex << "), " << triangleCount
-              << " triangles (" << batchIndices.startIndex << " - " << batchIndices.endIndex << ")" << std::endl;
-
-    dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 50.0F, -500.0F);
+              << batchIndices.startVertex << " - " << batchIndices.endVertex << "), " << triangleCount << " triangles ("
+              << batchIndices.startIndex << " - " << batchIndices.endIndex << ")" << std::endl;
 
     currentGpuBatchIndex++;
     currentGpuBatchIndex %= GPU_BATCH_COUNT;
