@@ -145,10 +145,8 @@ bool DtmViewer::pointExists(Batch &batch, unsigned int &additionalVerticesCount,
 
 void DtmViewer::loadDtmAsync() {
 #define LOOKUP_INDEX(x, y) (static_cast<long>(x) << 32) | (y)
-#define UPDATE(left, op, right)                                                                                        \
-    if (left op right) {                                                                                               \
-        left = right;                                                                                                  \
-    }
+
+    RECORD_SCOPE();
 
     bool success = loadXyzDir("../../../gis_data/dtm", [this](const std::vector<glm::vec3> &points) {
         constexpr float stepWidth = 20.0F;
@@ -201,22 +199,10 @@ void DtmViewer::loadDtmAsync() {
                 );
             }
 
-            UPDATE(batch.bb.min.x, >, vertex.x)
-            UPDATE(batch.bb.min.y, >, vertex.y)
-            UPDATE(batch.bb.min.z, >, vertex.z)
-
-            UPDATE(batch.bb.max.x, <, vertex.x)
-            UPDATE(batch.bb.max.y, <, vertex.y)
-            UPDATE(batch.bb.max.z, <, vertex.z)
+            batch.bb.update(vertex);
         }
 
-        UPDATE(dtm.bb.min.x, >, batch.bb.min.x)
-        UPDATE(dtm.bb.min.y, >, batch.bb.min.y)
-        UPDATE(dtm.bb.min.z, >, batch.bb.min.z)
-
-        UPDATE(dtm.bb.max.x, <, batch.bb.max.x)
-        UPDATE(dtm.bb.max.y, <, batch.bb.max.y)
-        UPDATE(dtm.bb.max.z, <, batch.bb.max.z)
+        dtm.bb.update(batch.bb);
 
 #pragma omp parallel for
         for (unsigned int i = 0; i < verticesCount; i++) {
