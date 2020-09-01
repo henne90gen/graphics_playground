@@ -6,6 +6,7 @@ from .analyze_build_report import analyze_build_report
 from .generate_coding_train import generate_coding_train
 from .generate_scene_template import generate_scene_template
 from .copy_resources import run_copy_resources
+from .bench import run_bench
 from . import gis_data
 
 
@@ -48,6 +49,11 @@ def download_gis_data(force):
 @main.command()
 def analyze_gis_data():
     gis_data.analyze_dtm_files()
+
+
+@main.command()
+def bench():
+    run_bench()
 
 
 if __name__ == "__main__":
