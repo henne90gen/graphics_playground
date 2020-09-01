@@ -24,6 +24,9 @@ run-bench-meta-balls: build
 run-bench-xyz-loader: build
 	@cd build/src/logic; ./XyzLoaderBench
 
+run-bench-quad-tree: build
+	@cd build/src/logic; ./QuadTreeBench
+
 clang-tidy:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt
 

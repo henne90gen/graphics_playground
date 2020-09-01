@@ -1,5 +1,6 @@
 #include <benchmark/benchmark.h>
 
+#include "util/BoundingBox.h"
 #include "XyzLoader.h"
 
 static void BM_Load(benchmark::State &state) {

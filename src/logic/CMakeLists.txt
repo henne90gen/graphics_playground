@@ -73,12 +73,22 @@ set_target_properties(
         CXX_STANDARD_REQUIRED ON
 )
 
-# xyz loader benchmark
+# XyzLoader Benchmark
 add_executable(XyzLoaderBench gis/XyzLoaderBench.cpp)
 target_link_libraries(XyzLoaderBench PRIVATE logic benchmark::benchmark)
-target_include_directories(XyzLoaderBench PRIVATE ${GLM_DIR})
+target_include_directories(XyzLoaderBench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${GLM_DIR})
 set_target_properties(
         XyzLoaderBench PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
+
+# QuadTree Benchmark
+add_executable(QuadTreeBench quad_tree/QuadTreeBench.cpp)
+target_link_libraries(QuadTreeBench PRIVATE logic benchmark::benchmark)
+target_include_directories(QuadTreeBench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${GLM_DIR})
+set_target_properties(
+        QuadTreeBench PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 )
