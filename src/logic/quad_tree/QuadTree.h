@@ -28,6 +28,10 @@ template <typename T, unsigned int K> struct QuadTree {
 
         Node(Iterator begin, Iterator end) : begin(begin), end(end) { init(); }
         Node(Iterator begin, Iterator end, bool parity) : begin(begin), end(end), parity(parity) { init(); }
+        ~Node() {
+            delete left;
+            delete right;
+        }
 
         void init() {
             std::function<bool(const Element &, const Element &)> comp;
@@ -58,6 +62,8 @@ template <typename T, unsigned int K> struct QuadTree {
 
     std::vector<Element> elements = {};
     Node *root = new Node(elements.begin(), elements.end());
+
+    ~QuadTree() { delete root; }
 
     void insert(const glm::vec3 &point, T data) {
         delete root;
