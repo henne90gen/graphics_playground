@@ -134,18 +134,3 @@ TEST_CASE("Can retrieve nearest element from large branched tree") {
     auto result = tree.get(glm::vec3(width / 2.0F, 0, height / 2.0F));
     REQUIRE(result == 5050);
 }
-
-TEST_CASE("Destructor test") {
-    auto tree = QuadTree<unsigned int, 2>();
-
-    std::vector<std::pair<glm::vec3, unsigned int>> elements = {
-          std::make_pair(glm::vec3(1.0F), 1), //
-          std::make_pair(glm::vec3(2.0F), 2), //
-          std::make_pair(glm::vec3(3.0f), 3), //
-          std::make_pair(glm::vec3(4.0f), 4)  //
-    };
-    tree.insert(elements);
-
-    auto result = tree.get(glm::vec3(1.75F));
-    REQUIRE(result == 2);
-}
