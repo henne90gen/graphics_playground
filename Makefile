@@ -16,16 +16,16 @@ run: build
 	@cd build/src/app; ./Playground
 
 run-bench-marching-cubes: build
-	@cd build/src/logic; ./MarchingCubesBench
+	@cd build/src/bench; ./MarchingCubesBench
 
 run-bench-meta-balls: build
-	@cd build/src/logic; ./MetaBallsBench
+	@cd build/src/bench; ./MetaBallsBench
 
 run-bench-xyz-loader: build
-	@cd build/src/logic; ./XyzLoaderBench
+	@cd build/src/bench; ./XyzLoaderBench
 
 run-bench-quad-tree: build
-	@cd build/src/logic; ./QuadTreeBench
+	@cd build/src/bench; ./QuadTreeBench
 
 clang-tidy:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt

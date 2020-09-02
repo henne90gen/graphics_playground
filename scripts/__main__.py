@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from click import *
 
@@ -6,7 +6,6 @@ from .analyze_build_report import analyze_build_report
 from .generate_coding_train import generate_coding_train
 from .generate_scene_template import generate_scene_template
 from .copy_resources import run_copy_resources
-from .bench import run_bench
 from . import gis_data
 
 
@@ -42,7 +41,7 @@ def copy_resources(base_dir: str, files: List[str], dest: str):
 
 @main.command()
 @option("--force", "-f", is_flag=True)
-def download_gis_data(force):
+def download_gis_data(force: bool):
     gis_data.download(force)
 
 
@@ -52,8 +51,13 @@ def analyze_gis_data():
 
 
 @main.command()
-def bench():
-    run_bench()
+@option("--show-plots", "-s", is_flag=True)
+@argument("graph_dir", required=False, nargs=1)
+def bench(show_plots: bool, graph_dir: Optional[str]):
+    if graph_dir is None:
+        graph_dir = "build/src/bench"
+    from .bench import run_bench
+    run_bench(show_plots, graph_dir)
 
 
 if __name__ == "__main__":
