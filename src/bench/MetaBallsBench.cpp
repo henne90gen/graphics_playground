@@ -1,10 +1,9 @@
 #include <benchmark/benchmark.h>
 #include <functional>
-#include <glm/ext.hpp>
-#include <iostream>
+#include <glm/glm.hpp>
 #include <vector>
 
-#include "MetaBalls.h"
+#include "meta_balls/MetaBalls.h"
 
 static void init_metaballs(std::vector<MetaBall> &metaballs, int count) {
     metaballs.reserve(count);

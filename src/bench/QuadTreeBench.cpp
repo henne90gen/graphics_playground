@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include "QuadTree.h"
+#include "quad_tree/QuadTree.h"
 
 constexpr unsigned int start = 16;
 constexpr unsigned int end = 65536 * 8;

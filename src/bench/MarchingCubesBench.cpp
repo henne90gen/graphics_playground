@@ -1,12 +1,10 @@
 #include <vector>
 
-#include <FastNoise.h>
 #include <benchmark/benchmark.h>
 #include <functional>
-#include <glm/ext.hpp>
-#include <iostream>
+#include <glm/glm.hpp>
 
-#include "MarchingCubes.h"
+#include "marching_cubes/MarchingCubes.h"
 
 static void BM_MarchingCubes(benchmark::State &state) {
     std::vector<glm::vec3> vertices = {};
@@ -23,6 +21,6 @@ static void BM_MarchingCubes(benchmark::State &state) {
         benchmark::ClobberMemory();
     }
 }
-BENCHMARK(BM_MarchingCubes)->DenseRange(10, 60, 10);
+BENCHMARK(BM_MarchingCubes)->Range(4, 128);
 
 BENCHMARK_MAIN();
