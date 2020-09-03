@@ -18,6 +18,7 @@ target_include_directories(MarchingCubesBench PRIVATE ${FAST_NOISE_DIR})
 benchmark(MetaBallsBench)
 target_include_directories(MetaBallsBench PRIVATE ${FAST_NOISE_DIR})
 
-benchmark(XyzLoaderBench)
+benchmark(XyzLoaderLoadBench)
+benchmark(XyzLoaderCountLinesBench)
 
 benchmark(QuadTreeBench)
