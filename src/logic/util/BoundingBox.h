@@ -30,7 +30,6 @@ struct BoundingBox3 {
     }
 
     void update(const BoundingBox3 &bb){UPDATE(min.x, >, bb.min.x) UPDATE(min.y, >, bb.min.y) UPDATE(min.z, >, bb.min.z)
-
                                               UPDATE(max.x, <, bb.max.x) UPDATE(max.y, <, bb.max.y)
                                                     UPDATE(max.z, <, bb.max.z)}
 
@@ -40,4 +39,6 @@ struct BoundingBox3 {
         float z = std::min(max.z, std::max(point.z, min.x));
         return {x, y, z};
     }
+
+    glm::vec3 center() const { return (min + max) / 2.0F; }
 };

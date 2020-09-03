@@ -89,6 +89,17 @@ TEST_CASE("Branches correctly") {
     REQUIRE((tree.root->right->begin + 2) == tree.root->right->end);
 }
 
+TEST_CASE("Fails, if there are no elements") {
+    auto tree = QuadTree<unsigned int, 10>();
+
+    std::vector<std::pair<glm::vec3, unsigned int>> elements = {};
+    tree.insert(elements);
+
+    unsigned int result = 0;
+    REQUIRE(!tree.get(glm::vec3(1.75F), result));
+    REQUIRE(result == 0);
+}
+
 TEST_CASE("Can retrieve nearest element") {
     auto tree = QuadTree<unsigned int, 10>();
 
@@ -99,7 +110,8 @@ TEST_CASE("Can retrieve nearest element") {
     };
     tree.insert(elements);
 
-    auto result = tree.get(glm::vec3(1.75F));
+    unsigned int result = 0;
+    REQUIRE(tree.get(glm::vec3(1.75F), result));
     REQUIRE(result == 2);
 }
 
@@ -114,7 +126,8 @@ TEST_CASE("Can retrieve nearest element from branched tree") {
     };
     tree.insert(elements);
 
-    auto result = tree.get(glm::vec3(1.75F));
+    unsigned int result = 0;
+    REQUIRE(tree.get(glm::vec3(1.75F), result));
     REQUIRE(result == 2);
 }
 
@@ -131,6 +144,7 @@ TEST_CASE("Can retrieve nearest element from large branched tree") {
     }
     tree.insert(elements);
 
-    auto result = tree.get(glm::vec3(width / 2.0F, 0, height / 2.0F));
+    unsigned int result = 0;
+    REQUIRE(tree.get(glm::vec3(width / 2.0F, 0, height / 2.0F), result));
     REQUIRE(result == 5050);
 }

@@ -18,15 +18,12 @@ static void BM_Load(benchmark::State &state, const unsigned int numFiles) {
 }
 
 #define BM_LOAD(numFiles)                                                                                              \
-    static void BM_Load##numFiles(benchmark::State &state) { BM_Load(state, numFiles); }
+    static void BM_Load##numFiles(benchmark::State &state) { BM_Load(state, numFiles); }                               \
+    BENCHMARK(BM_Load##numFiles)->Range(2, 16384);
 
 BM_LOAD(2)
 BM_LOAD(8)
 BM_LOAD(64)
 BM_LOAD(512)
-BENCHMARK(BM_Load2)->Range(2, 16384);
-BENCHMARK(BM_Load8)->Range(2, 16384);
-BENCHMARK(BM_Load64)->Range(2, 16384);
-BENCHMARK(BM_Load512)->Range(2, 16384);
 
 BENCHMARK_MAIN();

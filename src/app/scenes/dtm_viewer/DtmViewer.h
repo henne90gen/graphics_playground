@@ -12,6 +12,7 @@
 #include "gis/XyzLoader.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
+#include "quad_tree/QuadTree.h"
 
 // These toggles are for partially implemented features
 #define COPY_EDGE_POINTS 0
@@ -47,6 +48,7 @@ struct Batch {
 
 struct GpuBatch {
     bool isOccupied = false;
+    unsigned int batchId = 0;
     BatchIndices indices = {};
 };
 
@@ -74,12 +76,13 @@ struct Dtm {
 
     BoundingBox3 bb = {};
 
+    // the index stored in the quad tree refers to the batch that the vertex belongs to
+    QuadTree<unsigned int, 256> quadTree = {};
+
     std::vector<MissingNormal> missingNormals = {};
 
     std::vector<Batch> batches = {};
     std::array<GpuBatch, GPU_BATCH_COUNT> gpuMemoryMap = {};
-
-    // TODO maybe use a QuadTree data structure to dynamically adjust partitioning
 
     float get(int batchId, int x, int z) const {
         const Batch &batch = batches[batchId];
@@ -110,7 +113,7 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> simpleShader;
 
     Dtm dtm = {};
-    std::vector<BatchIndices> uploads = {};
+    std::vector<std::pair<unsigned int, BatchIndices>> uploads = {};
     std::mutex uploadsMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
@@ -130,7 +133,7 @@ class DtmViewer : public Scene {
     void loadDtm();
     void loadDtmAsync();
     void uploadBatch();
-    void uploadBatch(const BatchIndices &batchIndices);
+    void uploadBatch(unsigned int batchId, const BatchIndices &batchIndices);
 
     bool pointExists(Batch &batch, unsigned int &additionalVerticesCount, int x, int z);
 

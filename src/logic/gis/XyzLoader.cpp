@@ -47,13 +47,13 @@ bool loadXyzDir(const std::string &dirName, const std::function<void(const std::
 bool loadXyzDir(const std::vector<std::string> &files,
                 const std::function<void(const std::vector<glm::vec3> &)> &takePointsFunc) {
     unsigned long fileCount = files.size();
-    constexpr unsigned int maxFileCount = 100;
+    constexpr unsigned int maxFileCount = 10000;
     if (fileCount > maxFileCount) {
         fileCount = maxFileCount;
     }
 
 #pragma omp parallel for
-    for (int i = 0; i < fileCount; i++) {
+    for (unsigned int i = 0; i < fileCount; i++) {
         const auto &fileName = files[i];
         if (fileName[fileName.size() - 4] != '.' || fileName[fileName.size() - 3] != 'x' ||
             fileName[fileName.size() - 2] != 'y' || fileName[fileName.size() - 1] != 'z') {

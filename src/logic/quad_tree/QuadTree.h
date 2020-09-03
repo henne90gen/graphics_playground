@@ -14,7 +14,7 @@ inline float distanceSq(const glm::vec3 &p1, const glm::vec3 &p2) {
     return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
 }
 
-template <typename T, unsigned int K> struct QuadTree {
+template <typename T, unsigned int S> struct QuadTree {
     using Element = typename std::pair<glm::vec3, T>;
     using Iterator = typename std::vector<Element>::iterator;
 
@@ -43,7 +43,7 @@ template <typename T, unsigned int K> struct QuadTree {
             std::sort(begin, end, comp);
 
             long numElements = end - begin;
-            if (numElements <= K) {
+            if (numElements <= S) {
                 for (Iterator itr = begin; itr != end; itr++) {
                     bb.update(itr->first);
                 }
@@ -80,10 +80,17 @@ template <typename T, unsigned int K> struct QuadTree {
         root = new Node(elements.begin(), elements.end());
     }
 
-    T get(const glm::vec3 &query) {
+    // TODO use limit parameter
+    // TODO add parameter k for knn lookup
+    bool get(const glm::vec3 &query, T &closestElement, const float limit) {
+        if (elements.empty()) {
+            return false;
+        }
+
+        // std::deque<std::pair<float, T>> closestElements = {};
         std::vector<Node *> nodeQueue = {root};
+        float limitSq = limit * limit;
         float minDistSq = std::numeric_limits<float>::max();
-        T closestElement;
         while (!nodeQueue.empty()) {
             Node *currentNode = nodeQueue.back();
             nodeQueue.pop_back();
@@ -116,6 +123,10 @@ template <typename T, unsigned int K> struct QuadTree {
                 }
             }
         }
-        return closestElement;
+        return true;
+    }
+
+    bool get(const glm::vec3 &query, T &closestElement) {
+        return get(query, closestElement, std::numeric_limits<float>::max());
     }
 };
