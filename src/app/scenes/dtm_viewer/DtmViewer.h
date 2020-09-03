@@ -84,8 +84,10 @@ struct Dtm {
     std::vector<Batch> batches = {};
     std::array<GpuBatch, GPU_BATCH_COUNT> gpuMemoryMap = {};
 
-    float get(int batchId, int x, int z) const {
-        const Batch &batch = batches[batchId];
+    unsigned int totalFileCount = 0;
+    unsigned int loadedFileCount = 0;
+
+    float get(const Batch &batch, int x, int z) const {
         long index = (static_cast<long>(x) << 32) | z;
         auto localItr = batch.vertexMap.find(index);
         if (localItr != batch.vertexMap.end()) {
@@ -114,10 +116,9 @@ class DtmViewer : public Scene {
 
     Dtm dtm = {};
     std::vector<std::pair<unsigned int, BatchIndices>> uploads = {};
-    std::mutex uploadsMutex = {};
+    std::mutex quadTreeMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
-    std::array<std::shared_ptr<VertexArray>, GPU_BATCH_COUNT> batchBBVA = {};
 
     std::future<void> loadDtmFuture;
 
@@ -137,6 +138,7 @@ class DtmViewer : public Scene {
 
     bool pointExists(Batch &batch, unsigned int &additionalVerticesCount, int x, int z);
 
-    void renderBoundingBox(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const BoundingBox3 &bb);
+    void renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+                             const std::vector<BoundingBox3> &bbs);
     void initBoundingBox();
 };

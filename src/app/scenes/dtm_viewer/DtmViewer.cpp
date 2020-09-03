@@ -33,7 +33,7 @@ void DtmViewer::tick() {
     static bool drawTriangles = true;
     static bool showBatchIds = false;
     static auto terrainSettings = DtmSettings();
-    static int updateSpeed = 10;
+    static int updateSpeed = 1;
     static int counter = 0;
 
     showSettings(modelScale, dtm.cameraPositionWorld, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
@@ -41,13 +41,13 @@ void DtmViewer::tick() {
 
     counter++;
     if (counter % updateSpeed == 0) {
-        const std::lock_guard<std::mutex> guard(uploadsMutex);
-        unsigned int closestBatch = 0;
-#if 1
-        if (dtm.quadTree.get(dtm.cameraPositionWorld, closestBatch)) {
-            uploads.push_back(std::make_pair(closestBatch, dtm.batches[closestBatch].indices));
+        const std::lock_guard<std::mutex> guard(quadTreeMutex);
+        std::vector<unsigned int> closestBatches = {};
+        if (dtm.quadTree.get(dtm.cameraPositionWorld, 100, closestBatches)) {
+            for (unsigned int i = 0; i < closestBatches.size(); i++) {
+                uploads.push_back(std::make_pair(closestBatches[i], dtm.batches[closestBatches[i]].indices));
+            }
         }
-#endif
     }
 
     uploadBatch();
@@ -63,7 +63,16 @@ void DtmViewer::tick() {
 
     renderTerrain(modelMatrix, viewMatrix, projectionMatrix, normalMatrix, surfaceToLight, lightColor, lightPower,
                   wireframe, drawTriangles, showBatchIds, terrainSettings);
-    renderBoundingBox(viewMatrix, projectionMatrix, dtm.bb);
+
+    {
+        const std::lock_guard<std::mutex> guard(quadTreeMutex);
+        auto bbs = std::vector<BoundingBox3>(dtm.batches.size() + 1);
+        bbs[0] = dtm.bb;
+        for (unsigned int i = 1; i < dtm.batches.size() + 1; i++) {
+            bbs[i] = dtm.batches[i - 1].bb;
+        }
+        renderBoundingBoxes(viewMatrix, projectionMatrix, bbs);
+    }
 }
 
 void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
@@ -85,6 +94,17 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
     if (ImGui::Button("Reset Camera to Center")) {
         dtm.cameraPositionWorld = ((dtm.bb.max + dtm.bb.min) / 2.0F) + glm::vec3(0.0F, 500.0F, -2000.0F);
     }
+    ImGui::Separator();
+
+    unsigned int occupied = 0;
+    for (unsigned int i = 0; i < dtm.gpuMemoryMap.size(); i++) {
+        if (dtm.gpuMemoryMap[i].isOccupied) {
+            occupied++;
+        }
+    }
+    ImGui::Text("Occupied GPU memory slots: %d / %lu", occupied, dtm.gpuMemoryMap.size());
+    ImGui::Text("Loaded files: %d / %d", dtm.loadedFileCount, dtm.totalFileCount);
+    ImGui::Text("DTM memory consumption: ...");
     ImGui::End();
 }
 
@@ -95,6 +115,9 @@ void DtmViewer::loadDtm() {
         std::cout << "Could not count points in dtm" << std::endl;
         return;
     }
+
+    dtm.totalFileCount = files.size();
+    dtm.loadedFileCount = 0;
 
     dtm.vertices = std::vector<glm::vec3>(pointCountEstimate);
     dtm.normals = std::vector<glm::vec3>(pointCountEstimate);
@@ -154,8 +177,7 @@ void DtmViewer::loadDtmAsync() {
     bool success = loadXyzDir("../../../gis_data/dtm", [this](const std::vector<glm::vec3> &points) {
         constexpr float stepWidth = 20.0F;
         const unsigned int batchId = dtm.batches.size();
-        dtm.batches.push_back({batchId});
-        Batch &batch = dtm.batches[dtm.batches.size() - 1];
+        Batch batch = {batchId};
         batch.indices.startVertex = dtm.vertexOffset;
         batch.indices.startIndex = dtm.indexOffset;
 
@@ -214,10 +236,10 @@ void DtmViewer::loadDtmAsync() {
             const float y = dtm.vertices[dtm.vertexOffset + i].y;
             const int z = dtm.vertices[dtm.vertexOffset + i].z;
 
-            float L = dtm.get(batchId, x - 1, z);
-            float R = dtm.get(batchId, x + 1, z);
-            float B = dtm.get(batchId, x, z - 1);
-            float T = dtm.get(batchId, x, z + 1);
+            float L = dtm.get(batch, x - 1, z);
+            float R = dtm.get(batch, x + 1, z);
+            float B = dtm.get(batch, x, z - 1);
+            float T = dtm.get(batch, x, z + 1);
             if (L == 0.0F) {
                 L = y;
             }
@@ -253,11 +275,13 @@ void DtmViewer::loadDtmAsync() {
         batch.indices.endIndex = dtm.indexOffset;
 
         {
-            const std::lock_guard<std::mutex> guard(uploadsMutex);
-            uploads.push_back(std::make_pair(batchId, batch.indices));
+            const std::lock_guard<std::mutex> guard(quadTreeMutex);
+            dtm.batches.push_back(batch);
             dtm.quadTree.insert(batch.bb.center(), batchId);
         }
+
         std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
+        dtm.loadedFileCount++;
     });
 
     if (!success) {
@@ -269,20 +293,23 @@ void DtmViewer::loadDtmAsync() {
 }
 
 void DtmViewer::uploadBatch() {
-    if (!uploadsMutex.try_lock()) {
+    if (!quadTreeMutex.try_lock()) {
         return;
     }
     if (uploads.empty()) {
-        uploadsMutex.unlock();
+        quadTreeMutex.unlock();
         return;
     }
 
-    auto upload = uploads.back();
+    while (!uploads.empty()) {
+        auto upload = uploads.back();
 
-    uploadBatch(upload.first, upload.second);
+        uploadBatch(upload.first, upload.second);
 
-    uploads.pop_back();
-    uploadsMutex.unlock();
+        uploads.pop_back();
+    }
+
+    quadTreeMutex.unlock();
 }
 
 void DtmViewer::uploadBatch(const unsigned int batchId, const BatchIndices &batchIndices) {
@@ -394,20 +421,38 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
     shader->unbind();
 }
 
-void DtmViewer::renderBoundingBox(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-                                  const BoundingBox3 &bb) {
-    glm::mat4 modelMatrix = glm::identity<glm::mat4>();
-    modelMatrix = glm::translate(modelMatrix, (bb.min + bb.max) / 2.0F);
-    modelMatrix = glm::scale(modelMatrix, bb.max - bb.min);
+void DtmViewer::renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+                                    const std::vector<BoundingBox3> &bbs) {
+    auto bbParams = std::vector<std::pair<glm::vec3, glm::vec3>>(bbs.size());
+#pragma omp parallel for
+    for (unsigned int i = 0; i < bbs.size(); i++) {
+        const auto &bb = bbs[i];
+        bbParams[i] = std::make_pair(bb.center(), bb.max - bb.min);
+    }
 
     simpleShader->bind();
-    simpleShader->setUniform("modelMatrix", modelMatrix);
     simpleShader->setUniform("viewMatrix", viewMatrix);
     simpleShader->setUniform("projectionMatrix", projectionMatrix);
 
     bbVA->bind();
+    static unsigned int instanceVBO = 0;
+    if (instanceVBO == 0) {
+        GL_Call(glGenBuffers(1, &instanceVBO));
+    }
+    GL_Call(glBindBuffer(GL_ARRAY_BUFFER, instanceVBO));
+    GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeof(std::pair<glm::vec3, glm::vec3>) * bbParams.size(), bbParams.data(),
+                         GL_STATIC_DRAW));
 
-    GL_Call(glDrawElements(GL_LINE_STRIP, bbVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glEnableVertexAttribArray(1));
+    GL_Call(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0));
+    GL_Call(glVertexAttribDivisor(1, 1));
+
+    GL_Call(glEnableVertexAttribArray(2));
+    GL_Call(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3))));
+    GL_Call(glVertexAttribDivisor(2, 1));
+
+    GL_Call(glDrawElementsInstanced(GL_LINE_STRIP, bbVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr,
+                                    bbs.size()));
 
     bbVA->unbind();
     simpleShader->unbind();

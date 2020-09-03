@@ -29,9 +29,14 @@ struct BoundingBox3 {
         UPDATE(max.z, <, point.z)
     }
 
-    void update(const BoundingBox3 &bb){UPDATE(min.x, >, bb.min.x) UPDATE(min.y, >, bb.min.y) UPDATE(min.z, >, bb.min.z)
-                                              UPDATE(max.x, <, bb.max.x) UPDATE(max.y, <, bb.max.y)
-                                                    UPDATE(max.z, <, bb.max.z)}
+    void update(const BoundingBox3 &bb){
+          UPDATE(min.x, >, bb.min.x) //
+          UPDATE(min.y, >, bb.min.y) //
+          UPDATE(min.z, >, bb.min.z) //
+          UPDATE(max.x, <, bb.max.x) //
+          UPDATE(max.y, <, bb.max.y) //
+          UPDATE(max.z, <, bb.max.z) //
+    }
 
     glm::vec3 closestPointOnSurface(const glm::vec3 &point) const {
         float x = std::min(max.x, std::max(point.x, min.x));
