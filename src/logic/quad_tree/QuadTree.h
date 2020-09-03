@@ -81,31 +81,29 @@ template <typename T, unsigned int S> struct QuadTree {
     }
 
     // TODO use limit parameter
-    // TODO add parameter k for knn lookup
-    bool get(const glm::vec3 &query, T &closestElement, const float limit) {
+    bool get(const glm::vec3 &query, const unsigned int k, std::vector<T> &result, const float distanceLimit) {
         if (elements.empty()) {
             return false;
         }
 
-        // std::deque<std::pair<float, T>> closestElements = {};
+        std::vector<std::pair<float, T>> closestElements = {};
         std::vector<Node *> nodeQueue = {root};
-        float limitSq = limit * limit;
-        float minDistSq = std::numeric_limits<float>::max();
+        const float limitSq = distanceLimit * distanceLimit;
         while (!nodeQueue.empty()) {
             Node *currentNode = nodeQueue.back();
             nodeQueue.pop_back();
 
-            auto closestPoint = currentNode->bb.closestPointOnSurface(query);
-            auto distSq = distanceSq(closestPoint, query);
-            if (distSq >= minDistSq) {
+            const auto closestPoint = currentNode->bb.closestPointOnSurface(query);
+            const auto distToBBSq = distanceSq(closestPoint, query);
+            if (!closestElements.empty() && distToBBSq >= closestElements.back().first) {
                 continue;
             }
 
             if (!currentNode->isLeaf()) {
                 glm::vec3 closestPointLeft = currentNode->left->bb.closestPointOnSurface(query);
                 glm::vec3 closestPointRight = currentNode->right->bb.closestPointOnSurface(query);
-                float distLeftSq = distanceSq(closestPointLeft, query);
-                float distRightSq = distanceSq(closestPointRight, query);
+                const float distLeftSq = distanceSq(closestPointLeft, query);
+                const float distRightSq = distanceSq(closestPointRight, query);
                 if (distLeftSq < distRightSq) {
                     nodeQueue.push_back(currentNode->right);
                     nodeQueue.push_back(currentNode->left);
@@ -113,16 +111,42 @@ template <typename T, unsigned int S> struct QuadTree {
                     nodeQueue.push_back(currentNode->left);
                     nodeQueue.push_back(currentNode->right);
                 }
-            } else {
-                for (Iterator itr = currentNode->begin; itr != currentNode->end; itr++) {
-                    float distSq = distanceSq(itr->first, query);
-                    if (distSq < minDistSq) {
-                        minDistSq = distSq;
-                        closestElement = itr->second;
+                continue;
+            }
+
+            for (Iterator itr = currentNode->begin; itr != currentNode->end; itr++) {
+                const float distSq = distanceSq(itr->first, query);
+                if (closestElements.empty() || closestElements.size() < k || distSq < closestElements.back().first) {
+                    closestElements.push_back(std::make_pair(distSq, itr->second));
+                    std::sort(closestElements.begin(), closestElements.end(),
+                              [](const std::pair<float, T> &e1, const std::pair<float, T> &e2) {
+                                  return e1.first < e2.first;
+                              });
+                    while (closestElements.size() > k) {
+                        closestElements.pop_back();
                     }
                 }
             }
         }
+
+        for (const auto &elem : closestElements) {
+            result.push_back(elem.second);
+        }
+
+        return true;
+    }
+
+    bool get(const glm::vec3 &query, const unsigned int k, std::vector<T> &result) {
+        return get(query, k, result, std::numeric_limits<float>::max());
+    }
+
+    bool get(const glm::vec3 &query, T &closestElement, const float distanceLimit) {
+        std::vector<T> result = {};
+        bool success = get(query, 1, result, distanceLimit);
+        if (!success || result.empty()) {
+            return false;
+        }
+        closestElement = result[0];
         return true;
     }
 
