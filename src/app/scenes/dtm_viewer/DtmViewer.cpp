@@ -35,7 +35,6 @@ void DtmViewer::tick() {
     static auto terrainSettings = DtmSettings();
     static int updateSpeed = 10;
     static int counter = 0;
-    static int currentBatch = 0;
 
     showSettings(modelScale, dtm.cameraPositionWorld, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
                  drawTriangles, showBatchIds, terrainSettings, updateSpeed);
@@ -43,8 +42,12 @@ void DtmViewer::tick() {
     counter++;
     if (counter % updateSpeed == 0) {
         const std::lock_guard<std::mutex> guard(uploadsMutex);
-        uploads.push_back(dtm.batches[currentBatch++].indices);
-        currentBatch %= dtm.batches.size();
+        unsigned int closestBatch = 0;
+#if 1
+        if (dtm.quadTree.get(dtm.cameraPositionWorld, closestBatch)) {
+            uploads.push_back(std::make_pair(closestBatch, dtm.batches[closestBatch].indices));
+        }
+#endif
     }
 
     uploadBatch();
@@ -160,12 +163,13 @@ void DtmViewer::loadDtmAsync() {
 
 #pragma omp parallel for
         for (unsigned int i = 0; i < points.size(); i++) {
-            const auto &vertex = points[i];
-            const int x = vertex.x / stepWidth;
-            const float y = vertex.y / stepWidth;
-            const int z = vertex.z / stepWidth;
+            const auto &point = points[i];
+            const int x = point.x / stepWidth;
+            const float y = point.y / stepWidth;
+            const int z = point.z / stepWidth;
 
-            dtm.vertices[dtm.vertexOffset + i] = {x, y, z};
+            const glm::vec3 vertex = {x, y, z};
+            dtm.vertices[dtm.vertexOffset + i] = vertex;
             dtm.vertexMap[LOOKUP_INDEX(x, z)] = dtm.vertexOffset + i;
             batch.vertexMap[LOOKUP_INDEX(x, z)] = i;
         }
@@ -250,7 +254,8 @@ void DtmViewer::loadDtmAsync() {
 
         {
             const std::lock_guard<std::mutex> guard(uploadsMutex);
-            uploads.push_back(batch.indices);
+            uploads.push_back(std::make_pair(batchId, batch.indices));
+            dtm.quadTree.insert(batch.bb.center(), batchId);
         }
         std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
     });
@@ -272,17 +277,34 @@ void DtmViewer::uploadBatch() {
         return;
     }
 
-    auto batchIndices = uploads.back();
+    auto upload = uploads.back();
 
-    uploadBatch(batchIndices);
+    uploadBatch(upload.first, upload.second);
 
     uploads.pop_back();
     uploadsMutex.unlock();
 }
 
-void DtmViewer::uploadBatch(const BatchIndices &batchIndices) {
+void DtmViewer::uploadBatch(const unsigned int batchId, const BatchIndices &batchIndices) {
     static unsigned int currentGpuBatchIndex = 0;
-    dtm.gpuMemoryMap[currentGpuBatchIndex] = {true, batchIndices};
+    if (batchIndices.startVertex > batchIndices.endVertex || batchIndices.startIndex > batchIndices.endIndex) {
+        // TODO find out why this happens
+        std::cout << "Failed to upload batch to GPU: vertices " << batchIndices.startVertex << " - "
+                  << batchIndices.endVertex << " | " << batchIndices.startIndex << " - " << batchIndices.endIndex
+                  << std::endl;
+        return;
+    }
+
+    for (unsigned int i = 0; i < dtm.gpuMemoryMap.size(); i++) {
+        if (!dtm.gpuMemoryMap[i].isOccupied) {
+            continue;
+        }
+        if (dtm.gpuMemoryMap[i].batchId == batchId) {
+            return;
+        }
+    }
+
+    dtm.gpuMemoryMap[currentGpuBatchIndex] = {true, batchId, batchIndices};
 
     unsigned int pointOffset = currentGpuBatchIndex * GPU_POINTS_PER_BATCH;
     unsigned int indexOffset = pointOffset * 2;

@@ -18,88 +18,28 @@ template <unsigned int K> QuadTree<unsigned int, K> createTree(const unsigned in
     return tree;
 }
 
-static void K8(benchmark::State &state) {
+template <unsigned int K> void runBenchmark(benchmark::State &state) {
     const unsigned int size = state.range(0);
-    auto tree = createTree<8>(size);
+    auto tree = createTree<K>(size);
 
     for (auto _ : state) {
         glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
+        unsigned int result = 0;
+        tree.get(query, result);
         benchmark::DoNotOptimize(result);
     }
 }
-BENCHMARK(K8)->Range(start, end);
 
-static void K16(benchmark::State &state) {
-    const unsigned int size = state.range(0);
-    auto tree = createTree<16>(size);
+#define K(num)                                                                                                         \
+    static void K##num(benchmark::State &state) { runBenchmark<num>(state); }                                          \
+    BENCHMARK(K##num)->Range(start, end);
 
-    for (auto _ : state) {
-        glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
-        benchmark::DoNotOptimize(result);
-    }
-}
-BENCHMARK(K16)->Range(start, end);
-
-static void K32(benchmark::State &state) {
-    const unsigned int size = state.range(0);
-    auto tree = createTree<32>(size);
-
-    for (auto _ : state) {
-        glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
-        benchmark::DoNotOptimize(result);
-    }
-}
-BENCHMARK(K32)->Range(start, end);
-
-static void K64(benchmark::State &state) {
-    const unsigned int size = state.range(0);
-    auto tree = createTree<64>(size);
-
-    for (auto _ : state) {
-        glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
-        benchmark::DoNotOptimize(result);
-    }
-}
-BENCHMARK(K64)->Range(start, end);
-
-static void K128(benchmark::State &state) {
-    const unsigned int size = state.range(0);
-    auto tree = createTree<128>(size);
-
-    for (auto _ : state) {
-        glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
-        benchmark::DoNotOptimize(result);
-    }
-}
-BENCHMARK(K128)->Range(start, end);
-
-static void K256(benchmark::State &state) {
-    const unsigned int size = state.range(0);
-    auto tree = createTree<256>(size);
-
-    for (auto _ : state) {
-        glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
-        benchmark::DoNotOptimize(result);
-    }
-}
-BENCHMARK(K256)->Range(start, end);
-
-static void K512(benchmark::State &state) {
-    const unsigned int size = state.range(0);
-    auto tree = createTree<512>(size);
-
-    for (auto _ : state) {
-        glm::vec3 query = {0, 0, 0};
-        auto result = tree.get(query);
-        benchmark::DoNotOptimize(result);
-    }
-}
-BENCHMARK(K512)->Range(start, end);
+K(8)
+K(16)
+K(32)
+K(64)
+K(128)
+K(256)
+K(512)
 
 BENCHMARK_MAIN();

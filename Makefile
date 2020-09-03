@@ -21,8 +21,11 @@ run-bench-marching-cubes: build
 run-bench-meta-balls: build
 	@cd build/src/bench; ./MetaBallsBench
 
-run-bench-xyz-loader: build
-	@cd build/src/bench; ./XyzLoaderBench
+run-bench-xyz-loader-count-lines: build
+	@cd build/src/bench; ./XyzLoaderCountLinesBench
+
+run-bench-xyz-loader-load: build
+	@cd build/src/bench; ./XyzLoaderLoadBench
 
 run-bench-quad-tree: build
 	@cd build/src/bench; ./QuadTreeBench
