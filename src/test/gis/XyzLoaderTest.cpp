@@ -21,3 +21,11 @@ TEST_CASE("Can count lines in xyz directory") {
     unsigned long result = countLinesInDir("../../../src/test/gis/dtm");
     REQUIRE(result == 38220);
 }
+
+TEST_CASE("Can parse batch name from file name") {
+    auto result = getBatchName("332785590_dgm20.xyz");
+    REQUIRE(result == 2785590);
+
+    result = getBatchName("331234567_dgm20.xyz");
+    REQUIRE(result == 1234567);
+}

@@ -41,6 +41,7 @@ struct BatchIndices {
 
 struct Batch {
     unsigned int batchId;
+    unsigned int batchName;
     BatchIndices indices = {};
     BoundingBox3 bb = {};
     std::unordered_map<long, unsigned int> vertexMap = {};
@@ -52,40 +53,35 @@ struct GpuBatch {
     BatchIndices indices = {};
 };
 
-struct MissingNormal {
-    unsigned long vertexIndex;
-    // true means that the vertex is missing
-    std::array<std::pair<unsigned long, bool>, 4> missingVertices = {};
+struct RawBatch {
+    unsigned int batchName;
+    unsigned long batchSizeInBytes;
+    std::vector<glm::vec3> points;
 };
 
 struct Dtm {
     std::shared_ptr<VertexArray> va = nullptr;
-    std::shared_ptr<VertexBuffer> vertexBuffer;
-    std::shared_ptr<VertexBuffer> normalBuffer;
-    std::shared_ptr<IndexBuffer> indexBuffer;
-
-    glm::vec3 cameraPositionWorld = {};
+    std::shared_ptr<VertexBuffer> vertexBuffer = nullptr;
+    std::shared_ptr<VertexBuffer> normalBuffer = nullptr;
+    std::shared_ptr<IndexBuffer> indexBuffer = nullptr;
 
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::vec3> normals = {};
     std::vector<glm::ivec3> indices = {};
-    std::unordered_map<long, unsigned int> vertexMap = {};
 
     unsigned long vertexOffset = 0;
     unsigned long indexOffset = 0;
+
+    std::unordered_map<long, unsigned int> vertexMap = {};
+
+    std::vector<Batch> batches = {};
 
     BoundingBox3 bb = {};
 
     // the index stored in the quad tree refers to the batch that the vertex belongs to
     QuadTree<unsigned int, 256> quadTree = {};
 
-    std::vector<MissingNormal> missingNormals = {};
-
-    std::vector<Batch> batches = {};
     std::array<GpuBatch, GPU_BATCH_COUNT> gpuMemoryMap = {};
-
-    unsigned int totalFileCount = 0;
-    unsigned int loadedFileCount = 0;
 
     float get(const Batch &batch, int x, int z) const {
         long index = (static_cast<long>(x) << 32) | z;
@@ -115,12 +111,24 @@ class DtmViewer : public Scene {
     std::shared_ptr<Shader> simpleShader;
 
     Dtm dtm = {};
-    std::vector<std::pair<unsigned int, BatchIndices>> uploads = {};
+
+    glm::vec3 cameraPositionWorld = {};
     std::mutex quadTreeMutex = {};
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
     std::future<void> loadDtmFuture;
+    std::future<void> processDtmFuture;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> startLoading;
+    std::chrono::time_point<std::chrono::high_resolution_clock> finishLoading;
+    unsigned int loadedFileCount = 0;
+    unsigned int totalLoadedFileCount = 0;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> startProcessing;
+    std::chrono::time_point<std::chrono::high_resolution_clock> finishProcessing;
+    unsigned int processedFileCount = 0;
+    unsigned int totalProcessedFileCount = 0;
 
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                        const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
@@ -129,16 +137,18 @@ class DtmViewer : public Scene {
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      bool &showBatchIds, DtmSettings &terrainLevels, int &updateSpeed);
+                      bool &showBatchIds, DtmSettings &terrainLevels);
 
     void loadDtm();
     void loadDtmAsync();
-    void uploadBatch();
+
+    void batchProcessor();
+
     void uploadBatch(unsigned int batchId, const BatchIndices &batchIndices);
 
     bool pointExists(Batch &batch, unsigned int &additionalVerticesCount, int x, int z);
 
-    void renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-                             const std::vector<BoundingBox3> &bbs);
     void initBoundingBox();
+    void renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const BoundingBox3 &bb,
+                             const std::vector<Batch> &batches);
 };

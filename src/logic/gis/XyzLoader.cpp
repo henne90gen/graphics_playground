@@ -20,7 +20,7 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
 
     result.clear();
     result.reserve(files.size() * 10000);
-    return loadXyzDir(files, [&bb, &result](const std::vector<glm::vec3> &temp) {
+    return loadXyzDir(files, [&bb, &result](unsigned int batchName, const std::vector<glm::vec3> &temp) {
         for (unsigned int i = 0; i < temp.size(); i++) {
             UPDATE_BB(temp[i].x, <, bb.min.x)
             UPDATE_BB(temp[i].y, <, bb.min.y)
@@ -35,7 +35,7 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
     });
 }
 
-bool loadXyzDir(const std::string &dirName, const std::function<void(const std::vector<glm::vec3> &)> &takePointsFunc) {
+bool loadXyzDir(const std::string &dirName, const TakePointsFunc &takePointsFunc) {
     auto files = getFilesInDirectory(dirName);
     if (files.empty()) {
         return false;
@@ -44,8 +44,7 @@ bool loadXyzDir(const std::string &dirName, const std::function<void(const std::
     return loadXyzDir(files, takePointsFunc);
 }
 
-bool loadXyzDir(const std::vector<std::string> &files,
-                const std::function<void(const std::vector<glm::vec3> &)> &takePointsFunc) {
+bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &takePointsFunc) {
     unsigned long fileCount = files.size();
     constexpr unsigned int maxFileCount = 100000;
     if (fileCount > maxFileCount) {
@@ -86,8 +85,9 @@ bool loadXyzDir(const std::vector<std::string> &files,
         }
         std::free(buffer);
 
+        auto batchName = getBatchName(fileName);
 #pragma omp critical
-        { takePointsFunc(temp); }
+        { takePointsFunc(batchName, temp); }
 
         file.close();
     }
@@ -140,4 +140,9 @@ unsigned long countLinesInDir(const std::string &dirName) {
     }
 
     return totalLineCount;
+}
+
+inline unsigned int getBatchName(const std::string &fileName) {
+    const std::string &batchName = fileName.substr(fileName.size() - 17);
+    return std::strtoul(batchName.c_str(), nullptr, 10);
 }
