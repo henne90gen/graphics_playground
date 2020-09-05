@@ -1,7 +1,6 @@
 #include "DtmViewer.h"
 
 #include <glm/glm.hpp>
-#include <omp.h>
 
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
