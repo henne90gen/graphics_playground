@@ -79,6 +79,7 @@ target_link_libraries(${PROJECT_NAME}
         imgui
         FastNoise
         freetype
+        OpenMP::OpenMP_CXX
         ${GLFW_LIBRARIES}
         ${ZLIB_LIBRARY}
         ${LIBPNG_LIBRARY}
