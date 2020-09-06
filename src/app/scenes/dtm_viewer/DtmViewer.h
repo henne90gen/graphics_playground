@@ -14,9 +14,9 @@
 #include "opengl/VertexArray.h"
 #include "quad_tree/QuadTree.h"
 
-constexpr unsigned long GPU_BATCH_COUNT = 200;
+#define GPU_BATCH_COUNT_CONFIGURABLE 1
+
 constexpr unsigned long GPU_POINTS_PER_BATCH = 10000;
-constexpr unsigned long GPU_POINT_COUNT = GPU_BATCH_COUNT * GPU_POINTS_PER_BATCH;
 
 struct DtmSettings {
     float waterLevel = 0.0F;
@@ -71,7 +71,7 @@ struct Dtm {
     // the index stored in the quad tree refers to the batch that the vertex belongs to
     QuadTree<unsigned int, 256> quadTree = {};
 
-    std::array<GpuBatch, GPU_BATCH_COUNT> gpuMemoryMap = {};
+    std::vector<GpuBatch> gpuMemoryMap = {};
 
     float getHeightAt(const Batch &batch, int x, int z) const {
         long index = (static_cast<long>(x) << 32) | z;
@@ -122,18 +122,20 @@ class DtmViewer : public Scene {
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                        const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
                        float lightPower, bool wireframe, bool drawTriangles, bool showBatchIds,
-                       const DtmSettings &levels);
+                       const DtmSettings &levels, unsigned int gpuBatchCount);
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
                       glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      bool &drawBoundingBoxes, bool &showBatchIds, DtmSettings &terrainLevels);
+                      bool &drawBoundingBoxes, bool &showBatchIds, DtmSettings &terrainLevels, int &gpuBatchCount);
 
     void loadDtm();
+    void initGpuMemory(unsigned int gpuBatchCount);
     void loadDtmAsync();
 
     void batchProcessor();
+    void processBatch(const RawBatch &rawBatch);
 
-    void uploadBatch(unsigned int batchId, const BatchIndices &batchIndices);
+    void uploadBatch(unsigned int gpuBatchCount, unsigned int batchId, const BatchIndices &batchIndices);
 
     static bool pointExists(Batch &batch, int x, int z);
 
