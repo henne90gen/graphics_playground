@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-#define PROFILING 1
+#define PROFILING 0
 
 struct DataPoint {
     double lastValue = 0.0;
@@ -32,10 +32,10 @@ class PerformanceCounter {
     std::unordered_map<std::string, DataPoint> dataPoints = {};
 
   private:
+    std::chrono::time_point<std::chrono::high_resolution_clock> programStart;
 #if PROFILING
     std::ofstream fileOutput = {};
     bool hasWrittenValuesToFile = false;
-    std::chrono::time_point<std::chrono::high_resolution_clock> programStart;
 #endif
 };
 

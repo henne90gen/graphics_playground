@@ -141,8 +141,3 @@ unsigned long countLinesInDir(const std::string &dirName) {
 
     return totalLineCount;
 }
-
-inline unsigned int getBatchName(const std::string &fileName) {
-    const std::string &batchName = fileName.substr(fileName.size() - 17);
-    return std::strtoul(batchName.c_str(), nullptr, 10);
-}

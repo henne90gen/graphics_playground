@@ -27,8 +27,8 @@ Timer::~Timer() {
 }
 
 PerformanceCounter::PerformanceCounter() {
-#if PROFILING
     programStart = std::chrono::high_resolution_clock::now();
+#if PROFILING
     fileOutput = std::ofstream("results.json", std::ofstream::out);
     fileOutput << "[";
 #endif
