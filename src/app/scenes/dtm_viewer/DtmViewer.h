@@ -14,16 +14,8 @@
 #include "opengl/VertexArray.h"
 #include "quad_tree/QuadTree.h"
 
-// These toggles are for partially implemented features
-#define USE_GLOBAL_VERTEX_MAP 0
-#define COPY_EDGE_POINTS 0
-
 constexpr unsigned long GPU_BATCH_COUNT = 200;
-#if COPY_EDGE_POINTS
-constexpr unsigned long GPU_POINTS_PER_BATCH = 10404;
-#else
 constexpr unsigned long GPU_POINTS_PER_BATCH = 10000;
-#endif
 constexpr unsigned long GPU_POINT_COUNT = GPU_BATCH_COUNT * GPU_POINTS_PER_BATCH;
 
 struct DtmSettings {
@@ -72,8 +64,6 @@ struct Dtm {
     unsigned long vertexOffset = 0;
     unsigned long indexOffset = 0;
 
-//    std::unordered_map<long, unsigned int> vertexMap = {};
-
     std::vector<Batch> batches = {};
 
     BoundingBox3 bb = {};
@@ -89,15 +79,7 @@ struct Dtm {
         if (localItr != batch.vertexMap.end()) {
             return vertices[localItr->second + batch.indices.startVertex].y;
         }
-#if USE_GLOBAL_VERTEX_MAP
-        auto itr = vertexMap.find(index);
-        if (itr == vertexMap.end()) {
-            return 0.0F;
-        }
-        return vertices[itr->second].y;
-#else
         return 0.0F;
-#endif
     }
 };
 
@@ -143,8 +125,8 @@ class DtmViewer : public Scene {
                        const DtmSettings &levels);
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
-                      glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles, bool &drawBoundingBoxes,
-                      bool &showBatchIds, DtmSettings &terrainLevels);
+                      glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
+                      bool &drawBoundingBoxes, bool &showBatchIds, DtmSettings &terrainLevels);
 
     void loadDtm();
     void loadDtmAsync();
@@ -153,17 +135,12 @@ class DtmViewer : public Scene {
 
     void uploadBatch(unsigned int batchId, const BatchIndices &batchIndices);
 
-    bool pointExists(Batch &batch, int x, int z);
+    static bool pointExists(Batch &batch, int x, int z);
 
     void initBoundingBox();
     void renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const BoundingBox3 &bb,
                              const std::vector<Batch> &batches);
 
-    bool allFilesLoaded() {
-        return loadedFileCount == totalLoadedFileCount;
-    }
-
-    bool allFilesProcessed() {
-        return processedFileCount == totalProcessedFileCount;
-    }
+    bool allFilesLoaded() const { return loadedFileCount == totalLoadedFileCount; }
+    bool allFilesProcessed() const { return processedFileCount == totalProcessedFileCount; }
 };
