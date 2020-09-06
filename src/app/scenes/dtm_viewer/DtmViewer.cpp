@@ -106,7 +106,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
         auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
         auto diffS = diffNs / 1000000000.0F;
         float filesPerSecond = static_cast<float>(loadedFileCount) / diffS;
-        ImGui::Text("Loaded files: %4d / %d (%.2f files/s)", loadedFileCount, totalLoadedFileCount, filesPerSecond);
+        ImGui::Text("Loaded:    %4d / %d (%.2f files/s, %.2fs)", loadedFileCount, totalLoadedFileCount, filesPerSecond, diffS);
     }
     {
         auto end = std::chrono::high_resolution_clock::now();
@@ -117,8 +117,8 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
         auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
         auto diffS = diffNs / 1000000000.0F;
         float filesPerSecond = static_cast<float>(processedFileCount) / diffS;
-        ImGui::Text("Processed files: %4d / %d (%.2f files/s)", processedFileCount, totalProcessedFileCount,
-                    filesPerSecond);
+        ImGui::Text("Processed: %4d / %d (%.2f files/s, %.2fs)", processedFileCount, totalProcessedFileCount,
+                    filesPerSecond, diffS);
     }
 
     ImGui::Text("DTM memory consumption: ...");
