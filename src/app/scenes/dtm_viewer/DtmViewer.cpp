@@ -106,7 +106,8 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
         auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
         auto diffS = diffNs / 1000000000.0F;
         float filesPerSecond = static_cast<float>(loadedFileCount) / diffS;
-        ImGui::Text("Loaded:    %4d / %d (%.2f files/s, %.2fs)", loadedFileCount, totalLoadedFileCount, filesPerSecond, diffS);
+        ImGui::Text("Loaded:    %4d / %d (%.2f files/s, %.2fs)", loadedFileCount, totalLoadedFileCount, filesPerSecond,
+                    diffS);
     }
     {
         auto end = std::chrono::high_resolution_clock::now();
@@ -165,35 +166,6 @@ void DtmViewer::loadDtm() {
     loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this);
 }
 
-bool DtmViewer::pointExists(Batch &batch, const int x, const int z) {
-    long index = (static_cast<long>(x) << 32) | z;
-    auto localItr = batch.vertexMap.find(index);
-    if (localItr != batch.vertexMap.end()) {
-        return true;
-    }
-#if USE_GLOBAL_VERTEX_MAP
-    auto itr = dtm.vertexMap.find(index);
-    if (itr == dtm.vertexMap.end()) {
-        return false;
-    }
-
-#if COPY_EDGE_POINTS
-    // copy point into batch
-    unsigned long vertexIndex = dtm.vertexOffset + additionalVerticesCount;
-    dtm.vertices[vertexIndex] = dtm.vertices[itr->second];
-    batch.vertexMap[index] = vertexIndex - batch.indices.startVertex;
-    additionalVerticesCount++;
-    return true;
-#else
-    return false;
-#endif
-#else
-    return false;
-#endif
-}
-
-// Idea: loadFiles --> raw vertex data --> queue (pointer to data) --> process raw data into mesh --> upload to GPU as
-// needed
 void DtmViewer::loadDtmAsync() {
 #define LOOKUP_INDEX(x, y) (static_cast<long>(x) << 32) | (y)
 
@@ -397,6 +369,12 @@ void DtmViewer::initBoundingBox() {
     bbVA->setIndexBuffer(ib);
 }
 
+bool DtmViewer::pointExists(Batch &batch, const int x, const int z) {
+    long index = (static_cast<long>(x) << 32) | z;
+    auto localItr = batch.vertexMap.find(index);
+    return localItr != batch.vertexMap.end();
+}
+
 void DtmViewer::batchProcessor() {
     startProcessing = std::chrono::high_resolution_clock::now();
 
@@ -462,7 +440,7 @@ void DtmViewer::batchProcessor() {
                 const int x = vertex.x;
                 const int z = vertex.z;
 
-                glm::ivec3 topRight = glm::ivec3(0);
+                auto topRight = glm::ivec3(0);
                 if (pointExists(batch, x, z + 1) && //
                     pointExists(batch, x + 1, z)) {
                     topRight = glm::ivec3(                         //
@@ -473,7 +451,7 @@ void DtmViewer::batchProcessor() {
                 }
                 dtm.indices[indexOffset + i * 2] = topRight;
 
-                glm::ivec3 bottomLeft = glm::ivec3(0);
+                auto bottomLeft = glm::ivec3(0);
                 if (pointExists(batch, x, z - 1) && //
                     pointExists(batch, x - 1, z)) {
                     bottomLeft = glm::ivec3(                       //
