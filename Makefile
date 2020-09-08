@@ -15,6 +15,9 @@ test: build
 run: build
 	@cd build/src/app; ./Playground
 
+run-bench-all: build
+	python -m scripts bench
+
 run-bench-marching-cubes: build
 	@cd build/src/bench; ./MarchingCubesBench
 

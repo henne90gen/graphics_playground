@@ -96,7 +96,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
     ImGui::DragFloat4("Terrain Levels", reinterpret_cast<float *>(&terrainSettings), dragSpeed);
     ImGui::SliderInt("GPU Batch Count", &gpuBatchCount, 10, 1000);
     if (ImGui::Button("Reset Camera to Center")) {
-        cameraPositionWorld = dtm.bb.center() + glm::vec3(0.0F, 5000.0F, -2000.0F);
+        cameraPositionWorld = dtm.bb.center() + glm::vec3(0.0F, 10000.0F, -2000.0F);
     }
     ImGui::Separator();
 

@@ -11,7 +11,7 @@ static void runWithTestFiles(unsigned int numFiles, unsigned int numLines,
 
     for (unsigned int i = 0; i < numFiles; i++) {
         std::ofstream file;
-        file.open(tmpDir + "/f" + std::to_string(i) + ".xyz");
+        file.open(tmpDir + "/33" + std::to_string(i + 1000000) + "_dgm20.xyz");
         for (unsigned int j = 0; j < numLines; j++) {
             file << j * 1.0F << " " << j * 1000.0F << " " << j * 1000000.0F << "\n";
         }
