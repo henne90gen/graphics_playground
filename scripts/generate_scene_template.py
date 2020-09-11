@@ -5,7 +5,11 @@ from typing import Tuple, Union
 CPP_TEMPLATE = """\
 #include "{name}.h"
 
-void {name}::setup() {{}}
+void {name}::setup() {{
+    shader = std::make_shared<Shader>("scenes/{folder_name}/{name}Vert.glsl",
+                                      "scenes/{folder_name}/{name}Frag.glsl");
+    shader->bind();
+}}
 
 void {name}::destroy() {{}}
 
@@ -19,8 +23,10 @@ H_TEMPLATE = """\
 
 #include <functional>
 
+#include "opengl/Shader.h"
+
 class {name} : public Scene {{
-public:
+  public:
     explicit {name}(SceneData &data)
         : Scene(data, "{name}"){{}};
     ~{name}() override = default;
@@ -28,6 +34,9 @@ public:
     void setup() override;
     void tick() override;
     void destroy() override;
+    
+  private:
+    std::shared_ptr<Shader> shader;    
 }};\
 """
 
