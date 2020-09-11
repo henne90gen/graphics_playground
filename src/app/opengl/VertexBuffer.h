@@ -8,12 +8,10 @@ class VertexBuffer {
   public:
     VertexBuffer();
 
-    VertexBuffer(const void *data, unsigned int sizeInBytes, const BufferLayout &l);
-
+    explicit VertexBuffer(const BufferLayout &l);
+    explicit VertexBuffer(const void *data, unsigned int sizeInBytes, const BufferLayout &l);
     explicit VertexBuffer(const std::vector<float> &data, const BufferLayout &l);
-
     explicit VertexBuffer(const std::vector<glm::vec2> &data, const BufferLayout &l);
-
     explicit VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout &l);
 
     ~VertexBuffer();

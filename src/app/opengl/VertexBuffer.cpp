@@ -6,6 +6,10 @@
 
 VertexBuffer::VertexBuffer() { GL_Call(glGenBuffers(1, &id)); }
 
+VertexBuffer::VertexBuffer(const BufferLayout &l) : layout(l) {
+    GL_Call(glGenBuffers(1, &id));
+}
+
 VertexBuffer::VertexBuffer(const void *data, unsigned int sizeInBytes, const BufferLayout &l) : layout(l) {
     GL_Call(glGenBuffers(1, &id));
     update(data, sizeInBytes);
