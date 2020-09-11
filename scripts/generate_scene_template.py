@@ -43,10 +43,10 @@ class {name} : public Scene {{
 VERTEX_TEMPLATE = """\
 #version 330 core
 
-attribute vec3 a_Position;
+in vec3 position;
 
 void main() {{
-    gl_Position = vec4(a_Position, 1.0);
+    gl_Position = vec4(position, 1.0);
 }}\
 """
 
