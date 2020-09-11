@@ -24,10 +24,7 @@ void GraphVis::tick() {
     static auto panSpeed = 10.0F;
     static auto edgeColor = glm::vec3(1.0F);
     static auto shouldRunSimulation = false;
-    static auto k = 0.05F;
-    static auto b = 0.05F;
-    static auto d = 5.0F;
-    static auto q = 5.0F;
+    static auto params = GraphParameters();
 
     ImGui::Begin("Settings");
     ImGui::DragFloat("Zoom", &zoom, 0.001F, 0.001F, 10000.0F);
@@ -42,10 +39,10 @@ void GraphVis::tick() {
     if (ImGui::Button("Reset Simulation")) {
         resetGraph();
     }
-    ImGui::DragFloat("Tightness k", &k, 0.001F);
-    ImGui::DragFloat("Damping b", &b, 0.001F);
-    ImGui::DragFloat("Distance d", &d, 0.01F);
-    ImGui::DragFloat("Charge q", &q, 0.001F);
+    ImGui::DragFloat("Tightness k", &params.k, 0.001F);
+    ImGui::DragFloat("Damping b", &params.b, 0.001F);
+    ImGui::DragFloat("Distance d", &params.d, 0.01F);
+    ImGui::DragFloat("Charge q", &params.q, 0.001F);
     ImGui::End();
 
     auto viewMatrix = glm::mat4(1.0F);
@@ -75,69 +72,13 @@ void GraphVis::tick() {
     ImGui::End();
 
     if (shouldRunSimulation) {
-        for (auto &node : nodes) {
-            node.acceleration = glm::vec2(0.0F);
-        }
-
-        for (const auto &edge : edges) {
-            auto &n1 = nodes[edge.node1];
-            auto &n2 = nodes[edge.node2];
-            updateSpringAcceleration(n1, n2, lastFrameTime, k, b, d);
-        }
-
-        for (auto &node : nodes) {
-            updateChargeAcceleration(node, q);
-        }
-
-        for (auto &node : nodes) {
-            updateVelocityAndPosition(node, lastFrameTime);
-        }
+        runGraphSimulation(edges, nodes, params, lastFrameTime);
     }
 
     renderNodes(viewMatrix, drawWireframe);
     renderEdges(viewMatrix, edgeColor);
 
     previousMousePos = mousePos;
-}
-
-void GraphVis::updateSpringAcceleration(GraphNode &n1, GraphNode &n2, const float t, const float k, const float b,
-                                        const float d) const {
-    const float m = (n1.mass * n2.mass) / (n1.mass + n2.mass);
-    const glm::vec2 d1 = glm::normalize(n1.position - n2.position) * (glm::length(n1.position - n2.position) - d);
-    const glm::vec2 v1 = n1.velocity - n2.velocity;
-    const glm::vec2 f1 = -(m / (t * t)) * k * d1 - (m / t) * b * v1;
-
-    const glm::vec2 d2 = glm::normalize(n2.position - n1.position) * (glm::length(n1.position - n2.position) - d);
-    const glm::vec2 v2 = n2.velocity - n1.velocity;
-    const glm::vec2 f2 = -(m / (t * t)) * k * d2 - (m / t) * b * v2;
-
-    if (std::isnan(f1.x) || std::isnan(f1.y) || std::isnan(f2.x) || std::isnan(f2.y)) {
-        return;
-    }
-
-    n1.acceleration += f1 / n1.mass;
-    n2.acceleration += f2 / n2.mass;
-}
-
-void GraphVis::updateChargeAcceleration(GraphNode &node, const float q) const {
-    glm::vec2 forces = glm::vec2(0.0F);
-    for (const auto &other : nodes) {
-        const float qSq = q * q;
-        const glm::vec2 d = glm::normalize(node.position - other.position);
-        const float dSq = d.x * d.x + d.y * d.y;
-        const glm::vec2 f = d * (qSq / dSq);
-        if (std::isnan(f.x) || std::isnan(f.y)) {
-            continue;
-        }
-        forces += f;
-    }
-
-    node.acceleration += forces / node.mass;
-}
-
-void GraphVis::updateVelocityAndPosition(GraphNode &node, const float t) const {
-    node.velocity += node.acceleration * t;
-    node.position += node.velocity * t;
 }
 
 void GraphVis::renderNodes(const glm::mat4 &viewMatrix, const bool drawWireframe) const {
@@ -285,12 +226,12 @@ void GraphVis::resetGraph() {
     nodes.emplace_back(glm::vec2(-1.0F, 1.0F), glm::vec3(0.0F, 0.0F, 1.0F));
     nodes.emplace_back(glm::vec2(-1.0F, -1.0F), glm::vec3(1.0F, 0.0F, 1.0F));
     nodes.emplace_back(glm::vec2(1.0F, -1.0F), glm::vec3(1.0F, 0.0F, 1.0F));
-    //    nodes.emplace_back(glm::vec2(1.5F, 1.0F), glm::vec3(1.0F, 0.0F, 1.0F));
+    nodes.emplace_back(glm::vec2(1.5F, 1.0F), glm::vec3(1.0F, 0.0F, 1.0F));
 
     edges.push_back({0, 1});
     edges.push_back({0, 2});
     edges.push_back({0, 3});
     edges.push_back({0, 4});
-//    edges.push_back({0, 5});
+    edges.push_back({0, 5});
 #endif
 }

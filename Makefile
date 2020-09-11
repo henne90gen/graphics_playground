@@ -33,6 +33,9 @@ run-bench-xyz-loader-load: build
 run-bench-quad-tree: build
 	@cd build/src/bench; ./QuadTreeBench
 
+run-bench-graph-vis: build
+	@cd build/src/bench; ./GraphVisBench
+
 clang-tidy:
 	@mkdir -p build; cd build; cmake -G"Ninja" -DRUN_CLANG_TIDY=ON ..; ninja > clang-tidy-report.txt
 

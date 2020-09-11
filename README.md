@@ -248,6 +248,7 @@ The queue for raw batches allows us to parallelize the loading and processing qu
 
 [Force-directed graph drawing](https://www.wikiwand.com/en/Force-directed_graph_drawing)
 [Spring Physics](https://www.gamedev.net/tutorials/programming/math-and-physics/towards-a-simpler-stiffer-and-more-stable-spring-r3227/)
+[Coulomb's Law](https://www.wikiwand.com/en/Coulomb%27s_law)
 
 ## Ideas
 

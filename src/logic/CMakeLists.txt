@@ -16,6 +16,7 @@ add_library(logic
         terrain_erosion/RainSimulation.cpp
         gis/ShpLoader.cpp
         gis/XyzLoader.cpp
+        graph_vis/Graph.cpp
         )
 
 target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
