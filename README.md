@@ -244,10 +244,14 @@ The ingestion pipeline looks like this:
 Both the loading of files into raw batches and the processing of raw batches into renderable batches is running completely parallel.
 The queue for raw batches allows us to parallelize the loading and processing quite nicely.
 
+### Graph Visualization
+
+[Force-directed graph drawing](https://www.wikiwand.com/en/Force-directed_graph_drawing)
+[Spring Physics](https://www.gamedev.net/tutorials/programming/math-and-physics/towards-a-simpler-stiffer-and-more-stable-spring-r3227/)
+
 ## Ideas
 
 - Water Demo
-- Graph Visualization
 
 ## Additional Features
 
