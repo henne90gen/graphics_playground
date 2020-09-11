@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <iostream>
 #include <omp.h>
 #include <thread>
@@ -16,6 +15,7 @@
 #include "scenes/fourier_transform/FourierTransform.h"
 #include "scenes/framebuffer_demo/FramebufferDemo.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"
+#include "scenes/graph_vis/GraphVis.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/legacy_triangle/LegacyTriangle.h"
 #include "scenes/light_demo/LightDemo.h"
@@ -177,6 +177,7 @@ int main() {
     scenes.push_back(new MetaBallsScene(sceneData));     // 20
     scenes.push_back(new TerrainErosion(sceneData));     // 21
     scenes.push_back(new DtmViewer(sceneData));          // 22
+    scenes.push_back(new GraphVis(sceneData));           // 23
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     // mainMenu.goToScene(21);
@@ -184,7 +185,7 @@ int main() {
     enableOpenGLDebugging();
 
     while (glfwWindowShouldClose(window) == 0) {
-        glClearColor(0, 0, 0, 1);
+        glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
 
         startImGuiFrame();
