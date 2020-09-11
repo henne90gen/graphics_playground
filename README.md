@@ -228,9 +228,24 @@ Sources:
 - https://www.firespark.de/resources/downloads/implementation%20of%20a%20methode%20for%20hydraulic%20erosion.pdf
 - http://ranmantaru.com/blog/2011/10/08/water-erosion-on-heightmap-terrain/
 
+### Digital Terrain Model Viewer
+
+The digital terrain model of Saxony contains 40,000,000 points at a ground resolution of 2km.
+It is not possible to upload all of these points to the GPU at once, at least not on lower end GPUs.
+The solution is to upload only a small subset of the points to the GPU.
+The ingestion pipeline looks like this:
+
+- load all files and parse the raw points from them
+- store the points as a raw batch in a queue
+- take raw batches from the queue and process them into renderable batches
+- store renderable batches in internal data structure for future use
+- upload renderable batches, that are close to the camera position to the GPU
+
+Both the loading of files into raw batches and the processing of raw batches into renderable batches is running completely parallel.
+The queue for raw batches allows us to parallelize the loading and processing quite nicely.
+
 ## Ideas
 
-- split terrain erosion into the terrain erosion on generated terrain and a viewer for points clouds and dtms
 - Water Demo
 - Graph Visualization
 
