@@ -19,7 +19,7 @@ void GraphVis::onAspectRatioChange() {
 void GraphVis::tick() {
     static auto previousMousePos = glm::vec2(0.0F);
     static auto drawWireframe = false;
-    static auto zoom = 0.2F;
+    static auto zoom = 0.1F;
     static auto pan = glm::vec2(0.0F);
     static auto panSpeed = 10.0F;
     static auto edgeColor = glm::vec3(1.0F);
@@ -27,7 +27,7 @@ void GraphVis::tick() {
     static auto k = 0.05F;
     static auto b = 0.05F;
     static auto d = 5.0F;
-    static auto q = 0.0F;
+    static auto q = 5.0F;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat("Zoom", &zoom, 0.001F, 0.001F, 10000.0F);
@@ -56,17 +56,12 @@ void GraphVis::tick() {
     auto mouseMove = mousePos - previousMousePos;
     double lastFrameTime = getLastFrameTime();
     if (getInput()->mouse.left && !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive()) {
-        bool hasMovedNode = false;
         for (unsigned int i = 0; i < nodes.size(); i++) {
             auto &node = nodes[i];
             if (node.position.x - 0.5F < mousePos.x && node.position.x + 0.5F > mousePos.x &&
                 node.position.y - 0.5F < mousePos.y && node.position.y + 0.5F > mousePos.y) {
                 node.position = mousePos;
-                hasMovedNode = true;
             }
-        }
-        if (!hasMovedNode) {
-            pan += mouseMove * panSpeed * static_cast<float>(lastFrameTime);
         }
     }
 
@@ -128,9 +123,9 @@ void GraphVis::updateChargeAcceleration(GraphNode &node, const float q) const {
     glm::vec2 forces = glm::vec2(0.0F);
     for (const auto &other : nodes) {
         const float qSq = q * q;
-        const glm::vec2 d = glm::normalize(other.position - node.position);
-        const glm::vec2 dSq = d * d;
-        const glm::vec2 f = -qSq / dSq;
+        const glm::vec2 d = glm::normalize(node.position - other.position);
+        const float dSq = d.x * d.x + d.y * d.y;
+        const glm::vec2 f = d * (qSq / dSq);
         if (std::isnan(f.x) || std::isnan(f.y)) {
             continue;
         }
@@ -272,7 +267,7 @@ void GraphVis::resetGraph() {
     nodes.clear();
     edges.clear();
 
-#if 1
+#if 0
     nodes.emplace_back(glm::vec2(-1.0F, -1.0F), glm::vec3(1.0F, 0.0F, 0.0F));
     nodes.emplace_back(glm::vec2(1.0F, -1.0F), glm::vec3(0.0F, 1.0F, 0.0F));
     nodes.emplace_back(glm::vec2(-1.0F, 1.0F), glm::vec3(0.0F, 0.0F, 1.0F));
