@@ -12,8 +12,8 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 void MetaBallsScene::setup() {
-    shader = std::make_shared<Shader>("scenes/marching_cubes/MarchingCubesVert.glsl",
-                                      "scenes/marching_cubes/MarchingCubesFrag.glsl");
+    shader = std::make_shared<Shader>("scenes/meta_balls/MetaBallsVert.glsl",
+                                      "scenes/meta_balls/MetaBallsFrag.glsl");
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
@@ -24,7 +24,7 @@ void MetaBallsScene::setup() {
     surfaceVertexBuffer->bind();
 
     BufferLayout surfaceBufferLayout = {
-          {ShaderDataType::Float3, "a_Position"},
+          {ShaderDataType::Float3, "position"},
     };
     surfaceVertexBuffer->setLayout(surfaceBufferLayout);
     surfaceVertexArray->addVertexBuffer(surfaceVertexBuffer);
@@ -138,6 +138,7 @@ void MetaBallsScene::tick() {
 
 void MetaBallsScene::drawSurface(const bool drawWireframe) const {
     surfaceVertexArray->bind();
+    shader->bind();
 
     shader->setUniform("u_Offset", glm::vec3());
 
