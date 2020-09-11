@@ -1,8 +1,7 @@
-#include <vector>
-
 #include <benchmark/benchmark.h>
 #include <functional>
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "marching_cubes/MarchingCubes.h"
 

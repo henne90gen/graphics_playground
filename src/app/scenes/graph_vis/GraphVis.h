@@ -4,23 +4,9 @@
 
 #include <functional>
 
+#include "graph_vis/Graph.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
-
-struct GraphNode {
-    glm::vec2 position = {};
-    glm::vec2 velocity = {};
-    glm::vec2 acceleration = {};
-    float mass = 1.0F;
-    glm::vec3 color = {};
-
-    GraphNode(glm::vec2 position, glm::vec3 color) : position(position), color(color) {}
-};
-
-struct GraphEdge {
-    unsigned int node1;
-    unsigned int node2;
-};
 
 class GraphVis : public Scene {
   public:
@@ -45,11 +31,6 @@ class GraphVis : public Scene {
     void initNodeMesh();
     void renderNodes(const glm::mat4 &viewMatrix, bool drawWireframe) const;
     void renderEdges(const glm::mat4 &viewMatrix, const glm::vec3 &color) const;
-
-    void updateSpringAcceleration(GraphNode &n1, GraphNode &n2, const float t, const float k, const float b,
-                                  const float d) const;
-    void updateChargeAcceleration(GraphNode &node, const float q) const;
-    void updateVelocityAndPosition(GraphNode &node, const float t) const;
 
     glm::vec2 getMousePos(float zoom, const glm::vec2 &pan) const;
     void resetGraph();

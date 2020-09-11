@@ -22,3 +22,5 @@ benchmark(XyzLoaderLoadBench)
 benchmark(XyzLoaderCountLinesBench)
 
 benchmark(QuadTreeBench)
+
+benchmark(GraphVisBench)
