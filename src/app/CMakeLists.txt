@@ -42,6 +42,7 @@ add_executable(${PROJECT_NAME}
         scenes/meta_balls/MetaBallsScene.cpp
         scenes/terrain_erosion/TerrainErosion.cpp
         scenes/dtm_viewer/DtmViewer.cpp
+        scenes/graph_vis/GraphVis.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -170,6 +171,8 @@ set(RESOURCES
         scenes/dtm_viewer/TerrainFrag.glsl
         scenes/dtm_viewer/SimpleVert.glsl
         scenes/dtm_viewer/SimpleFrag.glsl
+        scenes/graph_vis/GraphVisVert.glsl
+        scenes/graph_vis/GraphVisFrag.glsl
 )
 
 add_custom_target(copy-resources
