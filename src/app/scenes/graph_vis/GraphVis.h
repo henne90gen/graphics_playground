@@ -33,6 +33,7 @@ class GraphVis : public Scene {
     void renderEdges(const glm::mat4 &viewMatrix, const glm::vec3 &color) const;
 
     glm::vec2 getMousePos(float zoom, const glm::vec2 &pan) const;
+    void doNodeDragging(const glm::vec2 &mousePos);
     void resetGraph();
     void initEdgeMesh();
 };
