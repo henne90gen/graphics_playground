@@ -60,9 +60,6 @@ template <typename T, unsigned int S> struct QuadTree {
         inline bool isLeaf() { return left == nullptr; }
     };
 
-    std::vector<Element> elements = {};
-    Node *root = new Node(elements.begin(), elements.end());
-
     ~QuadTree() { delete root; }
 
     void insert(const glm::vec3 &point, T data) {
@@ -80,15 +77,13 @@ template <typename T, unsigned int S> struct QuadTree {
         root = new Node(elements.begin(), elements.end());
     }
 
-    // TODO use limit parameter
-    bool get(const glm::vec3 &query, const unsigned int k, std::vector<T> &result, const float distanceLimit) {
+    bool get(const glm::vec3 &query, const unsigned int k, std::vector<T> &result) {
         if (elements.empty()) {
             return false;
         }
 
         std::vector<std::pair<float, T>> closestElements = {};
         std::vector<Node *> nodeQueue = {root};
-        const float limitSq = distanceLimit * distanceLimit;
         while (!nodeQueue.empty()) {
             Node *currentNode = nodeQueue.back();
             nodeQueue.pop_back();
@@ -136,13 +131,9 @@ template <typename T, unsigned int S> struct QuadTree {
         return true;
     }
 
-    bool get(const glm::vec3 &query, const unsigned int k, std::vector<T> &result) {
-        return get(query, k, result, std::numeric_limits<float>::max());
-    }
-
-    bool get(const glm::vec3 &query, T &closestElement, const float distanceLimit) {
+    bool get(const glm::vec3 &query, T &closestElement) {
         std::vector<T> result = {};
-        bool success = get(query, 1, result, distanceLimit);
+        bool success = get(query, 1, result);
         if (!success || result.empty()) {
             return false;
         }
@@ -150,7 +141,7 @@ template <typename T, unsigned int S> struct QuadTree {
         return true;
     }
 
-    bool get(const glm::vec3 &query, T &closestElement) {
-        return get(query, closestElement, std::numeric_limits<float>::max());
-    }
+  private:
+    std::vector<Element> elements = {};
+    Node *root = new Node(elements.begin(), elements.end());
 };

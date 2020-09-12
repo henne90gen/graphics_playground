@@ -10,7 +10,7 @@ struct GraphNode {
     float mass = 1.0F;
     glm::vec3 color = {};
 
-    explicit GraphNode() {}
+    explicit GraphNode() = default;
     GraphNode(glm::vec2 position, glm::vec3 color) : position(position), color(color) {}
 };
 
@@ -23,13 +23,13 @@ struct GraphParameters {
     float k = 0.05F;
     float b = 0.05F;
     float d = 5.0F;
-    float q = 5.0F;
+    float q = 10.0F;
 };
 
 void runGraphSimulation(const std::vector<GraphEdge> &edges, std::vector<GraphNode> &nodes,
-                        const GraphParameters &params, const float lastFrameTime);
+                        const GraphParameters &params, float lastFrameTime);
 
-void updateSpringAcceleration(const std::vector<GraphEdge> &edges, std::vector<GraphNode> &nodes, const float t,
-                              const float k, const float b, const float d);
-void updateChargeAcceleration(std::vector<GraphNode> &nodes, const float q);
-void updateVelocityAndPosition(GraphNode &node, const float t);
+void updateSpringAcceleration(const std::vector<GraphEdge> &edges, std::vector<GraphNode> &nodes, float t, float k,
+                              float b, float d);
+void updateChargeAcceleration(std::vector<GraphNode> &nodes, float q);
+void updateVelocityAndPosition(GraphNode &node, float t);
