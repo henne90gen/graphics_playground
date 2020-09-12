@@ -1,5 +1,4 @@
 #include <benchmark/benchmark.h>
-#include <functional>
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -21,7 +20,7 @@ static void BM_Exp(benchmark::State &state) {
         benchmark::DoNotOptimize(result);
     }
 }
-BENCHMARK(BM_Exp)->Arg(8)->Arg(64)->Arg(512);
+BENCHMARK(BM_Exp)->Range(8, 1024);
 
 static void BM_InverseDist(benchmark::State &state) {
     std::vector<MetaBall> metaballs = {};
@@ -32,6 +31,6 @@ static void BM_InverseDist(benchmark::State &state) {
         benchmark::DoNotOptimize(result);
     }
 }
-BENCHMARK(BM_InverseDist)->Arg(8)->Arg(64)->Arg(512);
+BENCHMARK(BM_InverseDist)->Range(8, 1024);
 
 BENCHMARK_MAIN();
