@@ -52,15 +52,8 @@ void GraphVis::tick() {
     glm::vec2 mousePos = getMousePos(zoom, pan);
     auto mouseMove = mousePos - previousMousePos;
     double lastFrameTime = getLastFrameTime();
-    if (getInput()->mouse.left && !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive()) {
-        for (unsigned int i = 0; i < nodes.size(); i++) {
-            auto &node = nodes[i];
-            if (node.position.x - 0.5F < mousePos.x && node.position.x + 0.5F > mousePos.x &&
-                node.position.y - 0.5F < mousePos.y && node.position.y + 0.5F > mousePos.y) {
-                node.position = mousePos;
-            }
-        }
-    }
+
+    doNodeDragging(mousePos);
 
     ImGui::Begin("Settings");
     ImGui::Text(" CurMouse: %.2f %.2f", mousePos.x, mousePos.y);
@@ -79,6 +72,27 @@ void GraphVis::tick() {
     renderEdges(viewMatrix, edgeColor);
 
     previousMousePos = mousePos;
+}
+void GraphVis::doNodeDragging(const glm::vec2 &mousePos) {
+    static int draggedNode = -1;
+    if (!getInput()->mouse.left && draggedNode != -1) {
+        draggedNode = -1;
+    }
+    if (getInput()->mouse.left && !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive()) {
+        if (draggedNode == -1) {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                const auto &node = nodes[i];
+                if (node.position.x - 0.5F < mousePos.x && node.position.x + 0.5F > mousePos.x &&
+                    node.position.y - 0.5F < mousePos.y && node.position.y + 0.5F > mousePos.y) {
+                    draggedNode = i;
+                    break;
+                }
+            }
+        }
+        if (draggedNode != -1) {
+            nodes[draggedNode].position = mousePos;
+        }
+    }
 }
 
 void GraphVis::renderNodes(const glm::mat4 &viewMatrix, const bool drawWireframe) const {
