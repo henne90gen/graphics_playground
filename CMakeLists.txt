@@ -4,6 +4,8 @@ project(Playground)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(BUILD_OPENCV "Turn this on to build OpenCV from source" OFF)
+
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
 find_program(
@@ -154,8 +156,8 @@ function(find_ffmpeg_libraries)
         find_library(${lib}_LIBRARY ${lib})
 
         if (NOT ${lib}_LIBRARY)
-                message("-- Loooking for ${lib} - not found")
-                continue()
+            message("-- Loooking for ${lib} - not found")
+            continue()
         endif ()
 
         add_library(${lib} SHARED IMPORTED)
@@ -164,7 +166,7 @@ function(find_ffmpeg_libraries)
 
         find_path(${lib}_INCLUDE_DIR lib${lib}/${lib}.h)
         if (${lib}_INCLUDE_DIR)
-                list(APPEND FFMPEG_INCLUDE_DIR ${${lib}_INCLUDE_DIR})
+            list(APPEND FFMPEG_INCLUDE_DIR ${${lib}_INCLUDE_DIR})
         endif ()
 
         message("-- Looking for ${lib} - found")
@@ -178,9 +180,27 @@ find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
 
 # Google Benchmark
 set(BENCHMARK_ENABLE_TESTING OFF)
-add_subdirectory(vendor/benchmark)
+add_subdirectory(${VENDOR_DIR}/benchmark)
 
+# OpenMP
 find_package(OpenMP)
+
+# OpenCV
+if (BUILD_OPENCV)
+    set(BUILD_TESTS OFF CACHE BOOL "Disable tests" FORCE)
+    set(BUILD_PERF_TESTS OFF CACHE BOOL "Disable perf tests" FORCE)
+    set(BUILD_JAVA OFF CACHE BOOL "Disable Java bindings" FORCE)
+    set(BUILD_opencv_python2 OFF CACHE BOOL "Disable python2" FORCE)
+    set(BUILD_opencv_python3 OFF CACHE BOOL "Disable python3" FORCE)
+    set(BUILD_opencv_python_bindings_generator OFF CACHE BOOL "Disable python bindings generator" FORCE)
+    set(BUILD_opencv_python_tests OFF CACHE BOOL "Disable python tests" FORCE)
+    set(BUILD_opencv_java OFF CACHE BOOL "Disable java" FORCE)
+    set(BUILD_opencv_java_bindings_generator OFF CACHE BOOL "Disable java bindings generator" FORCE)
+    set(OPENCV_DIR ${VENDOR_DIR}/opencv)
+    add_subdirectory(${OPENCV_DIR})
+else ()
+    find_package(OpenCV)
+endif ()
 
 enable_testing()
 add_subdirectory(src)
