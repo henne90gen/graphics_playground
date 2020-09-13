@@ -69,7 +69,7 @@ struct Dtm {
     BoundingBox3 bb = {};
 
     // the index stored in the quad tree refers to the batch that the vertex belongs to
-    QuadTree<unsigned int, 256> quadTree = {};
+    QuadTree<unsigned int> quadTree = {};
 
     std::vector<GpuBatch> gpuMemoryMap = {};
 

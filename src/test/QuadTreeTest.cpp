@@ -166,3 +166,84 @@ TEST_CASE("Can retrieve nearest elements from branched tree") {
     REQUIRE(result[0] == 1);
     REQUIRE(result[1] == 2);
 }
+
+TEST_CASE("Can travers branched tree in pre order") {
+    auto tree = QuadTree<unsigned int, 2>();
+
+    std::vector<std::pair<glm::vec3, unsigned int>> elements = {
+          std::make_pair(glm::vec3(1.0F), 1), //
+          std::make_pair(glm::vec3(2.0F), 2), //
+          std::make_pair(glm::vec3(3.0f), 3), //
+          std::make_pair(glm::vec3(4.0f), 4)  //
+    };
+    tree.insert(elements);
+
+    int count = 0;
+    tree.traversPreOrder([&count](QuadTree<unsigned int, 2>::Node *node) {
+        if (count == 0) {
+            REQUIRE(!node->isLeaf());
+        } else if (count == 1) {
+            REQUIRE(node->isLeaf());
+        } else if (count == 2) {
+            REQUIRE(node->isLeaf());
+        } else if (count > 2) {
+            FAIL();
+        }
+        count++;
+    });
+    REQUIRE(count == 3);
+}
+
+TEST_CASE("Can travers branched tree in post order") {
+    auto tree = QuadTree<unsigned int, 2>();
+
+    std::vector<std::pair<glm::vec3, unsigned int>> elements = {
+          std::make_pair(glm::vec3(1.0F), 1), //
+          std::make_pair(glm::vec3(2.0F), 2), //
+          std::make_pair(glm::vec3(3.0f), 3), //
+          std::make_pair(glm::vec3(4.0f), 4)  //
+    };
+    tree.insert(elements);
+
+    int count = 0;
+    tree.traversPostOrder([&count](QuadTree<unsigned int, 2>::Node *node) {
+        if (count == 0) {
+            REQUIRE(node->isLeaf());
+        } else if (count == 1) {
+            REQUIRE(node->isLeaf());
+        } else if (count == 2) {
+            REQUIRE(!node->isLeaf());
+        } else if (count > 2) {
+            FAIL();
+        }
+        count++;
+    });
+    REQUIRE(count == 3);
+}
+
+TEST_CASE("Can travers branched tree in in-order") {
+    auto tree = QuadTree<unsigned int, 2>();
+
+    std::vector<std::pair<glm::vec3, unsigned int>> elements = {
+          std::make_pair(glm::vec3(1.0F), 1), //
+          std::make_pair(glm::vec3(2.0F), 2), //
+          std::make_pair(glm::vec3(3.0f), 3), //
+          std::make_pair(glm::vec3(4.0f), 4)  //
+    };
+    tree.insert(elements);
+
+    int count = 0;
+    tree.traversInOrder([&count](QuadTree<unsigned int, 2>::Node *node) {
+        if (count == 0) {
+            REQUIRE(node->isLeaf());
+        } else if (count == 1) {
+            REQUIRE(!node->isLeaf());
+        } else if (count == 2) {
+            REQUIRE(node->isLeaf());
+        } else if (count > 2) {
+            FAIL();
+        }
+        count++;
+    });
+    REQUIRE(count == 3);
+}
