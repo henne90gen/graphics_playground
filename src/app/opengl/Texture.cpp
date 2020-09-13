@@ -4,8 +4,6 @@
 
 Texture::Texture(unsigned int dataType) : dataType(dataType) { GL_Call(glGenTextures(1, &id)); }
 
-
-
 void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }
 
 void Texture::unbind() { GL_Call(glBindTexture(GL_TEXTURE_2D, 0)); }

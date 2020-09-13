@@ -13,16 +13,15 @@ class VertexBuffer {
     explicit VertexBuffer(const std::vector<float> &data, const BufferLayout &l);
     explicit VertexBuffer(const std::vector<glm::vec2> &data, const BufferLayout &l);
     explicit VertexBuffer(const std::vector<glm::vec3> &data, const BufferLayout &l);
+    explicit VertexBuffer(const std::vector<glm::vec4> &data, const BufferLayout &l);
 
     ~VertexBuffer();
 
     void update(const void *data, unsigned int sizeInBytes) const;
-
     void update(const std::vector<float> &data) const;
-
-    void update(const std::vector<glm::vec3> &data) const;
-
     void update(const std::vector<glm::vec2> &data) const;
+    void update(const std::vector<glm::vec3> &data) const;
+    void update(const std::vector<glm::vec4> &data) const;
 
     void setLayout(const BufferLayout &l) { this->layout = l; };
 
