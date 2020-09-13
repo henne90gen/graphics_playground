@@ -31,3 +31,6 @@
 [submodule "vendor/benchmark"]
 	path = vendor/benchmark
 	url = git@github.com:google/benchmark.git
+[submodule "vendor/opencv"]
+	path = vendor/opencv
+	url = git@github.com:opencv/opencv.git
