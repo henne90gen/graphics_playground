@@ -31,6 +31,7 @@
 #include "scenes/test_scene/TestScene.h"
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
+#include "scenes/webcam_demo/WebcamDemo.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -178,6 +179,7 @@ int main() {
     scenes.push_back(new TerrainErosion(sceneData));     // 21
     scenes.push_back(new DtmViewer(sceneData));          // 22
     scenes.push_back(new GraphVis(sceneData));           // 23
+    scenes.push_back(new WebcamDemo(sceneData));         // 24
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     // mainMenu.goToScene(21);

@@ -43,6 +43,7 @@ add_executable(${PROJECT_NAME}
         scenes/terrain_erosion/TerrainErosion.cpp
         scenes/dtm_viewer/DtmViewer.cpp
         scenes/graph_vis/GraphVis.cpp
+        scenes/webcam_demo/WebcamDemo.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -86,6 +87,7 @@ target_link_libraries(${PROJECT_NAME}
         ${LIBPNG_LIBRARY}
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
+        ${OPENCV_LIBS}
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -173,6 +175,8 @@ set(RESOURCES
         scenes/dtm_viewer/SimpleFrag.glsl
         scenes/graph_vis/GraphVisVert.glsl
         scenes/graph_vis/GraphVisFrag.glsl
+        scenes/webcam_demo/WebcamDemoVert.glsl
+        scenes/webcam_demo/WebcamDemoFrag.glsl
 )
 
 add_custom_target(copy-resources

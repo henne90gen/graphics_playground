@@ -252,6 +252,7 @@ The queue for raw batches allows us to parallelize the loading and processing qu
 
 ## Ideas
 
+- Webcam Demo (show image from webcam and apply some post processing)
 - Water Demo
 
 ## Additional Features

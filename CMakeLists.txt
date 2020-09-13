@@ -201,6 +201,7 @@ if (BUILD_OPENCV)
 else ()
     find_package(OpenCV)
 endif ()
+set(OPENCV_LIBS opencv_core opencv_highgui opencv_imgproc)
 
 enable_testing()
 add_subdirectory(src)
