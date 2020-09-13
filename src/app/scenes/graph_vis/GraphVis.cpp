@@ -1,5 +1,8 @@
 #include "GraphVis.h"
 
+#include "quad_tree/QuadTree.h"
+#include "util/ImGuiUtils.h"
+
 void GraphVis::setup() {
     shader = std::make_shared<Shader>("scenes/graph_vis/GraphVisVert.glsl", "scenes/graph_vis/GraphVisFrag.glsl");
     shader->bind();
@@ -8,7 +11,7 @@ void GraphVis::setup() {
     initNodeMesh();
     initEdgeMesh();
 
-    resetGraph();
+    resetGraph(GraphType::SMALL_LATTICE);
 }
 
 void GraphVis::onAspectRatioChange() {
@@ -25,6 +28,7 @@ void GraphVis::tick() {
     static auto edgeColor = glm::vec3(1.0F);
     static auto shouldRunSimulation = false;
     static auto params = GraphParameters();
+    static auto chosenGraph = GraphType::SMALL_LATTICE;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat("Zoom", &zoom, 0.001F, 0.001F, 10000.0F);
@@ -35,9 +39,19 @@ void GraphVis::tick() {
     ImGui::DragFloat("Pan Speed", &panSpeed, 0.1F);
     ImGui::ColorEdit3("Edge Color", reinterpret_cast<float *>(&edgeColor));
     ImGui::Separator();
-    ImGui::Checkbox("Run Simulation", &shouldRunSimulation);
+    if (shouldRunSimulation) {
+        if (ImGui::Button("Stop Simulation")) {
+            shouldRunSimulation = false;
+        }
+    } else {
+        if (ImGui::Button("Run Simulation")) {
+            shouldRunSimulation = true;
+        }
+    }
+    ImGui::Combo("", reinterpret_cast<int *>(&chosenGraph), "SMALL_LATTICE\0STAR\0LATTICE\0TREE\0\0");
+    ImGui::SameLine();
     if (ImGui::Button("Reset Simulation")) {
-        resetGraph();
+        resetGraph(chosenGraph);
     }
     ImGui::DragFloat("Tightness k", &params.k, 0.001F);
     ImGui::DragFloat("Damping b", &params.b, 0.001F);
@@ -218,11 +232,7 @@ glm::vec2 GraphVis::getMousePos(float zoom, const glm::vec2 &pan) const {
     return mousePosScene;
 }
 
-void GraphVis::resetGraph() {
-    nodes.clear();
-    edges.clear();
-
-#if 0
+void createSmallLattice(std::vector<GraphNode> &nodes, std::vector<GraphEdge> &edges) {
     nodes.emplace_back(glm::vec2(-1.0F, -1.0F), glm::vec3(1.0F, 0.0F, 0.0F));
     nodes.emplace_back(glm::vec2(1.0F, -1.0F), glm::vec3(0.0F, 1.0F, 0.0F));
     nodes.emplace_back(glm::vec2(-1.0F, 1.0F), glm::vec3(0.0F, 0.0F, 1.0F));
@@ -234,7 +244,9 @@ void GraphVis::resetGraph() {
     edges.push_back({1, 2});
     edges.push_back({1, 3});
     edges.push_back({2, 3});
-#else
+}
+
+void createStar(std::vector<GraphNode> &nodes, std::vector<GraphEdge> &edges) {
     nodes.emplace_back(glm::vec2(0.0F, 0.0F), glm::vec3(1.0F, 0.0F, 0.0F));
     nodes.emplace_back(glm::vec2(1.0F, 1.0F), glm::vec3(0.0F, 1.0F, 0.0F));
     nodes.emplace_back(glm::vec2(-1.0F, 1.0F), glm::vec3(0.0F, 0.0F, 1.0F));
@@ -247,5 +259,81 @@ void GraphVis::resetGraph() {
     edges.push_back({0, 3});
     edges.push_back({0, 4});
     edges.push_back({0, 5});
-#endif
+}
+
+constexpr void addEdge(std::vector<GraphEdge> &edges, int x, int y, bool cond, int x_, int y_) {
+    if (cond) {
+        edges.push_back({static_cast<unsigned int>(y * 5 + x), static_cast<unsigned int>((y_)*5 + (x_))});
+    }
+}
+
+void createLattice(std::vector<GraphNode> &nodes, std::vector<GraphEdge> &edges) {
+    for (unsigned int y = 0; y < 5; y++) {
+        for (unsigned int x = 0; x < 5; x++) {
+            nodes.emplace_back(glm::vec2(x * 2.0F, y * 2.0F), glm::vec3(1.0F, 1.0F, 1.0F));
+        }
+    }
+
+    for (unsigned int y = 0; y < 5; y++) {
+        for (unsigned int x = 0; x < 5; x++) {
+            addEdge(edges, x, y, x < 4, x + 1, y);
+            addEdge(edges, x, y, y < 4, x, y + 1);
+            addEdge(edges, x, y, y < 4 && x < 4, x + 1, y + 1);
+            addEdge(edges, x, y, y < 4 && x > 0, x - 1, y + 1);
+        }
+    }
+}
+
+void createTree(std::vector<GraphNode> &nodes, std::vector<GraphEdge> &edges) {
+    auto tree = QuadTree<unsigned int>(5);
+
+    std::vector<std::pair<glm::vec3, unsigned int>> elements = {};
+    const unsigned int width = 10;
+    const unsigned int height = 10;
+    for (unsigned int x = 0; x < width; x++) {
+        for (unsigned int z = 0; z < height; z++) {
+            elements.push_back(std::make_pair(glm::vec3(x, 0, z), x * height + z));
+        }
+    }
+    tree.insert(elements);
+
+    std::unordered_map<QuadTree<unsigned int>::Node *, unsigned int> nodeToIndexMap = {};
+    tree.traversPostOrder([&nodeToIndexMap, &nodes, &edges](QuadTree<unsigned int>::Node *node) {
+        unsigned int index = nodes.size();
+        float x = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+        float y = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+        x *= 10.0F;
+        y *= 10.0F;
+        nodes.emplace_back(glm::vec2(x, y), glm::vec3(1.0F, 1.0F, 1.0F));
+        nodeToIndexMap[node] = index;
+        if (node->left != nullptr) {
+            edges.push_back({index, nodeToIndexMap[node->left]});
+        }
+        if (node->right != nullptr) {
+            edges.push_back({index, nodeToIndexMap[node->right]});
+        }
+    });
+}
+
+void GraphVis::resetGraph(const GraphType chosenGraph) {
+    nodes.clear();
+    edges.clear();
+
+    switch (chosenGraph) {
+    case GraphType::SMALL_LATTICE:
+        createSmallLattice(nodes, edges);
+        break;
+    case GraphType::STAR:
+        createStar(nodes, edges);
+        break;
+    case GraphType::LATTICE:
+        createLattice(nodes, edges);
+        break;
+    case GraphType::TREE:
+        createTree(nodes, edges);
+        break;
+    default:
+        std::cout << "Could not create graph: invalid graph type" << std::endl;
+        break;
+    }
 }

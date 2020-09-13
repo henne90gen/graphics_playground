@@ -10,6 +10,8 @@
 
 class GraphVis : public Scene {
   public:
+    enum class GraphType { SMALL_LATTICE, STAR, LATTICE, TREE };
+
     explicit GraphVis(SceneData &data) : Scene(data, "GraphVis"){};
     ~GraphVis() override = default;
 
@@ -34,6 +36,6 @@ class GraphVis : public Scene {
 
     glm::vec2 getMousePos(float zoom, const glm::vec2 &pan) const;
     void doNodeDragging(const glm::vec2 &mousePos);
-    void resetGraph();
+    void resetGraph(GraphType chosenGraph);
     void initEdgeMesh();
 };
