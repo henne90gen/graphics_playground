@@ -47,34 +47,32 @@ void WebcamDemo::setup() {
     if (!webcam.isOpened()) {
         std::cout << "Could not open webcam!" << std::endl;
     }
+
+    imageSize = cv::Size((int)webcam.get(cv::CAP_PROP_FRAME_WIDTH), (int)webcam.get(cv::CAP_PROP_FRAME_HEIGHT));
+    imageBuffer = cv::Mat(imageSize.width, imageSize.height, CV_8UC3);
 }
 
 void WebcamDemo::onAspectRatioChange() { projectionMatrix = glm::ortho(-1.0F, 1.0F, -1.0F, 1.0F); }
 
 void WebcamDemo::tick() {
     static auto isGrayScale = true;
-    cv::Size imageSize =
-          cv::Size((int)webcam.get(cv::CAP_PROP_FRAME_WIDTH), (int)webcam.get(cv::CAP_PROP_FRAME_HEIGHT));
-    cv::Mat buffer;
-    webcam >> buffer;
+    static int updateEveryXFrames = 5;
 
     ImGui::Begin("Settings");
     ImGui::Text("Image Size: (%dx%d)", imageSize.width, imageSize.height);
-    ImGui::Text("Channels: %d", buffer.channels());
+    ImGui::Text("Channels: %d", imageBuffer.channels());
     ImGui::Checkbox("Grayscale", &isGrayScale);
+    ImGui::DragInt("Update every X frames", &updateEveryXFrames, 1.0F, 1, 100);
     ImGui::End();
 
-    if (isGrayScale) {
-        cv::Mat greyMat, colorMat;
-        cv::cvtColor(buffer, greyMat, cv::COLOR_BGR2GRAY);
-        buffer = greyMat;
-        texture->setDataType(GL_RED);
-    } else {
-        texture->setDataType(GL_BGR);
-    }
-
     texture->bind();
-    texture->update(buffer.data, imageSize.width, imageSize.height);
+
+    static auto counter = 0;
+    counter++;
+    if (counter % updateEveryXFrames == 0) {
+        webcam >> imageBuffer;
+        texture->update(imageBuffer.data, imageSize.width, imageSize.height);
+    }
 
     shader->bind();
     shader->setUniform("projectionMatrix", projectionMatrix);
