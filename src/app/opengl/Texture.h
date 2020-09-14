@@ -5,7 +5,7 @@
 
 class Texture {
   public:
-    explicit Texture(unsigned int dataType = GL_RGB);
+    explicit Texture(unsigned int dataType = GL_RGB, unsigned int openGlDataType = GL_RGB);
     ~Texture() = default;
 
     void update(const unsigned char *data, unsigned int width, unsigned int height,
@@ -17,10 +17,13 @@ class Texture {
     void update(Image &image) const;
 
     void bind() const;
-
     static void unbind();
+
+    void setDataType(unsigned int _dataType) { this->dataType = _dataType; }
+    void setOpenGlDataType(unsigned int _openGlDataType) { this->openGlDataType = _openGlDataType; }
 
   private:
     unsigned int id = 0;
     unsigned int dataType;
+    unsigned int openGlDataType;
 };

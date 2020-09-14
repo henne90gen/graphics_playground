@@ -83,7 +83,7 @@ void OpenGLMesh::updateTexture(ModelLoader::RawMesh &mesh) const {
     if (!mesh.material || !ImageOps::load(mesh.material->diffuseTextureMap, image)) {
         createCheckerBoard(image);
     }
-    texture->update(image.pixels.data(), image.width, image.height);
+    texture->update(image);
 }
 
 void OpenGLMesh::createCheckerBoard(Image &image) {

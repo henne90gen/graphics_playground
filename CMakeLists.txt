@@ -199,7 +199,7 @@ if (BUILD_OPENCV)
     set(OPENCV_DIR ${VENDOR_DIR}/opencv)
     add_subdirectory(${OPENCV_DIR})
 else ()
-    find_package(OpenCV)
+    find_package(OpenCV REQUIRED)
 endif ()
 set(OPENCV_LIBS opencv_core opencv_highgui opencv_imgproc)
 
