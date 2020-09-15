@@ -7,8 +7,15 @@
 #include <opencv2/videoio.hpp>
 
 #include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
 #include "opengl/Texture.h"
+#include "opengl/VertexArray.h"
+
+#if 0
+unsigned char *webcam_demo_WebcamDemoFrag_glsl;
+unsigned int webcam_demo_WebcamDemoFrag_glsl_len;
+unsigned char *webcam_demo_WebcamDemoVert_glsl;
+unsigned int webcam_demo_WebcamDemoVert_glsl_len;
+#endif
 
 class WebcamDemo : public Scene {
   public:
@@ -20,6 +27,7 @@ class WebcamDemo : public Scene {
     void destroy() override {}
 
     void onAspectRatioChange() override;
+
   private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> va;

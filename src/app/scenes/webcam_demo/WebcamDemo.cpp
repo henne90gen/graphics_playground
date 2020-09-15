@@ -5,6 +5,10 @@
 void WebcamDemo::setup() {
     shader =
           std::make_shared<Shader>("scenes/webcam_demo/WebcamDemoVert.glsl", "scenes/webcam_demo/WebcamDemoFrag.glsl");
+#if 0
+    shader =
+          std::make_shared<Shader>(webcam_demo_WebcamDemoVert_glsl, webcam_demo_WebcamDemoVert_glsl_len, webcam_demo_WebcamDemoFrag_glsl, webcam_demo_WebcamDemoFrag_glsl_len);
+#endif
     shader->bind();
     onAspectRatioChange();
 
