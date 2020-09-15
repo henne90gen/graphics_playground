@@ -9,7 +9,7 @@ def run_compile_shader(input_file: str, output_file: str):
     with open(input_file) as f:
         shader_lines = f.readlines()
 
-    shader_lines = list(map(lambda l: l.strip(), shader_lines))
+    shader_lines = list(map(lambda l: l.replace("\n", ""), shader_lines))
 
     max_line_length = 0
     for line in shader_lines:

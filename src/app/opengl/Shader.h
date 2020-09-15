@@ -23,7 +23,7 @@ struct ShaderCode {
     const int *lineLengths;
     const char **shaderSource;
 
-    ShaderCode(const unsigned int lineCount,const int *lineLengths, const char **shaderSource)
+    ShaderCode(const unsigned int lineCount, const int *lineLengths, const char **shaderSource)
         : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource) {}
 };
 
