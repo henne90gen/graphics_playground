@@ -1,4 +1,18 @@
 
+file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/scenes "*.glsl")
+foreach(INPUT_FILE ${SHADER_FILES})
+    get_filename_component(FOLDER ${INPUT_FILE} DIRECTORY)
+    get_filename_component(INPUT_FILE_NAME ${INPUT_FILE} NAME)
+    set(SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+    set(OUTPUT_FILE ${SHADER_DIR}/${FOLDER}_${INPUT_FILE_NAME}.cpp)
+    add_custom_command(
+            OUTPUT ${OUTPUT_FILE}
+            COMMAND mkdir -p ${SHADER_DIR} && cd ${CMAKE_CURRENT_SOURCE_DIR}/scenes && xxd -i ${INPUT_FILE} ${OUTPUT_FILE}
+            COMMENT "Building shader object ${OUTPUT_FILE}"
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scenes/${INPUT_FILE})
+    list(APPEND SHADERS ${OUTPUT_FILE})
+endforeach()
+
 add_executable(${PROJECT_NAME}
         Main.cpp
         util/Image.cpp
@@ -44,6 +58,7 @@ add_executable(${PROJECT_NAME}
         scenes/dtm_viewer/DtmViewer.cpp
         scenes/graph_vis/GraphVis.cpp
         scenes/webcam_demo/WebcamDemo.cpp
+        ${SHADERS}
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -175,8 +190,6 @@ set(RESOURCES
         scenes/dtm_viewer/SimpleFrag.glsl
         scenes/graph_vis/GraphVisVert.glsl
         scenes/graph_vis/GraphVisFrag.glsl
-        scenes/webcam_demo/WebcamDemoVert.glsl
-        scenes/webcam_demo/WebcamDemoFrag.glsl
 )
 
 add_custom_target(copy-resources
