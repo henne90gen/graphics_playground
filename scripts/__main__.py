@@ -6,6 +6,7 @@ from .analyze_build_report import analyze_build_report
 from .generate_coding_train import generate_coding_train
 from .generate_scene_template import generate_scene_template
 from .copy_resources import run_copy_resources
+from .compile_shader import run_compile_shader
 from . import gis_data
 
 
@@ -37,6 +38,13 @@ def coding_train():
 @argument("dest", required=True, nargs=1)
 def copy_resources(base_dir: str, files: List[str], dest: str):
     run_copy_resources(base_dir, files, dest)
+
+
+@main.command()
+@argument("input_file", required=True, nargs=1)
+@argument("output_file", required=True, nargs=1)
+def compile_shader(input_file: str, output_file: str):
+    run_compile_shader(input_file, output_file)
 
 
 @main.command()
