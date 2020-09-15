@@ -7,23 +7,36 @@
 #include <string>
 #include <unordered_map>
 
+#define SHADER_DEFINITION(name)                                                                                        \
+    extern const unsigned int name##_len;                                                                              \
+    extern const char *(name)[];                                                                                       \
+    extern const int name##_line_lens[];
+
+#define SHADER(vertexName, fragmentName)                                                                               \
+    std::make_shared<Shader>(ShaderCode(vertexName##_len, vertexName##_line_lens, vertexName),                         \
+                             ShaderCode(fragmentName##_len, fragmentName##_line_lens, fragmentName))
+
 enum ShaderDataType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
+
+struct ShaderCode {
+    const unsigned int lineCount;
+    const int *lineLengths;
+    const char **shaderSource;
+
+    ShaderCode(const unsigned int lineCount,const int *lineLengths, const char **shaderSource)
+        : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource) {}
+};
 
 class Shader {
   private:
     unsigned int id;
-    std::string vertexPath;
-    std::string fragmentPath;
 
-    long lastModTimeVertex;
-    long lastModTimeFragment;
     std::unordered_map<std::string, int> uniformLocations;
     std::unordered_map<std::string, int> attributeLocations;
 
   public:
-    Shader(std::string vertexPath, std::string fragmentPath);
-    Shader(unsigned char *vertexSource, unsigned int vertexSourceLength, unsigned char *fragmentSource,
-           unsigned int fragmentSourceLength) {}
+    Shader(const std::string &vertexPath, const std::string &fragmentPath);
+    Shader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode);
 
     ~Shader() {}
 
@@ -57,11 +70,11 @@ class Shader {
     int getAttributeLocation(const std::string &name);
 
   private:
-    void compile();
+    void compile(const std::string &vertexPath, const std::string &fragmentPath);
+    void compile(const ShaderCode &vertexCode, const ShaderCode &fragmentSource);
 
-    static GLuint load(GLuint shaderType, std::string &filePath);
+    static GLuint load(GLuint shaderType, const std::string &filePath);
+    static GLuint load(GLuint shaderType, const ShaderCode &shaderSource);
 
     int getUniformLocation(const std::string &name);
-
-    bool hasBeenModified();
 };

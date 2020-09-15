@@ -1,17 +1,18 @@
 
 file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/scenes "*.glsl")
-foreach(INPUT_FILE ${SHADER_FILES})
-    get_filename_component(FOLDER ${INPUT_FILE} DIRECTORY)
+foreach (INPUT_FILE ${SHADER_FILES})
+    get_filename_component(INPUT_FILE_DIR ${INPUT_FILE} DIRECTORY)
     get_filename_component(INPUT_FILE_NAME ${INPUT_FILE} NAME)
     set(SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-    set(OUTPUT_FILE ${SHADER_DIR}/${FOLDER}_${INPUT_FILE_NAME}.cpp)
+    set(OUTPUT_FILE_NAME ${INPUT_FILE_DIR}_${INPUT_FILE_NAME}.cpp)
+    set(OUTPUT_FILE ${SHADER_DIR}/${OUTPUT_FILE_NAME})
     add_custom_command(
             OUTPUT ${OUTPUT_FILE}
-            COMMAND mkdir -p ${SHADER_DIR} && cd ${CMAKE_CURRENT_SOURCE_DIR}/scenes && xxd -i ${INPUT_FILE} ${OUTPUT_FILE}
-            COMMENT "Building shader object ${OUTPUT_FILE}"
+            COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts compile-shader ${CMAKE_CURRENT_SOURCE_DIR}/scenes/${INPUT_FILE} ${OUTPUT_FILE}
+            COMMENT "Building shader object ${OUTPUT_FILE_NAME}"
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scenes/${INPUT_FILE})
     list(APPEND SHADERS ${OUTPUT_FILE})
-endforeach()
+endforeach ()
 
 add_executable(${PROJECT_NAME}
         Main.cpp
@@ -59,7 +60,7 @@ add_executable(${PROJECT_NAME}
         scenes/graph_vis/GraphVis.cpp
         scenes/webcam_demo/WebcamDemo.cpp
         ${SHADERS}
-)
+        )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_compile_options(${PROJECT_NAME} PRIVATE /std:c++17)
@@ -103,7 +104,7 @@ target_link_libraries(${PROJECT_NAME}
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
         ${OPENCV_LIBS}
-)
+        )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_package(OpenGL REQUIRED)
@@ -111,7 +112,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
 elseif (APPLE)
 else ()
-        target_link_libraries(${PROJECT_NAME} stdc++fs)
+    target_link_libraries(${PROJECT_NAME} stdc++fs)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -128,7 +129,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${FREETYPE_DIR}
         ${FFMPEG_INCLUDE_DIR}
         ${LOGIC_DIR}
-)
+        )
 
 set(RESOURCES
         scenes/a_star/AStarFrag.glsl
@@ -190,7 +191,7 @@ set(RESOURCES
         scenes/dtm_viewer/SimpleFrag.glsl
         scenes/graph_vis/GraphVisVert.glsl
         scenes/graph_vis/GraphVisFrag.glsl
-)
+        )
 
 add_custom_target(copy-resources
         COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_CURRENT_BINARY_DIR})

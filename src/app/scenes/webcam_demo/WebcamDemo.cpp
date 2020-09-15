@@ -2,13 +2,12 @@
 
 #include <opencv2/imgproc.hpp>
 
+SHADER_DEFINITION(webcam_demo_WebcamDemoVert)
+SHADER_DEFINITION(webcam_demo_WebcamDemoFrag)
+
 void WebcamDemo::setup() {
-    shader =
-          std::make_shared<Shader>("scenes/webcam_demo/WebcamDemoVert.glsl", "scenes/webcam_demo/WebcamDemoFrag.glsl");
-#if 0
-    shader =
-          std::make_shared<Shader>(webcam_demo_WebcamDemoVert_glsl, webcam_demo_WebcamDemoVert_glsl_len, webcam_demo_WebcamDemoFrag_glsl, webcam_demo_WebcamDemoFrag_glsl_len);
-#endif
+    shader = SHADER(webcam_demo_WebcamDemoVert, webcam_demo_WebcamDemoFrag);
+
     shader->bind();
     onAspectRatioChange();
 
