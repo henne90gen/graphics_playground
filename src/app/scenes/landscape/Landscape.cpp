@@ -16,8 +16,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
+DEFINE_SHADER(landscape_Landscape)
+
 void Landscape::setup() {
-    shader = std::make_shared<Shader>("scenes/landscape/LandscapeVert.glsl", "scenes/landscape/LandscapeFrag.glsl");
+    shader = SHADER(landscape_Landscape);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

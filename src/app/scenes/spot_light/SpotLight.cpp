@@ -9,8 +9,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(spot_light_SpotLight)
+
 void SpotLight::setup() {
-    shader = std::make_shared<Shader>("scenes/spot_light/SpotLightVert.glsl", "scenes/spot_light/SpotLightFrag.glsl");
+    shader = SHADER(spot_light_SpotLight);
     shader->bind();
     onAspectRatioChange();
     quadVA = createWalls();

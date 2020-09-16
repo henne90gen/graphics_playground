@@ -8,6 +8,8 @@ const float Z_FAR = 100.0F;
 
 const unsigned int NUMBER_OF_SMALL_CUBES = 27;
 
+DEFINE_SHADER(rubiks_cube_RubiksCube)
+
 float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
     // front face
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -202,8 +204,7 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCubeScene::setup() {
-    shader = std::make_shared<Shader>("scenes/rubiks_cube/RubiksCubeVert.glsl",
-                                      "scenes/rubiks_cube/RubiksCubeFrag.glsl");
+    shader = SHADER(rubiks_cube_RubiksCube);
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);

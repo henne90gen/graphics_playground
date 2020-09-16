@@ -4,9 +4,10 @@
 
 const int MAX_FOURIER_RESOLUTION = 500;
 
+DEFINE_SHADER(fourier_transform_FourierTransform)
+
 void FourierTransform::setup() {
-    shader = std::make_shared<Shader>("scenes/fourier_transform/FourierTransformVert.glsl",
-                                      "scenes/fourier_transform/FourierTransformFrag.glsl");
+    shader = SHADER(fourier_transform_FourierTransform);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

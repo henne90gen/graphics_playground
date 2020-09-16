@@ -7,9 +7,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(normal_mapping_NormalMapping)
+
 void NormalMapping::setup() {
-    shader = std::make_shared<Shader>("scenes/normal_mapping/NormalMappingVert.glsl",
-                                      "scenes/normal_mapping/NormalMappingFrag.glsl");
+    shader = SHADER(normal_mapping_NormalMapping);
     shader->bind();
     onAspectRatioChange();
 

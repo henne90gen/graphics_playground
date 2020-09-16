@@ -11,9 +11,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.01F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(ray_tracing_RayTracing)
+
 void RayTracing::setup() {
-    shader =
-          std::make_shared<Shader>("scenes/ray_tracing/RayTracingVert.glsl", "scenes/ray_tracing/RayTracingFrag.glsl");
+    shader = SHADER(ray_tracing_RayTracing);
     shader->bind();
     onAspectRatioChange();
 

@@ -11,9 +11,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(meta_balls_MetaBalls)
+
 void MetaBallsScene::setup() {
-    shader = std::make_shared<Shader>("scenes/meta_balls/MetaBallsVert.glsl",
-                                      "scenes/meta_balls/MetaBallsFrag.glsl");
+    shader = SHADER(meta_balls_MetaBalls);
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 

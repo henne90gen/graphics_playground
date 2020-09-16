@@ -11,9 +11,9 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(marching_cubes_MarchingCubes)
 void MarchingCubesScene::setup() {
-    shader = std::make_shared<Shader>("scenes/marching_cubes/MarchingCubesVert.glsl",
-                                      "scenes/marching_cubes/MarchingCubesFrag.glsl");
+    shader = SHADER(marching_cubes_MarchingCubes);
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 

@@ -6,9 +6,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(light_demo_LightDemo)
+
 void LightDemo::setup() {
-    shader = std::make_shared<Shader>("scenes/light_demo/LightDemoVert.glsl",
-                                      "scenes/light_demo/LightDemoFrag.glsl");
+    shader = SHADER(light_demo_LightDemo);
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 

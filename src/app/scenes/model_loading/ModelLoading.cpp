@@ -8,9 +8,10 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(model_loading_ModelLoading)
+
 void ModelLoading::setup() {
-    shader = std::make_shared<Shader>("scenes/model_loading/ModelLoadingVert.glsl",
-                                      "scenes/model_loading/ModelLoadingFrag.glsl");
+    shader = SHADER(model_loading_ModelLoading);
     shader->bind();
     onAspectRatioChange();
 

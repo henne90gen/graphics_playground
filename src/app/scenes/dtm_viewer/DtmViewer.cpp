@@ -11,9 +11,12 @@ constexpr float Z_FAR = 100000.0F;
 
 constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
 
+DEFINE_SHADER(dtm_viewer_Terrain)
+DEFINE_SHADER(dtm_viewer_Simple)
+
 void DtmViewer::setup() {
-    simpleShader = std::make_shared<Shader>("scenes/dtm_viewer/SimpleVert.glsl", "scenes/dtm_viewer/SimpleFrag.glsl");
-    shader = std::make_shared<Shader>("scenes/dtm_viewer/TerrainVert.glsl", "scenes/dtm_viewer/TerrainFrag.glsl");
+    simpleShader = SHADER(dtm_viewer_Simple);
+    shader = SHADER(dtm_viewer_Terrain);
 
     GL_Call(glPointSize(5));
 

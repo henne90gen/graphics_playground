@@ -132,65 +132,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         )
 
 set(RESOURCES
-        scenes/a_star/AStarFrag.glsl
-        scenes/a_star/AStarVert.glsl
-        scenes/bloom_effect/BloomEffectFrag.glsl
-        scenes/bloom_effect/BloomEffectVert.glsl
-        scenes/bloom_effect/BloomFrag.glsl
-        scenes/bloom_effect/BloomVert.glsl
-        scenes/bloom_effect/BlurFrag.glsl
-        scenes/bloom_effect/BlurVert.glsl
-        scenes/bloom_effect/SimpleTextureFrag.glsl
-        scenes/bloom_effect/SimpleTextureVert.glsl
         scenes/bloom_effect/models
-        scenes/cube/CubeFrag.glsl
-        scenes/cube/CubeVert.glsl
-        scenes/font_demo/FontDemoFrag.glsl
-        scenes/font_demo/FontDemoVert.glsl
         scenes/font_demo/fonts
-        scenes/fourier_transform/FourierTransformFrag.glsl
-        scenes/fourier_transform/FourierTransformVert.glsl
-        scenes/framebuffer_demo/FramebufferDemoFrag.glsl
-        scenes/framebuffer_demo/FramebufferDemoVert.glsl
-        scenes/gamma_calculation/GammaCalculationFrag.glsl
-        scenes/gamma_calculation/GammaCalculationVert.glsl
-        scenes/landscape/LandscapeFrag.glsl
-        scenes/landscape/LandscapeVert.glsl
-        scenes/light_demo/LightDemoFrag.glsl
-        scenes/light_demo/LightDemoVert.glsl
         scenes/light_demo/models
-        scenes/marching_cubes/MarchingCubesFrag.glsl
-        scenes/marching_cubes/MarchingCubesVert.glsl
-        scenes/model_loading/ModelLoadingFrag.glsl
-        scenes/model_loading/ModelLoadingVert.glsl
         scenes/model_loading/models
-        scenes/normal_mapping/NormalMappingFrag.glsl
-        scenes/normal_mapping/NormalMappingVert.glsl
         scenes/normal_mapping/models
-        scenes/shadows_2d/Shadows2DFrag.glsl
-        scenes/shadows_2d/Shadows2DVert.glsl
-        scenes/spot_light/SpotLightVert.glsl
-        scenes/spot_light/SpotLightFrag.glsl
-        scenes/ray_tracing/RayTracingFrag.glsl
-        scenes/ray_tracing/RayTracingVert.glsl
-        scenes/rubiks_cube/RubiksCubeFrag.glsl
-        scenes/rubiks_cube/RubiksCubeVert.glsl
-        scenes/texture_demo/TextureDemoFrag.glsl
-        scenes/texture_demo/TextureDemoVert.glsl
-        scenes/triangle/TriangleFrag.glsl
-        scenes/triangle/TriangleVert.glsl
-        scenes/meta_balls/MetaBallsVert.glsl
-        scenes/meta_balls/MetaBallsFrag.glsl
-        scenes/terrain_erosion/TerrainVert.glsl
-        scenes/terrain_erosion/TerrainFrag.glsl
-        scenes/terrain_erosion/PathVert.glsl
-        scenes/terrain_erosion/PathFrag.glsl
-        scenes/dtm_viewer/TerrainVert.glsl
-        scenes/dtm_viewer/TerrainFrag.glsl
-        scenes/dtm_viewer/SimpleVert.glsl
-        scenes/dtm_viewer/SimpleFrag.glsl
-        scenes/graph_vis/GraphVisVert.glsl
-        scenes/graph_vis/GraphVisFrag.glsl
         )
 
 add_custom_target(copy-resources

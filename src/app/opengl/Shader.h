@@ -7,14 +7,17 @@
 #include <string>
 #include <unordered_map>
 
-#define SHADER_DEFINITION(name)                                                                                        \
-    extern const unsigned int name##_len;                                                                              \
-    extern const char *(name)[];                                                                                       \
-    extern const int name##_line_lens[];
+#define DEFINE_SHADER(name)                                                                                            \
+    extern const unsigned int name##Vert_len;                                                                          \
+    extern const char *name##Vert[];                                                                                   \
+    extern const int name##Vert_line_lens[];                                                                           \
+    extern const unsigned int name##Frag_len;                                                                          \
+    extern const char *name##Frag[];                                                                                   \
+    extern const int name##Frag_line_lens[];
 
-#define SHADER(vertexName, fragmentName)                                                                               \
-    std::make_shared<Shader>(ShaderCode(vertexName##_len, vertexName##_line_lens, vertexName),                         \
-                             ShaderCode(fragmentName##_len, fragmentName##_line_lens, fragmentName))
+#define SHADER(name)                                                                                                   \
+    std::make_shared<Shader>(ShaderCode(name##Vert_len, name##Vert_line_lens, name##Vert),                             \
+                             ShaderCode(name##Frag_len, name##Frag_line_lens, name##Frag))
 
 enum ShaderDataType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 

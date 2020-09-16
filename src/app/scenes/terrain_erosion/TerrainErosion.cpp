@@ -11,6 +11,9 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100000.0F;
 
+DEFINE_SHADER(terrain_erosion_Terrain)
+DEFINE_SHADER(terrain_erosion_Path)
+
 void TerrainErosion::setup() {
     std::random_device global_random_device;
     randomGenerator = std::mt19937(global_random_device());
@@ -19,11 +22,9 @@ void TerrainErosion::setup() {
     GL_Call(glEnable(GL_PRIMITIVE_RESTART));
     GL_Call(glPrimitiveRestartIndex(~0));
 
-    pathShader =
-          std::make_shared<Shader>("scenes/terrain_erosion/PathVert.glsl", "scenes/terrain_erosion/PathFrag.glsl");
+    pathShader = SHADER(terrain_erosion_Path);
 
-    shader = std::make_shared<Shader>("scenes/terrain_erosion/TerrainVert.glsl",
-                                      "scenes/terrain_erosion/TerrainFrag.glsl");
+    shader = SHADER(terrain_erosion_Terrain);
     shader->bind();
 
     noise1 = new FastNoise();

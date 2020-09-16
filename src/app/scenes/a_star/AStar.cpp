@@ -4,10 +4,12 @@
 #include "util/OpenGLUtils.h"
 #include "util/RenderUtils.h"
 
+DEFINE_SHADER(a_star_AStar)
+
 void AStar::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
-    shader = std::make_shared<Shader>("scenes/a_star/AStarVert.glsl", "scenes/a_star/AStarFrag.glsl");
+    shader = SHADER(a_star_AStar);
     shader->bind();
 
     vertexArray = createQuadVA(shader, {2.0F, 2.0F});

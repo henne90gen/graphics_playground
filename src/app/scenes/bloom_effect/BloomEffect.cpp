@@ -7,19 +7,22 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SHADER(bloom_effect_BloomEffect)
+DEFINE_SHADER(bloom_effect_Bloom)
+DEFINE_SHADER(bloom_effect_Blur)
+DEFINE_SHADER(bloom_effect_SimpleTexture)
+
 void BloomEffect::setup() {
-    shader = std::make_shared<Shader>("scenes/bloom_effect/BloomEffectVert.glsl",
-                                      "scenes/bloom_effect/BloomEffectFrag.glsl");
+    shader = SHADER(bloom_effect_BloomEffect);
     shader->bind();
 
-    shaderBlur = std::make_shared<Shader>("scenes/bloom_effect/BlurVert.glsl", "scenes/bloom_effect/BlurFrag.glsl");
+    shaderBlur = SHADER(bloom_effect_Blur);
     shaderBlur->bind();
 
-    shaderBloom = std::make_shared<Shader>("scenes/bloom_effect/BloomVert.glsl", "scenes/bloom_effect/BloomFrag.glsl");
+    shaderBloom = SHADER(bloom_effect_Bloom);
     shaderBloom->bind();
 
-    textureShader = std::make_shared<Shader>("scenes/bloom_effect/SimpleTextureVert.glsl",
-                                             "scenes/bloom_effect/SimpleTextureFrag.glsl");
+    textureShader = SHADER(bloom_effect_SimpleTexture);
     textureShader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
