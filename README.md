@@ -253,6 +253,7 @@ The queue for raw batches allows us to parallelize the loading and processing qu
 ## Ideas
 
 - Webcam Demo (show image from webcam and apply some post processing)
+- Surface Smoothing (Take the average of the normals of a vertex (find all normals that belong to a certain vertex))
 - Water Demo
 
 ## Additional Features

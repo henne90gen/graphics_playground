@@ -2,11 +2,10 @@
 
 #include <opencv2/imgproc.hpp>
 
-SHADER_DEFINITION(webcam_demo_WebcamDemoVert)
-SHADER_DEFINITION(webcam_demo_WebcamDemoFrag)
+DEFINE_SHADER(webcam_demo_WebcamDemo)
 
 void WebcamDemo::setup() {
-    shader = SHADER(webcam_demo_WebcamDemoVert, webcam_demo_WebcamDemoFrag);
+    shader = SHADER(webcam_demo_WebcamDemo);
 
     shader->bind();
     onAspectRatioChange();

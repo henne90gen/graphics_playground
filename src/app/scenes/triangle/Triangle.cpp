@@ -6,9 +6,10 @@
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
 
+DEFINE_SHADER(triangle_Triangle)
+
 void Triangle::setup() {
-    shader = new Shader("scenes/triangle/TriangleVert.glsl",
-                        "scenes/triangle/TriangleFrag.glsl");
+    shader = SHADER(triangle_Triangle);
     shader->bind();
 
     positionBuffer = new VertexBuffer();

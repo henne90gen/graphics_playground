@@ -3,8 +3,10 @@
 #include "quad_tree/QuadTree.h"
 #include "util/ImGuiUtils.h"
 
+DEFINE_SHADER(graph_vis_GraphVis)
+
 void GraphVis::setup() {
-    shader = std::make_shared<Shader>("scenes/graph_vis/GraphVisVert.glsl", "scenes/graph_vis/GraphVisFrag.glsl");
+    shader = SHADER(graph_vis_GraphVis);
     shader->bind();
     onAspectRatioChange();
 

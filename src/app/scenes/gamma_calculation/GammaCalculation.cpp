@@ -9,39 +9,36 @@
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
 
+DEFINE_SHADER(gamma_calculation_GammaCalculation)
+
 void GammaCalculation::setup() {
-    shader = std::make_shared<Shader>("scenes/gamma_calculation/GammaCalculationVert.glsl",
-                                      "scenes/gamma_calculation/GammaCalculationFrag.glsl");
+    shader = SHADER(gamma_calculation_GammaCalculation);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     std::vector<float> vertices = {
-            -1.0, 1.0,  //
-            -1.0, -1.0, //
-            0.0, -1.0, //
-            -1.0, 1.0,  //
-            0.0, -1.0, //
-            0.0, 1.0   //
+          -1.0, 1.0,  //
+          -1.0, -1.0, //
+          0.0,  -1.0, //
+          -1.0, 1.0,  //
+          0.0,  -1.0, //
+          0.0,  1.0   //
     };
-    BufferLayout positionLayout = {
-            {ShaderDataType::Float2, "position"}
-    };
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     std::vector<float> uvCoords = {
-            0.0, 1.0, //
-            0.0, 0.0, //
-            1.0, 0.0, //
-            0.0, 1.0, //
-            1.0, 0.0, //
-            1.0, 1.0  //
+          0.0, 1.0, //
+          0.0, 0.0, //
+          1.0, 0.0, //
+          0.0, 1.0, //
+          1.0, 0.0, //
+          1.0, 1.0  //
     };
-    BufferLayout uvLayout = {
-            {ShaderDataType::Float2, "vertexUV"}
-    };
+    BufferLayout uvLayout = {{ShaderDataType::Float2, "vertexUV"}};
     auto uvBuffer = std::make_shared<VertexBuffer>(uvCoords, uvLayout);
     vertexArray->addVertexBuffer(uvBuffer);
 

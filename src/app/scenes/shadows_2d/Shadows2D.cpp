@@ -8,12 +8,14 @@
 const int stencilMask = 0xFF;
 const int inverseStencilMask = 0x00;
 
+DEFINE_SHADER(shadows_2d_Shadows2D)
+
 void Shadows2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
     GL_Call(glEnable(GL_PRIMITIVE_RESTART));
     GL_Call(glPrimitiveRestartIndex(~0));
 
-    shader = std::make_shared<Shader>("scenes/shadows_2d/Shadows2DVert.glsl", "scenes/shadows_2d/Shadows2DFrag.glsl");
+    shader = SHADER(shadows_2d_Shadows2D);
     shader->bind();
     onAspectRatioChange();
 

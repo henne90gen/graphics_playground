@@ -3,6 +3,7 @@
 #include "scenes/Scene.h"
 
 #include <glad/glad.h>
+#include <memory>
 
 #include "opengl/Shader.h"
 #include "opengl/VertexBuffer.h"
@@ -20,7 +21,7 @@ public:
     void destroy() override;
 
 private:
-    Shader *shader;
+    std::shared_ptr<Shader> shader;
 
     VertexBuffer *positionBuffer;
     VertexBuffer *colorBuffer;

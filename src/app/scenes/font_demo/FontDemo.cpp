@@ -3,9 +3,10 @@
 #include "util/FileUtils.h"
 #include "util/ImGuiUtils.h"
 
+DEFINE_SHADER(font_demo_FontDemo)
+
 void FontDemo::setup() {
-    shader = std::make_shared<Shader>("scenes/font_demo/FontDemoVert.glsl",
-                                      "scenes/font_demo/FontDemoFrag.glsl");
+    shader = SHADER(font_demo_FontDemo);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);
