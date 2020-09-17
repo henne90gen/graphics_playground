@@ -13,6 +13,7 @@ void VertexArray::bind() const { GL_Call(glBindVertexArray(id)); }
 void VertexArray::unbind() { GL_Call(glBindVertexArray(0)); }
 
 void VertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer> &buffer) {
+    bind();
     buffer->bind();
     this->indexBuffer = buffer;
 }
@@ -46,6 +47,7 @@ void VertexArray::setShader(std::shared_ptr<Shader> s) {
 
 void VertexArray::setupVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer) {
     vertexBuffer->bind();
+
     const auto &layout = vertexBuffer->getLayout();
     const auto &elements = layout.getElements();
     unsigned int offset = 0;

@@ -35,10 +35,12 @@ class MetaBallsScene : public Scene {
     std::shared_ptr<VertexArray> surfaceVertexArray;
     std::shared_ptr<VertexBuffer> surfaceVertexBuffer;
     std::shared_ptr<IndexBuffer> surfaceIndexBuffer;
+    std::shared_ptr<VertexArray> bbVa;
 
     glm::mat4 projectionMatrix;
 
     void updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncType funcType,
                        const std::vector<MetaBall> &metaballs);
-    void drawSurface(bool drawWireframe) const;
+    void drawSurface(const glm::mat4 &modelMatrix, bool drawWireframe);
+    void drawBoundingBox(glm::mat4 modelMatrix, const glm::vec3 &modelCenter, const glm::ivec3 &dimensions);
 };

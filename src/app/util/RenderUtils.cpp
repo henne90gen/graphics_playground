@@ -209,3 +209,33 @@ std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader,
 
     return result;
 }
+
+std::shared_ptr<VertexArray> createBoundingBoxVA(const std::shared_ptr<Shader> &shader) {
+    auto result = std::make_shared<VertexArray>(shader);
+
+    std::vector<glm::vec3> vertices = {
+          {-0.5F, -0.5F, -0.5F}, // 0 - - -
+          {0.5F, -0.5F, -0.5F},  // 1 + - -
+          {-0.5F, 0.5F, -0.5F},  // 2 - + -
+          {0.5F, 0.5F, -0.5F},   // 3 + + -
+          {-0.5F, -0.5F, 0.5F},  // 4 - - +
+          {0.5F, -0.5F, 0.5F},   // 5 + - +
+          {-0.5F, 0.5F, 0.5F},   // 6 - + +
+          {0.5F, 0.5F, 0.5F},    // 7 + + +
+    };
+
+    BufferLayout layout = {{ShaderDataType::Float3, "position"}};
+    auto vb = std::make_shared<VertexBuffer>(vertices, layout);
+    result->addVertexBuffer(vb);
+
+    std::vector<unsigned int> indices = {
+          0, 1, 5, 4, 0,    // bottom layer
+          2, 3, 7, 6, 2,    // top layer
+          3, 1, 5, 7, 6, 4, // remaining edges
+    };
+
+    auto ib = std::make_shared<IndexBuffer>(indices);
+    result->setIndexBuffer(ib);
+
+    return result;
+}

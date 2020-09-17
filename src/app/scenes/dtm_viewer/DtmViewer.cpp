@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "util/ImGuiUtils.h"
+#include "util/RenderUtils.h"
 #include "util/TimeUtils.h"
 
 constexpr float FIELD_OF_VIEW = 45.0F;
@@ -20,7 +21,7 @@ void DtmViewer::setup() {
 
     GL_Call(glPointSize(5));
 
-    initBoundingBox();
+    bbVA = createBoundingBoxVA(simpleShader);
 
     loadDtm();
     processDtmFuture = std::async(std::launch::async, &DtmViewer::batchProcessor, this);
@@ -514,6 +515,7 @@ void DtmViewer::processBatch(const RawBatch &rawBatch) {
         processedFileCount++;
     }
 }
+
 void DtmViewer::initGpuMemory(const unsigned int gpuBatchCount) {
     const unsigned int gpuPointCount = gpuBatchCount * GPU_POINTS_PER_BATCH;
     const unsigned int vertexSize = gpuPointCount * sizeof(glm::vec3);
