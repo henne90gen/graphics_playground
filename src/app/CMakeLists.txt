@@ -128,6 +128,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${GIF_H_DIR}
         ${FREETYPE_DIR}
         ${FFMPEG_INCLUDE_DIR}
+        ${OPENCV_INCLUDE_DIR}
         ${LOGIC_DIR}
         )
 
@@ -140,5 +141,5 @@ set(RESOURCES
         )
 
 add_custom_target(copy-resources
-        COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_CURRENT_BINARY_DIR})
+        COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_BINARY_DIR}/bin)
 add_dependencies(${PROJECT_NAME} copy-resources)
