@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.13)
 project(Playground)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-option(BUILD_OPENCV "Turn this on to build OpenCV from source" OFF)
+option(BUILD_OPENCV "Turn this on to build OpenCV from source" ON)
 
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
@@ -197,11 +198,18 @@ if (BUILD_OPENCV)
     set(BUILD_opencv_java OFF CACHE BOOL "Disable java" FORCE)
     set(BUILD_opencv_java_bindings_generator OFF CACHE BOOL "Disable java bindings generator" FORCE)
     set(OPENCV_DIR ${VENDOR_DIR}/opencv)
+    set(OPENCV_INCLUDE_DIR
+            ${OPENCV_DIR}/include
+            ${OPENCV_DIR}/modules/core/include
+            ${OPENCV_DIR}/modules/imgproc/include
+            ${OPENCV_DIR}/modules/videoio/include
+            ${CMAKE_BINARY_DIR}
+            )
     add_subdirectory(${OPENCV_DIR})
 else ()
     find_package(OpenCV REQUIRED)
 endif ()
-set(OPENCV_LIBS opencv_core opencv_highgui opencv_imgproc)
+set(OPENCV_LIBS opencv_core opencv_imgproc opencv_videoio)
 
 enable_testing()
 add_subdirectory(src)
