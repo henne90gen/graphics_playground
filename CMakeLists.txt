@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Playground)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-option(BUILD_OPENCV "Turn this on to build OpenCV from source" ON)
+option(BUILD_OPENCV "Turn this on to build OpenCV from source" OFF)
 
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
