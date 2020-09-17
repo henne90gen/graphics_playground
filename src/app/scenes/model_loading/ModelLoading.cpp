@@ -92,7 +92,7 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
 
     shader->setUniform("u_TextureSampler", 0);
 
-    for (auto &mesh : glModel->getMeshes()) {
+    for (const auto &mesh : glModel->getMeshes()) {
         if (!mesh->visible) {
             continue;
         }
@@ -138,7 +138,7 @@ void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mous
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
-    auto &model = renderModel->getOriginalModel();
+    const auto &model = renderModel->getOriginalModel();
     if (model) {
         ImGui::Text("Number of meshes: %ld", model->meshes.size());
         for (unsigned long i = 0; i < model->meshes.size(); i++) {
