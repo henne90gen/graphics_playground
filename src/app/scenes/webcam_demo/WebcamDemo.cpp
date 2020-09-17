@@ -58,12 +58,14 @@ void WebcamDemo::onAspectRatioChange() { projectionMatrix = glm::ortho(-1.0F, 1.
 
 void WebcamDemo::tick() {
     static auto isGrayScale = true;
+    static auto scaleFactor = 0.25F;
     static int updateEveryXFrames = 5;
 
     ImGui::Begin("Settings");
     ImGui::Text("Image Size: (%dx%d)", imageSize.width, imageSize.height);
     ImGui::Text("Channels: %d", imageBuffer.channels());
     ImGui::Checkbox("Grayscale", &isGrayScale);
+    ImGui::DragFloat("Scale Factor", &scaleFactor, 0.001F, 0.001F, 2.0F);
     ImGui::DragInt("Update every X frames", &updateEveryXFrames, 1.0F, 1, 100);
     ImGui::End();
 
@@ -73,7 +75,9 @@ void WebcamDemo::tick() {
     counter++;
     if (counter % updateEveryXFrames == 0) {
         webcam >> imageBuffer;
-        texture->update(imageBuffer.data, imageSize.width, imageSize.height);
+        cv::Mat tmp;
+        cv::resize(imageBuffer, tmp, cv::Size(), scaleFactor, scaleFactor);
+        texture->update(tmp.data, tmp.size[1], tmp.size[0]);
     }
 
     shader->bind();

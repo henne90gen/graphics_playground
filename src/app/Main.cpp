@@ -181,8 +181,8 @@ int main() {
     scenes.push_back(new GraphVis(sceneData));           // 23
     scenes.push_back(new WebcamDemo(sceneData));         // 24
 
-    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    // mainMenu.goToScene(21);
+    //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    mainMenu.goToScene(20);
 
     enableOpenGLDebugging();
 
