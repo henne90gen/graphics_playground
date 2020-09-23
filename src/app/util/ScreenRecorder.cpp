@@ -2,11 +2,9 @@
 
 #include "ScreenRecorder.h"
 
-#include <filesystem>
 #include <functional>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
 #include "Image.h"
 #include "OpenGLUtils.h"
@@ -65,7 +63,7 @@ std::unique_ptr<Frame> captureFrame(unsigned int screenWidth, unsigned int scree
     frame->height = screenHeight;
     frame->channels = channels;
     const unsigned int numberOfPixels = frame->width * frame->height;
-    frame->buffer = static_cast<unsigned char *>(malloc(numberOfPixels * frame->channels * sizeof(unsigned char)));
+    frame->buffer = static_cast<unsigned char *>(std::malloc(numberOfPixels * frame->channels * sizeof(unsigned char)));
 
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
@@ -84,7 +82,7 @@ void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
     if (isRecording()) {
         std::unique_ptr<Frame> frame = captureFrame(windowWidth, windowHeight);
         videoSaver->acceptFrame(frame);
-        free(frame->buffer); // NOLINT(cppcoreguidelines-no-malloc)
+        std::free(frame->buffer); // NOLINT(cppcoreguidelines-no-malloc)
         frame = nullptr;
     }
 }

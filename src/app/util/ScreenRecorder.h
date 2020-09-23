@@ -20,7 +20,7 @@ class ScreenRecorder {
 
     enum RecordingType {
         GIF = 0,
-        MP4,
+        MP4 = 1,
     };
 
     RecordingType recordingType = GIF;

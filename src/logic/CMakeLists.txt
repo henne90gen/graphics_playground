@@ -2,6 +2,7 @@
 add_library(logic
         util/FileUtils.cpp
         util/TimeUtils.cpp
+        util/DataReadUtils.cpp
         rubiks_cube/RubiksCubeData.cpp
         rubiks_cube/RubiksCubeLogic.cpp
         rubiks_cube/RubiksCube.cpp
@@ -17,6 +18,7 @@ add_library(logic
         gis/ShpLoader.cpp
         gis/XyzLoader.cpp
         graph_vis/Graph.cpp
+        audio/WavLoader.cpp
         )
 
 target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)

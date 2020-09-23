@@ -46,14 +46,14 @@ template <class Itr> int32_t toInt(Itr begin, Itr end) {
 
 TEST_CASE("Can load shp file") {
     ShpData shpData;
-    bool success = loadShpFile("../../../gis_data/gravimetry/gravi.shp", shpData);
+    bool success = loadShpFile("../../gis_data/gravimetry/gravi.shp", shpData);
     REQUIRE(success);
     REQUIRE(shpData.records.size() == 605);
 }
 
 TEST_CASE("Can load dbf file") {
     DbfData dbfData;
-    bool success = loadDbfFile("../../../gis_data/gravimetry/gravi.dbf", dbfData);
+    bool success = loadDbfFile("../../gis_data/gravimetry/gravi.dbf", dbfData);
     REQUIRE(success);
 
     REQUIRE(dbfData.header.numRecords == 605);
