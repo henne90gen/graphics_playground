@@ -1,12 +1,5 @@
 #include "ShpLoader.h"
-
-int32_t swapOrder(int32_t in) {
-    std::array<unsigned char, 4> buffer = {};
-    for (int i = 0; i < 4; i++) {
-        buffer[3 - i] = (in >> (i * 8));
-    }
-    return (int)buffer[0] | (int)buffer[1] << 8 | (int)buffer[2] << 16 | (int)buffer[3] << 24;
-}
+#include "util/DataReadUtils.h"
 
 std::istream &operator>>(std::istream &is, ShpHeader &header) {
     is.read(reinterpret_cast<char *>(&header), sizeof(header));
@@ -15,8 +8,8 @@ std::istream &operator>>(std::istream &is, ShpHeader &header) {
         return is;
     }
 
-    header.fileCode = swapOrder(header.fileCode);
-    header.fileLength = swapOrder(header.fileLength);
+    bigToLittleEndian(header.fileCode);
+    bigToLittleEndian(header.fileLength);
 
     return is;
 }
@@ -28,8 +21,8 @@ std::istream &operator>>(std::istream &is, ShpRecordHeader &header) {
         return is;
     }
 
-    header.recordNumber = swapOrder(header.recordNumber);
-    header.contentLength = swapOrder(header.contentLength);
+    bigToLittleEndian(header.recordNumber);
+    bigToLittleEndian(header.contentLength);
 
     return is;
 }
@@ -159,7 +152,7 @@ bool loadShpFile(const std::string &fileName, ShpData &data) {
     std::ifstream shpFile;
     shpFile.open(fileName, std::ios::in | std::ios::binary);
     if (!shpFile.is_open()) {
-        std::cout << "Failed to open file" << std::endl;
+        std::cout << "Failed to open shp file: " << fileName << std::endl;
         return false;
     }
 
@@ -202,7 +195,7 @@ bool loadDbfFile(const std::string &fileName, DbfData &data) {
     dbfFile.open(fileName, std::ios::in | std::ios::binary);
 
     if (!dbfFile.is_open()) {
-        std::cout << "Failed to open file" << std::endl;
+        std::cout << "Failed to open dbf file: " << fileName << std::endl;
         return false;
     }
 

@@ -8,7 +8,7 @@
 TEST_CASE("Can load xyz directory") {
     std::vector<glm::vec3> result = {};
     BoundingBox3 bb = {};
-    bool success = loadXyzDir("../../../src/test/gis/dtm", bb, result);
+    bool success = loadXyzDir("../../src/test/gis/dtm", bb, result);
     REQUIRE(success);
     REQUIRE(result.size() == 38220);
     PRINT_VEC3(bb.min);
@@ -18,7 +18,7 @@ TEST_CASE("Can load xyz directory") {
 }
 
 TEST_CASE("Can count lines in xyz directory") {
-    unsigned long result = countLinesInDir("../../../src/test/gis/dtm");
+    unsigned long result = countLinesInDir("../../src/test/gis/dtm");
     REQUIRE(result == 38220);
 }
 

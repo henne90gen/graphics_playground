@@ -13,7 +13,7 @@ TEST_CASE("Not existing file is handled correctly") {
 
 TEST_CASE("Empty file is handled correctly") {
     std::shared_ptr<ModelLoader::RawModel> model = std::make_shared<ModelLoader::RawModel>();
-    auto result = ModelLoader::fromFile("../../../src/test/empty.obj", model);
+    auto result = ModelLoader::fromFile("../../src/test/empty.obj", model);
     REQUIRE(result == 1);
     REQUIRE(model->meshes.empty());
     REQUIRE(model->materials.empty());
@@ -27,7 +27,7 @@ static void assertListEquals(const std::string &message, std::vector<glm::ivec3>
 
 TEST_CASE("Simple cube model is loaded correctly") {
     std::shared_ptr<ModelLoader::RawModel> model = std::make_shared<ModelLoader::RawModel>();
-    auto error = ModelLoader::fromFile("../../../src/test/cube.obj", model);
+    auto error = ModelLoader::fromFile("../../src/test/cube.obj", model);
     REQUIRE(error == 0);
     REQUIRE(model->meshes.size() == 1);
     std::vector<glm::vec3> vertices = {

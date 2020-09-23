@@ -7,16 +7,16 @@
 #define GIF_FLIP_VERT
 #include <gif.h>
 
-#define VIDEO_TMP_FILE "tmp.h264"
+constexpr const char* VIDEO_TMP_FILE = "tmp.h264";
 
-const unsigned int SCALED_DOWN_WIDTH = 800;
-const unsigned int SCALED_DOWN_HEIGHT = 600;
+constexpr const unsigned int SCALED_DOWN_WIDTH = 800;
+constexpr const unsigned int SCALED_DOWN_HEIGHT = 600;
 
-void VideoSaver::init(unsigned int frameWidth, unsigned int frameHeight) {
-    this->frameWidth = frameWidth;
-    this->frameHeight = frameHeight;
+void VideoSaver::init(unsigned int _frameWidth, unsigned int _frameHeight) {
+    this->frameWidth = _frameWidth;
+    this->frameHeight = _frameHeight;
     if (!doInit()) {
-        std::cout << "Could not initialze video saver" << std::endl;
+        std::cout << "Could not initialize video saver" << std::endl;
         return;
     }
     initialized = true;
@@ -37,6 +37,7 @@ void VideoSaver::acceptFrame(const std::unique_ptr<Frame> &frame) {
 
     doAcceptFrame(frame);
 }
+
 void VideoSaver::save() {
     if (!doSave()) {
         std::cerr << "Could not save video " << videoFileName << std::endl;
@@ -128,6 +129,7 @@ void Mp4VideoSaver::remux() {
     int ts = 0;
     while (true) {
         if ((err = av_read_frame(ifmt_ctx, &videoPkt)) < 0) {
+            std::cout << "Failed to read frame (" << err << ")" << std::endl;
             break;
         }
         videoPkt.stream_index = outVideoStream->index;
@@ -239,14 +241,14 @@ void Mp4VideoSaver::cleanUp() {
     pkt.data = nullptr;
     pkt.size = 0;
 
-    for (;;) {
+    while (true) {
         avcodec_send_frame(cctx, nullptr);
-        if (avcodec_receive_packet(cctx, &pkt) == 0) {
-            av_interleaved_write_frame(ofctx, &pkt);
-            av_packet_unref(&pkt);
-        } else {
+        if (avcodec_receive_packet(cctx, &pkt) != 0) {
             break;
         }
+
+        av_interleaved_write_frame(ofctx, &pkt);
+        av_packet_unref(&pkt);
     }
 
     av_write_trailer(ofctx);
@@ -333,7 +335,7 @@ bool Mp4VideoSaver::doSave() {
 
 GifVideoSaver::~GifVideoSaver() { delete gifWriter; }
 
-auto GifVideoSaver::doInit() -> bool {
+bool GifVideoSaver::doInit() {
     if (gifWriter == nullptr) {
         gifWriter = new GifWriter();
     }
@@ -364,7 +366,7 @@ void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) 
 }
 
 void scaleDownFrame(Frame *frame, const unsigned int newWidth, const unsigned int newHeight) {
-    auto buffer = static_cast<unsigned char *>(malloc(newWidth * newHeight * frame->channels * sizeof(unsigned char)));
+    auto *buffer = static_cast<unsigned char *>(malloc(newWidth * newHeight * frame->channels * sizeof(unsigned char)));
 
     const unsigned int oldWidth = frame->width;
     const unsigned int oldHeight = frame->height;
