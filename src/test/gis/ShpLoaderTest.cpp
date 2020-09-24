@@ -60,6 +60,7 @@ TEST_CASE("Can load dbf file") {
     REQUIRE(dbfData.header.numBytesRecord == 117);
     REQUIRE(dbfData.numFieldDescriptors == 6);
     // TODO check each field descriptor
+#if 0
     for (int i = 0; i < dbfData.numFieldDescriptors; i++) {
         const std::array<char, 11> &fieldName = dbfData.fieldDescriptors[i].fieldName;
         std::cout << "\tField name: " << std::string(fieldName.begin(), fieldName.end()) << std::endl;
@@ -67,6 +68,7 @@ TEST_CASE("Can load dbf file") {
         std::cout << "\tField size: " << int(dbfData.fieldDescriptors[i].fieldLength) << std::endl;
         std::cout << std::endl;
     }
+#endif
 
     std::vector<DbfRecord> records = convertTo<DbfRecordRaw, DbfRecord>(dbfData, [](const DbfRecordRaw &raw) {
         DbfRecord result = {};
@@ -80,8 +82,10 @@ TEST_CASE("Can load dbf file") {
     });
 
     // TODO check the first record
+#if 0
     for (const auto &record : records) {
         std::cout << record.area << ", " << record.perimeter << ", " << record.gravimet << ", " << record.gravimetI
                   << ", " << record.polyColor << std::endl;
     }
+#endif
 }
