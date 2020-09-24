@@ -19,7 +19,7 @@ build-release:
 	@cd build-release; ninja
 
 test: build
-	@cd build; CTEST_OUTPUT_ON_FAILURE=ON ninja test
+	@cd build/bin; ./Tests
 
 run: build
 	@cd build/bin; ./Playground
