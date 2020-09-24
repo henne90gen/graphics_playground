@@ -7,4 +7,5 @@ TEST_CASE("WavReader can read simple wav file") {
     REQUIRE(loadWavFile("../../src/test/audio_test.wav", wav));
     REQUIRE(wav.header.numChannels == 2);
     REQUIRE(wav.header.sampleRate == 8000);
+    REQUIRE(wav.header.bitsPerSample == 16);
 }

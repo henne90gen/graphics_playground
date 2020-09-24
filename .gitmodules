@@ -34,3 +34,6 @@
 [submodule "vendor/opencv"]
 	path = vendor/opencv
 	url = git@github.com:opencv/opencv.git
+[submodule "vendor/libsoundio"]
+	path = vendor/libsoundio
+	url = git@github.com:andrewrk/libsoundio.git

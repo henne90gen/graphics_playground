@@ -60,6 +60,7 @@ add_executable(${PROJECT_NAME}
         scenes/graph_vis/GraphVis.cpp
         scenes/webcam_demo/WebcamDemo.cpp
         ${SHADERS}
+        scenes/audio_vis/AudioVis.cpp
         )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -104,6 +105,7 @@ target_link_libraries(${PROJECT_NAME}
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
         ${OPENCV_LIBS}
+        ${LIBSOUNDIO_LIBRARY}
         )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -129,6 +131,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${FREETYPE_DIR}
         ${FFMPEG_INCLUDE_DIR}
         ${OPENCV_INCLUDE_DIR}
+        ${LIBSOUNDIO_INCLUDE_DIR}
         ${LOGIC_DIR}
         )
 
