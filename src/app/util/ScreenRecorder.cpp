@@ -5,6 +5,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "Image.h"
 #include "OpenGLUtils.h"
