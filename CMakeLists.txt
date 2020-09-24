@@ -211,5 +211,12 @@ else ()
 endif ()
 set(OPENCV_LIBS opencv_core opencv_imgproc opencv_videoio)
 
+# libsoundio
+set(LIBSOUNDIO_DIR ${VENDOR_DIR}/libsoundio)
+set(BUILD_EXAMPLE_PROGRAMS OFF)
+set(LIBSOUNDIO_LIBRARY libsoundio_shared)
+set(LIBSOUNDIO_INCLUDE_DIR ${LIBSOUNDIO_DIR})
+add_subdirectory(${LIBSOUNDIO_DIR})
+
 enable_testing()
 add_subdirectory(src)

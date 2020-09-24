@@ -22,7 +22,11 @@ struct WavHeader {
 struct WavData {
     uint32_t subChunkId;
     uint32_t subChunkSize;
-    uint8_t *data;
+    union {
+        uint8_t *data8 = nullptr;
+        int16_t *data16;
+        int32_t *data32;
+    };
 };
 
 struct WavFile {

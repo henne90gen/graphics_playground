@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "scenes/a_star/AStar.h"
+#include "scenes/audio_vis/AudioVis.h"
 #include "scenes/bloom_effect/BloomEffect.h"
 #include "scenes/cube/Cube.h"
 #include "scenes/dtm_viewer/DtmViewer.h"
@@ -32,6 +33,7 @@
 #include "scenes/texture_demo/TextureDemo.h"
 #include "scenes/triangle/Triangle.h"
 #include "scenes/webcam_demo/WebcamDemo.h"
+
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
 #include "util/MainMenu.h"
@@ -180,9 +182,10 @@ int main() {
     scenes.push_back(new DtmViewer(sceneData));          // 22
     scenes.push_back(new GraphVis(sceneData));           // 23
     scenes.push_back(new WebcamDemo(sceneData));         // 24
+    scenes.push_back(new AudioVis(sceneData));           // 25
 
-    //    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(20);
+    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
+    //    mainMenu.goToScene(20);
 
     enableOpenGLDebugging();
 

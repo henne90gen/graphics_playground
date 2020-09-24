@@ -27,8 +27,8 @@ std::istream &operator>>(std::istream &is, WavData &data) {
 
     bigToLittleEndian(data.subChunkId);
 
-    data.data = static_cast<uint8_t *>(std::malloc(data.subChunkSize));
-    is.read(reinterpret_cast<char *>(data.data), data.subChunkSize);
+    data.data8 = static_cast<uint8_t *>(std::malloc(data.subChunkSize));
+    is.read(reinterpret_cast<char *>(data.data8), data.subChunkSize);
     if (is.fail()) {
         std::cout << "Failed to read wav data" << std::endl;
         return is;

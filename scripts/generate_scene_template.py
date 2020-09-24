@@ -5,10 +5,10 @@ from typing import Tuple, Union
 CPP_TEMPLATE = """\
 #include "{name}.h"
 
+DEFINE_SHADER({folder_name}_{name})
+
 void {name}::setup() {{
-    shader = std::make_shared<Shader>("scenes/{folder_name}/{name}Vert.glsl",
-                                      "scenes/{folder_name}/{name}Frag.glsl");
-    shader->bind();
+    shader = SHADER({folder_name}_{name});
 }}
 
 void {name}::destroy() {{}}
