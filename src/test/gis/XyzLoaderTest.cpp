@@ -11,8 +11,8 @@ TEST_CASE("Can load xyz directory") {
     bool success = loadXyzDir("../../src/test/gis/dtm", bb, result);
     REQUIRE(success);
     REQUIRE(result.size() == 38220);
-    PRINT_VEC3(bb.min);
-    PRINT_VEC3(bb.max);
+//    PRINT_VEC3(bb.min);
+//    PRINT_VEC3(bb.max);
     REQUIRE(bb.min == glm::vec3(278240, 470.22, 5.58986e+06));
     REQUIRE(bb.max == glm::vec3(281980, 633.59, 5.60482e+06));
 }

@@ -50,7 +50,9 @@ void RubiksCube::rotate(float rotationSpeed) {
         return;
     }
 
+#if 0
     std::cout << "Rotated: " << to_string(currentCommand, true) << std::endl;
+#endif
 
     executedRotationCommands++;
 

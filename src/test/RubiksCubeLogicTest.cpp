@@ -1,6 +1,8 @@
-#include "catch.hpp"
-#include "rubiks_cube/RubiksCubeLogic.h"
+#include <catch.hpp>
+
 #include <vector>
+
+#include "rubiks_cube/RubiksCubeLogic.h"
 
 void initCubePositions(std::vector<unsigned int> &cubePosition) {
     for (int i = 0; i < 27; i++) {
