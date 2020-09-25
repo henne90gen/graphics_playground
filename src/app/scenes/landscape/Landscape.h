@@ -26,10 +26,9 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> shader;
 
     std::shared_ptr<VertexArray> vertexArray;
-    std::shared_ptr<IndexBuffer> indexBuffer;
+    std::shared_ptr<VertexBuffer> heightBuffer;
     std::vector<float> heightMap = std::vector<float>();
 
-    std::shared_ptr<VertexBuffer> heightBuffer;
     FastNoise *noise;
 
     void generatePoints(unsigned int pointDensity);
