@@ -27,7 +27,9 @@ void AudioVis::tick() {
 
     float seconds = static_cast<float>(playBack.sampleCursor) /
                     (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
-    ImGui::Text("%fs", seconds);
+    ImGui::Text("%.2fs", seconds);
+
+    ImGui::SliderInt("", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / 2, "");
 
     std::string btnText = "Pause";
     if (playBack.paused) {
@@ -88,6 +90,8 @@ void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int
         }
 
         if (playBackEnded) {
+            playBack->sampleCursor = playBack->wav->data.subChunkSize / 2;
+            playBack->paused = true;
             err = soundio_outstream_pause(outstream, true);
             if (err != 0) {
                 fprintf(stderr, "%s\n", soundio_strerror(err));
