@@ -7,6 +7,8 @@
 
 #include "audio/WavLoader.h"
 #include "opengl/Shader.h"
+#include "opengl/VertexArray.h"
+#include "opengl/VertexBuffer.h"
 
 struct PlayBack {
     WavFile *wav = nullptr;
@@ -31,5 +33,13 @@ class AudioVis : public Scene {
     SoundIoDevice *device = nullptr;
     SoundIoOutStream *outstream = nullptr;
 
+    std::shared_ptr<VertexArray> va = nullptr;
+    std::shared_ptr<VertexBuffer> heightBuffer = nullptr;
+    std::vector<float> heightMap = {};
+
     void initSoundIo(int sampleRate);
+    void initMesh();
+    void updateMesh();
+    void renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation,
+                    bool drawWireframe);
 };

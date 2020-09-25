@@ -1,7 +1,15 @@
 #version 330 core
 
-in vec3 position;
+in vec2 position;
+in float height;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out float h;
 
 void main() {
-    gl_Position = vec4(position, 1.0);
+    h = height;
+    gl_Position = projection * view * model * vec4(position.x, height, position.y, 1.0);
 }

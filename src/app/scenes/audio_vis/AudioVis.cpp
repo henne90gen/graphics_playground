@@ -2,6 +2,13 @@
 
 #include <soundio/soundio.h>
 
+constexpr float FIELD_OF_VIEW = 45.0F;
+constexpr float Z_NEAR = 0.1F;
+constexpr float Z_FAR = 100000.0F;
+
+constexpr auto WIDTH = 50;
+constexpr auto LENGTH = 100;
+
 DEFINE_SHADER(audio_vis_AudioVis)
 
 void AudioVis::setup() {
@@ -10,6 +17,8 @@ void AudioVis::setup() {
     loadWavFile("../../src/test/audio_test.wav", wav);
     playBack.wav = &wav;
     initSoundIo(wav.header.sampleRate);
+
+    initMesh();
 }
 
 void AudioVis::destroy() {
@@ -20,7 +29,19 @@ void AudioVis::destroy() {
 }
 
 void AudioVis::tick() {
+    static auto modelScale = glm::vec3(1.0F, 20.0F, -1.0F);
+    static auto cameraPosition = glm::vec3(-35.0F, -75.0F, -50.0F);
+    static glm::vec3 cameraRotation = {0.75F, -0.25F, 0.0F};
+    static bool drawWireframe = true;
+
     ImGui::Begin("Settings");
+    ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.001F);
+    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.1F);
+    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.001F);
+    ImGui::Checkbox("Wireframe", &drawWireframe);
+
+    ImGui::Separator();
+
     ImGui::Text("Sample Rate: %d", wav.header.sampleRate);
     ImGui::Text("Bits per Sample: %d", wav.header.bitsPerSample);
     ImGui::Text("Number of Channels: %d", wav.header.numChannels);
@@ -29,7 +50,8 @@ void AudioVis::tick() {
                     (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
     ImGui::Text("%.2fs", seconds);
 
-    ImGui::SliderInt("", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / 2, "");
+    ImGui::SliderInt("", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / wav.header.numChannels,
+                     "");
 
     std::string btnText = "Pause";
     if (playBack.paused) {
@@ -39,18 +61,20 @@ void AudioVis::tick() {
         playBack.paused = !playBack.paused;
         soundio_outstream_pause(outstream, playBack.paused);
     }
-
     ImGui::End();
 
     soundio_flush_events(soundio);
+
+    updateMesh();
+    renderMesh(modelScale, cameraPosition, cameraRotation, drawWireframe);
 }
 
 void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int frame_count_max) {
     auto *playBack = reinterpret_cast<PlayBack *>(outstream->userdata);
     const SoundIoChannelLayout *layout = &outstream->layout;
-    int frames_left = frame_count_max;
     SoundIoChannelArea *areas = nullptr;
 
+    int frames_left = frame_count_max;
     while (frames_left > 0) {
         int frame_count = frames_left;
 
@@ -90,7 +114,7 @@ void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int
         }
 
         if (playBackEnded) {
-            playBack->sampleCursor = playBack->wav->data.subChunkSize / 2;
+            playBack->sampleCursor = playBack->wav->data.subChunkSize / playBack->wav->header.numChannels;
             playBack->paused = true;
             err = soundio_outstream_pause(outstream, true);
             if (err != 0) {
@@ -158,4 +182,109 @@ void AudioVis::initSoundIo(int sampleRate) {
         fprintf(stderr, "unable to start device: %s\n", soundio_strerror(err));
         return;
     }
+}
+
+void AudioVis::initMesh() {
+    va = std::make_shared<VertexArray>(shader);
+    va->bind();
+
+    const unsigned int verticesCount = WIDTH * LENGTH;
+    std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
+    for (unsigned long i = 0; i < vertices.size(); i++) {
+        auto x = static_cast<float>(i % WIDTH);
+        auto y = std::floor(static_cast<float>(i) / static_cast<float>(WIDTH));
+        vertices[i] = glm::vec2(x, y);
+    }
+
+    const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
+    va->addVertexBuffer(positionBuffer);
+
+    const unsigned int heightMapCount = WIDTH * LENGTH;
+    heightMap = std::vector<float>(heightMapCount);
+    for (auto &h : heightMap) {
+        h = 0.0F;
+    }
+    heightBuffer = std::make_shared<VertexBuffer>();
+    BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
+    heightBuffer->setLayout(heightLayout);
+    va->addVertexBuffer(heightBuffer);
+
+    const unsigned int trianglesPerQuad = 2;
+    unsigned int indicesCount = WIDTH * LENGTH * trianglesPerQuad;
+    auto indices = std::vector<glm::ivec3>(indicesCount);
+    unsigned int counter = 0;
+    for (unsigned int y = 0; y < LENGTH - 1; y++) {
+        for (unsigned int x = 0; x < WIDTH - 1; x++) {
+            indices[counter++] = {(y + 1) * WIDTH + x, y * WIDTH + (x + 1), y * WIDTH + x};
+            indices[counter++] = {(y + 1) * WIDTH + x, (y + 1) * WIDTH + (x + 1), y * WIDTH + (x + 1)};
+        }
+    }
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    va->setIndexBuffer(indexBuffer);
+}
+
+void AudioVis::updateMesh() {
+    for (unsigned int i = 0; i < heightMap.size(); i++) {
+        heightMap[i] = 0.0F;
+    }
+
+    int currentCursor = playBack.sampleCursor;
+    int currentLine = 0;
+    float maxHeight = 0.0F;
+    unsigned int samplesPerSecond = wav.header.sampleRate * wav.header.numChannels;
+    while (currentCursor >= 0) {
+        int32_t sample = *(wav.data.data16 + currentCursor);
+        float sample01 = static_cast<float>(sample - std::numeric_limits<int16_t>::min()) /
+                         (static_cast<float>(std::numeric_limits<int16_t>::min()) * -1.0F +
+                          static_cast<float>(std::numeric_limits<int16_t>::max()));
+        int bucketIndex = std::floor(sample01 * static_cast<float>(WIDTH));
+        int index = currentLine * WIDTH + bucketIndex;
+        heightMap[index] += 1.0F;
+        if (heightMap[index] > maxHeight) {
+            maxHeight = heightMap[index];
+        }
+
+        if (currentCursor % samplesPerSecond == samplesPerSecond - 1) {
+            currentLine++;
+        }
+
+        currentCursor--;
+    }
+
+    if (maxHeight > 0.0F) {
+        for (unsigned int i = 0; i < heightMap.size(); i++) {
+            heightMap[i] /= maxHeight;
+        }
+    }
+
+    heightBuffer->update(heightMap);
+}
+
+void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation,
+                          const bool drawWireframe) {
+    shader->bind();
+    va->bind();
+
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::scale(modelMatrix, modelScale);
+    glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+    shader->setUniform("model", modelMatrix);
+    shader->setUniform("view", viewMatrix);
+    shader->setUniform("projection", projectionMatrix);
+
+    if (drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+    }
+
+    GL_Call(glDrawElements(GL_TRIANGLES, va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    if (drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    }
+
+    va->unbind();
+    shader->unbind();
 }
