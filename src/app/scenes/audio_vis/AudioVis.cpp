@@ -18,6 +18,11 @@ void AudioVis::setup() {
     playBack.wav = &wav;
     initSoundIo(wav.header.sampleRate);
 
+#if 1
+    playBack.paused = true;
+    soundio_outstream_pause(outstream, playBack.paused);
+#endif
+
     initMesh();
 }
 
@@ -33,6 +38,7 @@ void AudioVis::tick() {
     static auto cameraPosition = glm::vec3(-35.0F, -75.0F, -50.0F);
     static glm::vec3 cameraRotation = {0.75F, -0.25F, 0.0F};
     static bool drawWireframe = true;
+    static int linesPerSecond = 15;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.001F);
@@ -61,11 +67,13 @@ void AudioVis::tick() {
         playBack.paused = !playBack.paused;
         soundio_outstream_pause(outstream, playBack.paused);
     }
+
+    ImGui::DragInt("Lines Per Second", &linesPerSecond, 1, 1, wav.header.sampleRate);
     ImGui::End();
 
     soundio_flush_events(soundio);
 
-    updateMesh();
+    updateMeshAmplitude(linesPerSecond);
     renderMesh(modelScale, cameraPosition, cameraRotation, drawWireframe);
 }
 
@@ -225,15 +233,15 @@ void AudioVis::initMesh() {
     va->setIndexBuffer(indexBuffer);
 }
 
-void AudioVis::updateMesh() {
-    for (unsigned int i = 0; i < heightMap.size(); i++) {
-        heightMap[i] = 0.0F;
+void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
+    for (auto &height : heightMap) {
+        height = 0.0F;
     }
 
     int currentCursor = playBack.sampleCursor;
     int currentLine = 0;
     float maxHeight = 0.0F;
-    unsigned int samplesPerSecond = wav.header.sampleRate * wav.header.numChannels;
+    unsigned int samplesPerBucket = wav.header.sampleRate * wav.header.numChannels * (1.0F / linesPerSecond);
     while (currentCursor >= 0) {
         int32_t sample = *(wav.data.data16 + currentCursor);
         float sample01 = static_cast<float>(sample - std::numeric_limits<int16_t>::min()) /
@@ -241,12 +249,14 @@ void AudioVis::updateMesh() {
                           static_cast<float>(std::numeric_limits<int16_t>::max()));
         int bucketIndex = std::floor(sample01 * static_cast<float>(WIDTH));
         int index = currentLine * WIDTH + bucketIndex;
-        heightMap[index] += 1.0F;
-        if (heightMap[index] > maxHeight) {
-            maxHeight = heightMap[index];
+        if (index < heightMap.size()) {
+            heightMap[index] += 1.0F;
+            if (heightMap[index] > maxHeight) {
+                maxHeight = heightMap[index];
+            }
         }
 
-        if (currentCursor % samplesPerSecond == samplesPerSecond - 1) {
+        if (currentCursor % samplesPerBucket == samplesPerBucket - 1) {
             currentLine++;
         }
 
@@ -254,8 +264,8 @@ void AudioVis::updateMesh() {
     }
 
     if (maxHeight > 0.0F) {
-        for (unsigned int i = 0; i < heightMap.size(); i++) {
-            heightMap[i] /= maxHeight;
+        for (auto &height : heightMap) {
+            height /= maxHeight;
         }
     }
 
