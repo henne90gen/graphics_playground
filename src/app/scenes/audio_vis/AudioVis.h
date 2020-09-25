@@ -8,6 +8,12 @@
 #include "audio/WavLoader.h"
 #include "opengl/Shader.h"
 
+struct PlayBack {
+    WavFile *wav = nullptr;
+    int sampleCursor = 0;
+    bool paused = false;
+};
+
 class AudioVis : public Scene {
   public:
     explicit AudioVis(SceneData &data) : Scene(data, "AudioVis"){};
@@ -20,9 +26,10 @@ class AudioVis : public Scene {
   private:
     std::shared_ptr<Shader> shader;
     WavFile wav;
+    PlayBack playBack = {};
     SoundIo *soundio = nullptr;
     SoundIoDevice *device = nullptr;
     SoundIoOutStream *outstream = nullptr;
 
-    void initSoundIo();
+    void initSoundIo(int sampleRate);
 };

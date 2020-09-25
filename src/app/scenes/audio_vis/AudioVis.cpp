@@ -8,7 +8,8 @@ void AudioVis::setup() {
     shader = SHADER(audio_vis_AudioVis);
 
     loadWavFile("../../src/test/audio_test.wav", wav);
-    initSoundIo();
+    playBack.wav = &wav;
+    initSoundIo(wav.header.sampleRate);
 }
 
 void AudioVis::destroy() {
@@ -23,18 +24,29 @@ void AudioVis::tick() {
     ImGui::Text("Sample Rate: %d", wav.header.sampleRate);
     ImGui::Text("Bits per Sample: %d", wav.header.bitsPerSample);
     ImGui::Text("Number of Channels: %d", wav.header.numChannels);
+
+    float seconds = static_cast<float>(playBack.sampleCursor) /
+                    (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
+    ImGui::Text("%fs", seconds);
+
+    std::string btnText = "Pause";
+    if (playBack.paused) {
+        btnText = "Resume";
+    }
+    if (ImGui::Button(btnText.c_str())) {
+        playBack.paused = !playBack.paused;
+        soundio_outstream_pause(outstream, playBack.paused);
+    }
+
     ImGui::End();
 
     soundio_flush_events(soundio);
 }
 
-static const float PI = 3.1415926535f;
-static float seconds_offset = 0.0F;
-static void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int frame_count_max) {
+void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int frame_count_max) {
+    auto *playBack = reinterpret_cast<PlayBack *>(outstream->userdata);
     const SoundIoChannelLayout *layout = &outstream->layout;
-    const auto float_sample_rate = static_cast<float>(outstream->sample_rate);
-    const auto seconds_per_frame = 1.0F / float_sample_rate;
-    auto frames_left = frame_count_max;
+    int frames_left = frame_count_max;
     SoundIoChannelArea *areas = nullptr;
 
     while (frames_left > 0) {
@@ -50,18 +62,24 @@ static void write_callback(struct SoundIoOutStream *outstream, int frame_count_m
             break;
         }
 
-        const float pitch = 440.0F;
-        const float radians_per_second = pitch * 2.0F * PI;
-        for (int frame = 0; frame < frame_count; frame += 1) {
-            const float sample =
-                  sin((seconds_offset + static_cast<float>(frame) * seconds_per_frame) * radians_per_second);
-            for (int channel = 0; channel < layout->channel_count; channel += 1) {
-                auto *areasPtr = areas[channel].ptr;
-                auto *ptr = reinterpret_cast<float *>(areasPtr[areas[channel].step * frame]);
-                *ptr = sample;
+        bool playBackEnded = false;
+        for (int frame = 0; frame < frame_count; frame++) {
+            for (int channel = 0; channel < layout->channel_count; channel++) {
+                int sampleOffset = playBack->sampleCursor + (layout->channel_count * frame + channel);
+                unsigned int sampleOffsetBytes = sampleOffset * 2;
+                if (sampleOffsetBytes >= playBack->wav->data.subChunkSize) {
+                    playBackEnded = true;
+                    break;
+                }
+                int16_t *samplePtr = playBack->wav->data.data16 + sampleOffset;
+                auto *ptr = (int16_t *)(areas[channel].ptr + areas[channel].step * frame);
+                *ptr = *samplePtr;
+            }
+            if (playBackEnded) {
+                break;
             }
         }
-        seconds_offset = fmod(seconds_offset + seconds_per_frame * static_cast<float>(frame_count), 1.0);
+        playBack->sampleCursor += frame_count * layout->channel_count;
 
         err = soundio_outstream_end_write(outstream);
         if (err != 0) {
@@ -69,11 +87,20 @@ static void write_callback(struct SoundIoOutStream *outstream, int frame_count_m
             exit(1);
         }
 
+        if (playBackEnded) {
+            err = soundio_outstream_pause(outstream, true);
+            if (err != 0) {
+                fprintf(stderr, "%s\n", soundio_strerror(err));
+                exit(1);
+            }
+            break;
+        }
+
         frames_left -= frame_count;
     }
 }
 
-void AudioVis::initSoundIo() {
+void AudioVis::initSoundIo(int sampleRate) {
     soundio = soundio_create();
     if (soundio == nullptr) {
         fprintf(stderr, "out of memory\n");
@@ -107,7 +134,9 @@ void AudioVis::initSoundIo() {
         fprintf(stderr, "out of memory\n");
         return;
     }
-    outstream->format = SoundIoFormatFloat32NE;
+    outstream->format = SoundIoFormatS16LE;
+    outstream->sample_rate = sampleRate;
+    outstream->userdata = &playBack;
     outstream->write_callback = write_callback;
 
     err = soundio_outstream_open(outstream);
