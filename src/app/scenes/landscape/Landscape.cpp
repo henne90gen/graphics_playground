@@ -70,7 +70,8 @@ void Landscape::generatePoints(unsigned int pointDensity) {
             indices[counter++] = y * width + (x + 1);
         }
     }
-    indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+    vertexArray->setIndexBuffer(indexBuffer);
 }
 
 void Landscape::destroy() { delete noise; }
@@ -93,6 +94,7 @@ void Landscape::tick() {
     scale.z += timeSpeed;
     static auto movement = glm::vec2(0.0F);
     static FastNoise::NoiseType noiseType = FastNoise::Simplex;
+    static bool drawWireframe = false;
     int lastPointDensity = pointDensity;
     static float frequency = 0.3F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
@@ -114,6 +116,7 @@ void Landscape::tick() {
     const int maximumPointDensity = 100;
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
+    ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::End();
 
     shader->bind();
@@ -137,11 +140,17 @@ void Landscape::tick() {
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
-    indexBuffer->bind();
-    GL_Call(glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+    if (drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+    }
+
+    GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    if (drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    }
 
     vertexArray->unbind();
-
     shader->unbind();
 }
 
