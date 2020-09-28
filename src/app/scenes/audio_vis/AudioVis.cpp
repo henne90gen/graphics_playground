@@ -233,45 +233,6 @@ void AudioVis::initMesh() {
     va->setIndexBuffer(indexBuffer);
 }
 
-void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
-    for (auto &height : heightMap) {
-        height = 0.0F;
-    }
-
-    int currentCursor = playBack.sampleCursor;
-    int currentLine = 0;
-    float maxHeight = 0.0F;
-    unsigned int samplesPerBucket = wav.header.sampleRate * wav.header.numChannels * (1.0F / linesPerSecond);
-    while (currentCursor >= 0) {
-        int32_t sample = *(wav.data.data16 + currentCursor);
-        float sample01 = static_cast<float>(sample - std::numeric_limits<int16_t>::min()) /
-                         (static_cast<float>(std::numeric_limits<int16_t>::min()) * -1.0F +
-                          static_cast<float>(std::numeric_limits<int16_t>::max()));
-        int bucketIndex = std::floor(sample01 * static_cast<float>(WIDTH));
-        int index = currentLine * WIDTH + bucketIndex;
-        if (index < heightMap.size()) {
-            heightMap[index] += 1.0F;
-            if (heightMap[index] > maxHeight) {
-                maxHeight = heightMap[index];
-            }
-        }
-
-        if (currentCursor % samplesPerBucket == samplesPerBucket - 1) {
-            currentLine++;
-        }
-
-        currentCursor--;
-    }
-
-    if (maxHeight > 0.0F) {
-        for (auto &height : heightMap) {
-            height /= maxHeight;
-        }
-    }
-
-    heightBuffer->update(heightMap);
-}
-
 void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation,
                           const bool drawWireframe) {
     shader->bind();
@@ -298,3 +259,48 @@ void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPo
     va->unbind();
     shader->unbind();
 }
+
+void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
+    if (linesPerSecond == 0) {
+        linesPerSecond = 1;
+    }
+
+    for (auto &height : heightMap) {
+        height = 0.0F;
+    }
+
+    int currentCursor = playBack.sampleCursor;
+    int currentLine = 0;
+    float maxHeight = 0.0F;
+    unsigned int samplesPerBucket = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
+    while (currentCursor >= 0) {
+        int32_t sample = *(wav.data.data16 + currentCursor);
+        float sample01 = static_cast<float>(sample - std::numeric_limits<int16_t>::min()) /
+                         (static_cast<float>(std::numeric_limits<int16_t>::min()) * -1.0F +
+                          static_cast<float>(std::numeric_limits<int16_t>::max()));
+        unsigned long bucketIndex = std::floor(sample01 * static_cast<float>(WIDTH));
+        unsigned long index = currentLine * WIDTH + bucketIndex;
+        if (index < heightMap.size()) {
+            heightMap[index] += 1.0F;
+            if (heightMap[index] > maxHeight) {
+                maxHeight = heightMap[index];
+            }
+        }
+
+        if (currentCursor % samplesPerBucket == samplesPerBucket - 1) {
+            currentLine++;
+        }
+
+        currentCursor--;
+    }
+
+    if (maxHeight > 0.0F) {
+        for (auto &height : heightMap) {
+            height /= maxHeight;
+        }
+    }
+
+    heightBuffer->update(heightMap);
+}
+
+void AudioVis::updateMeshFrequency() {}
