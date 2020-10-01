@@ -2,22 +2,27 @@
 
 #include "scenes/Scene.h"
 
+#include <fourier_transform/Fourier.h>
 #include <functional>
 #include <soundio/soundio.h>
 
 #include "audio/WavLoader.h"
+#include "fourier_transform/Fourier.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
 
 struct PlayBack {
     WavFile *wav = nullptr;
+    std::vector<fourier::DataPoint> coefficients = {};
     int sampleCursor = 0;
     bool paused = false;
 };
 
 class AudioVis : public Scene {
   public:
+    enum class VisMode { AMPLITUDE = 0, PHASE = 1, FREQUENCY = 2, MAGNITUDE = 3 };
+
     explicit AudioVis(SceneData &data) : Scene(data, "AudioVis"){};
     ~AudioVis() override = default;
 
@@ -41,6 +46,9 @@ class AudioVis : public Scene {
     void initMesh();
     void renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation,
                     bool drawWireframe);
+    void updateMesh(const std::function<double(int)> &calcSample01Func, unsigned int linesPerSecond);
     void updateMeshAmplitude(unsigned int linesPerSecond);
-    void updateMeshFrequency();
+    void updateMeshPhase(unsigned int linesPerSecond);
+    void updateMeshFrequency(unsigned int linesPerSecond);
+    void updateMeshMagnitude(unsigned int linesPerSecond);
 };

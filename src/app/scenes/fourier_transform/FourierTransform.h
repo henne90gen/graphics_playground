@@ -39,7 +39,7 @@ private:
 
     void drawConnectedPoints(const std::vector<glm::vec2> &drawnPoints);
 
-    std::vector<fourier_result> coefficients;
+    std::vector<fourier::DataPoint> coefficients;
 
     void
     updateCoefficients(const std::vector<glm::vec2> &mousePositions, bool useMousePositions, int &fourierResolution);

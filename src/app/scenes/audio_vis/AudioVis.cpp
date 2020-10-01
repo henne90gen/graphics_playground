@@ -16,6 +16,11 @@ void AudioVis::setup() {
 
     loadWavFile("../../src/test/audio_test.wav", wav);
     playBack.wav = &wav;
+    auto inputData = std::vector<float>(wav.data.subChunkSize);
+    for (unsigned int i = 0; i < wav.data.subChunkSize; i++) {
+        inputData[i] = static_cast<float>(wav.data.data8[i]);
+    }
+    playBack.coefficients = fourier::fft(inputData, playBack.wav->header.sampleRate);
     initSoundIo(wav.header.sampleRate);
 
 #if 1
@@ -39,6 +44,7 @@ void AudioVis::tick() {
     static glm::vec3 cameraRotation = {0.75F, -0.25F, 0.0F};
     static bool drawWireframe = true;
     static int linesPerSecond = 15;
+    static VisMode currentMode = VisMode::AMPLITUDE;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.001F);
@@ -69,35 +75,50 @@ void AudioVis::tick() {
     }
 
     ImGui::DragInt("Lines Per Second", &linesPerSecond, 1, 1, wav.header.sampleRate);
+    // TODO make this a dropdown
+    ImGui::DragInt("Current Mode", reinterpret_cast<int *>(&currentMode));
     ImGui::End();
 
     soundio_flush_events(soundio);
 
-    updateMeshAmplitude(linesPerSecond);
+    switch (currentMode) {
+    case VisMode::AMPLITUDE:
+        updateMeshAmplitude(linesPerSecond);
+        break;
+    case VisMode::PHASE:
+        updateMeshPhase(linesPerSecond);
+        break;
+    case VisMode::FREQUENCY:
+        updateMeshFrequency(linesPerSecond);
+        break;
+    case VisMode::MAGNITUDE:
+        updateMeshMagnitude(linesPerSecond);
+        break;
+    }
     renderMesh(modelScale, cameraPosition, cameraRotation, drawWireframe);
 }
 
-void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int frame_count_max) {
+void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int frameCountMax) {
     auto *playBack = reinterpret_cast<PlayBack *>(outstream->userdata);
     const SoundIoChannelLayout *layout = &outstream->layout;
     SoundIoChannelArea *areas = nullptr;
 
-    int frames_left = frame_count_max;
-    while (frames_left > 0) {
-        int frame_count = frames_left;
+    int framesLeft = frameCountMax;
+    while (framesLeft > 0) {
+        int frameCount = framesLeft;
 
-        int err = soundio_outstream_begin_write(outstream, &areas, &frame_count);
+        int err = soundio_outstream_begin_write(outstream, &areas, &frameCount);
         if (err != 0) {
             fprintf(stderr, "%s\n", soundio_strerror(err));
             exit(1);
         }
 
-        if (frame_count == 0) {
+        if (frameCount == 0) {
             break;
         }
 
         bool playBackEnded = false;
-        for (int frame = 0; frame < frame_count; frame++) {
+        for (int frame = 0; frame < frameCount; frame++) {
             for (int channel = 0; channel < layout->channel_count; channel++) {
                 int sampleOffset = playBack->sampleCursor + (layout->channel_count * frame + channel);
                 unsigned int sampleOffsetBytes = sampleOffset * 2;
@@ -113,7 +134,7 @@ void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int
                 break;
             }
         }
-        playBack->sampleCursor += frame_count * layout->channel_count;
+        playBack->sampleCursor += frameCount * layout->channel_count;
 
         err = soundio_outstream_end_write(outstream);
         if (err != 0) {
@@ -132,7 +153,7 @@ void write_callback(struct SoundIoOutStream *outstream, int frame_count_min, int
             break;
         }
 
-        frames_left -= frame_count;
+        framesLeft -= frameCount;
     }
 }
 
@@ -173,7 +194,7 @@ void AudioVis::initSoundIo(int sampleRate) {
     outstream->format = SoundIoFormatS16LE;
     outstream->sample_rate = sampleRate;
     outstream->userdata = &playBack;
-    outstream->write_callback = write_callback;
+    outstream->write_callback = writeCallback;
 
     err = soundio_outstream_open(outstream);
     if (err != 0) {
@@ -260,7 +281,7 @@ void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPo
     shader->unbind();
 }
 
-void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
+void AudioVis::updateMesh(const std::function<double(int)> &calcSample01Func, unsigned int linesPerSecond) {
     if (linesPerSecond == 0) {
         linesPerSecond = 1;
     }
@@ -269,16 +290,13 @@ void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
         height = 0.0F;
     }
 
-    int currentCursor = playBack.sampleCursor;
     int currentLine = 0;
+    int currentCursor = playBack.sampleCursor;
     float maxHeight = 0.0F;
-    unsigned int samplesPerBucket = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
+    unsigned int samplesPerLine = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
     while (currentCursor >= 0) {
-        int32_t sample = *(wav.data.data16 + currentCursor);
-        float sample01 = static_cast<float>(sample - std::numeric_limits<int16_t>::min()) /
-                         (static_cast<float>(std::numeric_limits<int16_t>::min()) * -1.0F +
-                          static_cast<float>(std::numeric_limits<int16_t>::max()));
-        unsigned long bucketIndex = std::floor(sample01 * static_cast<float>(WIDTH));
+        double sample01 = calcSample01Func(currentCursor);
+        unsigned long bucketIndex = std::floor(sample01 * static_cast<double>(WIDTH));
         unsigned long index = currentLine * WIDTH + bucketIndex;
         if (index < heightMap.size()) {
             heightMap[index] += 1.0F;
@@ -287,7 +305,7 @@ void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
             }
         }
 
-        if (currentCursor % samplesPerBucket == samplesPerBucket - 1) {
+        if (currentCursor % samplesPerLine == samplesPerLine - 1) {
             currentLine++;
         }
 
@@ -303,4 +321,40 @@ void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
     heightBuffer->update(heightMap);
 }
 
-void AudioVis::updateMeshFrequency() {}
+void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
+    updateMesh(
+          [this](int currentCursor) {
+              auto sample = static_cast<double>(*(wav.data.data16 + currentCursor));
+              double min = std::abs(static_cast<double>(std::numeric_limits<int16_t>::min()));
+              double max = std::abs(static_cast<double>(std::numeric_limits<int16_t>::max()));
+              return (sample + min) / (min + max);
+          },
+          linesPerSecond);
+}
+
+void AudioVis::updateMeshPhase(unsigned int linesPerSecond) {
+    updateMesh(
+          [this](int currentCursor) {
+              float phase = playBack.coefficients[currentCursor].phase;
+              return (phase + 180.0F) / 360.0F;
+          },
+          linesPerSecond);
+}
+
+void AudioVis::updateMeshFrequency(unsigned int linesPerSecond) {
+    updateMesh(
+          [this](int currentCursor) {
+              double frequency = playBack.coefficients[currentCursor].frequency;
+              return frequency / (wav.header.sampleRate * 0.5);
+          },
+          linesPerSecond);
+}
+
+void AudioVis::updateMeshMagnitude(unsigned int linesPerSecond) {
+    updateMesh(
+          [this](int currentCursor) {
+              float magnitude = playBack.coefficients[currentCursor].magnitude;
+              return magnitude;
+          },
+          linesPerSecond);
+}

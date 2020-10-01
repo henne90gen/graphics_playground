@@ -19,7 +19,6 @@ add_library(logic
         gis/XyzLoader.cpp
         graph_vis/Graph.cpp
         audio/WavLoader.cpp
-        audio/Dft.cpp
         )
 
 target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
