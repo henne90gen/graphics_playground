@@ -13,27 +13,13 @@ void FourierTransform::setup() {
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
-    std::vector<glm::vec2> vertices = {
-            {-1.0, -1.0},
-            {0.0,  0.0},
-            {1.0,  -1.0},
-            {1.0,  0.0},
-            {1.0,  1.0},
-            {1.0,  1.0},
-            {-1.0, 1.0},
-            {0.0,  1.0}
-    };
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"},
-            {ShaderDataType::Float2, "a_UV"}
-    };
+    std::vector<glm::vec2> vertices = {{-1.0, -1.0}, {0.0, 0.0}, {1.0, -1.0}, {1.0, 0.0},
+                                       {1.0, 1.0},   {1.0, 1.0}, {-1.0, 1.0}, {0.0, 1.0}};
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}, {ShaderDataType::Float2, "a_UV"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     vertexArray->addVertexBuffer(vertexBuffer);
 
-    std::vector<glm::ivec3> indices = {
-            {0, 1, 2},
-            {0, 2, 3}
-    };
+    std::vector<glm::ivec3> indices = {{0, 1, 2}, {0, 2, 3}};
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     vertexArray->setIndexBuffer(indexBuffer);
 
@@ -144,7 +130,9 @@ void FourierTransform::updateCoefficients(const std::vector<glm::vec2> &mousePos
     if (fourierResolution == 0 || fourierResolution >= threshold) {
         fourierResolution = threshold;
     }
-    coefficients = Fourier::dft(x, fourierResolution);
+    coefficients = fourier::dft2(x, fourierResolution);
+    std::sort(coefficients.begin(), coefficients.end(),
+              [](fourier::DataPoint &a, fourier::DataPoint &b) { return a.magnitude > b.magnitude; });
 }
 
 void FourierTransform::drawFourier(std::vector<glm::vec2> &drawnPoints, float t) {
@@ -158,16 +146,14 @@ void FourierTransform::drawFourier(std::vector<glm::vec2> &drawnPoints, float t)
 
     for (auto &coefficient : coefficients) {
         double angle = static_cast<double>(coefficient.frequency) * t + coefficient.phase;
-        currentHead.x += coefficient.amplitude * cos(angle);
-        currentHead.y += coefficient.amplitude * sin(angle);
+        currentHead.x += coefficient.magnitude * cos(angle);
+        currentHead.y += coefficient.magnitude * sin(angle);
         vertices.push_back(currentHead);
     }
 
     drawnPoints.push_back(currentHead);
 
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"}
-    };
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     fourierVertexArray->addVertexBuffer(vertexBuffer);
 
@@ -187,9 +173,7 @@ void FourierTransform::drawConnectedPoints(const std::vector<glm::vec2> &drawnPo
     shader->setUniform("u_RenderCanvas", false);
     fourierVertexArray->bind();
 
-    BufferLayout layout = {
-            {ShaderDataType::Float2, "a_Position"}
-    };
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(drawnPoints, layout);
     fourierVertexArray->addVertexBuffer(vertexBuffer);
 
@@ -214,14 +198,14 @@ void FourierTransform::drawCanvas(std::vector<glm::vec4> &colors, std::vector<gl
     InputData *input = getInput();
     if (input->mouse.left) {
         auto &mousePos = input->mouse.pos;
-        auto mappedMousePos = mapMouseOntoCanvas(mousePos, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
+        auto mappedMousePos =
+              mapMouseOntoCanvas(mousePos, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
         auto canvasPos = mappedMousePos.canvasPos;
         auto worldPos = mappedMousePos.worldPos;
 
         if ((canvasPos.x >= 0.0F && canvasPos.x < canvasWidth) && (canvasPos.y >= 0.0F && canvasPos.y < canvasHeight)) {
-            unsigned int i =
-                    (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
-                    static_cast<unsigned int>(canvasPos.x);
+            unsigned int i = (canvasHeight - static_cast<unsigned int>(canvasPos.y)) * canvasWidth +
+                             static_cast<unsigned int>(canvasPos.x);
             colors[i] = {1.0, 1.0, 1.0, 1.0};
             mousePositions.emplace_back(worldPos.x, worldPos.y);
         }

@@ -10,6 +10,6 @@ TEST_CASE("Fourier can calculate a simple circle") {
     points.emplace_back(-1, 0);
     points.emplace_back(0, 1);
 
-    auto coefficients = Fourier::dft(points, 1);
+    auto coefficients = fourier::dft2(points, 1);
     REQUIRE(coefficients.size() == 3);
 }

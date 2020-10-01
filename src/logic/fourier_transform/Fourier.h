@@ -5,17 +5,16 @@
 
 #include <glm/glm.hpp>
 
-struct fourier_result {
-    int frequency;
-    double amplitude;
+namespace fourier {
+
+struct DataPoint {
+    double frequency;
+    double magnitude;
     double phase;
 };
 
-class Fourier {
-public:
+std::vector<DataPoint> fft(const std::vector<float> &inputData, unsigned int sampleRate);
+std::vector<DataPoint> dft(const std::vector<float> &inputData, unsigned int resolution);
+std::vector<DataPoint> dft2(const std::vector<glm::vec2> &inputData, unsigned int resolution);
 
-    static std::vector<fourier_result> dft(const std::vector<glm::vec2> &x, int resolution);
-};
-
-
-
+} // namespace fourier
