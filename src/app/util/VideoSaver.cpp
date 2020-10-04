@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <iostream>
-#include <sstream>
 
 #define GIF_FLIP_VERT
 #include <gif.h>
@@ -46,6 +45,7 @@ void VideoSaver::save() {
     std::cout << "Saved video " << videoFileName << std::endl;
 }
 
+#if FFMPEG_FOUND
 void Mp4VideoSaver::free() {
     if (videoFrame != nullptr) {
         av_frame_free(&videoFrame);
@@ -332,6 +332,7 @@ bool Mp4VideoSaver::doSave() {
 
     return true;
 }
+#endif
 
 GifVideoSaver::~GifVideoSaver() { delete gifWriter; }
 

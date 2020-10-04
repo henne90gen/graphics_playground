@@ -152,13 +152,15 @@ add_subdirectory(${CATCH_DIR})
 
 # FFMPEG
 function(find_ffmpeg_libraries)
+    set(FFMPEG_FOUND TRUE)
     foreach (lib ${ARGV})
         message("-- Looking for ${lib}")
         find_library(${lib}_LIBRARY ${lib})
 
         if (NOT ${lib}_LIBRARY)
             message("-- Loooking for ${lib} - not found")
-            continue()
+            set(FFMPEG_FOUND FALSE)
+            break()
         endif ()
 
         add_library(${lib} SHARED IMPORTED)
@@ -173,8 +175,13 @@ function(find_ffmpeg_libraries)
         message("-- Looking for ${lib} - found")
     endforeach ()
 
-    set(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} PARENT_SCOPE)
-    set(FFMPEG_LIBRARY ${FFMPEG_LIBRARY} PARENT_SCOPE)
+    if (FFMPEG_FOUND)
+        set(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} PARENT_SCOPE)
+        set(FFMPEG_LIBRARY ${FFMPEG_LIBRARY} PARENT_SCOPE)
+        add_definitions(-DFFMPEG_FOUND=1)
+    else ()
+        add_definitions(-DFFMPEG_FOUND=0)
+    endif ()
 endfunction()
 
 find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)

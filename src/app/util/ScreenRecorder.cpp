@@ -5,7 +5,6 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
 #include "Image.h"
 #include "OpenGLUtils.h"
@@ -102,8 +101,10 @@ void ScreenRecorder::startRecording() {
     std::string fileName = generateScreenrecordingName(recordingIndex, recordingType);
     if (recordingType == RecordingType::GIF) {
         videoSaver = std::make_unique<GifVideoSaver>(fileName);
+#if FFMPEG_FOUND
     } else if (recordingType == RecordingType::MP4) {
         videoSaver = std::make_unique<Mp4VideoSaver>(fileName);
+#endif
     } else {
         std::cerr << "Recording type is not supported (" << recordingType << ")" << std::endl;
     }
