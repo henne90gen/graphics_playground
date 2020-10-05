@@ -58,6 +58,7 @@ void AudioVis::tick() {
     ImGui::Text("Bits per Sample: %d", wav.header.bitsPerSample);
     ImGui::Text("Number of Channels: %d", wav.header.numChannels);
 
+    ImGui::Text("Cursor: %d", playBack.sampleCursor);
     float seconds = static_cast<float>(playBack.sampleCursor) /
                     (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
     ImGui::Text("%.2fs", seconds);
@@ -78,8 +79,6 @@ void AudioVis::tick() {
     // TODO make this a dropdown
     ImGui::DragInt("Current Mode", reinterpret_cast<int *>(&currentMode));
     ImGui::End();
-
-    soundio_flush_events(soundio);
 
     switch (currentMode) {
     case VisMode::AMPLITUDE:
@@ -103,16 +102,16 @@ void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int fr
     const SoundIoChannelLayout *layout = &outstream->layout;
     SoundIoChannelArea *areas = nullptr;
 
+    // std::cout << "max: " << frameCountMax << ", min: " << frameCountMin << std::endl;
+
     int framesLeft = frameCountMax;
     while (framesLeft > 0) {
         int frameCount = framesLeft;
-
         int err = soundio_outstream_begin_write(outstream, &areas, &frameCount);
         if (err != 0) {
-            fprintf(stderr, "%s\n", soundio_strerror(err));
+            std::cerr << soundio_strerror(err) << std::endl;
             exit(1);
         }
-
         if (frameCount == 0) {
             break;
         }
@@ -120,25 +119,27 @@ void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int fr
         bool playBackEnded = false;
         for (int frame = 0; frame < frameCount; frame++) {
             for (int channel = 0; channel < layout->channel_count; channel++) {
-                int sampleOffset = playBack->sampleCursor + (layout->channel_count * frame + channel);
-                unsigned int sampleOffsetBytes = sampleOffset * 2;
+                unsigned int sampleOffsetBytes = playBack->sampleCursor * 2;
                 if (sampleOffsetBytes >= playBack->wav->data.subChunkSize) {
                     playBackEnded = true;
                     break;
                 }
-                int16_t *samplePtr = playBack->wav->data.data16 + sampleOffset;
+
+                int16_t *samplePtr = playBack->wav->data.data16 + playBack->sampleCursor;
                 auto *ptr = (int16_t *)(areas[channel].ptr + areas[channel].step * frame);
                 *ptr = *samplePtr;
+
+                playBack->sampleCursor++;
             }
+
             if (playBackEnded) {
                 break;
             }
         }
-        playBack->sampleCursor += frameCount * layout->channel_count;
 
         err = soundio_outstream_end_write(outstream);
         if (err != 0) {
-            fprintf(stderr, "%s\n", soundio_strerror(err));
+            std::cerr << soundio_strerror(err) << std::endl;
             exit(1);
         }
 
@@ -147,7 +148,7 @@ void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int fr
             playBack->paused = true;
             err = soundio_outstream_pause(outstream, true);
             if (err != 0) {
-                fprintf(stderr, "%s\n", soundio_strerror(err));
+                std::cerr << soundio_strerror(err) << std::endl;
                 exit(1);
             }
             break;
@@ -160,13 +161,13 @@ void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int fr
 void AudioVis::initSoundIo(int sampleRate) {
     soundio = soundio_create();
     if (soundio == nullptr) {
-        fprintf(stderr, "out of memory\n");
+        std::cerr << "Out of memory" << std::endl;
         return;
     }
 
     int err = soundio_connect(soundio);
     if (err != 0) {
-        fprintf(stderr, "error connecting: %s\n", soundio_strerror(err));
+        std::cerr << "Error connecting: " << soundio_strerror(err) << std::endl;
         return;
     }
 
@@ -174,23 +175,24 @@ void AudioVis::initSoundIo(int sampleRate) {
 
     int default_out_device_index = soundio_default_output_device_index(soundio);
     if (default_out_device_index < 0) {
-        fprintf(stderr, "no output device found\n");
+        std::cerr << "no output device found" << std::endl;
         return;
     }
 
     device = soundio_get_output_device(soundio, default_out_device_index);
     if (device == nullptr) {
-        fprintf(stderr, "out of memory\n");
+        std::cerr << "out of memory" << std::endl;
         return;
     }
 
-    fprintf(stderr, "Output device: %s\n", device->name);
+    std::cout << "Output device: " << device->name << std::endl;
 
     outstream = soundio_outstream_create(device);
     if (outstream == nullptr) {
-        fprintf(stderr, "out of memory\n");
+        std::cerr << "out of memory" << std::endl;
         return;
     }
+
     outstream->format = SoundIoFormatS16LE;
     outstream->sample_rate = sampleRate;
     outstream->userdata = &playBack;
@@ -198,17 +200,17 @@ void AudioVis::initSoundIo(int sampleRate) {
 
     err = soundio_outstream_open(outstream);
     if (err != 0) {
-        fprintf(stderr, "unable to open device: %s", soundio_strerror(err));
+        std::cerr << "unable to open device: " << soundio_strerror(err) << std::endl;
         return;
     }
 
     if (outstream->layout_error != 0) {
-        fprintf(stderr, "unable to set channel layout: %s\n", soundio_strerror(outstream->layout_error));
+        std::cerr << "unable to set channel layout: " << soundio_strerror(outstream->layout_error) << std::endl;
     }
 
     err = soundio_outstream_start(outstream);
     if (err != 0) {
-        fprintf(stderr, "unable to start device: %s\n", soundio_strerror(err));
+        std::cerr << "unable to start device: " << soundio_strerror(err) << std::endl;
         return;
     }
 }
@@ -282,6 +284,8 @@ void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPo
 }
 
 void AudioVis::updateMesh(const std::function<double(int)> &calcSample01Func, unsigned int linesPerSecond) {
+    RECORD_SCOPE();
+
     if (linesPerSecond == 0) {
         linesPerSecond = 1;
     }
@@ -293,8 +297,8 @@ void AudioVis::updateMesh(const std::function<double(int)> &calcSample01Func, un
     int currentLine = 0;
     int currentCursor = playBack.sampleCursor;
     float maxHeight = 0.0F;
-    unsigned int samplesPerLine = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
-    while (currentCursor >= 0) {
+    int samplesPerLine = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
+    while (currentCursor >= std::max(0, playBack.sampleCursor - samplesPerLine * LENGTH)) {
         double sample01 = calcSample01Func(currentCursor);
         unsigned long bucketIndex = std::floor(sample01 * static_cast<double>(WIDTH));
         unsigned long index = currentLine * WIDTH + bucketIndex;
