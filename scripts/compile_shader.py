@@ -18,6 +18,7 @@ def run_compile_shader(input_file: str, output_file: str):
     max_line_length += 1
 
     lines = [
+        "extern \"C\" {\n"
         f"unsigned int {shader_name}_len = {len(shader_lines)};\n",
         f"const char *{shader_name}[] = {{\n"
     ]
@@ -29,7 +30,8 @@ def run_compile_shader(input_file: str, output_file: str):
 
     lens = list(map(str, map(lambda l: l + 1, map(len, shader_lines))))
     lines.append(", ".join(lens))
-    lines.append(" };\n")
+    lines.append("};\n")
+    lines.append("}\n")
 
     output_dir = os.path.split(output_file)[0]
     if output_dir and not os.path.exists(output_dir):

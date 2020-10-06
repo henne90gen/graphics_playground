@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <algorithm>
 
 #define UPDATE(left, op, right)                                                                                        \
     if (left op right) {                                                                                               \

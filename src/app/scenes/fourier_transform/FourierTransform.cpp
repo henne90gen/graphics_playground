@@ -1,5 +1,7 @@
 #include "FourierTransform.h"
 
+#include <algorithm>
+
 #include "CodingTrain.h"
 
 const int MAX_FOURIER_RESOLUTION = 500;
