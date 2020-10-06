@@ -150,7 +150,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
 }
 
 void DtmViewer::loadDtm() {
-    auto files = getFilesInDirectory("../../../gis_data/dtm");
+    auto files = getFilesInDirectory("../../gis_data/dtm");
     auto pointCountEstimate = files.size() * GPU_POINTS_PER_BATCH;
     if (pointCountEstimate < 0) {
         std::cout << "Could not count points in dtm" << std::endl;
@@ -179,7 +179,7 @@ void DtmViewer::loadDtmAsync() {
     startLoading = std::chrono::high_resolution_clock::now();
 
     bool success =
-          loadXyzDir("../../../gis_data/dtm", [this](unsigned int batchName, const std::vector<glm::vec3> &points) {
+          loadXyzDir("../../gis_data/dtm", [this](unsigned int batchName, const std::vector<glm::vec3> &points) {
               RECORD_SCOPE_NAME("Process Points");
               {
                   const std::lock_guard<std::mutex> guard(rawBatchMutex);
