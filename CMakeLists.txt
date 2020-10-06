@@ -79,12 +79,14 @@ get_directory_property(
         DEFINITION
         zlibstatic
 )
+set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(ZLIB_LIBRARY zlibstatic)
+    include_directories(${ZLIB_INCLUDE_DIR})
 else ()
     set(ZLIB_LIBRARY ${ZLIB_STATIC})
 endif ()
-set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
+export(TARGETS ${ZLIB_LIBRARY} FILE zlibstatic.cmake)
 
 # libpng
 set(LIBPNG_DIR ${VENDOR_DIR}/libpng)
@@ -198,6 +200,7 @@ if (BUILD_OPENCV)
     set(BUILD_TESTS OFF CACHE BOOL "Disable tests" FORCE)
     set(BUILD_PERF_TESTS OFF CACHE BOOL "Disable perf tests" FORCE)
     set(BUILD_JAVA OFF CACHE BOOL "Disable Java bindings" FORCE)
+    set(BUILD_ZLIB OFF CACHE BOOL "Build zlib" FORCE)
     set(BUILD_opencv_python2 OFF CACHE BOOL "Disable python2" FORCE)
     set(BUILD_opencv_python3 OFF CACHE BOOL "Disable python3" FORCE)
     set(BUILD_opencv_python_bindings_generator OFF CACHE BOOL "Disable python bindings generator" FORCE)

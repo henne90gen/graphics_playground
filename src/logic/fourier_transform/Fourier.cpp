@@ -2,6 +2,8 @@
 
 #include <glm/ext.hpp>
 
+#define M_PI 3.14159265359
+
 namespace fourier {
 
 void refactoredFft(float *fftBuffer, long fftFrameSize, long sign) {

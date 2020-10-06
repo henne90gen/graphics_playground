@@ -1,5 +1,6 @@
 #include "AudioVis.h"
 
+#include <algorithm>
 #include <soundio/soundio.h>
 
 constexpr float FIELD_OF_VIEW = 45.0F;

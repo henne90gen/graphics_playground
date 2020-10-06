@@ -252,7 +252,7 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
         }
 
 #pragma omp parallel for
-        for (unsigned int i = 0; i < rays.size(); i++) {
+        for (int i = 0; i < rays.size(); i++) {
             pixels[i] = trace(rays[i], light, cameraPosition, objects, 0, maxRayDepth);
         }
 

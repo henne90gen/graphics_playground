@@ -219,7 +219,7 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
     vertices.reserve(cubeCount * maxTrianglesPerCube * 3);
 
 #pragma omp parallel for
-    for (unsigned int z = 0; z < dimensions.z; z++) {
+    for (int z = 0; z < dimensions.z; z++) {
         glm::vec3 cubePosition = {0.0F, 0.0F, z};
 
         auto tmpVertices = std::vector<glm::vec3>();

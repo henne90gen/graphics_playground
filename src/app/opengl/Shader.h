@@ -8,12 +8,12 @@
 #include <unordered_map>
 
 #define DEFINE_SHADER(name)                                                                                            \
-    extern const unsigned int name##Vert_len;                                                                          \
-    extern const char *name##Vert[];                                                                                   \
-    extern const int name##Vert_line_lens[];                                                                           \
-    extern const unsigned int name##Frag_len;                                                                          \
-    extern const char *name##Frag[];                                                                                   \
-    extern const int name##Frag_line_lens[];
+    extern "C" const unsigned int name##Vert_len;                                                                          \
+    extern "C" const char *name##Vert[];                                                                                   \
+    extern "C" const int name##Vert_line_lens[];                                                                           \
+    extern "C" const unsigned int name##Frag_len;                                                                          \
+    extern "C" const char *name##Frag[];                                                                                   \
+    extern "C" const int name##Frag_line_lens[];
 
 #define SHADER(name)                                                                                                   \
     std::make_shared<Shader>(ShaderCode(name##Vert_len, name##Vert_line_lens, name##Vert),                             \
