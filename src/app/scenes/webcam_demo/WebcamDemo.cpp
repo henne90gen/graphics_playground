@@ -57,16 +57,18 @@ void WebcamDemo::setup() {
 void WebcamDemo::onAspectRatioChange() { projectionMatrix = glm::ortho(-1.0F, 1.0F, -1.0F, 1.0F); }
 
 void WebcamDemo::tick() {
-    static auto isGrayScale = true;
+    static auto convertToGrayscale = true;
     static auto scaleFactor = 0.25F;
     static int updateEveryXFrames = 5;
+    static bool runEdgeDetector = true;
 
     ImGui::Begin("Settings");
     ImGui::Text("Image Size: (%dx%d)", imageSize.width, imageSize.height);
     ImGui::Text("Channels: %d", imageBuffer.channels());
-    ImGui::Checkbox("Grayscale", &isGrayScale);
+    ImGui::Checkbox("Grayscale", &convertToGrayscale);
     ImGui::DragFloat("Scale Factor", &scaleFactor, 0.001F, 0.001F, 2.0F);
     ImGui::DragInt("Update every X frames", &updateEveryXFrames, 1.0F, 1, 100);
+    ImGui::Checkbox("Edge Detector", &runEdgeDetector);
     ImGui::End();
 
     texture->bind();
@@ -75,15 +77,51 @@ void WebcamDemo::tick() {
     counter++;
     if (counter % updateEveryXFrames == 0) {
         webcam >> imageBuffer;
-        cv::Mat tmp;
-        cv::resize(imageBuffer, tmp, cv::Size(), scaleFactor, scaleFactor);
-        texture->update(tmp.data, tmp.size[1], tmp.size[0]);
+
+        if (runEdgeDetector) {
+            cv::Mat src;
+            GaussianBlur(imageBuffer, src, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+
+            cv::Mat srcGray;
+            cvtColor(src, srcGray, cv::COLOR_BGR2GRAY);
+
+            cv::Mat grad_x, grad_y;
+            cv::Mat abs_grad_x, abs_grad_y;
+            int ksize = 3; // parser.get<int>("ksize");
+            int scale = 1; // parser.get<int>("scale");
+            int delta = 1; // parser.get<int>("delta");
+            int ddepth = CV_16S;
+            Sobel(srcGray, grad_x, ddepth, 1, 0, ksize, scale, delta, cv::BORDER_DEFAULT);
+            Sobel(srcGray, grad_y, ddepth, 0, 1, ksize, scale, delta, cv::BORDER_DEFAULT);
+
+            // converting back to CV_8U
+            convertScaleAbs(grad_x, abs_grad_x);
+            convertScaleAbs(grad_y, abs_grad_y);
+
+            cv::Mat grad;
+            addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+            texture->setDataType(GL_RED);
+            texture->update(grad.data, grad.cols, grad.rows);
+        } else {
+            cv::Mat src;
+            if (convertToGrayscale) {
+                cvtColor(imageBuffer, src, cv::COLOR_BGR2GRAY);
+                texture->setDataType(GL_RED);
+            } else {
+                src = imageBuffer;
+                texture->setDataType(GL_BGR);
+            }
+
+            cv::Mat tmp;
+            cv::resize(src, tmp, cv::Size(), scaleFactor, scaleFactor);
+            texture->update(tmp.data, tmp.size[1], tmp.size[0]);
+        }
     }
 
     shader->bind();
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("textureSampler", 0);
-    shader->setUniform("isGrayScale", isGrayScale);
+    shader->setUniform("isGrayScale", convertToGrayscale || runEdgeDetector);
     va->bind();
 
     GL_Call(glDrawElements(GL_TRIANGLES, va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
