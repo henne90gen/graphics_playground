@@ -10,7 +10,7 @@ out vec4 color;
 void main() {
     vec4 textureColor = texture(textureSampler, UV);
     if (isGrayScale) {
-        color = vec4(textureColor.r * 0.2126F + textureColor.g * 0.7152F + textureColor.b * 0.0722F);
+        color = vec4(textureColor.r);
         color.a = 1.0F;
     } else {
         color = textureColor;
