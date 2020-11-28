@@ -20,6 +20,7 @@
 #include "scenes/landscape/Landscape.h"
 #include "scenes/legacy_triangle/LegacyTriangle.h"
 #include "scenes/light_demo/LightDemo.h"
+#include "scenes/l_systems/LSystems.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
 #include "scenes/meta_balls/MetaBallsScene.h"
 #include "scenes/model_loading/ModelLoading.h"
@@ -183,6 +184,7 @@ int main() {
     scenes.push_back(new GraphVis(sceneData));           // 23
     scenes.push_back(new WebcamDemo(sceneData));         // 24
     scenes.push_back(new AudioVis(sceneData));           // 25
+    scenes.push_back(new LSystems(sceneData));           // 26
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
     //    mainMenu.goToScene(20);

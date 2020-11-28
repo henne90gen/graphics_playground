@@ -19,7 +19,7 @@ public:
 
     static void unbind() ;
 
-    unsigned int getCount() const { return count; }
+    [[nodiscard]] unsigned int getCount() const { return count; }
 
     void update(const unsigned int *data, unsigned int count);
 
