@@ -22,8 +22,15 @@ class LSystems : public Scene {
     std::shared_ptr<VertexBuffer> vb;
 };
 
+struct LSystem {
+    std::string startSequence = "";
+    std::unordered_map<char, std::string> replacements = {};
+    float d = 0.05F;
+    float angleDelta = glm::pi<float>();
+};
+
 void line(std::vector<glm::vec3> &vertices, float x1, float y1, float x2, float y2);
-void simulateLSystem(unsigned int numIterations, const std::string &startSequence,
-                     const std::function<std::string(char)> &sequenceUpdateFunc,
-                     const std::function<void(char)> &turtleFunc);
+void simulateLSystem(unsigned int numIterations, const LSystem &l);
+
 void dragonCurve(std::vector<glm::vec3> &vertices, unsigned int numIterations);
+void fractalPlant(std::vector<glm::vec3> &vertices, unsigned int numIterations);
