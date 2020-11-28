@@ -80,26 +80,27 @@ void WebcamDemo::tick() {
 
         if (runEdgeDetector) {
             cv::Mat src;
-            GaussianBlur(imageBuffer, src, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+            cv::GaussianBlur(imageBuffer, src, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
 
             cv::Mat srcGray;
-            cvtColor(src, srcGray, cv::COLOR_BGR2GRAY);
+            cv::cvtColor(src, srcGray, cv::COLOR_BGR2GRAY);
 
-            cv::Mat grad_x, grad_y;
-            cv::Mat abs_grad_x, abs_grad_y;
+            cv::Mat grad_x;
+            cv::Mat grad_y;
+            cv::Mat abs_grad_x;cv::Mat abs_grad_y;
             int ksize = 3; // parser.get<int>("ksize");
             int scale = 1; // parser.get<int>("scale");
             int delta = 1; // parser.get<int>("delta");
             int ddepth = CV_16S;
-            Sobel(srcGray, grad_x, ddepth, 1, 0, ksize, scale, delta, cv::BORDER_DEFAULT);
-            Sobel(srcGray, grad_y, ddepth, 0, 1, ksize, scale, delta, cv::BORDER_DEFAULT);
+            cv::Sobel(srcGray, grad_x, ddepth, 1, 0, ksize, scale, delta, cv::BORDER_DEFAULT);
+            cv::Sobel(srcGray, grad_y, ddepth, 0, 1, ksize, scale, delta, cv::BORDER_DEFAULT);
 
             // converting back to CV_8U
-            convertScaleAbs(grad_x, abs_grad_x);
-            convertScaleAbs(grad_y, abs_grad_y);
+            cv::convertScaleAbs(grad_x, abs_grad_x);
+            cv::convertScaleAbs(grad_y, abs_grad_y);
 
             cv::Mat grad;
-            addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+            cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
             texture->setDataType(GL_RED);
             texture->update(grad.data, grad.cols, grad.rows);
         } else {
