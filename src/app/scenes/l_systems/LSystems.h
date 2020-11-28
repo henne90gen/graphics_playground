@@ -23,4 +23,7 @@ class LSystems : public Scene {
 };
 
 void line(std::vector<glm::vec3> &vertices, float x1, float y1, float x2, float y2);
-void simulateLSystem(std::vector<glm::vec3> &vertices, const unsigned int numIterations);
+void simulateLSystem(unsigned int numIterations, const std::string &startSequence,
+                     const std::function<std::string(char)> &sequenceUpdateFunc,
+                     const std::function<void(char)> &turtleFunc);
+void dragonCurve(std::vector<glm::vec3> &vertices, unsigned int numIterations);

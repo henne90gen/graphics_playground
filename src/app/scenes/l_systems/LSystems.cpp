@@ -29,7 +29,7 @@ void LSystems::setup() {
 void LSystems::destroy() {}
 
 void LSystems::tick() {
-    static auto cameraPosition = glm::vec3(0.0F, 0.0F, -20.0F);
+    static auto cameraPosition = glm::vec3(0.0F, 0.0F, -100.0F);
     static auto cameraRotation = glm::vec3();
     static auto numIterations = 3;
     static auto timerSeconds = 1.0;
@@ -39,7 +39,7 @@ void LSystems::tick() {
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.01F);
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     ImGui::Separator();
-    ImGui::SliderInt("Number of Iterations", &numIterations, 0, 15);
+    ImGui::SliderInt("Number of Iterations", &numIterations, 0, 20);
     ImGui::End();
 
     shader->bind();
@@ -56,9 +56,13 @@ void LSystems::tick() {
     if (timerSeconds >= 0.5) {
         timerSeconds = 0.0;
         numIterations++;
-        numIterations %= 20;
+        if (numIterations > 20) {
+            numIterations = 5;
+        }
         std::vector<glm::vec3> vertices = {};
-        simulateLSystem(vertices, numIterations);
+
+        dragonCurve(vertices, numIterations);
+
         vb->update(vertices);
         vertexCount = vertices.size();
     }
@@ -74,38 +78,51 @@ void line(std::vector<glm::vec3> &vertices, float x1, float y1, float x2, float 
     vertices.emplace_back(x2, y2, 0.0);
 }
 
-void simulateLSystem(std::vector<glm::vec3> &vertices, const unsigned int numIterations) {
-    std::string sequence = "FX";
+void simulateLSystem(const unsigned int numIterations, const std::string &startSequence,
+                     const std::function<std::string(char)> &sequenceUpdateFunc,
+                     const std::function<void(char)> &turtleFunc) {
+    std::string sequence = startSequence;
     for (unsigned int i = 0; i < numIterations; i++) {
         std::string newSequence;
         for (char c : sequence) {
-            if (c == 'X') {
-                newSequence += "X+YF+";
-            } else if (c == 'Y') {
-                newSequence += "-FX-Y";
-            } else {
-                newSequence += c;
-            }
+            newSequence += sequenceUpdateFunc(c);
         }
         sequence = newSequence;
     }
 
+    for (char c : sequence) {
+        turtleFunc(c);
+    }
+}
+
+void dragonCurve(std::vector<glm::vec3> &vertices, const unsigned int numIterations) {
     const float d = 0.05F;
+    const float angleDelta = glm::pi<float>() / 2.0F;
     float x = 0.0F;
     float y = 0.0F;
     float angle = 0.0F;
-    const float angleDelta = glm::pi<float>() / 2.0F;
-    for (char c : sequence) {
-        if (c == 'F') {
-            const float nextX = x + d * std::cos(angle);
-            const float nextY = y + d * std::sin(angle);
-            line(vertices, x, y, nextX, nextY);
-            x = nextX;
-            y = nextY;
-        } else if (c == '-') {
-            angle -= angleDelta;
-        } else if (c == '+') {
-            angle += angleDelta;
-        }
-    }
+    simulateLSystem(
+          numIterations, "FX",
+          [](char c) -> std::string {
+              if (c == 'X') {
+                  return "X+YF+";
+              }
+              if (c == 'Y') {
+                  return "-FX-Y";
+              }
+              return std::string(1, c);
+          },
+          [&vertices, &d, &angleDelta, &x, &y, &angle](char c) {
+              if (c == 'F') {
+                  const float nextX = x + d * std::cos(angle);
+                  const float nextY = y + d * std::sin(angle);
+                  line(vertices, x, y, nextX, nextY);
+                  x = nextX;
+                  y = nextY;
+              } else if (c == '-') {
+                  angle -= angleDelta;
+              } else if (c == '+') {
+                  angle += angleDelta;
+              }
+          });
 }
