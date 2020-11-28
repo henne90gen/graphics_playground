@@ -34,9 +34,9 @@ class {name} : public Scene {{
     void setup() override;
     void tick() override;
     void destroy() override;
-    
+
   private:
-    std::shared_ptr<Shader> shader;    
+    std::shared_ptr<Shader> shader;
 }};\
 """
 

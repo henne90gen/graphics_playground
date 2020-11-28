@@ -59,8 +59,9 @@ add_executable(${PROJECT_NAME}
         scenes/dtm_viewer/DtmViewer.cpp
         scenes/graph_vis/GraphVis.cpp
         scenes/webcam_demo/WebcamDemo.cpp
-        ${SHADERS}
         scenes/audio_vis/AudioVis.cpp
+        scenes/l_systems/LSystems.cpp
+        ${SHADERS}
         )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
