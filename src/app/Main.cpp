@@ -17,10 +17,10 @@
 #include "scenes/framebuffer_demo/FramebufferDemo.h"
 #include "scenes/gamma_calculation/GammaCalculation.h"
 #include "scenes/graph_vis/GraphVis.h"
+#include "scenes/l_systems/LSystems.h"
 #include "scenes/landscape/Landscape.h"
 #include "scenes/legacy_triangle/LegacyTriangle.h"
 #include "scenes/light_demo/LightDemo.h"
-#include "scenes/l_systems/LSystems.h"
 #include "scenes/marching_cubes/MarchingCubesScene.h"
 #include "scenes/meta_balls/MetaBallsScene.h"
 #include "scenes/model_loading/ModelLoading.h"
@@ -187,7 +187,7 @@ int main() {
     scenes.push_back(new LSystems(sceneData));           // 26
 
     mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    //    mainMenu.goToScene(20);
+    mainMenu.goToScene(6);
 
     enableOpenGLDebugging();
 
