@@ -28,52 +28,6 @@ void Landscape::setup() {
     noise = new FastNoise();
 }
 
-void Landscape::generatePoints(unsigned int pointDensity) {
-    vertexArray->bind();
-
-    const auto width = static_cast<unsigned int>(WIDTH * pointDensity);
-    const auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
-
-    const unsigned int verticesCount = width * height;
-    std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
-    for (unsigned long i = 0; i < vertices.size(); i++) {
-        auto x = static_cast<float>(i % width);
-        auto y = std::floor(static_cast<float>(i) / static_cast<float>(width));
-        x /= static_cast<float>(pointDensity);
-        y /= static_cast<float>(pointDensity);
-        vertices[i] = glm::vec2(x, y);
-    }
-
-    const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
-    vertexArray->addVertexBuffer(positionBuffer);
-
-    const unsigned int heightMapCount = width * height;
-    heightMap = std::vector<float>(heightMapCount);
-    heightBuffer = std::make_shared<VertexBuffer>();
-    BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
-    heightBuffer->setLayout(heightLayout);
-    vertexArray->addVertexBuffer(heightBuffer);
-
-    const unsigned int indicesPerQuad = 6;
-    unsigned int indicesCount = width * height * indicesPerQuad;
-    auto indices = std::vector<unsigned int>(indicesCount);
-    unsigned int counter = 0;
-    for (unsigned int y = 0; y < height - 1; y++) {
-        for (unsigned int x = 0; x < width - 1; x++) {
-            indices[counter++] = (y + 1) * width + x;
-            indices[counter++] = y * width + (x + 1);
-            indices[counter++] = y * width + x;
-            indices[counter++] = (y + 1) * width + x;
-            indices[counter++] = (y + 1) * width + (x + 1);
-            indices[counter++] = y * width + (x + 1);
-        }
-    }
-    auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
-    vertexArray->setIndexBuffer(indexBuffer);
-}
-
 void Landscape::destroy() { delete noise; }
 
 void Landscape::tick() {
@@ -88,13 +42,11 @@ void Landscape::tick() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
     static int pointDensity = INITIAL_POINT_DENSITY;
-    scale.x = pointDensity;
-    scale.y = pointDensity;
     const float timeSpeed = 0.01F;
-    scale.z += timeSpeed;
     static auto movement = glm::vec2(0.0F);
     static FastNoise::NoiseType noiseType = FastNoise::Simplex;
-    static bool drawWireframe = false;
+    static auto drawWireframe = false;
+    static auto animate = false;
     int lastPointDensity = pointDensity;
     static float frequency = 0.3F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
@@ -117,7 +69,14 @@ void Landscape::tick() {
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
     ImGui::Checkbox("Wireframe", &drawWireframe);
+    ImGui::Checkbox("Animate", &animate);
     ImGui::End();
+
+    scale.x = pointDensity;
+    scale.y = pointDensity;
+    if (animate) {
+        scale.z += timeSpeed;
+    }
 
     shader->bind();
     vertexArray->bind();
@@ -154,12 +113,62 @@ void Landscape::tick() {
     shader->unbind();
 }
 
+void Landscape::generatePoints(unsigned int pointDensity) {
+    vertexArray->bind();
+
+    const auto width = static_cast<unsigned int>(WIDTH * pointDensity);
+    const auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
+
+    const unsigned int verticesCount = width * height;
+    std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
+#pragma omp parallel for
+    for (unsigned long i = 0; i < vertices.size(); i++) {
+        auto x = static_cast<float>(i % width);
+        auto y = std::floor(static_cast<float>(i) / static_cast<float>(width));
+        x /= static_cast<float>(pointDensity);
+        y /= static_cast<float>(pointDensity);
+        vertices[i] = glm::vec2(x, y);
+    }
+
+    const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
+    auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
+    vertexArray->addVertexBuffer(positionBuffer);
+
+    const unsigned int heightMapCount = width * height;
+    heightMap = std::vector<float>(heightMapCount);
+    heightBuffer = std::make_shared<VertexBuffer>();
+    BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
+    heightBuffer->setLayout(heightLayout);
+    vertexArray->addVertexBuffer(heightBuffer);
+
+    const unsigned int indicesPerQuad = 6;
+    unsigned int indicesCount = width * height * indicesPerQuad;
+    auto indices = std::vector<unsigned int>(indicesCount);
+    unsigned int counter = 0;
+#pragma omp parallel for
+    for (unsigned int y = 0; y < height - 1; y++) {
+        for (unsigned int x = 0; x < width - 1; x++) {
+            indices[counter++] = (y + 1) * width + x;
+            indices[counter++] = y * width + (x + 1);
+            indices[counter++] = y * width + x;
+            indices[counter++] = (y + 1) * width + x;
+            indices[counter++] = (y + 1) * width + (x + 1);
+            indices[counter++] = y * width + (x + 1);
+        }
+    }
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+    vertexArray->setIndexBuffer(indexBuffer);
+}
+
 void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
                                    FastNoise::NoiseType &noiseType) {
     noise->SetNoiseType(noiseType);
     float maxHeight = 0;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
+#define SEQUENTIAL 0
+#if SEQUENTIAL
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
             float realX = static_cast<float>(x) / scale.x + movement.x;
@@ -180,7 +189,30 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
             }
         }
     }
-    heightBuffer->update(heightMap.data(), heightMap.size() * sizeof(float));
+#else
+#pragma omp parallel for reduction(max : maxHeight)
+    for (unsigned int i = 0; i < width * height; i++) {
+        unsigned int x = i % width;
+        unsigned int y = i / width;
+        float realX = static_cast<float>(x) / scale.x + movement.x;
+        float realY = static_cast<float>(y) / scale.y + movement.y;
+
+        float generatedHeight = noise->GetNoise(realX, realY, scale.z);
+        const float offset = 1.0F;
+        const float scaleFactor = 2.0F;
+        generatedHeight += offset;
+        generatedHeight /= scaleFactor;
+
+        auto *ptr = const_cast<float *>(heightMap.data()); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        const float arbitraryScaleFactor = 10.0F;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        ptr[y * width + x] = generatedHeight * arbitraryScaleFactor;
+        if (heightMap[y * width + x] > maxHeight) {
+            maxHeight = heightMap[y * width + x];
+        }
+    }
+#endif
+    heightBuffer->update(heightMap);
 
     shader->setUniform("maxHeight", maxHeight);
 }
