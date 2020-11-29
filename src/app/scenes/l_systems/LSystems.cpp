@@ -31,13 +31,17 @@ void LSystems::setup() {
 void LSystems::destroy() {}
 
 void LSystems::tick() {
-    const std::array<std::function<void(std::vector<glm::vec3> &, unsigned int)>, 2> lSystems = {
-          dragonCurve,  //
-          fractalPlant, //
+    const std::array<std::function<void(std::vector<glm::vec3> &, unsigned int)>, 4> lSystems = {
+          dragonCurve,        //
+          fractalPlant,       //
+          sierpinskiTriangle, //
+          binaryTree,         //
     };
-    const std::vector<std::string> lSystemNames = {
-          "Dragon Curve",  //
-          "Fractal Plant", //
+    const std::array<const char *, 4> lSystemNames = {
+          "Dragon Curve",        //
+          "Fractal Plant",       //
+          "Sierpinski Triangle", //
+          "Binary Tree",         //
     };
     static auto cameraPosition = glm::vec3(0.0F, 0.0F, -100.0F);
     static auto cameraRotation = glm::vec3();
@@ -52,7 +56,7 @@ void LSystems::tick() {
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     ImGui::Separator();
     ImGui::SliderInt("Number of Iterations", &numIterations, 0, 20);
-    ImGui::ListBox("L System", currentLSystem, lSystemNames);
+    ImGui::Combo("Noise Algorithm", reinterpret_cast<int *>(&currentLSystem), lSystemNames.data(), lSystemNames.size());
     ImGui::End();
 
     shader->bind();
@@ -109,9 +113,9 @@ void simulateLSystem(std::vector<glm::vec3> &vertices, const unsigned int numIte
     std::vector<StackElement> stack = {};
     float x = 0.0F;
     float y = 0.0F;
-    float angle = glm::pi<float>() / 2.0F;
+    float angle = 0.0F;
     for (char c : sequence) {
-        if (c == 'F') {
+        if (c == 'F' || c == 'G') {
             const float nextX = x + l.d * std::cos(angle);
             const float nextY = y + l.d * std::sin(angle);
             line(vertices, x, y, nextX, nextY);
@@ -150,5 +154,25 @@ void fractalPlant(std::vector<glm::vec3> &vertices, const unsigned int numIterat
     replacements.emplace('X', std::string("F+[[X]-X]-F[-FX]+X"));
     replacements.emplace('F', std::string("FF"));
     LSystem l = {"X", replacements, d, angleDelta};
+    simulateLSystem(vertices, numIterations, l);
+}
+
+void sierpinskiTriangle(std::vector<glm::vec3> &vertices, const unsigned int numIterations) {
+    const float d = 0.05;
+    const float angleDelta = glm::pi<float>() * 2.0F / 3.0F;
+    std::unordered_map<char, std::string> replacements = {};
+    replacements.emplace('F', std::string("F-G+F+G-F"));
+    replacements.emplace('G', std::string("GG"));
+    LSystem l = {"F-G-G", replacements, d, angleDelta};
+    simulateLSystem(vertices, numIterations, l);
+}
+
+void binaryTree(std::vector<glm::vec3> &vertices, const unsigned int numIterations) {
+    const float d = 0.05;
+    const float angleDelta = glm::pi<float>() / 4.0F;
+    std::unordered_map<char, std::string> replacements = {};
+    replacements.emplace('F', std::string("FF"));
+    replacements.emplace('G', std::string("F[-G]+G"));
+    LSystem l = {"G", replacements, d, angleDelta};
     simulateLSystem(vertices, numIterations, l);
 }

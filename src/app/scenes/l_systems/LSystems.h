@@ -34,3 +34,5 @@ void simulateLSystem(unsigned int numIterations, const LSystem &l);
 
 void dragonCurve(std::vector<glm::vec3> &vertices, unsigned int numIterations);
 void fractalPlant(std::vector<glm::vec3> &vertices, unsigned int numIterations);
+void sierpinskiTriangle(std::vector<glm::vec3> &vertices, unsigned int numIterations);
+void binaryTree(std::vector<glm::vec3> &vertices, const unsigned int numIterations);
