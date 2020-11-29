@@ -1,8 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "openmp-use-default-none"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-macro-usage"
-
 #include "Landscape.h"
 
 #include <cmath>
@@ -75,7 +70,9 @@ void Landscape::tick() {
 
     int layerToRemove = -1;
     for (int i = 0; i < static_cast<int>(layers.size()); i++) {
-        layers[i]->renderMenu(i);
+        if (layers[i]->renderMenu(i)) {
+            layerToRemove = i;
+        }
     }
     if (layerToRemove >= 0) {
         delete layers[layerToRemove];
@@ -138,7 +135,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     const unsigned int verticesCount = width * height;
     std::vector<glm::vec2> vertices = std::vector<glm::vec2>(verticesCount);
 #pragma omp parallel for
-    for (unsigned long i = 0; i < vertices.size(); i++) {
+    for (long i = 0; i < vertices.size(); i++) {
         auto x = static_cast<float>(i % width);
         auto y = std::floor(static_cast<float>(i) / static_cast<float>(width));
         x /= static_cast<float>(pointDensity);
@@ -181,14 +178,22 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
     float maxHeight = 0;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
-#define SEQUENTIAL 0
+#define SEQUENTIAL 1
 #if SEQUENTIAL
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
             float realX = static_cast<float>(x) / scale.x + movement.x;
             float realY = static_cast<float>(y) / scale.y + movement.y;
 
-            float generatedHeight = noise->GetNoise(realX, realY, scale.z);
+            float generatedHeight = 0.0F;
+            for (auto *layer : layers) {
+                if (!layer->enabled) {
+                    continue;
+                }
+
+                generatedHeight += layer->getWeightedValue(WIDTH, HEIGHT, realX, realY, scale.z);
+            }
+
             const float offset = 1.0F;
             const float scaleFactor = 2.0F;
             generatedHeight += offset;
@@ -205,7 +210,7 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
     }
 #else
 #pragma omp parallel for reduction(max : maxHeight)
-    for (unsigned int i = 0; i < width * height; i++) {
+    for (int i = 0; i < width * height; i++) {
         unsigned int x = i % width;
         unsigned int y = i / width;
         float realX = static_cast<float>(x) / scale.x + movement.x;
@@ -238,6 +243,3 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 
     shader->setUniform("maxHeight", maxHeight);
 }
-
-#pragma clang diagnostic pop
-#pragma clang diagnostic pop
