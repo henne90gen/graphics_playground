@@ -30,6 +30,7 @@ void pickColorAndVertices(float *color, float *vertices);
 namespace ImGui {
 
 void NoiseTypeSelector(FastNoise::NoiseType *pType);
+void NoiseTypeSelector(const char *label, FastNoise::NoiseType *pType);
 
 void ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
              const std::string &prefix = "");

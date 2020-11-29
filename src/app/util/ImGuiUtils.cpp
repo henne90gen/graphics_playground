@@ -50,17 +50,21 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::End();
 }
 
-void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) {
-    static const std::array<const char *, 10> items = {"Value", "ValueFractal", "Perlin", "PerlinFractal", "Simplex",
-                                                       "SimplexFractal", "Cellular", "WhiteNoise", "Cubic",
-                                                       "CubicFractal"};
+void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) { ImGui::NoiseTypeSelector("Noise Algorithm", pType); }
+
+void ImGui::NoiseTypeSelector(const char *label, FastNoise::NoiseType *pType) {
+    static const std::array<const char *, 10> items = {"Value",   "ValueFractal",   "Perlin",   "PerlinFractal",
+                                                       "Simplex", "SimplexFractal", "Cellular", "WhiteNoise",
+                                                       "Cubic",   "CubicFractal"};
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::Combo("Noise Algorithm", reinterpret_cast<int *>(pType), items.data(), items.size());
+    ImGui::Combo(label, reinterpret_cast<int *>(pType), items.data(), items.size());
 }
 
 static auto vector_getter = [](void *vec, int idx, const char **out_text) {
     auto &vector = *static_cast<std::vector<std::string> *>(vec);
-    if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+    if (idx < 0 || idx >= static_cast<int>(vector.size())) {
+        return false;
+    }
     *out_text = vector.at(idx).c_str();
     return true;
 };
@@ -75,7 +79,7 @@ void ImGui::ListBox(const std::string &label, unsigned int &currentItem, const s
 
     int *current = reinterpret_cast<int *>(&currentItem); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     // NOLINTNEXTLINE(google-readability-casting,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-    ImGui::ListBox(label.c_str(), current, vector_getter, (void *) &fixedItems, count);
+    ImGui::ListBox(label.c_str(), current, vector_getter, (void *)&fixedItems, count);
 }
 
 void ImGui::FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
