@@ -1,3 +1,8 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "openmp-use-default-none"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-macro-usage"
+
 #include "Landscape.h"
 
 #include <cmath>
@@ -6,15 +11,13 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "util/ImGuiUtils.h"
+constexpr unsigned int WIDTH = 10;
+constexpr unsigned int HEIGHT = 10;
+constexpr int INITIAL_POINT_DENSITY = 15;
 
-const unsigned int WIDTH = 10;
-const unsigned int HEIGHT = 10;
-const unsigned int INITIAL_POINT_DENSITY = 15;
-
-const float FIELD_OF_VIEW = 45.0F;
-const float Z_NEAR = 0.1F;
-const float Z_FAR = 1000.0F;
+constexpr float FIELD_OF_VIEW = 45.0F;
+constexpr float Z_NEAR = 0.1F;
+constexpr float Z_FAR = 1000.0F;
 
 DEFINE_SHADER(landscape_Landscape)
 
@@ -24,33 +27,38 @@ void Landscape::setup() {
 
     vertexArray = std::make_shared<VertexArray>(shader);
     generatePoints(INITIAL_POINT_DENSITY);
-
-    noise = new FastNoise();
 }
 
-void Landscape::destroy() { delete noise; }
+void Landscape::destroy() {}
 
 void Landscape::tick() {
+    constexpr float timeSpeed = 0.01F;
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelScale = glm::vec3(7.0F, 7.0F, 2.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto translation = glm::vec3(-30.0F, -20.0F, -50.0F);
+    static auto translation = glm::vec3(-30.0F, -30.0F, -50.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(-1.0F, 0.0F, 0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto cameraRotation = glm::vec3(0.0F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
-    static int pointDensity = INITIAL_POINT_DENSITY;
-    const float timeSpeed = 0.01F;
+    static auto pointDensity = INITIAL_POINT_DENSITY;
     static auto movement = glm::vec2(0.0F);
-    static FastNoise::NoiseType noiseType = FastNoise::Simplex;
     static auto drawWireframe = false;
     static auto animate = false;
     int lastPointDensity = pointDensity;
-    static float frequency = 0.3F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+
+    static std::vector<Layer *> layers = {
+          new NoiseLayer(1.0F, 0.1F), //
+          new NoiseLayer(0.5F, 0.3F), //
+          new NoiseLayer(0.2F, 0.5F), //
+          new BowlLayer(0.04F),       //
+    };
 
     const float dragSpeed = 0.01F;
+    const int minimumPointDensity = 1;
+    const int maximumPointDensity = 80;
     ImGui::Begin("Settings");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
@@ -60,16 +68,25 @@ void Landscape::tick() {
     ImGui::DragFloat3("Scale", reinterpret_cast<float *>(&scale), dragSpeed);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat2("Movement", reinterpret_cast<float *>(&movement), dragSpeed);
-
-    ImGui::NoiseTypeSelector(&noiseType);
-    ImGui::SliderFloat("Frequency", &frequency, 0.0F, 1.0F);
-
-    const int minimumPointDensity = 1;
-    const int maximumPointDensity = 100;
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
     ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::Checkbox("Animate", &animate);
+
+    int layerToRemove = -1;
+    for (int i = 0; i < static_cast<int>(layers.size()); i++) {
+        layers[i]->renderMenu(i);
+    }
+    if (layerToRemove >= 0) {
+        delete layers[layerToRemove];
+        layers.erase(layers.begin() + layerToRemove);
+    }
+
+    ImGui::Separator();
+    if (ImGui::Button("Add Layer")) {
+        layers.emplace_back();
+    }
+
     ImGui::End();
 
     scale.x = pointDensity;
@@ -81,12 +98,11 @@ void Landscape::tick() {
     shader->bind();
     vertexArray->bind();
 
-    noise->SetFrequency(frequency);
     if (lastPointDensity != pointDensity) {
         generatePoints(pointDensity);
     }
 
-    updateHeightBuffer(pointDensity, scale, movement, noiseType);
+    updateHeightBuffer(pointDensity, scale, movement, layers);
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
@@ -146,7 +162,6 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     unsigned int indicesCount = width * height * indicesPerQuad;
     auto indices = std::vector<unsigned int>(indicesCount);
     unsigned int counter = 0;
-#pragma omp parallel for
     for (unsigned int y = 0; y < height - 1; y++) {
         for (unsigned int x = 0; x < width - 1; x++) {
             indices[counter++] = (y + 1) * width + x;
@@ -162,8 +177,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
 }
 
 void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
-                                   FastNoise::NoiseType &noiseType) {
-    noise->SetNoiseType(noiseType);
+                                   const std::vector<Layer *> &layers) {
     float maxHeight = 0;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
@@ -197,7 +211,15 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
         float realX = static_cast<float>(x) / scale.x + movement.x;
         float realY = static_cast<float>(y) / scale.y + movement.y;
 
-        float generatedHeight = noise->GetNoise(realX, realY, scale.z);
+        float generatedHeight = 0.0F;
+        for (auto *layer : layers) {
+            if (!layer->enabled) {
+                continue;
+            }
+
+            generatedHeight += layer->getWeightedValue(WIDTH, HEIGHT, realX, realY, scale.z);
+        }
+
         const float offset = 1.0F;
         const float scaleFactor = 2.0F;
         generatedHeight += offset;
@@ -216,3 +238,6 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 
     shader->setUniform("maxHeight", maxHeight);
 }
+
+#pragma clang diagnostic pop
+#pragma clang diagnostic pop
