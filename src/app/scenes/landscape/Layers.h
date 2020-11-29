@@ -9,11 +9,14 @@ struct Layer {
     Layer() = default;
     explicit Layer(float weight) : weight(weight) {}
     virtual ~Layer() = default;
+
     float getWeightedValue(float width, float height, float x, float y, float z) {
         return getValue(width, height, x, y, z) * this->weight;
     }
 
     bool renderMenu(int i) {
+        ImGui::Separator();
+
         const auto btnLabel = "Remove Layer " + std::to_string(i);
         bool shouldBeRemoved = ImGui::Button(btnLabel.c_str());
 
@@ -40,6 +43,7 @@ struct NoiseLayer : Layer {
     NoiseLayer() = default;
     NoiseLayer(float weight, float frequency) : Layer(weight) { noise->SetFrequency(frequency); }
     ~NoiseLayer() { delete noise; }
+
     void renderSpecialMenu(int i) override {
         auto noiseType = noise->GetNoiseType();
         const auto typeLabel = "Noise Type " + std::to_string(i);
@@ -51,12 +55,15 @@ struct NoiseLayer : Layer {
         ImGui::SliderFloat(frequencyLabel.c_str(), &frequency, 0.0F, 1.0F);
         noise->SetFrequency(frequency);
     }
+
     float getValue(float width, float height, float x, float y, float z) override { return noise->GetNoise(x, y, z); }
 };
 
 struct BowlLayer : Layer {
-    BowlLayer(float weight) : Layer(weight) {}
+    explicit BowlLayer(float weight) : Layer(weight) {}
+
     void renderSpecialMenu(int i) override {}
+
     float getValue(float width, float height, float x, float y, float z) override {
         float adjustedX = x - (width / 2);
         float adjustedY = y - (height / 2);

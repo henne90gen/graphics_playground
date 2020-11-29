@@ -50,10 +50,10 @@ void Landscape::tick() {
     int lastPointDensity = pointDensity;
 
     static std::vector<Layer *> layers = {
+          new BowlLayer(0.04F),       //
           new NoiseLayer(1.0F, 0.1F), //
           new NoiseLayer(0.5F, 0.3F), //
           new NoiseLayer(0.2F, 0.5F), //
-          new BowlLayer(0.04F),       //
     };
 
     const float dragSpeed = 0.01F;
@@ -84,10 +84,10 @@ void Landscape::tick() {
 
     ImGui::Separator();
     if (ImGui::Button("Add Layer")) {
-        layers.emplace_back();
+        layers.push_back(new NoiseLayer());
     }
 
-    ImGui::End();
+    ImGui::End(); //        layers.emplace_back();
 
     scale.x = pointDensity;
     scale.y = pointDensity;
