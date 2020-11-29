@@ -102,12 +102,7 @@ glm::vec3 MarchingCubes::interpolateVerts(glm::vec4 v1, glm::vec4 v2) const {
 
 void MarchingCubes::runComplete() {
     reset();
-    if (!interpolate) {
-        isRunning = true;
-        while (isRunning) {
-            runOneStep();
-        }
-    } else {
+    if (interpolate) {
         const float threshold = surfaceLevel * 2.0F - 1.0F;
         const glm::ivec3 dimensions = {width, height, depth};
         implicit_surface_func func = [this, &threshold](const glm::vec3 &translated) {
@@ -115,6 +110,11 @@ void MarchingCubes::runComplete() {
             return result - threshold;
         };
         runMarchingCubes(dimensions, vertices, indices, func);
+    } else {
+        isRunning = true;
+        while (isRunning) {
+            runOneStep();
+        }
     }
 }
 
@@ -210,12 +210,9 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
 #else
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func) {
-
-    vertices.clear();
-    indices.clear();
-
     const unsigned int cubeCount = dimensions.x * dimensions.y * dimensions.z;
     const unsigned int maxTrianglesPerCube = 5;
+    vertices.clear();
     vertices.reserve(cubeCount * maxTrianglesPerCube * 3);
 
 #pragma omp parallel for
@@ -276,8 +273,10 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
         }
     }
 
-    for (unsigned int i = 0; i < vertices.size() / 3; i++) {
-        indices.emplace_back(i * 3, i * 3 + 1, i * 3 + 2);
+    indices.resize(vertices.size() / 3);
+#pragma omp parallel for
+    for (unsigned int i = 0; i < indices.size(); i++) {
+        indices[i] = glm::ivec3(i * 3, i * 3 + 1, i * 3 + 2);
     }
 }
 #endif
