@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/RenderUtils.h"
 #include "util/TimeUtils.h"
@@ -12,6 +13,7 @@ constexpr float Z_FAR = 100000.0F;
 
 constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
 
+DEFINE_SCENE_MAIN(DtmViewer);
 DEFINE_SHADER(dtm_viewer_Terrain)
 DEFINE_SHADER(dtm_viewer_Simple)
 
