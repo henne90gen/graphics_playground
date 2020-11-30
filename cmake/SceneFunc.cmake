@@ -1,4 +1,6 @@
-function(create_scene SCENE_NAME ADDITIONAL_SOURCE_FILES)
+function(create_scene ADDITIONAL_SOURCE_FILES)
+    get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
     file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.glsl")
     foreach (INPUT_FILE ${SHADER_FILES})
         get_filename_component(INPUT_FILE_DIR ${INPUT_FILE} DIRECTORY)
@@ -28,7 +30,9 @@ function(create_scene SCENE_NAME ADDITIONAL_SOURCE_FILES)
 
 endfunction()
 
-function(add_scene_resource_directory SCENE_NAME RESOURCE_DIR)
+function(add_scene_resource_directory RESOURCE_DIR)
+    get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
     add_custom_target(${SCENE_NAME}_copy_resources
             COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCE_DIR} ${CMAKE_BINARY_DIR}/bin/${SCENE_NAME}_resources)
     add_dependencies(${SCENE_NAME} ${SCENE_NAME}_copy_resources)

@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Scene.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "ray_tracing/RayTracer.h"
-#include "scenes/Scene.h"
 
 #include <functional>
 #include <future>
@@ -13,7 +13,7 @@
 
 class RayTracing : public Scene {
   public:
-    RayTracing(SceneData &data) : Scene(data, "RayTracing"){};
+    RayTracing() : Scene("RayTracing"){};
 
     ~RayTracing() override = default;
 

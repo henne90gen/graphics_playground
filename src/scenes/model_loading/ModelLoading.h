@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include "model_loading/ModelLoader.h"
 #include "opengl/IndexBuffer.h"
@@ -15,7 +15,7 @@
 
 class ModelLoading : public Scene {
   public:
-    explicit ModelLoading(SceneData data) : Scene(data, "ModelLoading"){};
+    explicit ModelLoading() : Scene("ModelLoading"){};
 
     ~ModelLoading() override = default;
 
@@ -37,6 +37,7 @@ class ModelLoading : public Scene {
                    float scale, bool drawWireframe);
 
     static void showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation,
-                      glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale, bool &drawWireframe,
-                      unsigned int &currentModel, std::vector<std::string> &paths, std::shared_ptr<Model> &renderModel);
+                             glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale, bool &drawWireframe,
+                             unsigned int &currentModel, std::vector<std::string> &paths,
+                             std::shared_ptr<Model> &renderModel);
 };

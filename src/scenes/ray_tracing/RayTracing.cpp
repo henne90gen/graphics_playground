@@ -1,5 +1,6 @@
 #include "RayTracing.h"
 
+#include "Main.h"
 #include "ray_tracing/RayTracer.h"
 #include "util/ImGuiUtils.h"
 #include "util/RenderUtils.h"
@@ -11,6 +12,7 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.01F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SCENE_MAIN(RayTracing)
 DEFINE_SHADER(ray_tracing_RayTracing)
 
 void RayTracing::setup() {

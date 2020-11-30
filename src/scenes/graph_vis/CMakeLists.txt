@@ -1,2 +1,2 @@
 
-create_scene(graph_vis GraphVis.cpp)
+create_scene(GraphVis.cpp)

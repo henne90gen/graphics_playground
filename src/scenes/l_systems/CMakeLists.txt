@@ -1,2 +1,2 @@
 
-create_scene(l_systems LSystems.cpp)
+create_scene(LSystems.cpp)

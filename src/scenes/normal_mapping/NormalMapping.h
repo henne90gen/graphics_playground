@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Scene.h"
 #include "opengl/Model.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
-#include "scenes/Scene.h"
 #include "util/TimeUtils.h"
 
 #include <functional>
@@ -12,7 +12,7 @@
 
 class NormalMapping : public Scene {
   public:
-    explicit NormalMapping(SceneData data) : Scene(data, "NormalMapping"){};
+    explicit NormalMapping() : Scene("NormalMapping"){};
 
     ~NormalMapping() override = default;
 

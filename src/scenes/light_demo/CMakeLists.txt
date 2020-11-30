@@ -1,3 +1,3 @@
 
-create_scene(BloomEffect.cpp)
+create_scene(LightDemo.cpp)
 add_scene_resource_directory(models)

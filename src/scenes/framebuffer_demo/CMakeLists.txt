@@ -1,2 +1,2 @@
 
-create_scene(framebuffer_demo FramebufferDemo.cpp)
+create_scene(FramebufferDemo.cpp)

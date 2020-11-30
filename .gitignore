@@ -10,6 +10,6 @@ cmake-build-release/
 CMakeSettings.json
 __pycache__/
 docs/
-src/app/scenes/model_loading/models/
+src/scenes/model_loading/models/
 gis_data/
 documents/.~lock.QuadTreeBenchmark.ods#

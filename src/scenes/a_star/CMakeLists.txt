@@ -1,2 +1,2 @@
 
-create_scene(a_star AStar.cpp)
+create_scene(AStar.cpp)

@@ -1,5 +1,6 @@
 #include "NormalMapping.h"
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/Image.h"
 
@@ -7,6 +8,7 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SCENE_MAIN(NormalMapping)
 DEFINE_SHADER(normal_mapping_NormalMapping)
 
 void NormalMapping::setup() {

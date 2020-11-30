@@ -2,12 +2,15 @@
 
 #include <glm/ext.hpp>
 
+#include "Main.h"
+
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 const unsigned int NUMBER_OF_SMALL_CUBES = 27;
 
+DEFINE_SCENE_MAIN(RubiksCubeScene)
 DEFINE_SHADER(rubiks_cube_RubiksCube)
 
 float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {

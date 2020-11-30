@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Scene.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
-#include "scenes/Scene.h"
 
 #include <functional>
 
@@ -15,7 +15,7 @@ struct Object {
 
 class FramebufferDemo : public Scene {
   public:
-    explicit FramebufferDemo(SceneData &data) : Scene(data, "FramebufferDemo"){};
+    explicit FramebufferDemo() : Scene("FramebufferDemo"){};
 
     ~FramebufferDemo() override = default;
 

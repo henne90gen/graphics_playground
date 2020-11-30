@@ -3,9 +3,9 @@
 #include <functional>
 #include <memory>
 
+#include "Scene.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
-#include "scenes/Scene.h"
 
 #include "ray_tracing_2d/RayTracer2D.h"
 
@@ -31,7 +31,7 @@ struct ColorConfig {
 
 class Shadows2D : public Scene {
   public:
-    Shadows2D(SceneData &data) : Scene(data, "Shadows2D"){};
+    Shadows2D() : Scene("Shadows2D"){};
 
     ~Shadows2D() override = default;
 

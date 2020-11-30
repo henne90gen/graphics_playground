@@ -1,1 +1,2 @@
-create_scene(fourier_transform FourierTransform.cpp)
+
+create_scene(FourierTransform.cpp)
