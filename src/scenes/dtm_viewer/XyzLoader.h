@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "util/BoundingBox.h"
+#include "../../core/util/BoundingBox.h"
 
 using TakePointsFunc = std::function<void (unsigned int, const std::vector<glm::vec3> &)>;
 

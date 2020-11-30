@@ -2,11 +2,15 @@
 add_library(core
         Main.cpp
         Scene.cpp
+        util/DataReadUtils.cpp
+        util/FileUtils.cpp
         util/Image.cpp
         util/ImGuiUtils.cpp
+        util/ModelLoader.cpp
         util/OpenGLUtils.cpp
         util/RenderUtils.cpp
         util/ScreenRecorder.cpp
+        util/TimeUtils.cpp
         util/VideoSaver.cpp
         opengl/BufferLayout.cpp
         opengl/BufferLayoutElement.cpp
@@ -44,10 +48,10 @@ endif ()
 target_compile_definitions(core PRIVATE GLFW_INCLUDE_NONE)
 
 target_link_libraries(core
-        logic
         glfw
         glad
         imgui
+        OpenMP::OpenMP_CXX
         ${LIBPNG_LIBRARY}
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
@@ -74,5 +78,4 @@ target_include_directories(core PRIVATE
         ${LIBJPEG_INCLUDE_DIR}
         ${GIF_H_DIR}
         ${FFMPEG_INCLUDE_DIR}
-        ${LOGIC_DIR}
         )

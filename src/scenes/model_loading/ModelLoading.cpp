@@ -1,9 +1,9 @@
 #include "ModelLoading.h"
 
 #include "Main.h"
-#include "model_loading/ModelLoader.h"
 #include "util/ImGuiUtils.h"
 #include "util/Image.h"
+#include "util/ModelLoader.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;

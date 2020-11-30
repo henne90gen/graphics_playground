@@ -1,4 +1,5 @@
 #include "Model.h"
+
 #include <util/Image.h>
 
 void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader) {

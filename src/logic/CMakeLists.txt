@@ -1,14 +1,7 @@
 
 add_library(logic
-        util/FileUtils.cpp
-        util/TimeUtils.cpp
-        util/DataReadUtils.cpp
         marching_cubes/MarchingCubes.cpp
-        model_loading/ModelLoader.cpp
         fourier_transform/Fourier.cpp
-        terrain_erosion/RainSimulation.cpp
-        gis/ShpLoader.cpp
-        gis/XyzLoader.cpp
         )
 
 target_link_libraries(logic PRIVATE FastNoise OpenMP::OpenMP_CXX)

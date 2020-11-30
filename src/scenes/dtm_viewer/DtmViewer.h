@@ -9,7 +9,7 @@
 #include <mutex>
 #include <random>
 
-#include "gis/XyzLoader.h"
+#include "XyzLoader.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
 #include "quad_tree/QuadTree.h"

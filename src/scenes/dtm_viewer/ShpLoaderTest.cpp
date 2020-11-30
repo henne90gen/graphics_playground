@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "gis/ShpLoader.h"
+#include "ShpLoader.h"
 
 #pragma pack(push, 1)
 struct DbfRecordRaw {

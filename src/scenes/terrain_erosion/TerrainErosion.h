@@ -8,9 +8,9 @@
 
 #include <FastNoise.h>
 
+#include "RainSimulation.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/VertexArray.h"
-#include "terrain_erosion/RainSimulation.h"
 
 #define HEIGHTMAP_WIDTH 300
 #define HEIGHTMAP_HEIGHT 300
