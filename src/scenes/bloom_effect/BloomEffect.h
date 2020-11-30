@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 
@@ -11,7 +11,7 @@
 
 class BloomEffect : public Scene {
   public:
-    BloomEffect(SceneData &data) : Scene(data, "BloomEffect"){};
+    BloomEffect() : Scene("BloomEffect"){};
     ~BloomEffect() override = default;
 
     void setup() override;
