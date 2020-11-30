@@ -7,8 +7,6 @@ create_scene_test(
         XyzLoaderTest.cpp
         XyzLoader.cpp
         ShpLoader.cpp
-        ../../core/util/FileUtils.cpp
-        ../../core/util/DataReadUtils.cpp
 )
 
 create_scene_benchmark(
@@ -17,8 +15,6 @@ create_scene_benchmark(
         XyzLoaderLoadBench.cpp
         XyzLoader.cpp
         ShpLoader.cpp
-        ../../core/util/FileUtils.cpp
-        ../../core/util/DataReadUtils.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
