@@ -68,26 +68,10 @@ get_directory_property(
         DEFINITION
         CMAKE_CURRENT_BINARY_DIR
 )
-get_directory_property(
-        ZLIB_SHARED
-        DIRECTORY
-        ${ZLIB_DIR}
-        DEFINITION
-        zlib
-)
-get_directory_property(
-        ZLIB_STATIC
-        DIRECTORY
-        ${ZLIB_DIR}
-        DEFINITION
-        zlibstatic
-)
 set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
+set(ZLIB_LIBRARY zlibstatic)
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(ZLIB_LIBRARY zlibstatic)
     include_directories(${ZLIB_INCLUDE_DIR})
-else ()
-    set(ZLIB_LIBRARY ${ZLIB_STATIC})
 endif ()
 export(TARGETS ${ZLIB_LIBRARY} FILE zlibstatic.cmake)
 

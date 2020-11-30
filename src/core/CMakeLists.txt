@@ -63,15 +63,10 @@ target_link_libraries(core
         glfw
         glad
         imgui
-        FastNoise
-        freetype
-        OpenMP::OpenMP_CXX
-        ${GLFW_LIBRARIES}
-        ${ZLIB_LIBRARY}
         ${LIBPNG_LIBRARY}
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
-        ${OPENCV_LIBS}
+        ${ZLIB_LIBRARY}
         )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

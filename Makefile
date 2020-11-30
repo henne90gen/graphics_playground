@@ -66,4 +66,4 @@ cpu-powersave:
 download-gis-data:
 	@. venv/bin/activate; python -m scripts download-gis-data
 
-.PHONY: docs build build-release
+.PHONY: docs build build-release cmake
