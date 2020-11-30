@@ -2,16 +2,14 @@
 
 #include <array>
 
-#include <glad/glad.h>
-#include <glm/ext.hpp>
-
+#include "Main.h"
 #include "util/ImGuiUtils.h"
-#include "util/OpenGLUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
+DEFINE_SCENE_MAIN(Cube)
 DEFINE_SHADER(cube_Cube)
 
 void Cube::setup() {

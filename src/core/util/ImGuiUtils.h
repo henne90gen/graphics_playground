@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FastNoise.h>
 #include <GLFW/glfw3.h>
 #include <array>
 #include <glm/glm.hpp>
@@ -28,9 +27,6 @@ void pickPosition(glm::vec3 &position);
 void pickColorAndVertices(float *color, float *vertices);
 
 namespace ImGui {
-
-void NoiseTypeSelector(FastNoise::NoiseType *pType);
-void NoiseTypeSelector(const char *label, FastNoise::NoiseType *pType);
 
 void ListBox(const std::string &label, unsigned int &currentItem, const std::vector<std::string> &items,
              const std::string &prefix = "");

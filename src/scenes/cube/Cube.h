@@ -1,19 +1,19 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 #include <glad/glad.h>
 
+#include "opengl/IndexBuffer.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
-#include "opengl/IndexBuffer.h"
 
 class Cube : public Scene {
-public:
-    explicit Cube(SceneData data) : Scene(data, "Cube") {};
+  public:
+    explicit Cube() : Scene("Cube"){};
 
     ~Cube() override = default;
 
@@ -23,7 +23,7 @@ public:
 
     void destroy() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<IndexBuffer> indexBuffer;
