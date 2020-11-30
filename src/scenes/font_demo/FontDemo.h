@@ -3,14 +3,14 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 
+#include "opengl/Shader.h"
+#include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
-#include "opengl/Texture.h"
-#include "opengl/Shader.h"
 
 struct Character {
     char character;
@@ -22,8 +22,8 @@ struct Character {
 };
 
 class FontDemo : public Scene {
-public:
-    explicit FontDemo(SceneData data) : Scene(data, "FontDemo") {};
+  public:
+    explicit FontDemo() : Scene("FontDemo"){};
 
     ~FontDemo() override = default;
 
@@ -33,7 +33,7 @@ public:
 
     void destroy() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
 

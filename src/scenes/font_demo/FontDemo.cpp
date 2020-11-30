@@ -1,8 +1,10 @@
 #include "FontDemo.h"
 
+#include "Main.h"
 #include "util/FileUtils.h"
 #include "util/ImGuiUtils.h"
 
+DEFINE_SCENE_MAIN(FontDemo)
 DEFINE_SHADER(font_demo_FontDemo)
 
 void FontDemo::setup() {
@@ -13,17 +15,14 @@ void FontDemo::setup() {
     vertexArray->bind();
 
     std::vector<float> vertices = {
-            -0.5, 0.5, 0.0, 0.0,  // NOLINT
-            -0.5, -0.5, 0.0, 1.0,  // NOLINT
-            0.5, -0.5, 1.0, 1.0, // NOLINT
-            -0.5, 0.5, 0.0, 0.0,  // NOLINT
-            0.5, -0.5, 1.0, 1.0, // NOLINT
-            0.5, 0.5, 1.0, 0.0  // NOLINT
+          -0.5, 0.5,  0.0, 0.0, // NOLINT
+          -0.5, -0.5, 0.0, 1.0, // NOLINT
+          0.5,  -0.5, 1.0, 1.0, // NOLINT
+          -0.5, 0.5,  0.0, 0.0, // NOLINT
+          0.5,  -0.5, 1.0, 1.0, // NOLINT
+          0.5,  0.5,  1.0, 0.0  // NOLINT
     };
-    BufferLayout bufferLayout = {
-            {ShaderDataType::Float2, "position"},
-            {ShaderDataType::Float2, "vertexUV"}
-    };
+    BufferLayout bufferLayout = {{ShaderDataType::Float2, "position"}, {ShaderDataType::Float2, "vertexUV"}};
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);
 
@@ -43,11 +42,11 @@ void FontDemo::destroy() {
 
 void FontDemo::tick() {
     std::string text = "Jeb quickly drove a few extra miles on the glazed pavement";
-    static auto color = glm::vec3(1.0F, 1.0F, 1.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto color = glm::vec3(1.0F, 1.0F, 1.0F);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto translation = glm::vec2(-0.16, 0.11); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static float zoom = 0.112F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static unsigned int characterResolution = 512; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static unsigned int selectedFontIndex = 3; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float zoom = 0.112F;                       // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static unsigned int characterResolution = 512;    // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static unsigned int selectedFontIndex = 3;        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool shouldRenderAlphabet = true;
 
     std::vector<std::string> fontPaths = {};
@@ -103,7 +102,7 @@ void FontDemo::renderText(std::string &text, const glm::vec2 &translation, float
         renderCharacter(character, nextCharacterPosition);
         const float characterToPixelSpace = 64.0F;
         auto scaledAdvance =
-                static_cast<float>(character.advance) / characterToPixelSpace / static_cast<float>(character.maxHeight);
+              static_cast<float>(character.advance) / characterToPixelSpace / static_cast<float>(character.maxHeight);
         nextCharacterPosition += glm::vec2(scaledAdvance, 0.0F);
     }
 }
@@ -123,10 +122,8 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
     offset /= character.maxHeight;
     glm::vec2 finalTranslation = translation + offset;
 
-    float horizontalScale =
-            static_cast<float>(character.dimension.x) / static_cast<float>(character.maxHeight);
-    float verticalScale =
-            static_cast<float>(character.dimension.y) / static_cast<float>(character.maxHeight);
+    float horizontalScale = static_cast<float>(character.dimension.x) / static_cast<float>(character.maxHeight);
+    float verticalScale = static_cast<float>(character.dimension.y) / static_cast<float>(character.maxHeight);
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
@@ -195,14 +192,12 @@ Character FontDemo::loadCharacter(const char character, const unsigned int chara
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     texture.update(reinterpret_cast<const unsigned char *>(bitmap.buffer), bitmap.width, bitmap.rows, 1);
 
-    return {
-            character,
+    return {character,
             texture,
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
             face->glyph->advance.x,
-            static_cast<long>(characterHeight)
-    };
+            static_cast<long>(characterHeight)};
 }
 
 void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
@@ -226,7 +221,7 @@ void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::ve
                      maxResolution);
     ImGui::Checkbox("Show Alphabet", &shouldRenderAlphabet);
 
-    std::string prefix = "scenes/font_demo/fonts/";
+    std::string prefix = "font_demo_resources/fonts/";
     ImGui::FileSelector("Font", prefix, selectedFontIndex, fontPaths);
 
     if (face != nullptr) {
@@ -270,8 +265,7 @@ bool settingsHaveChanged(unsigned int characterHeight, unsigned int selectedFont
         return true;
     }
     bool result = false;
-    if (lastCharacterHeight != characterHeight ||
-        lastSelectedFontIndex != selectedFontIndex) {
+    if (lastCharacterHeight != characterHeight || lastSelectedFontIndex != selectedFontIndex) {
         result = true;
     }
     lastCharacterHeight = characterHeight;
