@@ -1,17 +1,17 @@
 #pragma once
 
-#include "scenes/Scene.h"
-#include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
-#include "opengl/Texture.h"
+#include "Scene.h"
 #include "a_star/AStarSolver.h"
+#include "opengl/Shader.h"
+#include "opengl/Texture.h"
+#include "opengl/VertexArray.h"
 
 #include <functional>
 #include <memory>
 
 class AStar : public Scene {
-public:
-    explicit AStar(SceneData data) : Scene(data, "AStar") {};
+  public:
+    explicit AStar() : Scene("AStar"){};
 
     ~AStar() override = default;
 
@@ -21,7 +21,7 @@ public:
 
     void destroy() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<Texture> texture;
