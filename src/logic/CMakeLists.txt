@@ -21,7 +21,7 @@ add_library(logic
         audio/WavLoader.cpp
         )
 
-target_link_libraries(logic PRIVATE FastNoise pthread OpenMP::OpenMP_CXX)
+target_link_libraries(logic PRIVATE FastNoise OpenMP::OpenMP_CXX)
 
 set_target_properties(
         logic PROPERTIES

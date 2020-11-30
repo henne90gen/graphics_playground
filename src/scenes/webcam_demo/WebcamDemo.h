@@ -26,7 +26,9 @@ class WebcamDemo : public Scene {
     std::shared_ptr<VertexArray> va;
     std::shared_ptr<Texture> texture;
     glm::mat4 projectionMatrix;
+#if 0
     cv::VideoCapture webcam;
     cv::Size imageSize;
     cv::Mat imageBuffer;
+#endif
 };

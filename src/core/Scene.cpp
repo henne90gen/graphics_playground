@@ -1,7 +1,5 @@
 #include "Scene.h"
 
-#include <iostream>
-
 void Scene::renderBackMenu() {
     ImGui::Begin(name.c_str());
     ImGui::SetWindowPos(ImVec2(0, 0));
@@ -10,28 +8,25 @@ void Scene::renderBackMenu() {
     ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
 
     if (ImGui::Button("Take Screenshot")) {
-        data.recorder.takeScreenshot();
+        data.recorder->takeScreenshot();
     }
 
-    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&data.recorder.recordingType),
+    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&data.recorder->recordingType),
                        ScreenRecorder::RecordingType::GIF);
     ImGui::SameLine();
-    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&data.recorder.recordingType),
+    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&data.recorder->recordingType),
                        ScreenRecorder::RecordingType::MP4);
 
-    if (data.recorder.isRecording()) {
+    if (data.recorder->isRecording()) {
         if (ImGui::Button("Stop Recording")) {
-            data.recorder.stopRecording();
+            data.recorder->stopRecording();
         }
     } else {
         if (ImGui::Button("Start Recording")) {
-            data.recorder.startRecording();
+            data.recorder->startRecording();
         }
     }
 
-    if (ImGui::Button("Back")) {
-        data.backToMainMenu();
-    }
     ImGui::End();
 }
 
@@ -51,9 +46,10 @@ void Scene::renderMetrics() {
     ImGui::End();
 }
 
-void Scene::setup(unsigned int windowWidth, unsigned int windowHeight) {
+void Scene::setup(unsigned int windowWidth, unsigned int windowHeight, SceneData sceneData) {
     RECORD_SCOPE();
 
+    this->data = sceneData;
     setDimensions(windowWidth, windowHeight);
     setup();
 }
