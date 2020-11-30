@@ -3,11 +3,8 @@ include("../../vendor/catch/contrib/Catch.cmake")
 set(CATCH_INCLUDE_DIR ../../vendor/catch/single_include/catch2)
 
 add_executable(Tests main.cpp
-        RubiksCubeTest.cpp
-        RubiksCubeLogicTest.cpp
         ModelLoaderTest.cpp
         FourierTest.cpp
-        RayTracer2DTest.cpp
         gis/ShpLoaderTest.cpp
         gis/XyzLoaderTest.cpp
         QuadTreeTest.cpp)

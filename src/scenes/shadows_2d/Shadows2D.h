@@ -7,7 +7,7 @@
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
 
-#include "ray_tracing_2d/RayTracer2D.h"
+#include "RayTracer2D.h"
 
 struct DrawToggles {
     bool drawWireframe = false;

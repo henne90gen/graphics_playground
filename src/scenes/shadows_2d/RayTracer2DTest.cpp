@@ -1,9 +1,14 @@
+#define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 #include <glm/glm.hpp>
 #include <tuple>
 
-#include "TestUtils.h"
-#include "ray_tracing_2d/RayTracer2D.h"
+#include "../../test/TestUtils.h"
+#include "RayTracer2D.h"
+
+int main(int argc, char *argv[]) {
+    return Catch::Session().run(argc, argv);
+}
 
 TEST_CASE("Can determine whether two lines are parallel") {
     auto data = GENERATE(table<glm::vec2, glm::vec2, bool>({

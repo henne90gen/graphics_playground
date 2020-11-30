@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Scene.h"
-#include "rubiks_cube/RubiksCube.h"
-#include "rubiks_cube/RubiksCubeLogic.h"
-
 #include <functional>
 #include <memory>
 
+#include "RubiksCube.h"
+#include "RubiksCubeLogic.h"
+#include "Scene.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
