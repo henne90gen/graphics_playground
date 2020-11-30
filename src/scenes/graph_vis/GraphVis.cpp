@@ -1,8 +1,10 @@
 #include "GraphVis.h"
 
+#include "Main.h"
 #include "quad_tree/QuadTree.h"
 #include "util/ImGuiUtils.h"
 
+DEFINE_SCENE_MAIN(GraphVis)
 DEFINE_SHADER(graph_vis_GraphVis)
 
 void GraphVis::setup() {

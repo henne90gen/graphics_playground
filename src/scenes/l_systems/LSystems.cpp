@@ -1,11 +1,13 @@
 #include "LSystems.h"
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 10000.0F;
 
+DEFINE_SCENE_MAIN(LSystems)
 DEFINE_SHADER(l_systems_LSystems)
 
 void LSystems::setup() {

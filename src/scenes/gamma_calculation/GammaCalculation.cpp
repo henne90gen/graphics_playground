@@ -6,9 +6,11 @@
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
 
+DEFINE_SCENE_MAIN(GammaCalculation)
 DEFINE_SHADER(gamma_calculation_GammaCalculation)
 
 void GammaCalculation::setup() {
