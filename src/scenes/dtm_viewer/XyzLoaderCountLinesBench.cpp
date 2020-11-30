@@ -1,8 +1,7 @@
 #include <benchmark/benchmark.h>
 
 #include "XyzLoader.h"
-
-#include "../../bench/XyzLoaderUtil.cpp"
+#include "XyzLoaderUtil.cpp"
 
 static void BM_CountLines(benchmark::State &state, const unsigned int numFiles) {
     int64_t numLines = state.range(0);

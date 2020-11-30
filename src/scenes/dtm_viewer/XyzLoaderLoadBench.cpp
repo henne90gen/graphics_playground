@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 
-#include "../../core/util/BoundingBox.h"
+#include "util/BoundingBox.h"
 #include "XyzLoader.h"
 
-#include "../../bench/XyzLoaderUtil.cpp"
+#include "XyzLoaderUtil.cpp"
 
 static void BM_Load(benchmark::State &state, const unsigned int numFiles) {
     int64_t numLines = state.range(0);

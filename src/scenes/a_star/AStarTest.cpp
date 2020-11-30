@@ -2,8 +2,8 @@
 #include <catch.hpp>
 #include <glm/glm.hpp>
 
-#include "../../test/TestUtils.h"
 #include "AStarSolver.h"
+#include "util/TestUtils.h"
 
 int main(int argc, char *argv[]) {
     return Catch::Session().run(argc, argv);

@@ -1,7 +1,7 @@
 #include <catch.hpp>
 
 #include "util/ModelLoader.h"
-#include "TestUtils.h"
+#include "util/TestUtils.h"
 
 TEST_CASE("Not existing file is handled correctly") {
     std::shared_ptr<ModelLoader::RawModel> model = std::make_shared<ModelLoader::RawModel>();

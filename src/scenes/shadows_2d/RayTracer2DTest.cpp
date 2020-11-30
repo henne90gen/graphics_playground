@@ -3,8 +3,8 @@
 #include <glm/glm.hpp>
 #include <tuple>
 
-#include "../../test/TestUtils.h"
 #include "RayTracer2D.h"
+#include "util/TestUtils.h"
 
 int main(int argc, char *argv[]) {
     return Catch::Session().run(argc, argv);
