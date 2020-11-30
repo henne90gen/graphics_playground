@@ -1,6 +1,6 @@
 #include "WebcamDemo.h"
 
-//#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include "Main.h"
 
@@ -48,7 +48,6 @@ void WebcamDemo::setup() {
     };
     texture->update(pixels, 2, 2);
 
-#if 0
     webcam = cv::VideoCapture(0);
     if (!webcam.isOpened()) {
         std::cout << "Could not open webcam!" << std::endl;
@@ -56,13 +55,11 @@ void WebcamDemo::setup() {
 
     imageSize = cv::Size((int)webcam.get(cv::CAP_PROP_FRAME_WIDTH), (int)webcam.get(cv::CAP_PROP_FRAME_HEIGHT));
     imageBuffer = cv::Mat(imageSize.width, imageSize.height, CV_8UC3);
-#endif
 }
 
 void WebcamDemo::onAspectRatioChange() { projectionMatrix = glm::ortho(-1.0F, 1.0F, -1.0F, 1.0F); }
 
 void WebcamDemo::tick() {
-#if 0
     static auto convertToGrayscale = true;
     static auto scaleFactor = 0.25F;
     static int updateEveryXFrames = 5;
@@ -93,7 +90,8 @@ void WebcamDemo::tick() {
 
             cv::Mat grad_x;
             cv::Mat grad_y;
-            cv::Mat abs_grad_x;cv::Mat abs_grad_y;
+            cv::Mat abs_grad_x;
+            cv::Mat abs_grad_y;
             int ksize = 3; // parser.get<int>("ksize");
             int scale = 1; // parser.get<int>("scale");
             int delta = 1; // parser.get<int>("delta");
@@ -135,5 +133,4 @@ void WebcamDemo::tick() {
 
     va->unbind();
     shader->unbind();
-#endif
 }
