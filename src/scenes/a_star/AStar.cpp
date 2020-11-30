@@ -1,9 +1,9 @@
 #include "AStar.h"
 
-#include "opengl/VertexBuffer.h"
-#include "util/OpenGLUtils.h"
+#include "Main.h"
 #include "util/RenderUtils.h"
 
+DEFINE_SCENE_MAIN(AStar)
 DEFINE_SHADER(a_star_AStar)
 
 void AStar::setup() {
