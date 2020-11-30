@@ -1,5 +1,5 @@
 #include "ShpLoader.h"
-#include "../../core/util/DataReadUtils.h"
+#include "util/DataReadUtils.h"
 
 std::istream &operator>>(std::istream &is, ShpHeader &header) {
     is.read(reinterpret_cast<char *>(&header), sizeof(header));

@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "../../core/util/TimeUtils.h"
+#include "util/TimeUtils.h"
 
 const glm::vec3 startColor = {53.0 / 255.0, 210.0 / 255.0, 141.0 / 255.0};
 const glm::vec3 finishColor = {235.0 / 255.0, 51.0 / 255.0, 37.0 / 255.0};
