@@ -11,7 +11,6 @@ add_library(logic
         meta_balls/MetaBalls.cpp
         model_loading/ModelLoader.cpp
         fourier_transform/Fourier.cpp
-        a_star/AStarSolver.cpp
         ray_tracing_2d/RayTracer2D.cpp
         ray_tracing/RayTracer.cpp
         terrain_erosion/RainSimulation.cpp

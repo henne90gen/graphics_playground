@@ -1,7 +1,7 @@
-#include <cmath>
-
 #include "AStarSolver.h"
 
+#include <algorithm>
+#include <cmath>
 #include <functional>
 
 inline void setPixelValue(Board &board, glm::ivec2 &pos, glm::vec3 color) {

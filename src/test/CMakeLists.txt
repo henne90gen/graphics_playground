@@ -7,7 +7,6 @@ add_executable(Tests main.cpp
         RubiksCubeLogicTest.cpp
         ModelLoaderTest.cpp
         FourierTest.cpp
-        AStarTest.cpp
         RayTracer2DTest.cpp
         RayTracer3DTest.cpp
         gis/ShpLoaderTest.cpp

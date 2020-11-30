@@ -1,8 +1,13 @@
+#define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 #include <glm/glm.hpp>
 
-#include "TestUtils.h"
-#include "a_star/AStarSolver.h"
+#include "../../test/TestUtils.h"
+#include "AStarSolver.h"
+
+int main(int argc, char *argv[]) {
+    return Catch::Session().run(argc, argv);
+}
 
 Board initBoard(unsigned int width, unsigned int height) {
     auto pixels = std::vector<glm::vec3>(width * height);

@@ -137,6 +137,7 @@ set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
 
 # Catch
 set(CATCH_DIR ${VENDOR_DIR}/catch)
+set(CATCH_INCLUDE_DIR ${CATCH_DIR}/single_include/catch2)
 add_subdirectory(${CATCH_DIR})
 
 # FFMPEG
