@@ -1,19 +1,4 @@
 
-file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/scenes "*.glsl")
-foreach (INPUT_FILE ${SHADER_FILES})
-    get_filename_component(INPUT_FILE_DIR ${INPUT_FILE} DIRECTORY)
-    get_filename_component(INPUT_FILE_NAME ${INPUT_FILE} NAME)
-    set(SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-    set(OUTPUT_FILE_NAME ${INPUT_FILE_DIR}_${INPUT_FILE_NAME}.cpp)
-    set(OUTPUT_FILE ${SHADER_DIR}/${OUTPUT_FILE_NAME})
-    add_custom_command(
-            OUTPUT ${OUTPUT_FILE}
-            COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts compile-shader ${CMAKE_CURRENT_SOURCE_DIR}/scenes/${INPUT_FILE} ${OUTPUT_FILE}
-            COMMENT "Building shader object ${OUTPUT_FILE_NAME}"
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scenes/${INPUT_FILE})
-    list(APPEND SHADERS ${OUTPUT_FILE})
-endforeach ()
-
 add_library(core
         Main.cpp
         Scene.cpp
@@ -84,25 +69,10 @@ target_include_directories(core PRIVATE
         ${GLAD_DIR}/include
         ${GLM_DIR}
         ${IMGUI_DIR}
-        ${FAST_NOISE_DIR}
         ${ZLIB_INCLUDE_DIR}
         ${LIBPNG_INCLUDE_DIR}
         ${LIBJPEG_INCLUDE_DIR}
         ${GIF_H_DIR}
-        ${FREETYPE_DIR}
         ${FFMPEG_INCLUDE_DIR}
-        ${OPENCV_INCLUDE_DIR}
         ${LOGIC_DIR}
         )
-
-set(RESOURCES
-        scenes/bloom_effect/models
-        scenes/font_demo/fonts
-        scenes/light_demo/models
-        scenes/model_loading/models
-        scenes/normal_mapping/models
-        )
-
-add_custom_target(copy-resources
-        COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCES} ${CMAKE_BINARY_DIR}/bin)
-add_dependencies(core copy-resources)
