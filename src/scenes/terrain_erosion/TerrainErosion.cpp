@@ -4,6 +4,7 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/TimeUtils.h"
 
@@ -11,6 +12,7 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100000.0F;
 
+DEFINE_SCENE_MAIN(TerrainErosion)
 DEFINE_SHADER(terrain_erosion_Terrain)
 DEFINE_SHADER(terrain_erosion_Path)
 

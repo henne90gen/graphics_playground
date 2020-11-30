@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 #include <memory>
@@ -34,7 +34,7 @@ struct TerrainData {
 
 class TerrainErosion : public Scene {
   public:
-    explicit TerrainErosion(SceneData &data) : Scene(data, "TerrainErosion"){};
+    explicit TerrainErosion() : Scene("TerrainErosion"){};
     ~TerrainErosion() override = default;
 
     void setup() override;

@@ -1,14 +1,14 @@
 #pragma once
 
+#include "Scene.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
-#include "scenes/Scene.h"
 
 #include <functional>
 
 class SpotLight : public Scene {
   public:
-    explicit SpotLight(SceneData &data) : Scene(data, "SpotLight"){};
+    explicit SpotLight() : Scene("SpotLight"){};
     ~SpotLight() override = default;
 
     void setup() override;

@@ -1,19 +1,19 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
-#include <memory>
 #include <glad/glad.h>
+#include <memory>
 
+#include "opengl/Shader.h"
+#include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
-#include "opengl/Texture.h"
-#include "opengl/Shader.h"
 
 class TextureDemo : public Scene {
-public:
-    explicit TextureDemo(SceneData data) : Scene(data, "TextureDemo") {};
+  public:
+    explicit TextureDemo() : Scene("TextureDemo"){};
 
     ~TextureDemo() override = default;
 
@@ -23,7 +23,7 @@ public:
 
     void destroy() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<Texture> texture;

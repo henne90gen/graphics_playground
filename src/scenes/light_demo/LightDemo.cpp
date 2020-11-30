@@ -16,7 +16,7 @@ void LightDemo::setup() {
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     model = std::make_unique<Model>();
-    model->loadFromFile("scenes/light_demo/models/monkey.obj", shader);
+    model->loadFromFile("light_demo_resources/models/monkey.obj", shader);
 }
 
 void LightDemo::onAspectRatioChange() {

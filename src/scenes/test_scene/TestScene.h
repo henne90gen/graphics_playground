@@ -1,12 +1,12 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 
 class TestScene : public Scene {
 public:
-    explicit TestScene(SceneData data) : Scene(data, "Test Scene") {};
+    explicit TestScene() : Scene( "Test Scene") {};
 
     ~TestScene() override = default;
 

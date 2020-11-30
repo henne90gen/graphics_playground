@@ -5,9 +5,11 @@
 
 #include <glad/glad.h>
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
 
+DEFINE_SCENE_MAIN(TextureDemo)
 DEFINE_SHADER(texture_demo_TextureDemo)
 
 void TextureDemo::setup() {

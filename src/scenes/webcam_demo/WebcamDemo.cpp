@@ -2,6 +2,9 @@
 
 //#include <opencv2/imgproc.hpp>
 
+#include "Main.h"
+
+DEFINE_SCENE_MAIN(WebcamDemo)
 DEFINE_SHADER(webcam_demo_WebcamDemo)
 
 void WebcamDemo::setup() {

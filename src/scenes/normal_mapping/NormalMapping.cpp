@@ -17,7 +17,7 @@ void NormalMapping::setup() {
     onAspectRatioChange();
 
     model = std::make_unique<Model>();
-    model->loadFromFile("scenes/normal_mapping/models/monkey.obj", shader);
+    model->loadFromFile("normal_mapping_resources/models/monkey.obj", shader);
 
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
@@ -44,7 +44,7 @@ void NormalMapping::setup() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform("u_NormalSampler", 1);
     Image normalMapImage = {};
-    if (ImageOps::load("scenes/normal_mapping/models/normals.jpg", normalMapImage)) {
+    if (ImageOps::load("normal_mapping_resources/models/normals.jpg", normalMapImage)) {
         normalMap->update(normalMapImage);
     }
 }

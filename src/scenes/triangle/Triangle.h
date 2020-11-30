@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <glad/glad.h>
 #include <memory>
@@ -9,8 +9,8 @@
 #include "opengl/VertexBuffer.h"
 
 class Triangle : public Scene {
-public:
-    explicit Triangle(SceneData data) : Scene(data, "Triangle") {}
+  public:
+    explicit Triangle() : Scene("Triangle") {}
 
     ~Triangle() override = default;
 
@@ -20,7 +20,7 @@ public:
 
     void destroy() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
 
     VertexBuffer *positionBuffer;
