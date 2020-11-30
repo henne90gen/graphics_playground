@@ -1,8 +1,8 @@
 #include <benchmark/benchmark.h>
 
-#include "gis/XyzLoader.h"
+#include "XyzLoader.h"
 
-#include "XyzLoaderUtil.cpp"
+#include "../../bench/XyzLoaderUtil.cpp"
 
 static void BM_CountLines(benchmark::State &state, const unsigned int numFiles) {
     int64_t numLines = state.range(0);
@@ -23,5 +23,3 @@ BM_COUNT_LINES(2)
 BM_COUNT_LINES(8)
 BM_COUNT_LINES(64)
 BM_COUNT_LINES(512)
-
-BENCHMARK_MAIN();

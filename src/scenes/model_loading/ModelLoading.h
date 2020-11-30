@@ -2,12 +2,12 @@
 
 #include "Scene.h"
 
-#include "model_loading/ModelLoader.h"
 #include "opengl/IndexBuffer.h"
 #include "opengl/Model.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
+#include "util/ModelLoader.h"
 #include "util/TimeUtils.h"
 
 #include <functional>

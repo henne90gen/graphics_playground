@@ -8,7 +8,7 @@
 #include <sstream>
 #include <string>
 
-#include "util/StringUtils.h"
+#include "StringUtils.h"
 
 namespace ModelLoader {
 

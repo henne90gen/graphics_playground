@@ -60,12 +60,15 @@ function(create_scene_benchmark)
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
     add_executable(${SCENE_NAME}_bench ${ARGN})
-    target_link_libraries(${SCENE_NAME}_bench PRIVATE logic benchmark::benchmark OpenMP::OpenMP_CXX)
+    target_link_libraries(${SCENE_NAME}_bench PRIVATE
+            logic
+            benchmark::benchmark
+            OpenMP::OpenMP_CXX)
     target_include_directories(${SCENE_NAME}_bench PRIVATE
             ${LOGIC_DIR}
             ${GLM_DIR})
     set_target_properties(
-            ${name} PROPERTIES
+            ${SCENE_NAME}_bench PROPERTIES
             CXX_STANDARD 17
             CXX_STANDARD_REQUIRED ON
     )

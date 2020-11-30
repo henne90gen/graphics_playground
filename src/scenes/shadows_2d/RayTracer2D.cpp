@@ -1,9 +1,9 @@
 #include "RayTracer2D.h"
 
 #include <functional>
-#include <future>
+//#include <future>
 
-#include "util/TimeUtils.h"
+//#include "util/TimeUtils.h"
 
 namespace RayTracer2D {
 
@@ -19,10 +19,10 @@ bool intersects(const Ray &ray, const Ray &line, glm::vec2 &intersection, float 
         return false;
     }
 
-    auto &rayPoint = ray.startingPoint;
-    auto &rayDir = ray.direction;
-    auto &linePoint = line.startingPoint;
-    auto &lineDir = line.direction;
+    const auto &rayPoint = ray.startingPoint;
+    const auto &rayDir = ray.direction;
+    const auto &linePoint = line.startingPoint;
+    const auto &lineDir = line.direction;
 
     if (rayPoint == linePoint) {
         intersection = rayPoint;

@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 
-#include "gis/XyzLoader.h"
-#include "util/BoundingBox.h"
+#include "../../core/util/BoundingBox.h"
+#include "XyzLoader.h"
 
-#include "XyzLoaderUtil.cpp"
+#include "../../bench/XyzLoaderUtil.cpp"
 
 static void BM_Load(benchmark::State &state, const unsigned int numFiles) {
     int64_t numLines = state.range(0);
@@ -25,5 +25,3 @@ BM_LOAD(2)
 BM_LOAD(8)
 BM_LOAD(64)
 BM_LOAD(512)
-
-BENCHMARK_MAIN();

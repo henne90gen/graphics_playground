@@ -2,23 +2,20 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
+#include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
-#include "opengl/Texture.h"
-#include "model_loading/ModelLoader.h"
+#include "util/ModelLoader.h"
 
 class OpenGLMesh {
-public:
-    OpenGLMesh(std::shared_ptr<VertexArray> vertexArray,
-               std::shared_ptr<VertexBuffer> vertexBuffer,
-               std::shared_ptr<IndexBuffer> indexBuffer,
-               std::shared_ptr<Texture> texture,
-               bool visible = true) : vertexArray(std::move(vertexArray)), vertexBuffer(std::move(vertexBuffer)),
-                                      indexBuffer(std::move(indexBuffer)), texture(std::move(texture)),
-                                      visible(visible) {}
+  public:
+    OpenGLMesh(std::shared_ptr<VertexArray> vertexArray, std::shared_ptr<VertexBuffer> vertexBuffer,
+               std::shared_ptr<IndexBuffer> indexBuffer, std::shared_ptr<Texture> texture, bool visible = true)
+        : vertexArray(std::move(vertexArray)), vertexBuffer(std::move(vertexBuffer)),
+          indexBuffer(std::move(indexBuffer)), texture(std::move(texture)), visible(visible) {}
 
     void updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) const;
 
@@ -34,7 +31,7 @@ public:
 };
 
 class Model {
-public:
+  public:
     Model() = default;
 
     void loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader);
@@ -43,7 +40,7 @@ public:
 
     const std::shared_ptr<ModelLoader::RawModel> getOriginalModel() const { return model; }
 
-private:
+  private:
     std::vector<std::shared_ptr<OpenGLMesh>> meshes;
     std::shared_ptr<ModelLoader::RawModel> model;
 };

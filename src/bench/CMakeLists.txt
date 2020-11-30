@@ -15,7 +15,5 @@ endfunction()
 benchmark(MarchingCubesBench)
 target_include_directories(MarchingCubesBench PRIVATE ${FAST_NOISE_DIR})
 
-benchmark(XyzLoaderLoadBench)
-benchmark(XyzLoaderCountLinesBench)
-
 benchmark(QuadTreeBench)
+target_include_directories(QuadTreeBench PRIVATE ../core)
