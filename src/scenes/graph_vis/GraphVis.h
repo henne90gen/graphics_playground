@@ -4,7 +4,7 @@
 
 #include <functional>
 
-#include "graph_vis/Graph.h"
+#include "Graph.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
 

@@ -17,7 +17,7 @@ DEFINE_SHADER(audio_vis_AudioVis)
 void AudioVis::setup() {
     shader = SHADER(audio_vis_AudioVis);
 
-    loadWavFile("../../src/test/audio_test.wav", wav);
+    loadWavFile("audio_vis_resources/res/audio_test.wav", wav);
     playBack.wav = &wav;
     auto inputData = std::vector<float>(wav.data.subChunkSize);
     for (unsigned int i = 0; i < wav.data.subChunkSize; i++) {
