@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 #include <opencv2/core.hpp>
@@ -12,7 +12,7 @@
 
 class WebcamDemo : public Scene {
   public:
-    explicit WebcamDemo(SceneData &data) : Scene(data, "WebcamDemo"){};
+    explicit WebcamDemo() : Scene("WebcamDemo"){};
     ~WebcamDemo() override = default;
 
     void setup() override;

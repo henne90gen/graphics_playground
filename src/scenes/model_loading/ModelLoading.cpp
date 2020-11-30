@@ -126,7 +126,7 @@ void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mous
                                 unsigned int &currentModel, std::vector<std::string> &paths,
                                 std::shared_ptr<Model> &renderModel) {
     ImGui::Begin("Settings");
-    ImGui::FileSelector("Models", "scenes/model_loading/models/", currentModel, paths);
+    ImGui::FileSelector("Models", "model_loading_resources/models/", currentModel, paths);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)

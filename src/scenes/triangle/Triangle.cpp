@@ -3,9 +3,11 @@
 #include <array>
 #include <glad/glad.h>
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
 
+DEFINE_SCENE_MAIN(Triangle)
 DEFINE_SHADER(triangle_Triangle)
 
 void Triangle::setup() {
@@ -16,13 +18,13 @@ void Triangle::setup() {
     positionBuffer->bind();
     GL_Call(positionLocation = glGetAttribLocation(shader->getId(), "position"));
     GL_Call(glEnableVertexAttribArray(positionLocation));
-    GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *) nullptr));
+    GL_Call(glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, (void *)nullptr));
 
     colorBuffer = new VertexBuffer();
     colorBuffer->bind();
     GL_Call(colorLocation = glGetAttribLocation(shader->getId(), "color"));
     GL_Call(glEnableVertexAttribArray(colorLocation));
-    GL_Call(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, (void *) nullptr));
+    GL_Call(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, (void *)nullptr));
 
     Shader::unbind();
 }

@@ -1,5 +1,6 @@
 #include "SpotLight.h"
 
+#include "Main.h"
 #include "util/RenderUtils.h"
 
 #include <array>
@@ -9,6 +10,7 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SCENE_MAIN(SpotLight)
 DEFINE_SHADER(spot_light_SpotLight)
 
 void SpotLight::setup() {
