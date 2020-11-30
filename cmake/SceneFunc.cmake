@@ -1,4 +1,4 @@
-function(create_scene ADDITIONAL_SOURCE_FILES)
+function(create_scene)
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
     file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.glsl")
@@ -16,7 +16,7 @@ function(create_scene ADDITIONAL_SOURCE_FILES)
         list(APPEND SHADERS ${OUTPUT_FILE})
     endforeach ()
 
-    add_executable(${SCENE_NAME} ${ADDITIONAL_SOURCE_FILES} ${SHADERS})
+    add_executable(${SCENE_NAME} ${ARGN} ${SHADERS})
     target_include_directories(${SCENE_NAME} PRIVATE
             ${CMAKE_SOURCE_DIR}/src/core
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -27,7 +27,28 @@ function(create_scene ADDITIONAL_SOURCE_FILES)
             ${LOGIC_DIR}
             )
     target_link_libraries(${SCENE_NAME} core)
+endfunction()
 
+function(create_scene_test)
+    get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
+    add_executable(${SCENE_NAME}_test ${ARGN})
+
+    message("catch dir: ${CATCH_INCLUDE_DIR}")
+    message("exec: ${SCENE_NAME}_test")
+    message("sources: ${ARGN}")
+
+    set_target_properties(${SCENE_NAME}_test PROPERTIES
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON)
+
+    target_include_directories(${SCENE_NAME}_test PRIVATE
+            ${CATCH_INCLUDE_DIR}
+            ${LOGIC_DIR}
+            ${GLM_DIR}
+            ${FFMPEG_INCLUDE_DIR})
+
+    catch_discover_tests(${SCENE_NAME}_test)
 endfunction()
 
 function(add_scene_resource_directory RESOURCE_DIR)

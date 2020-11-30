@@ -1,7 +1,7 @@
 #pragma once
 
+#include "AStarSolver.h"
 #include "Scene.h"
-#include "a_star/AStarSolver.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
