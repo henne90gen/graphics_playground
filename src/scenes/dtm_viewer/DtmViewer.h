@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <array>
 #include <functional>
@@ -85,7 +85,7 @@ struct Dtm {
 
 class DtmViewer : public Scene {
   public:
-    explicit DtmViewer(SceneData &data) : Scene(data, "DtmViewer"){};
+    explicit DtmViewer() : Scene("DtmViewer"){};
     ~DtmViewer() override = default;
 
     void setup() override;
