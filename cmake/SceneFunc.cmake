@@ -27,3 +27,9 @@ function(create_scene SCENE_NAME ADDITIONAL_SOURCE_FILES)
     target_link_libraries(${SCENE_NAME} core)
 
 endfunction()
+
+function(add_scene_resource_directory SCENE_NAME RESOURCE_DIR)
+    add_custom_target(${SCENE_NAME}_copy_resources
+            COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCE_DIR} ${CMAKE_BINARY_DIR}/bin/${SCENE_NAME}_resources)
+    add_dependencies(${SCENE_NAME} ${SCENE_NAME}_copy_resources)
+endfunction()

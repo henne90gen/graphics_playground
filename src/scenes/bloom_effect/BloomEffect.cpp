@@ -30,7 +30,7 @@ void BloomEffect::setup() {
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     model = std::make_unique<Model>();
-    model->loadFromFile("../../src/scenes/bloom_effect/models/monkey.obj", shader);
+    model->loadFromFile("bloom_effect_resources/models/monkey.obj", shader);
 
     quadVA = createQuadVA(shader);
     initLightCubeData();
