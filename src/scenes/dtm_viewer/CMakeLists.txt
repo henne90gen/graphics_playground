@@ -1,2 +1,2 @@
 
-create_scene(dtm_viewer DtmViewer.cpp)
+create_scene(DtmViewer.cpp)

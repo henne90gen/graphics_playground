@@ -1,21 +1,21 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 #include "rubiks_cube/RubiksCube.h"
 #include "rubiks_cube/RubiksCubeLogic.h"
 
 #include <functional>
 #include <memory>
 
+#include "opengl/IndexBuffer.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
-#include "opengl/IndexBuffer.h"
 
 class RubiksCubeScene : public Scene {
-public:
-    explicit RubiksCubeScene(SceneData data) : Scene(data, "RubiksCube") {};
+  public:
+    explicit RubiksCubeScene() : Scene("RubiksCube"){};
 
     ~RubiksCubeScene() override = default;
 
@@ -25,10 +25,10 @@ public:
 
     void destroy() override;
 
-protected:
+  protected:
     void onAspectRatioChange() override;
 
-private:
+  private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<IndexBuffer> indexBuffer;

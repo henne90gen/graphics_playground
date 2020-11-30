@@ -1,10 +1,10 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 class LegacyTriangle : public Scene {
-public:
-    explicit LegacyTriangle(SceneData data) : Scene(data, "LegacyTriangle") {}
+  public:
+    explicit LegacyTriangle() : Scene("LegacyTriangle") {}
 
     ~LegacyTriangle() override = default;
 

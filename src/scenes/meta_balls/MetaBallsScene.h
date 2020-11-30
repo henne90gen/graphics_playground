@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 #include <glad/glad.h>
@@ -19,7 +19,7 @@ class MetaBallsScene : public Scene {
   public:
     enum MetaBallsFuncType { EXP = 0, INVERSE_DIST = 1, TEST_SPHERE = 2 };
 
-    explicit MetaBallsScene(SceneData &data) : Scene(data, "MetaBalls"){};
+    explicit MetaBallsScene() : Scene("MetaBalls"){};
     ~MetaBallsScene() override = default;
 
     void setup() override;

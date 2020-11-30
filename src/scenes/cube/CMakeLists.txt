@@ -1,2 +1,2 @@
 
-create_scene(cube Cube.cpp)
+create_scene(Cube.cpp)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 #include <glad/glad.h>
@@ -12,11 +12,12 @@
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 #include "opengl/VertexBuffer.h"
+#include "util/ImGuiUtilsFastNoise.h"
 #include "util/TimeUtils.h"
 
 class MarchingCubesScene : public Scene {
   public:
-    explicit MarchingCubesScene(SceneData data) : Scene(data, "MarchingCubes"){};
+    explicit MarchingCubesScene() : Scene("MarchingCubes"){};
 
     ~MarchingCubesScene() override = default;
 

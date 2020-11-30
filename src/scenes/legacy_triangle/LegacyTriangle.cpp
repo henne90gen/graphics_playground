@@ -3,8 +3,11 @@
 #include <array>
 #include <glad/glad.h>
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
+
+DEFINE_SCENE_MAIN(LegacyTriangle)
 
 void LegacyTriangle::setup() {}
 

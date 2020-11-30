@@ -5,6 +5,7 @@
 
 #include "marching_cubes/MarchingCubes.h"
 
+#include "Main.h"
 #include "util/ImGuiUtils.h"
 #include "util/OpenGLUtils.h"
 #include "util/RenderUtils.h"
@@ -13,6 +14,7 @@ const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
+DEFINE_SCENE_MAIN(MetaBallsScene)
 DEFINE_SHADER(meta_balls_MetaBalls)
 
 void MetaBallsScene::setup() {
