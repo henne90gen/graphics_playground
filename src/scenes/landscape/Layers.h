@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/ImGuiUtils.h"
+#include "util/ImGuiUtilsFastNoise.h"
 
 struct Layer {
     bool enabled = true;

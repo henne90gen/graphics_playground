@@ -50,16 +50,6 @@ void pickColorAndVertices(float *color, float *vertices) {
     ImGui::End();
 }
 
-void ImGui::NoiseTypeSelector(FastNoise::NoiseType *pType) { ImGui::NoiseTypeSelector("Noise Algorithm", pType); }
-
-void ImGui::NoiseTypeSelector(const char *label, FastNoise::NoiseType *pType) {
-    static const std::array<const char *, 10> items = {"Value",   "ValueFractal",   "Perlin",   "PerlinFractal",
-                                                       "Simplex", "SimplexFractal", "Cellular", "WhiteNoise",
-                                                       "Cubic",   "CubicFractal"};
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::Combo(label, reinterpret_cast<int *>(pType), items.data(), items.size());
-}
-
 static auto vector_getter = [](void *vec, int idx, const char **out_text) {
     auto &vector = *static_cast<std::vector<std::string> *>(vec);
     if (idx < 0 || idx >= static_cast<int>(vector.size())) {
