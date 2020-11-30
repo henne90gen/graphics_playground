@@ -13,7 +13,7 @@
 #include "opengl/VertexBuffer.h"
 #include "util/TimeUtils.h"
 
-#include "meta_balls/MetaBalls.h"
+#include "MetaBalls.h"
 
 class MetaBallsScene : public Scene {
   public:

@@ -8,7 +8,6 @@ add_executable(Tests main.cpp
         ModelLoaderTest.cpp
         FourierTest.cpp
         RayTracer2DTest.cpp
-        RayTracer3DTest.cpp
         gis/ShpLoaderTest.cpp
         gis/XyzLoaderTest.cpp
         QuadTreeTest.cpp)

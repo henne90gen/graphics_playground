@@ -1,9 +1,15 @@
+#define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
+
 #include <glm/glm.hpp>
 #include <tuple>
 
-#include "TestUtils.h"
-#include "ray_tracing/RayTracer.h"
+#include "../../test/TestUtils.h"
+#include "RayTracer.h"
+
+int main(int argc, char *argv[]) {
+    return Catch::Session().run(argc, argv);
+}
 
 RayTracer::Ray ray(glm::vec3 startingPoint, glm::vec3 direction) { return {startingPoint, direction}; }
 

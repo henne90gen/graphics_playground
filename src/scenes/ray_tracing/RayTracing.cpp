@@ -1,7 +1,7 @@
 #include "RayTracing.h"
 
 #include "Main.h"
-#include "ray_tracing/RayTracer.h"
+#include "RayTracer.h"
 #include "util/ImGuiUtils.h"
 #include "util/RenderUtils.h"
 #include "util/TimeUtils.h"

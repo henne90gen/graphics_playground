@@ -1,10 +1,10 @@
 #pragma once
 
+#include "RayTracer.h"
 #include "Scene.h"
 #include "opengl/Shader.h"
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
-#include "ray_tracing/RayTracer.h"
 
 #include <functional>
 #include <future>
