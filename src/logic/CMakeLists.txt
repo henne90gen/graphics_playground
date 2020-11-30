@@ -3,14 +3,9 @@ add_library(logic
         util/FileUtils.cpp
         util/TimeUtils.cpp
         util/DataReadUtils.cpp
-        rubiks_cube/RubiksCubeData.cpp
-        rubiks_cube/RubiksCubeLogic.cpp
-        rubiks_cube/RubiksCube.cpp
-        rubiks_cube/RotationCommandStack.cpp
         marching_cubes/MarchingCubes.cpp
         model_loading/ModelLoader.cpp
         fourier_transform/Fourier.cpp
-        ray_tracing_2d/RayTracer2D.cpp
         terrain_erosion/RainSimulation.cpp
         gis/ShpLoader.cpp
         gis/XyzLoader.cpp

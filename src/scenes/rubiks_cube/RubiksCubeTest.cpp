@@ -1,7 +1,7 @@
+#include "RubiksCube.h"
 #include "catch.hpp"
-#include "rubiks_cube/RubiksCube.h"
-#include <vector>
 #include <iostream>
+#include <vector>
 
 void assertWholeFace(RubiksCube cube, Face face) {
     for (int i = 0; i < 9; i++) {
