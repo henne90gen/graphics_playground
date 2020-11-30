@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 
@@ -9,7 +9,7 @@
 
 class LSystems : public Scene {
   public:
-    explicit LSystems(SceneData &data) : Scene(data, "LSystems"){};
+    explicit LSystems() : Scene("LSystems"){};
     ~LSystems() override = default;
 
     void setup() override;

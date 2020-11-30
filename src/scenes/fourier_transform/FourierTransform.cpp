@@ -3,9 +3,11 @@
 #include <algorithm>
 
 #include "CodingTrain.h"
+#include "Main.h"
 
 const int MAX_FOURIER_RESOLUTION = 500;
 
+DEFINE_SCENE_MAIN(FourierTransform)
 DEFINE_SHADER(fourier_transform_FourierTransform)
 
 void FourierTransform::setup() {

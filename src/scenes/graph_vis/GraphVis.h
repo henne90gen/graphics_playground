@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 
@@ -12,7 +12,7 @@ class GraphVis : public Scene {
   public:
     enum class GraphType { SMALL_LATTICE, STAR, LATTICE, TREE };
 
-    explicit GraphVis(SceneData &data) : Scene(data, "GraphVis"){};
+    explicit GraphVis() : Scene("GraphVis"){};
     ~GraphVis() override = default;
 
     void setup() override;
