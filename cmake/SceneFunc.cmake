@@ -27,6 +27,11 @@ function(create_scene)
             ${LOGIC_DIR}
             )
     target_link_libraries(${SCENE_NAME} core)
+    set_target_properties(
+            ${SCENE_NAME} PROPERTIES
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON
+    )
 endfunction()
 
 function(create_scene_test)

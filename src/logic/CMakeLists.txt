@@ -8,11 +8,9 @@ add_library(logic
         rubiks_cube/RubiksCube.cpp
         rubiks_cube/RotationCommandStack.cpp
         marching_cubes/MarchingCubes.cpp
-        meta_balls/MetaBalls.cpp
         model_loading/ModelLoader.cpp
         fourier_transform/Fourier.cpp
         ray_tracing_2d/RayTracer2D.cpp
-        ray_tracing/RayTracer.cpp
         terrain_erosion/RainSimulation.cpp
         gis/ShpLoader.cpp
         gis/XyzLoader.cpp
