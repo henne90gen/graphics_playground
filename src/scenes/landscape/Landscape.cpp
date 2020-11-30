@@ -1,5 +1,7 @@
 #include "Landscape.h"
 
+#include "Main.h"
+
 #include <cmath>
 #include <memory>
 
@@ -14,6 +16,7 @@ constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 1000.0F;
 
+DEFINE_SCENE_MAIN(Landscape)
 DEFINE_SHADER(landscape_Landscape)
 
 void Landscape::setup() {

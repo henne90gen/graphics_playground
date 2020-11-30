@@ -4,40 +4,12 @@
 #include <iostream>
 #include <omp.h>
 #include <thread>
-#include <util/ScreenRecorder.h>
 #include <vector>
 
-#include "scenes/a_star/AStar.h"
-#include "scenes/audio_vis/AudioVis.h"
-#include "scenes/bloom_effect/BloomEffect.h"
-#include "scenes/cube/Cube.h"
-#include "scenes/dtm_viewer/DtmViewer.h"
-#include "scenes/font_demo/FontDemo.h"
-#include "scenes/fourier_transform/FourierTransform.h"
-#include "scenes/framebuffer_demo/FramebufferDemo.h"
-#include "scenes/gamma_calculation/GammaCalculation.h"
-#include "scenes/graph_vis/GraphVis.h"
-#include "scenes/l_systems/LSystems.h"
-#include "scenes/landscape/Landscape.h"
-#include "scenes/legacy_triangle/LegacyTriangle.h"
-#include "scenes/light_demo/LightDemo.h"
-#include "scenes/marching_cubes/MarchingCubesScene.h"
-#include "scenes/meta_balls/MetaBallsScene.h"
-#include "scenes/model_loading/ModelLoading.h"
-#include "scenes/normal_mapping/NormalMapping.h"
-#include "scenes/ray_tracing/RayTracing.h"
-#include "scenes/rubiks_cube/RubiksCubeScene.h"
-#include "scenes/shadows_2d/Shadows2D.h"
-#include "scenes/spot_light/SpotLight.h"
-#include "scenes/terrain_erosion/TerrainErosion.h"
-#include "scenes/test_scene/TestScene.h"
-#include "scenes/texture_demo/TextureDemo.h"
-#include "scenes/triangle/Triangle.h"
-#include "scenes/webcam_demo/WebcamDemo.h"
-
+#include "Scene.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
-#include "util/MainMenu.h"
+#include "util/ScreenRecorder.h"
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
@@ -90,7 +62,7 @@ void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int 
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
         auto *sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
-        sceneData->recorder.takeScreenshot();
+        sceneData->recorder->takeScreenshot();
     } else {
         bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
         input.keyboard.keys[key] = isDown;
@@ -113,7 +85,7 @@ void installCallbacks(GLFWwindow *window) {
     glfwSetFramebufferSizeCallback(window, resizeCallback);
 }
 
-int main() {
+int runScene(Scene *scene) {
     setOmpThreadLimit();
 
     GLFWwindow *window = nullptr;
@@ -142,52 +114,15 @@ int main() {
 
     initImGui(window);
 
-    unsigned int currentSceneIndex = 0;
-
-    std::vector<Scene *> scenes = std::vector<Scene *>();
-    MainMenu mainMenu = MainMenu(window, scenes, &currentSceneIndex);
-
-    std::function<void(void)> backToMainMenu = [&currentSceneIndex, &mainMenu, &scenes]() {
-        scenes[currentSceneIndex]->destroy();
-        currentSceneIndex = 0;
-        mainMenu.activate();
-    };
     ScreenRecorder recorder = {};
-    SceneData sceneData = {window, &input, backToMainMenu, recorder};
+    SceneData sceneData = {window, &input, &recorder};
+    int windowWidth = 0;
+    int windowHeight = 0;
+    glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+scene->setup(windowWidth, windowHeight, sceneData);
     glfwSetWindowUserPointer(window, &sceneData);
 
-    GL_Call(glEnable(GL_DEPTH_TEST));
-
-    scenes.push_back(new TestScene(sceneData));          // 0
-    scenes.push_back(new LegacyTriangle(sceneData));     // 1
-    scenes.push_back(new Triangle(sceneData));           // 2
-    scenes.push_back(new TextureDemo(sceneData));        // 3
-    scenes.push_back(new GammaCalculation(sceneData));   // 4
-    scenes.push_back(new Cube(sceneData));               // 5
-    scenes.push_back(new Landscape(sceneData));          // 6
-    scenes.push_back(new RubiksCubeScene(sceneData));    // 7
-    scenes.push_back(new MarchingCubesScene(sceneData)); // 8
-    scenes.push_back(new FontDemo(sceneData));           // 9
-    scenes.push_back(new ModelLoading(sceneData));       // 10
-    scenes.push_back(new LightDemo(sceneData));          // 11
-    scenes.push_back(new FourierTransform(sceneData));   // 12
-    scenes.push_back(new NormalMapping(sceneData));      // 13
-    scenes.push_back(new AStar(sceneData));              // 14
-    scenes.push_back(new Shadows2D(sceneData));          // 15
-    scenes.push_back(new RayTracing(sceneData));         // 16
-    scenes.push_back(new FramebufferDemo(sceneData));    // 17
-    scenes.push_back(new BloomEffect(sceneData));        // 18
-    scenes.push_back(new SpotLight(sceneData));          // 19
-    scenes.push_back(new MetaBallsScene(sceneData));     // 20
-    scenes.push_back(new TerrainErosion(sceneData));     // 21
-    scenes.push_back(new DtmViewer(sceneData));          // 22
-    scenes.push_back(new GraphVis(sceneData));           // 23
-    scenes.push_back(new WebcamDemo(sceneData));         // 24
-    scenes.push_back(new AudioVis(sceneData));           // 25
-    scenes.push_back(new LSystems(sceneData));           // 26
-
-    mainMenu.goToScene(static_cast<unsigned int>(scenes.size()) - 1);
-    mainMenu.goToScene(6);
+    glEnable(GL_DEPTH_TEST);
 
     enableOpenGLDebugging();
 
@@ -197,16 +132,12 @@ int main() {
 
         startImGuiFrame();
 
-        if (mainMenu.isActive()) {
-            mainMenu.render();
-        } else {
-            int windowWidth = 0;
-            int windowHeight = 0;
-            glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-            scenes[currentSceneIndex]->tick(windowWidth, windowHeight);
+        int windowWidth = 0;
+        int windowHeight = 0;
+        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+        scene->tick(windowWidth, windowHeight);
 
-            recorder.tick(windowWidth, windowHeight);
-        }
+        recorder.tick(windowWidth, windowHeight);
 
         finishImGuiFrame();
 

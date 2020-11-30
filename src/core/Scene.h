@@ -1,9 +1,10 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <imgui.h>
+#include <glad/glad.h>
 
+#include <GLFW/glfw3.h>
 #include <functional>
+#include <imgui.h>
 #include <utility>
 
 #include "util/InputData.h"
@@ -12,23 +13,20 @@
 
 struct SceneData {
     GLFWwindow *window;
-
     InputData *input;
-
-    std::function<void(void)> &backToMainMenu;
-    ScreenRecorder &recorder;
+    ScreenRecorder *recorder;
 };
 
 class Scene {
   public:
-    Scene(SceneData data, std::string name) : name(std::move(name)), data(data) {
+    explicit Scene(std::string name) : name(std::move(name)) {
         auto now = std::chrono::high_resolution_clock::now();
         lastTimeNs = std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count();
     };
 
     virtual ~Scene() = default;
 
-    void setup(unsigned int windowWidth, unsigned int windowHeight);
+    void setup(unsigned int windowWidth, unsigned int windowHeight, SceneData sceneData);
     void tick(unsigned int windowWidth, unsigned int windowHeight);
     void renderBackMenu();
     void renderMetrics();

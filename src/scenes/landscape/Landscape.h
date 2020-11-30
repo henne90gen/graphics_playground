@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <functional>
 #include <memory>
@@ -13,7 +13,7 @@
 
 class Landscape : public Scene {
   public:
-    explicit Landscape(SceneData data) : Scene(data, "Landscape"){};
+    explicit Landscape() : Scene("Landscape"){};
 
     ~Landscape() override = default;
 

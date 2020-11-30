@@ -4,6 +4,9 @@ project(Playground)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+include(SceneFunc)
 
 option(BUILD_OPENCV "Turn this on to build OpenCV from source" OFF)
 
