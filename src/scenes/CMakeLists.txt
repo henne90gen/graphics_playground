@@ -1,3 +1,4 @@
 add_subdirectory(a_star)
+add_subdirectory(audio_vis)
 add_subdirectory(cube)
 add_subdirectory(landscape)

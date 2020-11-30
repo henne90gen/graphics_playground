@@ -1,7 +1,8 @@
 #include "AudioVis.h"
 
 #include <algorithm>
-#include <soundio/soundio.h>
+
+#include "Main.h"
 
 constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
@@ -10,6 +11,7 @@ constexpr float Z_FAR = 100000.0F;
 constexpr auto WIDTH = 50;
 constexpr auto LENGTH = 100;
 
+DEFINE_SCENE_MAIN(AudioVis)
 DEFINE_SHADER(audio_vis_AudioVis)
 
 void AudioVis::setup() {

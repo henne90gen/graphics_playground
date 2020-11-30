@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scenes/Scene.h"
+#include "Scene.h"
 
 #include <fourier_transform/Fourier.h>
 #include <functional>
@@ -23,7 +23,7 @@ class AudioVis : public Scene {
   public:
     enum class VisMode { AMPLITUDE = 0, PHASE = 1, FREQUENCY = 2, MAGNITUDE = 3 };
 
-    explicit AudioVis(SceneData &data) : Scene(data, "AudioVis"){};
+    explicit AudioVis() : Scene("AudioVis"){};
     ~AudioVis() override = default;
 
     void setup() override;
