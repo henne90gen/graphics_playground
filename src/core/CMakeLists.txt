@@ -20,6 +20,8 @@ add_library(core
         opengl/Texture.cpp
         opengl/VertexBuffer.cpp
         opengl/VertexArray.cpp
+        marching_cubes/MarchingCubes.cpp
+        fourier_transform/Fourier.cpp
         )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -52,6 +54,7 @@ target_link_libraries(core
         glad
         imgui
         OpenMP::OpenMP_CXX
+        FastNoise
         ${LIBPNG_LIBRARY}
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
@@ -78,4 +81,7 @@ target_include_directories(core PRIVATE
         ${LIBJPEG_INCLUDE_DIR}
         ${GIF_H_DIR}
         ${FFMPEG_INCLUDE_DIR}
+        ${FAST_NOISE_DIR}
         )
+
+set(CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)

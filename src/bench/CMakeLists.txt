@@ -1,9 +1,9 @@
 
 function(benchmark name)
     add_executable(${name} ${name}.cpp)
-    target_link_libraries(${name} PRIVATE logic benchmark::benchmark OpenMP::OpenMP_CXX)
+    target_link_libraries(${name} PRIVATE core benchmark::benchmark OpenMP::OpenMP_CXX)
     target_include_directories(${name} PRIVATE
-            ${LOGIC_DIR}
+            ${CORE_DIR}
             ${GLM_DIR})
     set_target_properties(
             ${name} PROPERTIES

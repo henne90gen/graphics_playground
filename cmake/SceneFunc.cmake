@@ -18,13 +18,13 @@ function(create_scene)
 
     add_executable(${SCENE_NAME} ${ARGN} ${SHADERS})
     target_include_directories(${SCENE_NAME} PRIVATE
-            ${CMAKE_SOURCE_DIR}/src/core
             ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CORE_DIR}
             ${GLFW_DIR}/include
             ${GLAD_DIR}/include
             ${GLM_DIR}
             ${IMGUI_DIR}
-            ${LOGIC_DIR}
+            ${FAST_NOISE_DIR}
             )
     target_link_libraries(${SCENE_NAME} core)
     set_target_properties(
@@ -39,19 +39,16 @@ function(create_scene_test)
 
     add_executable(${SCENE_NAME}_test ${ARGN})
 
-    message("catch dir: ${CATCH_INCLUDE_DIR}")
-    message("exec: ${SCENE_NAME}_test")
-    message("sources: ${ARGN}")
-
     set_target_properties(${SCENE_NAME}_test PROPERTIES
             CXX_STANDARD 17
             CXX_STANDARD_REQUIRED ON)
 
     target_include_directories(${SCENE_NAME}_test PRIVATE
             ${CATCH_INCLUDE_DIR}
-            ${LOGIC_DIR}
+            ${CORE_DIR}
             ${GLM_DIR}
             ${FFMPEG_INCLUDE_DIR})
+    target_link_libraries(${SCENE_NAME}_test core)
 
     catch_discover_tests(${SCENE_NAME}_test)
 endfunction()
@@ -61,11 +58,11 @@ function(create_scene_benchmark)
 
     add_executable(${SCENE_NAME}_bench ${ARGN})
     target_link_libraries(${SCENE_NAME}_bench PRIVATE
-            logic
+            core
             benchmark::benchmark
             OpenMP::OpenMP_CXX)
     target_include_directories(${SCENE_NAME}_bench PRIVATE
-            ${LOGIC_DIR}
+            ${CORE_DIR}
             ${GLM_DIR})
     set_target_properties(
             ${SCENE_NAME}_bench PROPERTIES
