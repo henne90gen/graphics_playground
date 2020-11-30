@@ -72,7 +72,6 @@ target_link_libraries(core
         ${LIBJPEG_LIBRARY}
         ${FFMPEG_LIBRARY}
         ${OPENCV_LIBS}
-        ${LIBSOUNDIO_LIBRARY}
         )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -98,7 +97,6 @@ target_include_directories(core PRIVATE
         ${FREETYPE_DIR}
         ${FFMPEG_INCLUDE_DIR}
         ${OPENCV_INCLUDE_DIR}
-        ${LIBSOUNDIO_INCLUDE_DIR}
         ${LOGIC_DIR}
         )
 
