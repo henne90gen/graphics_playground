@@ -10,13 +10,15 @@ def run_build():
 
 def collect_benchmarks():
     result = []
-    base_dir = "build/src/bench"
+    base_dir = "build/bin"
     for f in os.listdir(base_dir):
         if ".cmake" in f:
             continue
         if ".png" in f:
             continue
         if os.path.isdir(os.path.join(base_dir, f)):
+            continue
+        if "bench" not in f:
             continue
         result.append(f)
     return result
@@ -45,7 +47,7 @@ def construct_df(output: str) -> pd.DataFrame:
 
 
 def execute_benchmark(bench_name: str) -> pd.DataFrame:
-    process = subprocess.run(["./" + bench_name], cwd="build/src/bench", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.run(["./" + bench_name], cwd="build/bin", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = process.stdout.decode("utf-8")
     return construct_df(output)
 
