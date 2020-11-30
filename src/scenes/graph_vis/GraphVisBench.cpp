@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <vector>
 
-#include "graph_vis/Graph.h"
+#include "Graph.h"
 
 static void BM_Spring(benchmark::State &state) {
     auto nodes = std::vector<GraphNode>(1024);

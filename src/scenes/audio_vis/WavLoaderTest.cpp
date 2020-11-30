@@ -1,6 +1,11 @@
+#define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
-#include "audio/WavLoader.h"
+int main(int argc, char *argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+
+#include "WavLoader.h"
 
 TEST_CASE("WavReader can read simple wav file") {
     WavFile wav = {};

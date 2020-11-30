@@ -11,8 +11,7 @@ add_executable(Tests main.cpp
         RayTracer3DTest.cpp
         gis/ShpLoaderTest.cpp
         gis/XyzLoaderTest.cpp
-        QuadTreeTest.cpp
-        WavLoaderTest.cpp)
+        QuadTreeTest.cpp)
 
 set_target_properties(Tests PROPERTIES
         CXX_STANDARD 17

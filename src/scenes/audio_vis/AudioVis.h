@@ -2,11 +2,10 @@
 
 #include "Scene.h"
 
-#include <fourier_transform/Fourier.h>
 #include <functional>
 #include <soundio/soundio.h>
 
-#include "audio/WavLoader.h"
+#include "WavLoader.h"
 #include "fourier_transform/Fourier.h"
 #include "opengl/Shader.h"
 #include "opengl/VertexArray.h"
