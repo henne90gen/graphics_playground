@@ -1,7 +1,6 @@
 #include "MetaBalls.h"
 
 #include <iostream>
-#include <math.h>
 
 implicit_surface_func exp_func(const std::vector<MetaBall> &metaballs) {
     return [&metaballs](const glm::vec3 &position) {

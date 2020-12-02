@@ -1,13 +1,7 @@
 #include "MetaBallsScene.h"
 
-#include <glad/glad.h>
-#include <glm/ext.hpp>
-
-#include "marching_cubes/MarchingCubes.h"
-
 #include "Main.h"
 #include "util/ImGuiUtils.h"
-#include "util/OpenGLUtils.h"
 #include "util/RenderUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
@@ -16,6 +10,16 @@ const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(MetaBallsScene)
 DEFINE_SHADER(meta_balls_MetaBalls)
+
+struct AnimatedBall {
+    glm::vec3 startPos;
+    glm::vec3 endPos;
+    float t = 0.0F;
+    float animationDir = 1.0F;
+    glm::vec3 position = glm::vec3();
+};
+
+void updateAnimatedBall(AnimatedBall &ball, float delta, float speed);
 
 void MetaBallsScene::setup() {
     shader = SHADER(meta_balls_MetaBalls);
@@ -53,39 +57,15 @@ void MetaBallsScene::tick() {
     static float radius = 6.0F;
     static auto funcType = MetaBallsScene::EXP;
     static auto positionBigBall = glm::vec3(20.0F, 10.0F, 10.0F);
-    static auto position1 = glm::vec3(10.0F, 10.0F, 10.0F);
-    static auto position2 = glm::vec3(10.0F, 10.0F, 10.0F);
+    static AnimatedBall ball1 = {glm::vec3(20.0F, 10.0F, 10.0F), glm::vec3(20.0F, 30.0F, 10.0F)};
+    static AnimatedBall ball2 = {glm::vec3(10.0F, 20.0F, 10.0F), glm::vec3(35.0F, 20.0F, 10.0F)};
 
     // TODO(henne): add unmodified spheres for metaballs
 
-    static float animationSpeed = 0.1F;
-    double timeDelta = getLastFrameTime();
-
-    {
-        const auto startPos = glm::vec3(20.0F, 10.0F, 10.0F);
-        const auto endPos = glm::vec3(20.0F, 30.0F, 10.0F);
-        static float t = 0.0F;
-        static float animationDir = 1.0F;
-        t += animationSpeed * animationDir * timeDelta;
-        auto dir = endPos - startPos;
-        position1 = startPos + t * dir;
-        if (t < 0.0F || t > 1.0F) {
-            animationDir *= -1.0F;
-        }
-    }
-
-    {
-        const auto startPos = glm::vec3(10.0F, 20.0F, 10.0F);
-        const auto endPos = glm::vec3(35.0F, 20.0F, 10.0F);
-        static float t = 0.0F;
-        static float animationDir = 1.0F;
-        t += 2.0F * animationSpeed * animationDir * timeDelta;
-        auto dir = endPos - startPos;
-        position2 = startPos + t * dir;
-        if (t < 0.0F || t > 1.0F) {
-            animationDir *= -1.0F;
-        }
-    }
+    static float animationSpeed = 0.3F;
+    auto timeDelta = static_cast<float>(getLastFrameTime());
+    updateAnimatedBall(ball1, timeDelta, animationSpeed);
+    updateAnimatedBall(ball2, timeDelta, 2.0F * animationSpeed);
 
     {
         const float dragSpeed = 0.01F;
@@ -103,6 +83,12 @@ void MetaBallsScene::tick() {
         static const std::array<const char *, 3> items = {"EXP", "INVERSE_DIST", "TEST_SPHERE"};
         ImGui::Combo("MetaBallsScene Function", reinterpret_cast<int *>(&funcType), items.data(), items.size());
         ImGui::DragFloat3("Position Big Ball", reinterpret_cast<float *>(&positionBigBall), 0.1F);
+        ImGui::Separator();
+        ImGui::Text("X: %f | Y: %f | Z: %f", ball1.position.x, ball1.position.y, ball1.position.z);
+        ImGui::Separator();
+        ImGui::Text("X: %f | Y: %f | Z: %f", ball2.position.x, ball2.position.y, ball2.position.z);
+        ImGui::Separator();
+        ImGui::Text("Time delta: %f", timeDelta);
         ImGui::End();
     }
 
@@ -111,8 +97,8 @@ void MetaBallsScene::tick() {
         const float radiusSq = radius * radius;
         std::vector<MetaBall> metaballs = {};
         metaballs.push_back({positionBigBall, radiusSq});
-        metaballs.push_back({position1, radiusSq});
-        metaballs.push_back({position2, radiusSq / 2.0F});
+        metaballs.push_back({ball1.position, radiusSq});
+        metaballs.push_back({ball2.position, radiusSq / 2.0F});
 
         updateSurface(dimensions, funcType, metaballs);
     }
@@ -193,4 +179,13 @@ void MetaBallsScene::updateSurface(const glm::ivec3 &dimensions, MetaBallsFuncTy
     surfaceVertexArray->bind();
     surfaceVertexBuffer->update(vertices);
     surfaceIndexBuffer->update(indices);
+}
+
+void updateAnimatedBall(AnimatedBall &ball, float delta, float speed) {
+    ball.t += speed * ball.animationDir * delta;
+    const auto dir = ball.endPos - ball.startPos;
+    ball.position = ball.startPos + ball.t * dir;
+    if (ball.t < 0.0F || ball.t > 1.0F) {
+        ball.animationDir *= -1.0F;
+    }
 }
