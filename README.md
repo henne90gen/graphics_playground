@@ -256,6 +256,9 @@ The queue for raw batches allows us to parallelize the loading and processing qu
 - Audio visualization (load wave file and play it, visualize amplitude over time)
 - Surface Smoothing (Take the average of the normals of a vertex (find all normals that belong to a certain vertex))
 - Water Demo
+- Smooth-Min function (used to smoothly transition between two values)
+    - h = clamp01((b-a+k) / (2*k))
+    - return a * h + b * (1-h) - k * h * (1 - h)
 
 ## Additional Features
 
