@@ -123,7 +123,6 @@ inline glm::vec3 getVertexOnEdge(const glm::vec3 &v1, const float &w1, const glm
     return v1 + t * (v2 - v1);
 }
 
-#define MARCHING_CUBES_SEQUENTIAL 0
 // SEQUENTIAL
 // --------------------------------------------------------------
 // Benchmark                    Time             CPU   Iterations
@@ -145,10 +144,10 @@ inline glm::vec3 getVertexOnEdge(const glm::vec3 &v1, const float &w1, const glm
 // BM_MarchingCubes/40      61031 ns        60253 ns        10844
 // BM_MarchingCubes/50     119281 ns       118597 ns         5889
 // BM_MarchingCubes/60     197227 ns       195985 ns         3424
+#define MARCHING_CUBES_SEQUENTIAL 0
 #if MARCHING_CUBES_SEQUENTIAL
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func) {
-
     vertices.clear();
     indices.clear();
 

@@ -1,14 +1,12 @@
 #include "RainSimulation.h"
 
-#include "util/AssertUtils.h"
-
-void HeightMap::set(int x, int z, float value) {
-    long index = (static_cast<long>(x) << 32) | z;
+void HeightMap::set(int32_t x, int32_t z, float value) {
+    int64_t index = (static_cast<int64_t>(x) << 32) | static_cast<int64_t>(z);
     data[index] = value;
 }
 
-float HeightMap::get(int x, int z) const {
-    long index = (static_cast<long>(x) << 32) | z;
+float HeightMap::get(int32_t x, int32_t z) const {
+    int64_t index = (static_cast<int64_t>(x) << 32) | static_cast<int64_t>(z);
     auto itr = data.find(index);
     if (itr == data.end()) {
         return 0.0F;
@@ -152,7 +150,7 @@ void simulateRaindrop(HeightMap &heightMap, std::mt19937 randomGenerator,
                     if (w <= 0) {
                         continue;
                     }
-                    w *= 0.1591549430918953f;
+                    w *= 0.1591549430918953F;
 
                     ERODE(x, z, w)
                 }

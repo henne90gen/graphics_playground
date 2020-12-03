@@ -58,7 +58,7 @@ class Scene {
     const std::string name;
     SceneData data;
     double timeDelta = 0.0;
-    long long lastTimeNs = 0L;
+    int64_t lastTimeNs = 0L;
 
     unsigned int width = 0;
     unsigned int height = 0;

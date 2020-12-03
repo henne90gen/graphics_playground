@@ -7,11 +7,11 @@
 #include <vector>
 
 struct HeightMap {
-    std::vector<glm::ivec2> grid = {};
-    std::unordered_map<long, float> data = {};
+    std::vector<glm::vec2> grid = {};
+    std::unordered_map<int64_t, float> data = {};
 
-    void set(int x, int z, float height);
-    float get(int x, int z) const;
+    void set(int32_t x, int32_t z, float height);
+    [[nodiscard]] float get(int32_t x, int32_t z) const;
 };
 
 struct Raindrop {
