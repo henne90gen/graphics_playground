@@ -2,7 +2,7 @@
 
 in float vHeight;
 in vec3 vPosition;
-in vec3 normal;
+in vec3 vNormal;
 
 uniform float waterLevel;
 uniform float grassLevel;
@@ -40,9 +40,9 @@ void main() {
 
 
     vec3 position = vPosition;
-    vec3 normal_ = normalize(normal);
+    vec3 normal = normalize(vNormal);
 
-    float brightness = dot(normal_, surfaceToLight);
+    float brightness = dot(normal, surfaceToLight);
     brightness *= lightPower;
     brightness = clamp(brightness, 0, 1);
 

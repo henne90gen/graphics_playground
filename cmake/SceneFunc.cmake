@@ -57,7 +57,7 @@ function(create_scene_benchmark)
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
     add_executable(${SCENE_NAME}_bench ${ARGN})
-    target_link_libraries(${SCENE_NAME}_bench PRIVATE
+    target_link_libraries(${SCENE_NAME}_bench
             core
             benchmark::benchmark
             OpenMP::OpenMP_CXX)
