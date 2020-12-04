@@ -1,4 +1,4 @@
-Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-fuchsia-default-arguments*,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-owning-memory,-readability-magic-numbers,-google-runtime-int,-readability-braces-around-statements,-cppcoreguidelines-pro-bounds-constant-array-index,-modernize-use-trailing-return-type,-cppcoreguidelines-pro-type-reinterpret-cast,-google-runtime-references,-llvmlibc-*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-fuchsia-default-arguments*,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-type-union-access,-hicpp-vararg,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-owning-memory,-readability-magic-numbers,-google-runtime-int,-readability-braces-around-statements,-cppcoreguidelines-pro-bounds-constant-array-index,-modernize-use-trailing-return-type,-cppcoreguidelines-pro-type-reinterpret-cast,-google-runtime-references,-llvmlibc-*,-cppcoreguidelines-avoid-magic-numbers'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

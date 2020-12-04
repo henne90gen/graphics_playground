@@ -16,7 +16,7 @@ float HeightMap::get(int32_t x, int32_t z) const {
 
 void simulateRaindrop(HeightMap &heightMap, std::mt19937 randomGenerator,
                       std::uniform_real_distribution<double> randomDistribution, const SimulationParams &params,
-                      Raindrop &raindrop) {
+                      Raindrop &raindrop, const int maxPathLength) {
     float Kq = params.Kq;
     float Kw = params.Kw;
     float Kr = params.Kr;
@@ -63,8 +63,6 @@ void simulateRaindrop(HeightMap &heightMap, std::mt19937 randomGenerator,
     float h11 = heightMap.get(pi.x + 1, pi.y + 1);
     float h = h00;
 
-    // TODO decide on a good maximum path length
-    const int maxPathLength = 1000;
     for (unsigned int i = 0; i < maxPathLength; i++) {
         raindrop.path.emplace_back(p.x, h, p.y);
 

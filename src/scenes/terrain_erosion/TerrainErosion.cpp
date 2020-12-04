@@ -10,7 +10,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100000.0F;
 
 constexpr int INITIAL_WIDTH = 200;
-constexpr int INITIAL_HEIGHT = 100;
+constexpr int INITIAL_HEIGHT = 200;
 
 DEFINE_SCENE_MAIN(TerrainErosion)
 DEFINE_SHADER(terrain_erosion_Terrain)
@@ -46,13 +46,9 @@ void TerrainErosion::setup() {
 void TerrainErosion::destroy() {}
 
 void TerrainErosion::tick() {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraPosition = glm::vec3(-120.0F, -155.0F, -375.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    static auto cameraPosition = glm::vec3(-75.0F, -180.0F, -325.0F);
     static auto cameraRotation = glm::vec3(0.6F, -0.05F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
@@ -69,7 +65,6 @@ void TerrainErosion::tick() {
     static int raindropCount = 100;
     static auto centerPoint = glm::vec2();
     static auto radius = 30.0F;
-    static int simulationSpeed = 2;
     static auto raindrops = std::vector<Raindrop>();
     static bool pathsInitialized = false;
     if (!pathsInitialized) {
@@ -79,10 +74,11 @@ void TerrainErosion::tick() {
     }
 
     glm::ivec2 previousTerrainSize = terrainSize;
+    int previousRaindropCount = raindropCount;
 
     showSettings(modelScale, modelRotation, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower,
                  wireframe, drawTriangles, verticesPerFrame, shouldRenderPaths, onlyRainAroundCenterPoint, letItRain,
-                 params, raindropCount, centerPoint, radius, simulationSpeed, terrainLevels, terrainSize);
+                 params, raindropCount, centerPoint, radius, terrainLevels, terrainSize);
 
     if (previousTerrainSize != terrainSize) {
         generateNoiseTerrainData(terrainSize);
@@ -97,10 +93,13 @@ void TerrainErosion::tick() {
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
-    runSimulation(terrainSize, noiseTerrain, raindrops, letItRain, simulationSpeed, onlyRainAroundCenterPoint,
-                  centerPoint, raindropCount, radius, params);
+    if (previousTerrainSize != terrainSize || letItRain || previousRaindropCount != raindropCount) {
+        runSimulation(terrainSize, noiseTerrain, raindrops, onlyRainAroundCenterPoint, centerPoint, raindropCount,
+                      radius, params);
+        letItRain = false;
+    }
 
-    if (letItRain && shouldRenderPaths) {
+    if (shouldRenderPaths) {
         renderPaths(raindrops, modelMatrix, viewMatrix, projectionMatrix);
     }
 
@@ -114,7 +113,7 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotatio
                                   float &lightPower, bool &wireframe, bool &drawTriangles, int &verticesPerFrame,
                                   bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
                                   SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
-                                  int &simulationSpeed, TerrainLevels &terrainLevels, glm::ivec2 &terrainSize) {
+                                  TerrainLevels &terrainLevels, glm::ivec2 &terrainSize) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -148,17 +147,10 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotatio
     ImGui::Separator();
 
     ImGui::Text("Simulation Parameters");
-    if (letItRain) {
-        if (ImGui::Button("Stop Simulation")) {
-            letItRain = false;
-        }
-    } else {
-        if (ImGui::Button("Start Simulation")) {
-            letItRain = true;
-        }
+    if (ImGui::Button("Rerun Simulation")) {
+        letItRain = true;
     }
-    ImGui::SliderInt("Simulation Speed", &simulationSpeed, 1, 50);
-    ImGui::DragInt("Raindrop Count", &raindropCount);
+    ImGui::DragInt("Iteration Count", &raindropCount);
     bool before = onlyRainAroundCenterPoint;
     ImGui::Checkbox("Only Simulate around Point", &onlyRainAroundCenterPoint);
     if (before != onlyRainAroundCenterPoint) {
@@ -168,13 +160,13 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotatio
         ImGui::DragFloat2("Center Point", reinterpret_cast<float *>(&centerPoint), dragSpeed);
         ImGui::DragFloat("Radius", &radius, dragSpeed);
     }
-    ImGui::DragFloat("Kq", &params.Kq, dragSpeed);
-    ImGui::DragFloat("Kw", &params.Kw, dragSpeed);
-    ImGui::DragFloat("Kr", &params.Kr, dragSpeed);
-    ImGui::DragFloat("Kd", &params.Kd, dragSpeed);
-    ImGui::DragFloat("Ki", &params.Ki, dragSpeed);
-    ImGui::DragFloat("minSlope", &params.minSlope, dragSpeed);
-    ImGui::DragFloat("g", &params.g, dragSpeed);
+    ImGui::DragFloat("Kq = constant parameter for soil carry capacity formula", &params.Kq, dragSpeed);
+    ImGui::DragFloat("Kw = water evaporation speed", &params.Kw, dragSpeed);
+    ImGui::DragFloat("Kr = erosion speed", &params.Kr, dragSpeed);
+    ImGui::DragFloat("Kd = deposition speed", &params.Kd, dragSpeed);
+    ImGui::DragFloat("Ki = direction inertia", &params.Ki, dragSpeed);
+    ImGui::DragFloat("minSlope = minimum slope for soil carry capacity formula", &params.minSlope, dragSpeed);
+    ImGui::DragFloat("g = gravity", &params.g, dragSpeed);
     if (ImGui::Button("Reset Parameters")) {
         params = SimulationParams();
     }
@@ -211,8 +203,7 @@ void TerrainErosion::generateNoiseTerrainData(const glm::ivec2 &terrainSize) {
             };
         }
     }
-    HeightMap heightMap = {grid};
-    initTerrainMesh(noiseTerrain, grid, heightMap, indices);
+    initTerrainMesh(noiseTerrain, grid, indices);
 
     regenerateNoiseTerrain();
 }
@@ -234,7 +225,7 @@ void TerrainErosion::regenerateRaindrops(const glm::ivec2 &terrainSize, std::vec
         }
     } else {
         int width = terrainSize.x;
-        int height = terrainSize.x;
+        int height = terrainSize.y;
         for (unsigned int j = 0; j < raindropCount; j++) {
             double num = randomDistribution(randomGenerator);
             auto i = static_cast<unsigned int>(num * (width * height));
@@ -276,9 +267,12 @@ void TerrainErosion::regenerateNoiseTerrain() {
         generatedHeight += generateHeight(noise1, realX, realY, scale.z) * frequencyScale.x;
         generatedHeight += generateHeight(noise2, realX, realY, scale.z) * frequencyScale.y;
         generatedHeight += generateHeight(noise3, realX, realY, scale.z) * frequencyScale.z;
+        generatedHeight *= 3.0F;
 
-        noiseTerrain.heightMap.set(x, y, generatedHeight * 3.0F);
+        noiseTerrain.heightMap.set(x, y, generatedHeight);
     }
+
+    noiseTerrain.originalHeightData = noiseTerrain.heightMap.data;
 
     auto heights = std::vector<float>(noiseTerrain.heightMap.grid.size());
     for (unsigned int i = 0; i < noiseTerrain.heightMap.grid.size(); i++) {
@@ -371,7 +365,7 @@ void TerrainErosion::renderTerrain(const TerrainData &terrainData, const glm::ma
 }
 
 void TerrainErosion::initTerrainMesh(TerrainData &terrainData, const std::vector<glm::vec2> &vertices,
-                                     HeightMap &heightMap, const std::vector<glm::ivec3> &indices) {
+                                     const std::vector<glm::ivec3> &indices) {
     terrainData.va = std::make_shared<VertexArray>(shader);
     terrainData.va->bind();
 
@@ -379,19 +373,20 @@ void TerrainErosion::initTerrainMesh(TerrainData &terrainData, const std::vector
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     terrainData.va->addVertexBuffer(positionBuffer);
 
-    terrainData.heightMap = heightMap;
+    terrainData.heightMap = {vertices};
     terrainData.heightBuffer = std::make_shared<VertexBuffer>();
     BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
     terrainData.heightBuffer->setLayout(heightLayout);
     terrainData.heightBuffer->bind();
-    GL_Call(glBufferData(GL_ARRAY_BUFFER, heightMap.grid.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW));
+    GL_Call(glBufferData(GL_ARRAY_BUFFER, terrainData.heightMap.grid.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW));
     terrainData.va->addVertexBuffer(terrainData.heightBuffer);
 
     terrainData.normalBuffer = std::make_shared<VertexBuffer>();
     BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
     terrainData.normalBuffer->setLayout(normalLayout);
     terrainData.normalBuffer->bind();
-    GL_Call(glBufferData(GL_ARRAY_BUFFER, heightMap.grid.size() * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW));
+    GL_Call(glBufferData(GL_ARRAY_BUFFER, terrainData.heightMap.grid.size() * sizeof(glm::vec3), nullptr,
+                         GL_DYNAMIC_DRAW));
     terrainData.va->addVertexBuffer(terrainData.normalBuffer);
 
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
@@ -468,16 +463,14 @@ void TerrainErosion::recalculateNormals(TerrainData &terrainData, int verticesPe
 }
 
 void TerrainErosion::runSimulation(const glm::ivec2 &terrainSize, TerrainData &terrainData,
-                                   std::vector<Raindrop> &raindrops, bool letItRain, unsigned int simulationSpeed,
-                                   bool onlyRainAroundCenterPoint, const glm::vec2 &centerPoint,
-                                   unsigned int raindropCount, float radius, const SimulationParams &params) {
-    static int counter = 0;
-    counter++;
-    if (!letItRain || counter % simulationSpeed != 0) {
-        return;
-    }
+                                   std::vector<Raindrop> &raindrops, bool onlyRainAroundCenterPoint,
+                                   const glm::vec2 &centerPoint, unsigned int raindropCount, float radius,
+                                   const SimulationParams &params) {
+    // reset terrain to original heights
+    noiseTerrain.heightMap.data = noiseTerrain.originalHeightData;
 
     RECORD_SCOPE_NAME("Rain Simulation");
+
     regenerateRaindrops(terrainSize, raindrops, onlyRainAroundCenterPoint, raindropCount, centerPoint, radius);
     for (auto &raindrop : raindrops) {
         simulateRaindrop(terrainData.heightMap, randomGenerator, randomDistribution, params, raindrop);
