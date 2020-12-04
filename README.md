@@ -224,9 +224,9 @@ This leads to the formation of nice ridges and smooth valleys.
 ![Terrain Erosion](screenshots/terrain-erosion.gif)
 
 Sources:
-- https://www.youtube.com/watch?v=eaXk97ujbPQ
-- https://www.firespark.de/resources/downloads/implementation%20of%20a%20methode%20for%20hydraulic%20erosion.pdf
-- http://ranmantaru.com/blog/2011/10/08/water-erosion-on-heightmap-terrain/
+- [Terrain Erosion by Sebastian Lague](https://www.youtube.com/watch?v=eaXk97ujbPQ)
+- [Implementation of a method for hydraulic erosion by Hans Theobald Beyer](https://www.firespark.de/resources/downloads/implementation%20of%20a%20methode%20for%20hydraulic%20erosion.pdf)
+- [Water erosion on heightmap terrain by E-DOG](http://ranmantaru.com/blog/2011/10/08/water-erosion-on-heightmap-terrain)
 
 ### Digital Terrain Model Viewer
 
