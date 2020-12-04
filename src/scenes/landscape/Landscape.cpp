@@ -1,12 +1,10 @@
 #include "Landscape.h"
 
 #include "Main.h"
+#include "util/RenderUtils.h"
 
 #include <cmath>
 #include <memory>
-
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
 
 constexpr unsigned int WIDTH = 10;
 constexpr unsigned int HEIGHT = 10;
@@ -18,8 +16,14 @@ constexpr float Z_FAR = 1000.0F;
 
 DEFINE_SCENE_MAIN(Landscape)
 DEFINE_SHADER(landscape_Landscape)
+DEFINE_SHADER(landscape_NoiseTexture)
 
 void Landscape::setup() {
+    noiseTextureShader = SHADER(landscape_NoiseTexture);
+    noiseTextureShader->bind();
+    noiseTextureVA = createQuadVA(noiseTextureShader);
+    noiseTexture = std::make_shared<Texture>();
+
     shader = SHADER(landscape_Landscape);
     shader->bind();
 
@@ -31,20 +35,20 @@ void Landscape::destroy() {}
 
 void Landscape::tick() {
     constexpr float timeSpeed = 0.01F;
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelScale = glm::vec3(7.0F, 7.0F, 2.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto translation = glm::vec3(-30.0F, -30.0F, -50.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3(-1.0F, 0.0F, 0.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    static auto cameraPosition = glm::vec3(-30.0F, -30.0F, -70.0F);
     static auto cameraRotation = glm::vec3(0.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    static auto texturePosition = glm::vec3(0.0F, 8.0F, 0.0F);
+    static auto textureRotation = glm::vec3(0.0F);
+    static auto textureScale = glm::vec3(10.0F);
     static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
     static auto pointDensity = INITIAL_POINT_DENSITY;
     static auto movement = glm::vec2(0.0F);
     static auto drawWireframe = false;
     static auto animate = false;
+    static auto shouldRenderTerrain = false;
+    static auto shouldRenderNoiseTexture = true;
     int lastPointDensity = pointDensity;
 
     static std::vector<Layer *> layers = {
@@ -58,13 +62,22 @@ void Landscape::tick() {
     const int minimumPointDensity = 1;
     const int maximumPointDensity = 80;
     ImGui::Begin("Settings");
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    ImGui::Checkbox("Render Terrain", &shouldRenderTerrain);
+    ImGui::SameLine();
+    ImGui::Checkbox("Render Noise Texture", &shouldRenderNoiseTexture);
+    ImGui::Separator();
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    //    ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
+    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
+    ImGui::Separator();
+    ImGui::DragFloat3("Texture Scale", reinterpret_cast<float *>(&textureScale), dragSpeed);
+    ImGui::DragFloat3("Texture Position", reinterpret_cast<float *>(&texturePosition), dragSpeed);
+    ImGui::DragFloat3("Texture Rotation", reinterpret_cast<float *>(&textureRotation), dragSpeed);
+    ImGui::Separator();
+    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
+    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
+    ImGui::Separator();
     ImGui::DragFloat3("Scale", reinterpret_cast<float *>(&scale), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat2("Movement", reinterpret_cast<float *>(&movement), dragSpeed);
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
@@ -87,7 +100,7 @@ void Landscape::tick() {
         layers.push_back(new NoiseLayer());
     }
 
-    ImGui::End(); //        layers.emplace_back();
+    ImGui::End();
 
     scale.x = pointDensity;
     scale.y = pointDensity;
@@ -95,22 +108,37 @@ void Landscape::tick() {
         scale.z += timeSpeed;
     }
 
-    shader->bind();
-    vertexArray->bind();
-
     if (lastPointDensity != pointDensity) {
         generatePoints(pointDensity);
     }
 
     updateHeightBuffer(pointDensity, scale, movement, layers);
 
+    glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+
+    if (shouldRenderTerrain) {
+        renderTerrain(projectionMatrix, viewMatrix, modelRotation, modelScale, pointDensity, scale, movement, layers,
+                      drawWireframe);
+    }
+
+    if (shouldRenderNoiseTexture) {
+        renderNoiseTexture(projectionMatrix, viewMatrix, textureRotation, texturePosition, textureScale);
+    }
+}
+
+void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
+                              const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const int pointDensity,
+                              const glm::vec3 &scale, const glm::vec2 &movement, const std::vector<Layer *> &layers,
+                              const bool drawWireframe) {
+    shader->bind();
+    vertexArray->bind();
+
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, modelScale);
-    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
@@ -127,6 +155,32 @@ void Landscape::tick() {
 
     vertexArray->unbind();
     shader->unbind();
+}
+
+void Landscape::renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
+                                   const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
+                                   const glm::vec3 &textureScale) {
+    noiseTextureShader->bind();
+    noiseTextureVA->bind();
+
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    noiseTexture->bind();
+
+    auto modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::translate(modelMatrix, texturePosition);
+    modelMatrix = glm::rotate(modelMatrix, textureRotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, textureRotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, textureRotation.z, glm::vec3(0, 0, 1));
+    modelMatrix = glm::scale(modelMatrix, textureScale);
+    noiseTextureShader->setUniform("modelMatrix", modelMatrix);
+    noiseTextureShader->setUniform("viewMatrix", viewMatrix);
+    noiseTextureShader->setUniform("projectionMatrix", projectionMatrix);
+    noiseTextureShader->setUniform("textureSampler", 0);
+
+    GL_Call(glDrawElements(GL_TRIANGLES, noiseTextureVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    noiseTextureVA->unbind();
+    noiseTextureShader->unbind();
 }
 
 void Landscape::generatePoints(unsigned int pointDensity) {
@@ -245,4 +299,12 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
     heightBuffer->update(heightMap);
 
     shader->setUniform("maxHeight", maxHeight);
+
+    auto textureValues = std::vector<unsigned char>(heightMap.size() * 3);
+    for (int i = 0; i < heightMap.size() * 3; i += 3) {
+        textureValues[i] =  255;
+        textureValues[i + 1] = heightMap[i / 3] / maxHeight * 255;
+        textureValues[i + 2] = heightMap[i / 3] / maxHeight * 255;
+    }
+    noiseTexture->update(textureValues.data(), width, height);
 }

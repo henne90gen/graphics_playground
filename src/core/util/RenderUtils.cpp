@@ -185,10 +185,10 @@ std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader,
     glm::vec2 uvMin = {0.0F, 0.0F};
     glm::vec2 uvMax = {1.0F, 1.0F};
     std::vector<float> vertices = {
-          -0.5F * scale.x, -0.5F * scale.y, 0.0, uvMin.x, uvMin.y, 0.0F, 0.0F, 1.0F,
-          0.5F * scale.x,  -0.5F * scale.y, 0.0, uvMax.x, uvMin.y, 0.0F, 0.0F, 1.0F,
-          0.5F * scale.x,  0.5F * scale.y,  0.0, uvMax.x, uvMax.y, 0.0F, 0.0F, 1.0F,
-          -0.5F * scale.x, 0.5F * scale.y,  0.0, uvMin.x, uvMax.y, 0.0F, 0.0F, 1.0F,
+          -0.5F * scale.x, -0.5F * scale.y, 0.0, uvMin.x, uvMin.y, 0.0F, 0.0F, 1.0F, //
+          0.5F * scale.x,  -0.5F * scale.y, 0.0, uvMax.x, uvMin.y, 0.0F, 0.0F, 1.0F, //
+          0.5F * scale.x,  0.5F * scale.y,  0.0, uvMax.x, uvMax.y, 0.0F, 0.0F, 1.0F, //
+          -0.5F * scale.x, 0.5F * scale.y,  0.0, uvMin.x, uvMax.y, 0.0F, 0.0F, 1.0F, //
     };
 
     auto result = std::make_shared<VertexArray>(shader);
@@ -201,8 +201,8 @@ std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader,
     result->addVertexBuffer(buffer);
 
     std::vector<glm::ivec3> indices = {
-          {0, 1, 2}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {0, 2, 3}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {0, 1, 2}, //
+          {0, 2, 3}, //
     };
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     result->setIndexBuffer(indexBuffer);
