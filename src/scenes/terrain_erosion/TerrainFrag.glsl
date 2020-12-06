@@ -38,7 +38,6 @@ void main() {
         color = snowColor;
     }
 
-
     vec3 position = vPosition;
     vec3 normal = normalize(vNormal);
 

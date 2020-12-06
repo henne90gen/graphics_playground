@@ -66,7 +66,7 @@ class TerrainErosion : public Scene {
                              bool onlyRainAroundCenterPoint, unsigned int raindropCount, const glm::vec2 &centerPoint,
                              float radius);
     void showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotation, glm::vec3 &cameraPosition,
-                      glm::vec3 &cameraRotation, glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower,
+                      glm::vec3 &cameraRotation, glm::vec3 &surfaceToLight, glm::vec3 &lightColor, float &lightPower,
                       bool &wireframe, bool &drawTriangles, int &verticesPerFrame, bool &shouldRenderPaths,
                       bool &onlyRainAroundCenterPoint, bool &letItRain, SimulationParams &params, int &raindropCount,
                       glm::vec2 &centerPoint, float &radius, TerrainLevels &terrainLevels, glm::ivec2 &terrainSize);

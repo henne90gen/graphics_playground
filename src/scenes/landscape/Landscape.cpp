@@ -42,7 +42,7 @@ void Landscape::tick() {
     static auto modelRotation = glm::vec3(0.0F);
     static auto cameraPosition = glm::vec3(0.0F, -60.0F, -125.0F);
     static auto cameraRotation = glm::vec3(0.5F, 0.0F, 0.0F);
-    static auto playerPosition = glm::vec3(0.0F, -10.0F, 0.0F);
+    static auto playerPosition = glm::vec3(0.0F, -13.0F, 0.0F);
     static auto playerRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     static auto texturePosition = glm::vec3(0.0F);
     static auto textureRotation = glm::vec3(0.0F);
@@ -54,7 +54,13 @@ void Landscape::tick() {
     static auto usePlayerPosition = false;
     static auto shouldRenderTerrain = false;
     static auto power = 1.1F;
-    static auto platformHeight = 0.2F;
+    static auto platformHeight = 0.15F;
+
+    static auto lightPower = 8.0F;
+    static auto lightColor = glm::vec3(1.0F);
+    static auto surfaceToLight = glm::vec3(-100.0F, 10.0F, 0.0F);
+    static auto levels = TerrainLevels();
+
     int lastPointDensity = pointDensity;
 
     static std::vector<Layer *> layers = {
@@ -62,6 +68,8 @@ void Landscape::tick() {
           new NoiseLayer(1.0F, 0.1F),        //
           new NoiseLayer(0.5F, 0.3F),        //
           new NoiseLayer(0.2F, 0.5F),        //
+          new NoiseLayer(0.1F, 0.7F),        //
+          new NoiseLayer(0.05F, 0.9F),       //
           new RidgeNoiseLayer(0.23F, 0.37F), //
     };
 
@@ -96,6 +104,12 @@ void Landscape::tick() {
     ImGui::DragFloat3("Noise Offset", reinterpret_cast<float *>(&movement), dragSpeed);
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
+    ImGui::Separator();
+    ImGui::DragFloat3("Surface To Light", reinterpret_cast<float *>(&surfaceToLight));
+    ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
+    ImGui::DragFloat("Light Power", &lightPower, dragSpeed);
+    ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), dragSpeed);
+    ImGui::Separator();
     ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::Checkbox("Animate", &animate);
     ImGui::Checkbox("Use Player Position", &usePlayerPosition);
@@ -157,7 +171,8 @@ void Landscape::tick() {
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     if (shouldRenderTerrain) {
-        renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, drawWireframe);
+        renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, surfaceToLight,
+                      lightColor, lightPower, levels, drawWireframe);
     } else {
         renderNoiseTexture(textureRotation, texturePosition, textureScale);
     }
@@ -165,7 +180,8 @@ void Landscape::tick() {
 
 void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                               const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
-                              const glm::vec3 &modelScale, const bool drawWireframe) {
+                              const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
+                              const float lightPower, const TerrainLevels &levels, const bool drawWireframe) {
     shader->bind();
     vertexArray->bind();
 
@@ -175,9 +191,18 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, modelScale);
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("normalMatrix", normalMatrix);
+
+    shader->setUniform("grassLevel", levels.grassLevel);
+    shader->setUniform("rockLevel", levels.rockLevel);
+    shader->setUniform("blur", levels.blur);
+    shader->setUniform("surfaceToLight", surfaceToLight);
+    shader->setUniform("lightColor", lightColor);
+    shader->setUniform("lightPower", lightPower / 100.0F);
 
     if (drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
@@ -250,6 +275,11 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     heightBuffer->setLayout(heightLayout);
     vertexArray->addVertexBuffer(heightBuffer);
 
+    normalBuffer = std::make_shared<VertexBuffer>();
+    BufferLayout normalLayout = {{ShaderDataType::Float3, "normal"}};
+    normalBuffer->setLayout(normalLayout);
+    vertexArray->addVertexBuffer(normalBuffer);
+
     const unsigned int indicesPerQuad = 6;
     unsigned int indicesCount = width * height * indicesPerQuad;
     auto indices = std::vector<unsigned int>(indicesCount);
@@ -266,6 +296,14 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
     vertexArray->setIndexBuffer(indexBuffer);
+}
+
+float safeRetrieve(std::vector<float> &heightMap, unsigned int width, int x, int y) {
+    int i = y * static_cast<int>(width) + x;
+    if (i < 0 || i >= heightMap.size()) {
+        return 0.0F;
+    }
+    return heightMap[i];
 }
 
 void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &movement,
@@ -356,9 +394,23 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 
     unsigned long colorCount = heightMap.size();
     auto textureValues = std::vector<unsigned char>(colorCount);
+#pragma omp parallel for
     for (int i = 0; i < colorCount; i++) {
         float colorValue = heightMap[i] * 255.0F;
         textureValues[i] = static_cast<unsigned char>(colorValue);
     }
     noiseTexture->update(textureValues.data(), width, height, 1);
+
+    auto normals = std::vector<glm::vec3>(heightMap.size());
+#pragma omp parallel for
+    for (int i = 0; i < heightMap.size(); i++) {
+        int x = i % width;
+        int y = i / width;
+        const float L = safeRetrieve(heightMap, width, x - 1, y);
+        const float R = safeRetrieve(heightMap, width, x + 1, y);
+        const float B = safeRetrieve(heightMap, width, x, y - 1);
+        const float T = safeRetrieve(heightMap, width, x, y + 1);
+        normals[i] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
+    }
+    normalBuffer->update(normals);
 }

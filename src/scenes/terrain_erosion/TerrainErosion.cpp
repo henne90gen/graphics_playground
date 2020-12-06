@@ -109,26 +109,24 @@ void TerrainErosion::tick() {
 }
 
 void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotation, glm::vec3 &cameraPosition,
-                                  glm::vec3 &cameraRotation, glm::vec3 &lightPos, glm::vec3 &lightColor,
+                                  glm::vec3 &cameraRotation, glm::vec3 &surfaceToLight, glm::vec3 &lightColor,
                                   float &lightPower, bool &wireframe, bool &drawTriangles, int &verticesPerFrame,
                                   bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
                                   SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
                                   TerrainLevels &terrainLevels, glm::ivec2 &terrainSize) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
 
     cameraPosition.x *= -1.0F;
     cameraPosition.z *= -1.0F;
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
     cameraPosition.x *= -1.0F;
     cameraPosition.z *= -1.0F;
 
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
-    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos));
+    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&surfaceToLight));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, dragSpeed);
     ImGui::Checkbox("Wireframe", &wireframe);

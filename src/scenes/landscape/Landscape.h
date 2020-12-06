@@ -12,6 +12,12 @@
 #include "opengl/Texture.h"
 #include "opengl/VertexArray.h"
 
+struct TerrainLevels {
+    float grassLevel = 0.25F;
+    float rockLevel = 0.75F;
+    float blur = 0.05F;
+};
+
 class Landscape : public Scene {
   public:
     explicit Landscape() : Scene("Landscape"){};
@@ -28,6 +34,7 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexBuffer> heightBuffer;
+    std::shared_ptr<VertexBuffer> normalBuffer;
     std::vector<float> heightMap = std::vector<float>();
 
     std::shared_ptr<Shader> noiseTextureShader;
@@ -38,7 +45,9 @@ class Landscape : public Scene {
     void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,
                             float power, float platformHeight);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
-                       const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const bool drawWireframe);
+                       const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight,
+                       const glm::vec3 &lightColor, const float lightPower, const TerrainLevels &levels,
+                       const bool drawWireframe);
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
 };
