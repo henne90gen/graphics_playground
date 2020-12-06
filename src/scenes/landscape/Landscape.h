@@ -35,11 +35,9 @@ class Landscape : public Scene {
     std::shared_ptr<Texture> noiseTexture;
 
     void generatePoints(unsigned int pointDensity);
-    void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
-                            const std::vector<Layer *> &layers);
+    void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelRotation,
-                       const glm::vec3 &modelScale, int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
-                       const std::vector<Layer *> &layers, bool drawWireframe);
+                       const glm::vec3 &modelScale, const bool drawWireframe);
     void renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                             const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);

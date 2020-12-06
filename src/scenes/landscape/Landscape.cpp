@@ -37,20 +37,18 @@ void Landscape::destroy() {}
 
 void Landscape::tick() {
     constexpr float timeSpeed = 0.01F;
-    static auto modelScale = glm::vec3(7.0F, 7.0F, 2.0F);
+    static auto modelScale = glm::vec3(7.0F, 7.0F, 35.0F);
     static auto modelRotation = glm::vec3(-1.0F, 0.0F, 0.0F);
     static auto cameraPosition = glm::vec3(-30.0F, -30.0F, -70.0F);
     static auto cameraRotation = glm::vec3(0.0F);
     static auto texturePosition = glm::vec3(0.0F, 0.0F, 0.0F);
     static auto textureRotation = glm::vec3(0.0F);
     static auto textureScale = glm::vec3(1.0F);
-    static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
     static auto pointDensity = INITIAL_POINT_DENSITY;
-    static auto movement = glm::vec2(0.0F);
+    static auto movement = glm::vec3(0.0F);
     static auto drawWireframe = false;
     static auto animate = false;
     static auto shouldRenderTerrain = false;
-    static auto shouldRenderNoiseTexture = true;
     int lastPointDensity = pointDensity;
 
     static std::vector<Layer *> layers = {
@@ -64,9 +62,15 @@ void Landscape::tick() {
     const int minimumPointDensity = 1;
     const int maximumPointDensity = 80;
     ImGui::Begin("Settings");
-    ImGui::Checkbox("Render Terrain", &shouldRenderTerrain);
-    ImGui::SameLine();
-    ImGui::Checkbox("Render Noise Texture", &shouldRenderNoiseTexture);
+    if (shouldRenderTerrain) {
+        if (ImGui::Button("Show Texture")) {
+            shouldRenderTerrain = false;
+        }
+    } else {
+        if (ImGui::Button("Show Terrain")) {
+            shouldRenderTerrain = true;
+        }
+    }
     ImGui::Separator();
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
     //    ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
@@ -79,8 +83,7 @@ void Landscape::tick() {
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
     ImGui::Separator();
-    ImGui::DragFloat3("Scale", reinterpret_cast<float *>(&scale), dragSpeed);
-    ImGui::DragFloat2("Movement", reinterpret_cast<float *>(&movement), dragSpeed);
+    ImGui::DragFloat3("Noise Offset", reinterpret_cast<float *>(&movement), dragSpeed);
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
     ImGui::Checkbox("Wireframe", &drawWireframe);
@@ -104,35 +107,28 @@ void Landscape::tick() {
 
     ImGui::End();
 
-    scale.x = pointDensity;
-    scale.y = pointDensity;
     if (animate) {
-        scale.z += timeSpeed;
+        movement.z += timeSpeed;
     }
 
     if (lastPointDensity != pointDensity) {
         generatePoints(pointDensity);
     }
 
-    updateHeightBuffer(pointDensity, scale, movement, layers);
+    updateHeightBuffer(pointDensity, movement, layers);
 
     glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     if (shouldRenderTerrain) {
-        renderTerrain(projectionMatrix, viewMatrix, modelRotation, modelScale, pointDensity, scale, movement, layers,
-                      drawWireframe);
-    }
-
-    if (shouldRenderNoiseTexture) {
+        renderTerrain(projectionMatrix, viewMatrix, modelRotation, modelScale, drawWireframe);
+    } else {
         renderNoiseTexture(projectionMatrix, viewMatrix, textureRotation, texturePosition, textureScale);
     }
 }
 
 void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                              const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const int pointDensity,
-                              const glm::vec3 &scale, const glm::vec2 &movement, const std::vector<Layer *> &layers,
-                              const bool drawWireframe) {
+                              const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const bool drawWireframe) {
     shader->bind();
     vertexArray->bind();
 
@@ -231,17 +227,16 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     vertexArray->setIndexBuffer(indexBuffer);
 }
 
-void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
+void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &movement,
                                    const std::vector<Layer *> &layers) {
-    float maxHeight = 0;
+    float maxHeight = 0.0F;
+    float minHeight = 0.0F;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
 #define SEQUENTIAL 1
 #if SEQUENTIAL
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
-            float realX = static_cast<float>(x) / scale.x + movement.x;
-            float realY = static_cast<float>(y) / scale.y + movement.y;
 
             float generatedHeight = 0.0F;
             for (auto *layer : layers) {
@@ -249,21 +244,18 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
                     continue;
                 }
 
-                generatedHeight += layer->getWeightedValue(WIDTH, HEIGHT, realX, realY, scale.z);
+                float realX = static_cast<float>(x) / static_cast<float>(pointDensity) + movement.x;
+                float realY = static_cast<float>(y) / static_cast<float>(pointDensity) + movement.y;
+                generatedHeight += layer->getWeightedValue(WIDTH, HEIGHT, glm::vec3(realX, realY, movement.z));
             }
 
-            const float offset = 1.0F;
-            const float scaleFactor = 2.0F;
-            generatedHeight += offset;
-            generatedHeight /= scaleFactor;
-
-            auto *ptr = const_cast<float *>(heightMap.data()); // NOLINT(cppcoreguidelines-pro-type-const-cast)
-            const float arbitraryScaleFactor = 10.0F;
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            ptr[y * width + x] = generatedHeight * arbitraryScaleFactor;
-            if (heightMap[y * width + x] > maxHeight) {
-                maxHeight = heightMap[y * width + x];
+            if (generatedHeight > maxHeight) {
+                maxHeight = generatedHeight;
             }
+            if (generatedHeight < minHeight) {
+                minHeight = generatedHeight;
+            }
+            heightMap[y * width + x] = generatedHeight;
         }
     }
 #else
@@ -297,19 +289,21 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
         }
     }
 #endif
-    heightBuffer->update(heightMap);
 
-    shader->bind();
-    shader->setUniform("maxHeight", maxHeight);
+#pragma omp parallel for
+    for (int i = 0; i < heightMap.size(); i++) {
+        heightMap[i] -= minHeight;
+        heightMap[i] /= maxHeight - minHeight;
+        ASSERT(heightMap[i] >= 0.0F);
+        ASSERT(heightMap[i] <= 1.0F);
+    }
+    heightBuffer->update(heightMap);
 
     unsigned long colorCount = heightMap.size();
     auto textureValues = std::vector<unsigned char>(colorCount);
     for (int i = 0; i < colorCount; i++) {
-        if (heightMap[i] < 0.0F) {
-            textureValues[i] = 0;
-        } else {
-            textureValues[i] = static_cast<unsigned char>(heightMap[i] / maxHeight * 255.0F);
-        }
+        float colorValue = heightMap[i] * 255.0F;
+        textureValues[i] = static_cast<unsigned char>(colorValue);
     }
     noiseTexture->update(textureValues.data(), width, height, 1);
 }

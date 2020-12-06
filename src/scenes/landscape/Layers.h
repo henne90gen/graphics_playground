@@ -11,8 +11,8 @@ struct Layer {
     explicit Layer(float weight) : weight(weight) {}
     virtual ~Layer() = default;
 
-    float getWeightedValue(float width, float height, float x, float y, float z) {
-        return getValue(width, height, x, y, z) * this->weight;
+    float getWeightedValue(unsigned int width, unsigned int height, const glm::vec3 &samplePos) {
+        return getValue(width, height, samplePos) * this->weight;
     }
 
     bool renderMenu(int i) {
@@ -34,16 +34,17 @@ struct Layer {
     }
 
   protected:
-    virtual float getValue(float width, float height, float x, float y, float z) = 0;
+    virtual float getValue(unsigned int width, unsigned int height, const glm::vec3 &samplePos) = 0;
     virtual void renderSpecialMenu(int i) = 0;
 };
 
 struct NoiseLayer : Layer {
     FastNoise *noise = new FastNoise();
+    float amplitudeFactor = 1.0F;
 
     NoiseLayer() = default;
     NoiseLayer(float weight, float frequency) : Layer(weight) { noise->SetFrequency(frequency); }
-    ~NoiseLayer() { delete noise; }
+    ~NoiseLayer() override { delete noise; }
 
     void renderSpecialMenu(int i) override {
         auto noiseType = noise->GetNoiseType();
@@ -55,9 +56,14 @@ struct NoiseLayer : Layer {
         const auto frequencyLabel = "Frequency " + std::to_string(i);
         ImGui::SliderFloat(frequencyLabel.c_str(), &frequency, 0.0F, 1.0F);
         noise->SetFrequency(frequency);
+
+        const auto amplitudeLabel = "Amplitude " + std::to_string(i);
+        ImGui::DragFloat(amplitudeLabel.c_str(), &amplitudeFactor, 0.001F);
     }
 
-    float getValue(float width, float height, float x, float y, float z) override { return noise->GetNoise(x, y, z); }
+    float getValue(unsigned int width, unsigned int height, const glm::vec3 &samplePos) override {
+        return noise->GetNoise(samplePos.x, samplePos.y, samplePos.z) * amplitudeFactor;
+    }
 };
 
 struct BowlLayer : Layer {
@@ -65,9 +71,9 @@ struct BowlLayer : Layer {
 
     void renderSpecialMenu(int i) override {}
 
-    float getValue(float width, float height, float x, float y, float z) override {
-        float adjustedX = x - (width / 2);
-        float adjustedY = y - (height / 2);
+    float getValue(unsigned int width, unsigned int height, const glm::vec3 &samplePos) override {
+        float adjustedX = samplePos.x - (width / 2);
+        float adjustedY = samplePos.y - (height / 2);
         return adjustedX * adjustedX + adjustedY * adjustedY;
     }
 };
