@@ -40,8 +40,8 @@ void Landscape::tick() {
     static auto modelScale = glm::vec3(20.0F, 50.0F, 20.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
-    static auto cameraPosition = glm::vec3(0.0F, -60.0F, -125.0F);
-    static auto cameraRotation = glm::vec3(0.5F, 0.0F, 0.0F);
+    static auto cameraPosition = glm::vec3(0.0F, -90.0F, -160.0F);
+    static auto cameraRotation = glm::vec3(0.55F, 0.0F, 0.0F);
     static auto playerPosition = glm::vec3(0.0F, -13.0F, 0.0F);
     static auto playerRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     static auto texturePosition = glm::vec3(0.0F);
@@ -112,7 +112,7 @@ void Landscape::tick() {
     ImGui::Separator();
     ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::Checkbox("Animate", &animate);
-    ImGui::Checkbox("Use Player Position", &usePlayerPosition);
+    ImGui::Checkbox("Show Player View", &usePlayerPosition);
     ImGui::DragFloat("Power", &power, dragSpeed);
     ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
     ImGui::End();
@@ -359,7 +359,7 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 
         float cx = static_cast<float>(width) / 2.0F;
         float cy = static_cast<float>(height) / 2.0F;
-        float platform = static_cast<float>(width) / 10.0F;
+        float platform = static_cast<float>(width) / 15.0F;
         float smoothing = static_cast<float>(width) / 20.0F;
         float posM = 1.0F / smoothing;
         float posN = 0.0F - posM * (cx - platform - smoothing);
