@@ -39,4 +39,7 @@ cpu-powersave:
 download-gis-data:
 	@. venv/bin/activate; python -m scripts download-gis-data
 
+graph:
+	cd build && cmake --graphviz=graph.dot .. && dot -Tpng -o graph.png graph.dot && eog graph.png
+
 .PHONY: docs build build-release cmake
