@@ -9,8 +9,8 @@
 
 #include "Layers.h"
 #include "opengl/IndexBuffer.h"
-#include "opengl/VertexArray.h"
 #include "opengl/Texture.h"
+#include "opengl/VertexArray.h"
 
 class Landscape : public Scene {
   public:
@@ -41,6 +41,6 @@ class Landscape : public Scene {
                        const glm::vec3 &modelScale, int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
                        const std::vector<Layer *> &layers, bool drawWireframe);
     void renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                                       const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
-                                       const glm::vec3 &textureScale);
+                            const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
+                            glm::vec3 &textureScale);
 };

@@ -14,12 +14,14 @@ void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shad
     }
 
     for (auto &mesh : model->meshes) {
-        auto glMesh = std::make_shared<OpenGLMesh>(
-                std::make_shared<VertexArray>(shader),
-                std::make_shared<VertexBuffer>(),
-                std::make_shared<IndexBuffer>(),
-                std::make_shared<Texture>(GL_RGBA),
-                true
+        TextureSettings textureSettings = {};
+        textureSettings.dataType = GL_RGBA;
+        auto glMesh = std::make_shared<OpenGLMesh>(       //
+              std::make_shared<VertexArray>(shader),      //
+              std::make_shared<VertexBuffer>(),           //
+              std::make_shared<IndexBuffer>(),            //
+              std::make_shared<Texture>(textureSettings), //
+              true                                        //
         );
 
         glMesh->vertexArray->bind();
@@ -69,11 +71,7 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
         }
     }
 
-    BufferLayout positionLayout = {
-            {Float3, "a_Position"},
-            {Float3, "a_Normal"},
-            {Float2, "a_UV"}
-    };
+    BufferLayout positionLayout = {{Float3, "a_Position"}, {Float3, "a_Normal"}, {Float2, "a_UV"}};
     vertexBuffer->setLayout(positionLayout);
     vertexBuffer->update(vertices);
     vertexArray->addVertexBuffer(vertexBuffer);

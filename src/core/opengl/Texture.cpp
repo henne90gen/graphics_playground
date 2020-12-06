@@ -2,9 +2,20 @@
 
 #include <iostream>
 
-Texture::Texture(unsigned int dataType, unsigned int openGlDataType)
-    : dataType(dataType), openGlDataType(openGlDataType) {
+Texture::Texture(TextureSettings settings) : settings(settings) {
+    init();
+}
+
+Texture::Texture() {
+    init();
+}
+
+void Texture::init() {
     GL_Call(glGenTextures(1, &id));
+    GL_Call(glActiveTexture(settings.activeTexture));
+    bind();
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.magnificationFilter));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.minificationFilter));
 }
 
 void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }
@@ -19,7 +30,7 @@ void Texture::update(const unsigned char *data, unsigned int width, unsigned int
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment));
     }
 
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, openGlDataType, width, height, 0, dataType, GL_UNSIGNED_BYTE, data));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, settings.openGlDataType, width, height, 0, settings.dataType, GL_UNSIGNED_BYTE, data));
 
     if (unpackAlignment != 4) {
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
@@ -34,7 +45,7 @@ void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, uns
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment));
     }
 
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, openGlDataType, width, height, 0, dataType, GL_FLOAT, data.data()));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, settings.openGlDataType, width, height, 0, settings.dataType, GL_FLOAT, data.data()));
 
     if (unpackAlignment != 4) {
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
@@ -55,7 +66,7 @@ void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, uns
         std::cout << "Warning: width*height does not match size of data array." << std::endl;
     }
 
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, openGlDataType, width, height, 0, dataType, GL_FLOAT, data.data()));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, settings.openGlDataType, width, height, 0, settings.dataType, GL_FLOAT, data.data()));
 
     if (unpackAlignment != 4) {
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));

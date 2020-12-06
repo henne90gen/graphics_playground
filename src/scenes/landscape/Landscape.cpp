@@ -22,7 +22,9 @@ void Landscape::setup() {
     noiseTextureShader = SHADER(landscape_NoiseTexture);
     noiseTextureShader->bind();
     noiseTextureVA = createQuadVA(noiseTextureShader);
-    noiseTexture = std::make_shared<Texture>();
+    TextureSettings textureSettings = {};
+    textureSettings.dataType = GL_RED;
+    noiseTexture = std::make_shared<Texture>(textureSettings);
 
     shader = SHADER(landscape_Landscape);
     shader->bind();
@@ -39,9 +41,9 @@ void Landscape::tick() {
     static auto modelRotation = glm::vec3(-1.0F, 0.0F, 0.0F);
     static auto cameraPosition = glm::vec3(-30.0F, -30.0F, -70.0F);
     static auto cameraRotation = glm::vec3(0.0F);
-    static auto texturePosition = glm::vec3(0.0F, 8.0F, 0.0F);
+    static auto texturePosition = glm::vec3(0.0F, 0.0F, 0.0F);
     static auto textureRotation = glm::vec3(0.0F);
-    static auto textureScale = glm::vec3(10.0F);
+    static auto textureScale = glm::vec3(1.0F);
     static auto scale = glm::vec3(5.0F, 5.0F, 1.0F);
     static auto pointDensity = INITIAL_POINT_DENSITY;
     static auto movement = glm::vec2(0.0F);
@@ -159,7 +161,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
 
 void Landscape::renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                                    const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
-                                   const glm::vec3 &textureScale) {
+                                   glm::vec3 &textureScale) {
     noiseTextureShader->bind();
     noiseTextureVA->bind();
 
@@ -171,10 +173,9 @@ void Landscape::renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm:
     modelMatrix = glm::rotate(modelMatrix, textureRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, textureRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, textureRotation.z, glm::vec3(0, 0, 1));
+    textureScale.y = textureScale.x * getAspectRatio();
     modelMatrix = glm::scale(modelMatrix, textureScale);
     noiseTextureShader->setUniform("modelMatrix", modelMatrix);
-    noiseTextureShader->setUniform("viewMatrix", viewMatrix);
-    noiseTextureShader->setUniform("projectionMatrix", projectionMatrix);
     noiseTextureShader->setUniform("textureSampler", 0);
 
     GL_Call(glDrawElements(GL_TRIANGLES, noiseTextureVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
@@ -298,13 +299,17 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 #endif
     heightBuffer->update(heightMap);
 
+    shader->bind();
     shader->setUniform("maxHeight", maxHeight);
 
-    auto textureValues = std::vector<unsigned char>(heightMap.size() * 3);
-    for (int i = 0; i < heightMap.size() * 3; i += 3) {
-        textureValues[i] =  255;
-        textureValues[i + 1] = heightMap[i / 3] / maxHeight * 255;
-        textureValues[i + 2] = heightMap[i / 3] / maxHeight * 255;
+    unsigned long colorCount = heightMap.size();
+    auto textureValues = std::vector<unsigned char>(colorCount);
+    for (int i = 0; i < colorCount; i++) {
+        if (heightMap[i] < 0.0F) {
+            textureValues[i] = 0;
+        } else {
+            textureValues[i] = static_cast<unsigned char>(heightMap[i] / maxHeight * 255.0F);
+        }
     }
-    noiseTexture->update(textureValues.data(), width, height);
+    noiseTexture->update(textureValues.data(), width, height, 1);
 }
