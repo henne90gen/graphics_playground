@@ -89,9 +89,9 @@ void TextureDemo::updateTexture(const std::array<float, 3> color, bool checkerBo
             b = colorScaleFactor - b;
         }
         unsigned int idx = i * 3;
-        data[idx] = static_cast<char>(r);
-        data[idx + 1] = static_cast<char>(g);
-        data[idx + 2] = static_cast<char>(b);
+        data[idx] = static_cast<unsigned char>(r);
+        data[idx + 1] = static_cast<unsigned char>(g);
+        data[idx + 2] = static_cast<unsigned char>(b);
     }
     texture->update(data.data(), getWidth(), getHeight());
 }

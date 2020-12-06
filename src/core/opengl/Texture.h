@@ -3,9 +3,18 @@
 #include "util/OpenGLUtils.h"
 #include <util/Image.h>
 
+struct TextureSettings {
+    unsigned int activeTexture = GL_TEXTURE0;
+    unsigned int dataType = GL_RGB;
+    unsigned int openGlDataType = GL_RGB;
+    unsigned int magnificationFilter = GL_NEAREST;
+    unsigned int minificationFilter = GL_NEAREST;
+};
+
 class Texture {
   public:
-    explicit Texture(unsigned int dataType = GL_RGB, unsigned int openGlDataType = GL_RGB);
+    explicit Texture();
+    explicit Texture(TextureSettings settings);
     ~Texture() = default;
 
     void update(const unsigned char *data, unsigned int width, unsigned int height,
@@ -19,11 +28,12 @@ class Texture {
     void bind() const;
     static void unbind();
 
-    void setDataType(unsigned int _dataType) { this->dataType = _dataType; }
-    void setOpenGlDataType(unsigned int _openGlDataType) { this->openGlDataType = _openGlDataType; }
+    void setDataType(unsigned int dataType) { this->settings.dataType = dataType; }
+    void setOpenGlDataType(unsigned int openGlDataType) { this->settings.openGlDataType = openGlDataType; }
 
   private:
     unsigned int id = 0;
-    unsigned int dataType;
-    unsigned int openGlDataType;
+    TextureSettings settings = {};
+
+    void init();
 };
