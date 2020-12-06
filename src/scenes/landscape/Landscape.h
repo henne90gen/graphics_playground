@@ -40,7 +40,7 @@ class Landscape : public Scene {
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelRotation,
                        const glm::vec3 &modelScale, int pointDensity, const glm::vec3 &scale, const glm::vec2 &movement,
                        const std::vector<Layer *> &layers, bool drawWireframe);
-    void Landscape::renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
+    void renderNoiseTexture(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                                        const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                                        const glm::vec3 &textureScale);
 };
