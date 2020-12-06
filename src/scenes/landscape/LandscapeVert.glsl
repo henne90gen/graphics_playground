@@ -11,6 +11,6 @@ out float vHeight;
 
 void main() {
     vHeight = height;
-    vec3 finalPosition = vec3(position, height);
+    vec3 finalPosition = vec3(position.x, height, position.y);
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(finalPosition, 1.0);
 }
