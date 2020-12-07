@@ -37,7 +37,7 @@ void Landscape::destroy() {}
 
 void Landscape::tick() {
     constexpr float timeSpeed = 0.01F;
-    static auto modelScale = glm::vec3(20.0F, 50.0F, 20.0F);
+    static auto modelScale = glm::vec3(50.0F, 50.0F, 50.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
     static auto cameraPosition = glm::vec3(0.0F, -90.0F, -160.0F);
@@ -67,9 +67,12 @@ void Landscape::tick() {
           new BowlLayer(0.04F),              //
           new NoiseLayer(1.0F, 0.1F),        //
           new NoiseLayer(0.5F, 0.3F),        //
-          new NoiseLayer(0.2F, 0.5F),        //
-          new NoiseLayer(0.1F, 0.7F),        //
-          new NoiseLayer(0.05F, 0.9F),       //
+          new NoiseLayer(0.35F, 0.5F),        //
+          new NoiseLayer(0.2F, 0.7F),        //
+          new NoiseLayer(0.1F, 0.9F),       //
+          new NoiseLayer(0.05F, 2.5F),       //
+          new NoiseLayer(0.025F, 5.0F),       //
+          new NoiseLayer(0.01F, 10.0F),       //
           new RidgeNoiseLayer(0.23F, 0.37F), //
     };
 
@@ -312,7 +315,7 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
     float minHeight = 0.0F;
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
-#define SEQUENTIAL 0
+#define SEQUENTIAL 1
 #if SEQUENTIAL
 #else
 #pragma omp parallel for reduction(max : maxHeight), reduction(min : minHeight)

@@ -55,7 +55,7 @@ struct NoiseLayer : Layer {
 
         auto frequency = noise->GetFrequency();
         const auto frequencyLabel = "Frequency " + std::to_string(i);
-        ImGui::SliderFloat(frequencyLabel.c_str(), &frequency, 0.0F, 1.0F);
+        ImGui::SliderFloat(frequencyLabel.c_str(), &frequency, 0.0F, 10.0F);
         noise->SetFrequency(frequency);
 
         const auto amplitudeLabel = "Amplitude " + std::to_string(i);
