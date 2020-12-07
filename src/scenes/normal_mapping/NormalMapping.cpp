@@ -37,7 +37,9 @@ void NormalMapping::setup() {
     std::shared_ptr<OpenGLMesh> mesh = model->getMeshes()[0];
     mesh->vertexArray->addVertexBuffer(vertexBuffer);
 
-    normalMap = std::make_shared<Texture>(GL_RGBA);
+    TextureSettings settings = {};
+    settings.dataType = GL_BGR;
+    normalMap = std::make_shared<Texture>(settings);
     glActiveTexture(GL_TEXTURE1);
     normalMap->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));

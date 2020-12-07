@@ -178,7 +178,9 @@ Character FontDemo::loadCharacter(const char character, const unsigned int chara
         std::cerr << "Could not load glyph" << std::endl;
     }
 
-    Texture texture(GL_RED);
+    TextureSettings settings = {};
+    settings.dataType = GL_RED;
+    Texture texture(settings);
     GL_Call(glActiveTexture(GL_TEXTURE0));
     texture.bind();
 
