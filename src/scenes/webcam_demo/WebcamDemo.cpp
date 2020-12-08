@@ -34,7 +34,10 @@ void WebcamDemo::setup() {
     auto ib = std::make_shared<IndexBuffer>(indices);
     va->setIndexBuffer(ib);
 
-    texture = std::make_shared<Texture>(GL_BGR, GL_RGB);
+    TextureSettings settings = {};
+    settings.dataType = GL_BGR;
+    settings.openGlDataType = GL_RGB;
+    texture = std::make_shared<Texture>(settings);
     glActiveTexture(GL_TEXTURE0);
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
