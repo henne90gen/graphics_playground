@@ -127,7 +127,7 @@ GLuint Shader::load(GLuint shaderType, const std::string &filePath) {
         } else {
             std::cerr << "unknown";
         }
-        std::cerr << "shader: " << filePath << std::endl;
+        std::cerr << " shader: " << filePath << std::endl;
         return 0;
     }
 
@@ -160,7 +160,7 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
         } else {
             std::cerr << "unknown";
         }
-        std::cerr << "shader" << std::endl;
+        std::cerr << " shader" << std::endl;
         return 0;
     }
 

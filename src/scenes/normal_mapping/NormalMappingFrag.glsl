@@ -38,11 +38,10 @@ void main() {
     vec4 surfaceColor = texture(u_TextureSampler, v_UV);
     vec3 diffuseColor = brightness * u_Light.color * surfaceColor.rgb;
 
+    vec3 specularColor = vec3(0.1);
     vec3 cameraDirection = normalize(v_CameraPosition - v_Position);
     vec3 reflectionDirection = reflect(surfaceToLight, normal);
     float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0, 1);
-
-    vec3 specularColor = vec3(0.1);
     specularColor *= u_Light.color * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
 
     vec3 colorv3 = vec3(0.0);

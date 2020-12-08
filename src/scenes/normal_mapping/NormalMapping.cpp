@@ -37,7 +37,9 @@ void NormalMapping::setup() {
     std::shared_ptr<OpenGLMesh> mesh = model->getMeshes()[0];
     mesh->vertexArray->addVertexBuffer(vertexBuffer);
 
-    normalMap = std::make_shared<Texture>(GL_RGBA);
+    TextureSettings textureSettings = {};
+    textureSettings.dataType = GL_RGBA;
+    normalMap = std::make_shared<Texture>(textureSettings);
     glActiveTexture(GL_TEXTURE1);
     normalMap->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -149,7 +151,7 @@ void NormalMapping::calculateTangentsAndBiTangents(const std::vector<glm::ivec3>
                                                    const std::vector<glm::vec3> &vertices,
                                                    const std::vector<glm::vec2> &uvs, std::vector<glm::vec3> &tangents,
                                                    std::vector<glm::vec3> &biTangents) {
-    for (auto &index : indices) {
+    for (const auto &index : indices) {
         auto p1 = vertices[index.x];
         auto p2 = vertices[index.y];
         auto p3 = vertices[index.z];
