@@ -44,7 +44,12 @@ struct NoiseLayer : Layer {
     float amplitudeFactor = 1.0F;
 
     NoiseLayer() = default;
-    NoiseLayer(float weight, float frequency) : Layer(weight) { noise->SetFrequency(frequency); }
+    NoiseLayer(float weight, float frequency, float amplitude = 1.0F,
+               FastNoise::NoiseType noiseType = FastNoise::Simplex)
+        : Layer(weight), amplitudeFactor(amplitude) {
+        noise->SetFrequency(frequency);
+        noise->SetNoiseType(noiseType);
+    }
     ~NoiseLayer() override { delete noise; }
 
     void renderSpecialMenu(int i) override {

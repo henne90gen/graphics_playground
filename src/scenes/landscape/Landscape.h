@@ -35,19 +35,31 @@ class Landscape : public Scene {
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexBuffer> heightBuffer;
     std::shared_ptr<VertexBuffer> normalBuffer;
-    std::vector<float> heightMap = std::vector<float>();
+    std::shared_ptr<VertexBuffer> tangentBuffer;
+    std::shared_ptr<VertexBuffer> biTangentBuffer;
 
-    std::shared_ptr<Shader> noiseTextureShader;
-    std::shared_ptr<VertexArray> noiseTextureVA;
+    std::vector<float> heightMap = {};
+    std::vector<glm::vec2> vertices = {};
+    std::vector<glm::vec2> uvs = {};
+    std::vector<glm::ivec3> indices = {};
+
+    std::shared_ptr<Shader> textureShader;
+    std::shared_ptr<VertexArray> textureVA;
+
     std::shared_ptr<Texture> noiseTexture;
+    std::shared_ptr<Texture> normalTexture;
 
     void generatePoints(unsigned int pointDensity);
     void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,
                             float power, float platformHeight);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight,
-                       const glm::vec3 &lightColor, const float lightPower, const TerrainLevels &levels,
-                       const bool drawWireframe);
+                       const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels, bool drawWireframe,
+                       bool showUVs);
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
+    void updateNormalTexture(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,
+                             float power);
+    void renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
+                             glm::vec3 &textureScale);
 };
