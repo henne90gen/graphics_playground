@@ -284,7 +284,7 @@ void RayTracing::setupRayTracedTexture() {
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     rayTracedTextureArray->addVertexBuffer(buffer);
 
-    texture = std::make_shared<Texture>(GL_RGB);
+    texture = std::make_shared<Texture>();
     glActiveTexture(GL_TEXTURE0);
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));

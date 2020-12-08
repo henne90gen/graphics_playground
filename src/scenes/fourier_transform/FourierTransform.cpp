@@ -27,7 +27,9 @@ void FourierTransform::setup() {
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     vertexArray->setIndexBuffer(indexBuffer);
 
-    texture = std::make_shared<Texture>(GL_RGBA);
+    TextureSettings settings = {};
+    settings.dataType = GL_RGBA;
+    texture = std::make_shared<Texture>(settings);
     glActiveTexture(GL_TEXTURE0);
     texture->bind();
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
