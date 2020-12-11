@@ -53,16 +53,16 @@ void showLayerMenu(std::vector<Layer *> &layers) {
 
     ImGui::Separator();
     static int layerType = 0;
-    static const std::array<const char *, 3> items = {"Bowl", "Noise", "Ridge"};
+    static const std::array<const char *, 3> items = {"Noise", "Bowl", "Ridge"};
     ImGui::Combo("", &layerType, items.data(), items.size());
     ImGui::SameLine();
     if (ImGui::Button("Add Layer")) {
         switch (layerType) {
         case 0:
-            layers.push_back(new BowlLayer());
+            layers.push_back(new NoiseLayer());
             break;
         case 1:
-            layers.push_back(new NoiseLayer());
+            layers.push_back(new BowlLayer());
             break;
         case 2:
             layers.push_back(new RidgeNoiseLayer());
@@ -87,13 +87,16 @@ void Landscape::tick() {
     static auto texturePosition = glm::vec3(0.0F);
     static auto textureRotation = glm::vec3(0.0F);
     static auto textureScale = glm::vec3(1.0F);
+    static auto normalScale = 10.0F;
     static auto pointDensity = INITIAL_POINT_DENSITY;
+    static auto normalMapPointDensity = 300;
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
-    static auto uvScaleFactor = 1.0F;
+    static auto uvScaleFactor = 20.0F;
     static auto animate = false;
     static auto usePlayerPosition = false;
     static auto thingToRender = 0;
+    static auto editNormalTexture = false;
     static auto power = 1.1F;
     static auto platformHeight = 0.15F;
 
@@ -118,8 +121,11 @@ void Landscape::tick() {
     };
 
     static std::vector<Layer *> normalLayers = {
-          new NoiseLayer(1.0F, 10.0F, 5.0F, FastNoise::NoiseType::Cellular), //
-          new NoiseLayer(1.0F, 10.0F),                                       //
+          new NoiseLayer(1.0F, 1.0F),  //
+          new NoiseLayer(0.7F, 3.0F),  //
+          new NoiseLayer(0.5F, 5.0F),  //
+          new NoiseLayer(0.3F, 7.0F),  //
+          new NoiseLayer(0.1F, 10.0F), //
     };
 
     const float dragSpeed = 0.01F;
@@ -137,6 +143,7 @@ void Landscape::tick() {
     if (ImGui::Button("Show Normals")) {
         thingToRender = 2;
     }
+    ImGui::Checkbox("Edit NormalTexture", &editNormalTexture);
     ImGui::Separator();
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
     ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
@@ -155,11 +162,14 @@ void Landscape::tick() {
     ImGui::DragFloat3("Noise Offset", reinterpret_cast<float *>(&movement), dragSpeed);
     ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
     ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
+    ImGui::SliderInt("Normal Map Point Density", &normalMapPointDensity, 1, 1000);
+    ImGui::Text("Normal Count: %d", normalMapPointDensity * normalMapPointDensity);
     ImGui::Separator();
     ImGui::DragFloat3("Surface To Light", reinterpret_cast<float *>(&surfaceToLight));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, 0.1F);
     ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), dragSpeed);
+    ImGui::DragFloat("Normal Scale", &normalScale);
     ImGui::Separator();
     ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
     ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
@@ -171,10 +181,10 @@ void Landscape::tick() {
     ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
     ImGui::End();
 
-    if (thingToRender == 0 || thingToRender == 1) {
-        showLayerMenu(layers);
-    } else {
+    if (editNormalTexture) {
         showLayerMenu(normalLayers);
+    } else {
+        showLayerMenu(layers);
     }
 
     if (animate) {
@@ -185,11 +195,10 @@ void Landscape::tick() {
         generatePoints(pointDensity);
     }
 
-    static bool init = false;
-    if (!init || lastPointDensity != pointDensity) {
-        init = true;
+    if (editNormalTexture) {
+        updateNormalTexture(normalMapPointDensity, movement, normalLayers, power, normalScale);
+    } else {
         updateHeightBuffer(pointDensity, movement, layers, power, platformHeight);
-        updateNormalTexture(pointDensity * 10, movement, normalLayers, power);
     }
 
     glm::mat4 viewMatrix;
@@ -235,7 +244,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("blur", levels.blur);
     shader->setUniform("surfaceToLight", surfaceToLight);
     shader->setUniform("lightColor", lightColor);
-    shader->setUniform("lightPower", lightPower);
+    shader->setUniform("uLightPower", lightPower);
     shader->setUniform("showUVs", shaderToggles.showUVs);
     shader->setUniform("useNormalMap", shaderToggles.useNormalMap);
     shader->setUniform("uvScaleFactor", uvScaleFactor);
@@ -411,11 +420,11 @@ void updateNormals(const std::shared_ptr<VertexBuffer> &normalBuffer, const std:
     normalBuffer->update(normals);
 }
 
-void evaluateNoiseLayers(std::vector<float> &heightMap, const std::vector<Layer *> &layers, const unsigned int width,
+void evaluateNoiseLayers(std::vector<float> &heights, const std::vector<Layer *> &layers, const unsigned int width,
                          const unsigned int height, const glm::vec3 &movement, const unsigned int pointDensity,
                          const float power, const float platformHeight) {
-    float maxHeight = 0.0F;
-    float minHeight = 0.0F;
+    float maxHeight = std::numeric_limits<float>::min();
+    float minHeight = std::numeric_limits<float>::max();
 
 #define SEQUENTIAL 1
 #if SEQUENTIAL
@@ -449,13 +458,13 @@ void evaluateNoiseLayers(std::vector<float> &heightMap, const std::vector<Layer 
         if (generatedHeight < minHeight) {
             minHeight = generatedHeight;
         }
-        heightMap[y * width + x] = generatedHeight;
+        heights[y * width + x] = generatedHeight;
     }
 
 #pragma omp parallel for
-    for (int i = 0; i < heightMap.size(); i++) {
-        heightMap[i] -= minHeight;
-        heightMap[i] /= maxHeight - minHeight;
+    for (int i = 0; i < heights.size(); i++) {
+        heights[i] -= minHeight;
+        heights[i] /= maxHeight - minHeight;
 
         if (platformHeight <= 0.0F) {
             continue;
@@ -495,14 +504,19 @@ void evaluateNoiseLayers(std::vector<float> &heightMap, const std::vector<Layer 
                 w *= negM * y + negN;
             }
         }
-        heightMap[i] = (1.0F - w) * heightMap[i] + w * platformHeight;
+        heights[i] = (1.0F - w) * heights[i] + w * platformHeight;
     }
 }
 
 void updateTangentAndBiTangent(const std::vector<glm::ivec3> &indices, const std::vector<glm::vec2> &vertices,
                                const std::vector<float> &heights, const std::vector<glm::vec2> &uvs,
                                std::vector<glm::vec3> &tangents, std::vector<glm::vec3> &biTangents) {
-    for (const auto &index : indices) {
+    tangents.resize(indices.size() * 3);
+    biTangents.resize(indices.size() * 3);
+
+#pragma omp parallel for
+    for (int i = 0; i < indices.size(); i++) {
+        const auto &index = indices[i];
         auto p1_ = vertices[index.x];
         auto p2_ = vertices[index.y];
         auto p3_ = vertices[index.z];
@@ -524,18 +538,18 @@ void updateTangentAndBiTangent(const std::vector<glm::ivec3> &indices, const std
         tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
         tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
         tangent = glm::normalize(tangent);
-        tangents.push_back(tangent);
-        tangents.push_back(tangent);
-        tangents.push_back(tangent);
+        tangents[i * 3 + 0] = tangent;
+        tangents[i * 3 + 1] = tangent;
+        tangents[i * 3 + 2] = tangent;
 
         glm::vec3 biTangent = {0.0, 0.0, 0.0};
         biTangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
         biTangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
         biTangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
         biTangent = glm::normalize(biTangent);
-        biTangents.push_back(biTangent);
-        biTangents.push_back(biTangent);
-        biTangents.push_back(biTangent);
+        biTangents[i * 3 + 0] = biTangent;
+        biTangents[i * 3 + 1] = biTangent;
+        biTangents[i * 3 + 2] = biTangent;
     }
 }
 
@@ -558,22 +572,24 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 }
 
 void Landscape::updateNormalTexture(const unsigned int pointDensity, const glm::vec3 &movement,
-                                    const std::vector<Layer *> &layers, const float power) {
-    auto width = static_cast<unsigned int>(WIDTH * pointDensity);
-    auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
+                                    const std::vector<Layer *> &layers, const float power, const float normalScale) {
+    auto width = static_cast<unsigned int>(1 * pointDensity);
+    auto height = static_cast<unsigned int>(1 * pointDensity);
 
-    auto heightMap = std::vector<float>(width * height);
-    evaluateNoiseLayers(heightMap, layers, width, height, movement, pointDensity, power, 0.0F);
+    auto heights = std::vector<float>(width * height);
+    evaluateNoiseLayers(heights, layers, width, height, movement, pointDensity, power, 0.0F);
 
-    auto normals = std::vector<glm::vec3>(heightMap.size());
+    updateNoiseTexture(noiseTexture, heights, width, height);
+
+    auto normals = std::vector<glm::vec3>(heights.size());
 #pragma omp parallel for
-    for (int i = 0; i < heightMap.size(); i++) {
+    for (int i = 0; i < heights.size(); i++) {
         const int x = i % width;
         const int y = i / width;
-        const float L = safeRetrieve(heightMap, width, x - 1, y);
-        const float R = safeRetrieve(heightMap, width, x + 1, y);
-        const float B = safeRetrieve(heightMap, width, x, y - 1);
-        const float T = safeRetrieve(heightMap, width, x, y + 1);
+        const float L = safeRetrieve(heights, width, x - 1, y) * normalScale;
+        const float R = safeRetrieve(heights, width, x + 1, y) * normalScale;
+        const float B = safeRetrieve(heights, width, x, y - 1) * normalScale;
+        const float T = safeRetrieve(heights, width, x, y + 1) * normalScale;
         const glm::vec3 normal = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
         normals[i] = normal;
     }

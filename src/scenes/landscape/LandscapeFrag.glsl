@@ -14,7 +14,7 @@ uniform float blur;
 
 uniform vec3 surfaceToLight;
 uniform vec3 lightColor;
-uniform float lightPower;
+uniform float uLightPower;
 uniform mat3 normalMatrix;
 uniform sampler2D uNormalSampler;
 uniform bool useNormalMap;
@@ -48,6 +48,8 @@ void main() {
         return;
     }
 
+    float lightPower = uLightPower;
+
     vec3 normal = vec3(1.0);
     if (useNormalMap) {
         normal = texture(uNormalSampler, vUV).rgb;
@@ -55,6 +57,7 @@ void main() {
         normal = normalize(vTBN * normal);
     } else {
         normal = normalize(normalMatrix * vNormal);
+        lightPower += 200.0F;
     }
 
     float distanceToLight = length(surfaceToLight);

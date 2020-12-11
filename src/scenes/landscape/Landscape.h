@@ -61,11 +61,11 @@ class Landscape : public Scene {
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight,
                        const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels,
-                       const ShaderToggles &shaderToggles, float d);
+                       const ShaderToggles &shaderToggles, float uvScaleFactor);
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
     void updateNormalTexture(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,
-                             float power);
+                             float power, float normalScale);
     void renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                              glm::vec3 &textureScale);
 };
