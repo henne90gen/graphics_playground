@@ -89,8 +89,8 @@ void Landscape::tick() {
     static auto textureScale = glm::vec3(1.0F);
     static auto pointDensity = INITIAL_POINT_DENSITY;
     static auto movement = glm::vec3(0.0F);
-    static auto drawWireframe = false;
-    static auto showUVs = false;
+    static auto shaderToggles = ShaderToggles();
+    static auto uvScaleFactor = 1.0F;
     static auto animate = false;
     static auto usePlayerPosition = false;
     static auto thingToRender = 0;
@@ -161,8 +161,10 @@ void Landscape::tick() {
     ImGui::DragFloat("Light Power", &lightPower, 0.1F);
     ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), dragSpeed);
     ImGui::Separator();
-    ImGui::Checkbox("Wireframe", &drawWireframe);
-    ImGui::Checkbox("Show UVs", &showUVs);
+    ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
+    ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
+    ImGui::Checkbox("Use Normal Map", &shaderToggles.useNormalMap);
+    ImGui::DragFloat("uvScaleFactor", &uvScaleFactor);
     ImGui::Checkbox("Animate", &animate);
     ImGui::Checkbox("Show Player View", &usePlayerPosition);
     ImGui::DragFloat("Power", &power, dragSpeed);
@@ -184,7 +186,7 @@ void Landscape::tick() {
     }
 
     static bool init = false;
-    if (!init) {
+    if (!init || lastPointDensity != pointDensity) {
         init = true;
         updateHeightBuffer(pointDensity, movement, layers, power, platformHeight);
         updateNormalTexture(pointDensity * 10, movement, normalLayers, power);
@@ -200,7 +202,7 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, surfaceToLight,
-                      lightColor, lightPower, levels, drawWireframe, showUVs);
+                      lightColor, lightPower, levels, shaderToggles, uvScaleFactor);
     } else if (thingToRender == 1) {
         renderNoiseTexture(textureRotation, texturePosition, textureScale);
     } else if (thingToRender == 2) {
@@ -211,8 +213,8 @@ void Landscape::tick() {
 void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                               const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                               const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
-                              const float lightPower, const TerrainLevels &levels, const bool drawWireframe,
-                              const bool showUVs) {
+                              float lightPower, const TerrainLevels &levels, const ShaderToggles &shaderToggles,
+                              const float uvScaleFactor) {
     shader->bind();
     vertexArray->bind();
 
@@ -234,19 +236,21 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("surfaceToLight", surfaceToLight);
     shader->setUniform("lightColor", lightColor);
     shader->setUniform("lightPower", lightPower);
-    shader->setUniform("showUVs", showUVs);
+    shader->setUniform("showUVs", shaderToggles.showUVs);
+    shader->setUniform("useNormalMap", shaderToggles.useNormalMap);
+    shader->setUniform("uvScaleFactor", uvScaleFactor);
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
     normalTexture->bind();
     shader->setUniform("uNormalSampler", 0);
 
-    if (drawWireframe) {
+    if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
     GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
-    if (drawWireframe) {
+    if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 
@@ -325,9 +329,8 @@ void Landscape::generatePoints(unsigned int pointDensity) {
 
         vertices[i] = glm::vec2(x, y);
 
-        auto u = static_cast<float>((i % width) % 2);
-        auto row = static_cast<int>(std::floor(static_cast<float>(i) / static_cast<float>(width)));
-        auto v = static_cast<float>((row + 1) % 2);
+        auto u = static_cast<float>(i % width);
+        auto v = static_cast<int>(std::floor(static_cast<float>(i) / static_cast<float>(width)));
         uvs[i] = glm::vec2(u, v);
     }
 

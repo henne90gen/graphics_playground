@@ -18,6 +18,12 @@ struct TerrainLevels {
     float blur = 0.05F;
 };
 
+struct ShaderToggles {
+    bool useNormalMap = true;
+    bool showUVs;
+    bool drawWireframe;
+};
+
 class Landscape : public Scene {
   public:
     explicit Landscape() : Scene("Landscape"){};
@@ -54,8 +60,8 @@ class Landscape : public Scene {
                             float power, float platformHeight);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight,
-                       const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels, bool drawWireframe,
-                       bool showUVs);
+                       const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels,
+                       const ShaderToggles &shaderToggles, float d);
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
     void updateNormalTexture(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,

@@ -10,6 +10,7 @@ in vec3 biTangent;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform float uvScaleFactor;
 
 out float vHeight;
 out vec3 vPosition;
@@ -24,7 +25,7 @@ void main() {
     vec3 N = normalize(vec3(modelMatrix * vec4(normal, 0.0)));
     vTBN = mat3(T, B, N);
     vCameraPosition = vec3(viewMatrix * vec4(0.0, 0.0, 0.0, 1.0));
-    vUV = uv;
+    vUV = uv/uvScaleFactor;
     vHeight = height;
     vNormal = normal;
     vec3 finalPosition = vec3(position.x, height, position.y);
