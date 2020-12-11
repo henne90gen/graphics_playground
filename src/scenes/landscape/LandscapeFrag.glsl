@@ -16,9 +16,9 @@ uniform vec3 surfaceToLight;
 uniform vec3 lightColor;
 uniform float lightPower;
 uniform mat3 normalMatrix;
-uniform bool uUseNormalMap = true;
-uniform bool showUVs;
 uniform sampler2D uNormalSampler;
+uniform bool useNormalMap;
+uniform bool showUVs;
 
 out vec4 color;
 
@@ -44,12 +44,12 @@ vec4 getSurfaceColor(float height) {
 
 void main() {
     if (showUVs) {
-        color = vec4(vUV.r, vUV.g, 0.0F, 1.0F);
+        color = vec4(vUV.r/150, vUV.g/150, 0.0F, 1.0F);
         return;
     }
 
     vec3 normal = vec3(1.0);
-    if (uUseNormalMap) {
+    if (useNormalMap) {
         normal = texture(uNormalSampler, vUV).rgb;
         normal = normalize(normal * 2.0 - 1.0);
         normal = normalize(vTBN * normal);
