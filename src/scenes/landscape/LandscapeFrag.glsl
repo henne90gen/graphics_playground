@@ -15,7 +15,6 @@ uniform float blur;
 uniform vec3 surfaceToLight;
 uniform vec3 lightColor;
 uniform float uLightPower;
-uniform mat3 normalMatrix;
 uniform sampler2D uNormalSampler;
 uniform bool useNormalMap;
 uniform bool showUVs;
@@ -42,9 +41,51 @@ vec4 getSurfaceColor(float height) {
     }
 }
 
+vec3 getNormalFromNormalMap() {
+    float overlap = 0.1F;
+
+    vec2 uv = vUV;
+    uv.x = fract(uv.x);
+    uv.x *= 1.0F - overlap;
+    uv.x += overlap * 0.5F;
+
+    vec3 normal = texture(uNormalSampler, uv).rgb;
+
+    float xFrac = fract(uv.x);
+    float xFracInv = 1.0F - xFrac;
+    if (xFrac > 1.0F - overlap) {
+        vec2 uvNext = vec2(overlap - xFracInv, uv.y);
+        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
+        normal = mix(normal, normalNext, 1.0F - ((1.0F - xFrac) * (1.0F / overlap)));
+    }
+    if (xFrac < overlap) {
+        vec2 uvNext = vec2(1.0F - (overlap - xFrac), uv.y);
+        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
+        normal = mix(normal, normalNext, 1.0F - (xFrac * (1.0F / overlap)));
+    }
+
+    float yFrac = fract(uv.y);
+    float yFracInv = 1.0F - yFrac;
+    if (yFrac > 1.0F - overlap) {
+        vec2 uvNext = vec2(overlap - yFracInv, uv.y);
+        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
+        normal = mix(normal, normalNext, 1.0F - ((1.0F - yFrac) * (1.0F / overlap)));
+    }
+    if (yFrac < overlap) {
+        vec2 uvNext = vec2(1.0F - (overlap - yFrac), uv.y);
+        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
+        normal = mix(normal, normalNext, 1.0F - (yFrac * (1.0F / overlap)));
+    }
+
+    normal = normalize(normal * 2.0 - 1.0);
+    normal = normalize(vTBN * normal);
+
+    return normal;
+}
+
 void main() {
     if (showUVs) {
-        color = vec4(vUV.r/150, vUV.g/150, 0.0F, 1.0F);
+        color = vec4(vUV.r, vUV.g, 0.0F, 1.0F);
         return;
     }
 
@@ -52,11 +93,9 @@ void main() {
 
     vec3 normal = vec3(1.0);
     if (useNormalMap) {
-        normal = texture(uNormalSampler, vUV).rgb;
-        normal = normalize(normal * 2.0 - 1.0);
-        normal = normalize(vTBN * normal);
+        normal = getNormalFromNormalMap();
     } else {
-        normal = normalize(normalMatrix * vNormal);
+        normal = normalize(vNormal);
         lightPower += 200.0F;
     }
 

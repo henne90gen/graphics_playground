@@ -7,6 +7,7 @@ in vec3 normal;
 in vec3 tangent;
 in vec3 biTangent;
 
+uniform mat3 normalMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
@@ -27,7 +28,7 @@ void main() {
     vCameraPosition = vec3(viewMatrix * vec4(0.0, 0.0, 0.0, 1.0));
     vUV = uv/uvScaleFactor;
     vHeight = height;
-    vNormal = normal;
+    vNormal = normalMatrix * normal;
     vec3 finalPosition = vec3(position.x, height, position.y);
     vec4 worldPosition = modelMatrix * vec4(finalPosition, 1.0);
     vPosition = vec3(worldPosition);
