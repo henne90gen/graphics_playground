@@ -576,20 +576,22 @@ void Landscape::updateNormalTexture(const unsigned int pointDensity, const glm::
     auto width = static_cast<unsigned int>(1 * pointDensity);
     auto height = static_cast<unsigned int>(1 * pointDensity);
 
-    auto heights = std::vector<float>(width * height);
-    evaluateNoiseLayers(heights, layers, width, height, movement, pointDensity, power, 0.0F);
+    unsigned int noiseWidth = width + 2;
+    unsigned int noiseHeight = height + 2;
+    auto heights = std::vector<float>(noiseWidth * noiseHeight);
+    evaluateNoiseLayers(heights, layers, noiseWidth, noiseHeight, movement, pointDensity, power, 0.0F);
 
-    updateNoiseTexture(noiseTexture, heights, width, height);
+    updateNoiseTexture(noiseTexture, heights, noiseWidth, noiseHeight);
 
-    auto normals = std::vector<glm::vec3>(heights.size());
+    auto normals = std::vector<glm::vec3>(width * height);
 #pragma omp parallel for
-    for (int i = 0; i < heights.size(); i++) {
-        const int x = i % width;
-        const int y = i / width;
-        const float L = safeRetrieve(heights, width, x - 1, y) * normalScale;
-        const float R = safeRetrieve(heights, width, x + 1, y) * normalScale;
-        const float B = safeRetrieve(heights, width, x, y - 1) * normalScale;
-        const float T = safeRetrieve(heights, width, x, y + 1) * normalScale;
+    for (int i = 0; i < width * height; i++) {
+        const int x = (i % width) + 1;
+        const int y = (i / width) + 1;
+        const float L = safeRetrieve(heights, noiseWidth, x - 1, y) * normalScale;
+        const float R = safeRetrieve(heights, noiseWidth, x + 1, y) * normalScale;
+        const float B = safeRetrieve(heights, noiseWidth, x, y - 1) * normalScale;
+        const float T = safeRetrieve(heights, noiseWidth, x, y + 1) * normalScale;
         const glm::vec3 normal = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
         normals[i] = normal;
     }
