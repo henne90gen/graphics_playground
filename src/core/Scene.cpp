@@ -1,10 +1,10 @@
 #include "Scene.h"
 
-void Scene::renderBackMenu() {
+void Scene::renderCaptureMenu() {
     ImGui::Begin(name.c_str());
     ImGui::SetWindowPos(ImVec2(0, 0));
     const unsigned int windowWidth = 150;
-    const unsigned int windowHeight = 130;
+    const unsigned int windowHeight = 100;
     ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
 
     if (ImGui::Button("Take Screenshot")) {
@@ -66,6 +66,6 @@ void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
 
     tick();
 
-    renderBackMenu();
+    renderCaptureMenu();
     renderMetrics();
 }
