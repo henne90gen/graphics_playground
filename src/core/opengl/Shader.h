@@ -8,12 +8,12 @@
 #include <unordered_map>
 
 #define DEFINE_SHADER(name)                                                                                            \
-    extern "C" const unsigned int name##Vert_len;                                                                          \
-    extern "C" const char *name##Vert[];                                                                                   \
-    extern "C" const int name##Vert_line_lens[];                                                                           \
-    extern "C" const unsigned int name##Frag_len;                                                                          \
-    extern "C" const char *name##Frag[];                                                                                   \
-    extern "C" const int name##Frag_line_lens[];
+    extern "C" const unsigned int name##Vert_len;                                                                      \
+    extern "C" char *name##Vert[];                                                                                     \
+    extern "C" int name##Vert_line_lens[];                                                                             \
+    extern "C" const unsigned int name##Frag_len;                                                                      \
+    extern "C" char *name##Frag[];                                                                                     \
+    extern "C" int name##Frag_line_lens[];
 
 #define SHADER(name)                                                                                                   \
     std::make_shared<Shader>(ShaderCode(name##Vert_len, name##Vert_line_lens, name##Vert),                             \
@@ -22,11 +22,13 @@
 enum ShaderDataType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 
 struct ShaderCode {
-    const unsigned int lineCount;
-    const int *lineLengths;
-    const char **shaderSource;
+    unsigned int lineCount = 0;
+    int *lineLengths = nullptr;
+    char **shaderSource = nullptr;
 
-    ShaderCode(const unsigned int lineCount, const int *lineLengths, const char **shaderSource)
+    ShaderCode() = default;
+    ShaderCode(ShaderCode &code) = default;
+    ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource)
         : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource) {}
 };
 
@@ -38,15 +40,17 @@ class Shader {
     std::unordered_map<std::string, int> attributeLocations;
 
   public:
-    Shader(const std::string &vertexPath, const std::string &fragmentPath);
-    Shader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode);
+    explicit Shader(const std::string &vertexPath, const std::string &fragmentPath);
+    explicit Shader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode);
 
-    ~Shader() {}
+    ~Shader() = default;
 
     void bind();
     static void unbind();
 
-    inline unsigned int getId() { return id; }
+    [[nodiscard]] inline unsigned int getId() const { return id; }
+
+    void attach(GLuint shaderType, const std::string &filePath);
 
     void setUniform(const std::string &name, float f) { GL_Call(glUniform1f(getUniformLocation(name), f)); }
 
@@ -73,11 +77,10 @@ class Shader {
     int getAttributeLocation(const std::string &name);
 
   private:
-    void compile(const std::string &vertexPath, const std::string &fragmentPath);
-    void compile(const ShaderCode &vertexCode, const ShaderCode &fragmentSource);
+    std::unordered_map<GLuint, ShaderCode> shaderComponents = {};
 
-    static GLuint load(GLuint shaderType, const std::string &filePath);
-    static GLuint load(GLuint shaderType, const ShaderCode &shaderSource);
+    void compile();
+    static GLuint load(GLuint shaderType, const ShaderCode &shaderCode);
 
     int getUniformLocation(const std::string &name);
 };
