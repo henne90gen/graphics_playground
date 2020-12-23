@@ -8,10 +8,10 @@
 #include "util/OpenGLUtils.h"
 
 DEFINE_SCENE_MAIN(Triangle)
-DEFINE_SHADER(triangle_Triangle)
+DEFINE_DEFAULT_SHADER(triangle_Triangle)
 
 void Triangle::setup() {
-    shader = SHADER(triangle_Triangle);
+    shader = CREATE_DEFAULT_SHADER(triangle_Triangle);
     shader->bind();
 
     positionBuffer = new VertexBuffer();

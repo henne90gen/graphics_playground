@@ -8,10 +8,10 @@
 const int MAX_FOURIER_RESOLUTION = 500;
 
 DEFINE_SCENE_MAIN(FourierTransform)
-DEFINE_SHADER(fourier_transform_FourierTransform)
+DEFINE_DEFAULT_SHADER(fourier_transform_FourierTransform)
 
 void FourierTransform::setup() {
-    shader = SHADER(fourier_transform_FourierTransform);
+    shader = CREATE_DEFAULT_SHADER(fourier_transform_FourierTransform);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

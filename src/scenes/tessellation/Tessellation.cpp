@@ -4,17 +4,19 @@
 #include "util/RenderUtils.h"
 
 DEFINE_SCENE_MAIN(Tessellation)
-DEFINE_SHADER(tesselation_Tesselation)
+DEFINE_DEFAULT_SHADER(tessellation_Tessellation)
 
 constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 10000.0F;
 
 void Tessellation::setup() {
-    shader = SHADER(tesselation_Tesselation);
-    shader->attach(GL_TESS_CONTROL_SHADER, "../../src/scenes/tesselation/TCS.glsl");
-    shader->attach(GL_TESS_EVALUATION_SHADER, "../../src/scenes/tesselation/TES.glsl");
-    simpleShader = SHADER(tesselation_Tesselation);
+    shader = CREATE_DEFAULT_SHADER(tessellation_Tessellation);
+    shader->attach(GL_TESS_CONTROL_SHADER, "../../src/scenes/tessellation/TCS.glsl");
+    shader->attach(GL_TESS_EVALUATION_SHADER, "../../src/scenes/tessellation/TES.glsl");
+    shader->compile();
+
+    simpleShader = CREATE_DEFAULT_SHADER(tessellation_Tessellation);
 
     glm::vec2 uvMin = {0.0F, 0.0F};
     glm::vec2 uvMax = {1.0F, 1.0F};

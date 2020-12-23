@@ -9,7 +9,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(MetaBallsScene)
-DEFINE_SHADER(meta_balls_MetaBalls)
+DEFINE_DEFAULT_SHADER(meta_balls_MetaBalls)
 
 struct AnimatedBall {
     glm::vec3 startPos;
@@ -22,7 +22,7 @@ struct AnimatedBall {
 void updateAnimatedBall(AnimatedBall &ball, float delta, float speed);
 
 void MetaBallsScene::setup() {
-    shader = SHADER(meta_balls_MetaBalls);
+    shader = CREATE_DEFAULT_SHADER(meta_balls_MetaBalls);
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 

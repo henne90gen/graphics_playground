@@ -10,10 +10,10 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(ModelLoading)
-DEFINE_SHADER(model_loading_ModelLoading)
+DEFINE_DEFAULT_SHADER(model_loading_ModelLoading)
 
 void ModelLoading::setup() {
-    shader = SHADER(model_loading_ModelLoading);
+    shader = CREATE_DEFAULT_SHADER(model_loading_ModelLoading);
     shader->bind();
     onAspectRatioChange();
 

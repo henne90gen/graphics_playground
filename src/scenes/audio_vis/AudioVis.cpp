@@ -12,10 +12,10 @@ constexpr auto WIDTH = 50;
 constexpr auto LENGTH = 100;
 
 DEFINE_SCENE_MAIN(AudioVis)
-DEFINE_SHADER(audio_vis_AudioVis)
+DEFINE_DEFAULT_SHADER(audio_vis_AudioVis)
 
 void AudioVis::setup() {
-    shader = SHADER(audio_vis_AudioVis);
+    shader = CREATE_DEFAULT_SHADER(audio_vis_AudioVis);
 
     loadWavFile("audio_vis_resources/res/audio_test.wav", wav);
     playBack.wav = &wav;

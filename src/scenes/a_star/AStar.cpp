@@ -4,12 +4,12 @@
 #include "util/RenderUtils.h"
 
 DEFINE_SCENE_MAIN(AStar)
-DEFINE_SHADER(a_star_AStar)
+DEFINE_DEFAULT_SHADER(a_star_AStar)
 
 void AStar::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
 
-    shader = SHADER(a_star_AStar);
+    shader = CREATE_DEFAULT_SHADER(a_star_AStar);
     shader->bind();
 
     vertexArray = createQuadVA(shader, {2.0F, 2.0F});

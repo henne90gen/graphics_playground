@@ -4,10 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
-
-#include "util/FileUtils.h"
 
 ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     std::ifstream shaderStream(filePath, std::ios::in);
@@ -43,21 +40,10 @@ ShaderCode readShaderCodeFromFile(const std::string &filePath) {
             shaderSource[i][j] = lines[i][j];
         }
     }
-    return ShaderCode(lineCount, lineLengths, shaderSource);
-}
 
-Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath) : id(0) {
-    auto vertexCode = readShaderCodeFromFile(vertexPath);
-    auto fragmentCode = readShaderCodeFromFile(fragmentPath);
-    shaderComponents[GL_VERTEX_SHADER] = vertexCode;
-    shaderComponents[GL_FRAGMENT_SHADER] = fragmentCode;
-    compile();
-}
-
-Shader::Shader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode) : id(0) {
-    shaderComponents[GL_VERTEX_SHADER] = vertexCode;
-    shaderComponents[GL_FRAGMENT_SHADER] = fragmentCode;
-    compile();
+    ShaderCode code = ShaderCode(lineCount, lineLengths, shaderSource);
+    code.filePath = filePath;
+    return code;
 }
 
 void Shader::compile() {
@@ -176,6 +162,15 @@ void Shader::unbind() { GL_Call(glUseProgram(0)); }
 
 void Shader::attach(GLuint shaderType, const std::string &filePath) {
     auto shaderCode = readShaderCodeFromFile(filePath);
-    shaderComponents[shaderType] = shaderCode;
-    compile();
+    attach(shaderType, shaderCode);
+}
+
+void Shader::attach(GLuint shaderType, const ShaderCode &shaderCode) { shaderComponents[shaderType] = shaderCode; }
+
+std::shared_ptr<Shader> createDefaultShader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode) {
+    auto result = std::make_shared<Shader>();
+    result->attach(GL_VERTEX_SHADER, vertexCode);
+    result->attach(GL_FRAGMENT_SHADER, fragmentCode);
+    result->compile();
+    return result;
 }

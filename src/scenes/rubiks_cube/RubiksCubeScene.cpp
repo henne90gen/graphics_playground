@@ -11,7 +11,7 @@ const float Z_FAR = 100.0F;
 const unsigned int NUMBER_OF_SMALL_CUBES = 27;
 
 DEFINE_SCENE_MAIN(RubiksCubeScene)
-DEFINE_SHADER(rubiks_cube_RubiksCube)
+DEFINE_DEFAULT_SHADER(rubiks_cube_RubiksCube)
 
 float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
     // front face
@@ -207,7 +207,7 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCubeScene::setup() {
-    shader = SHADER(rubiks_cube_RubiksCube);
+    shader = CREATE_DEFAULT_SHADER(rubiks_cube_RubiksCube);
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);

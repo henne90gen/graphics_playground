@@ -10,10 +10,10 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
 DEFINE_SCENE_MAIN(Cube)
-DEFINE_SHADER(cube_Cube)
+DEFINE_DEFAULT_SHADER(cube_Cube)
 
 void Cube::setup() {
-    shader = SHADER(cube_Cube);
+    shader = CREATE_DEFAULT_SHADER(cube_Cube);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

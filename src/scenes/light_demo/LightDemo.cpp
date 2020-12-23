@@ -8,10 +8,10 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(LightDemo)
-DEFINE_SHADER(light_demo_LightDemo)
+DEFINE_DEFAULT_SHADER(light_demo_LightDemo)
 
 void LightDemo::setup() {
-    shader = SHADER(light_demo_LightDemo);
+    shader = CREATE_DEFAULT_SHADER(light_demo_LightDemo);
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 

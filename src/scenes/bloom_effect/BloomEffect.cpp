@@ -9,22 +9,22 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(BloomEffect)
-DEFINE_SHADER(bloom_effect_BloomEffect)
-DEFINE_SHADER(bloom_effect_Bloom)
-DEFINE_SHADER(bloom_effect_Blur)
-DEFINE_SHADER(bloom_effect_SimpleTexture)
+DEFINE_DEFAULT_SHADER(bloom_effect_BloomEffect)
+DEFINE_DEFAULT_SHADER(bloom_effect_Bloom)
+DEFINE_DEFAULT_SHADER(bloom_effect_Blur)
+DEFINE_DEFAULT_SHADER(bloom_effect_SimpleTexture)
 
 void BloomEffect::setup() {
-    shader = SHADER(bloom_effect_BloomEffect);
+    shader = CREATE_DEFAULT_SHADER(bloom_effect_BloomEffect);
     shader->bind();
 
-    shaderBlur = SHADER(bloom_effect_Blur);
+    shaderBlur = CREATE_DEFAULT_SHADER(bloom_effect_Blur);
     shaderBlur->bind();
 
-    shaderBloom = SHADER(bloom_effect_Bloom);
+    shaderBloom = CREATE_DEFAULT_SHADER(bloom_effect_Bloom);
     shaderBloom->bind();
 
-    textureShader = SHADER(bloom_effect_SimpleTexture);
+    textureShader = CREATE_DEFAULT_SHADER(bloom_effect_SimpleTexture);
     textureShader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);

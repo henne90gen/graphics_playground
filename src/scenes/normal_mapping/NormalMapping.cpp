@@ -9,10 +9,10 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(NormalMapping)
-DEFINE_SHADER(normal_mapping_NormalMapping)
+DEFINE_DEFAULT_SHADER(normal_mapping_NormalMapping)
 
 void NormalMapping::setup() {
-    shader = SHADER(normal_mapping_NormalMapping);
+    shader = CREATE_DEFAULT_SHADER(normal_mapping_NormalMapping);
     shader->bind();
     onAspectRatioChange();
 

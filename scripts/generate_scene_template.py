@@ -8,10 +8,10 @@ CPP_TEMPLATE = """\
 #include "Main.h"
 
 DEFINE_SCENE_MAIN({name})
-DEFINE_SHADER({folder_name}_{name})
+DEFINE_DEFAULT_SHADER({folder_name}_{name})
 
 void {name}::setup() {{
-    shader = SHADER({folder_name}_{name});
+    shader = CREATE_DEFAULT_SHADER({folder_name}_{name});
 }}
 
 void {name}::destroy() {{}}
