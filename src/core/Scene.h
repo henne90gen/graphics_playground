@@ -28,7 +28,7 @@ class Scene {
 
     void setup(unsigned int windowWidth, unsigned int windowHeight, SceneData sceneData);
     void tick(unsigned int windowWidth, unsigned int windowHeight);
-    void renderBackMenu();
+    void renderCaptureMenu();
     void renderMetrics();
 
     virtual void destroy() = 0;
