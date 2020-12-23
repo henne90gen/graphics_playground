@@ -11,10 +11,10 @@
 #include "util/OpenGLUtils.h"
 
 DEFINE_SCENE_MAIN(GammaCalculation)
-DEFINE_SHADER(gamma_calculation_GammaCalculation)
+DEFINE_DEFAULT_SHADER(gamma_calculation_GammaCalculation)
 
 void GammaCalculation::setup() {
-    shader = SHADER(gamma_calculation_GammaCalculation);
+    shader = CREATE_DEFAULT_SHADER(gamma_calculation_GammaCalculation);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

@@ -5,10 +5,10 @@
 #include "util/ImGuiUtils.h"
 
 DEFINE_SCENE_MAIN(GraphVis)
-DEFINE_SHADER(graph_vis_GraphVis)
+DEFINE_DEFAULT_SHADER(graph_vis_GraphVis)
 
 void GraphVis::setup() {
-    shader = SHADER(graph_vis_GraphVis);
+    shader = CREATE_DEFAULT_SHADER(graph_vis_GraphVis);
     shader->bind();
     onAspectRatioChange();
 

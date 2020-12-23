@@ -5,10 +5,10 @@
 #include "util/ImGuiUtils.h"
 
 DEFINE_SCENE_MAIN(FontDemo)
-DEFINE_SHADER(font_demo_FontDemo)
+DEFINE_DEFAULT_SHADER(font_demo_FontDemo)
 
 void FontDemo::setup() {
-    shader = SHADER(font_demo_FontDemo);
+    shader = CREATE_DEFAULT_SHADER(font_demo_FontDemo);
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

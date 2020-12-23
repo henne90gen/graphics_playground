@@ -13,8 +13,8 @@ constexpr int INITIAL_WIDTH = 200;
 constexpr int INITIAL_HEIGHT = 200;
 
 DEFINE_SCENE_MAIN(TerrainErosion)
-DEFINE_SHADER(terrain_erosion_Terrain)
-DEFINE_SHADER(terrain_erosion_Path)
+DEFINE_DEFAULT_SHADER(terrain_erosion_Terrain)
+DEFINE_DEFAULT_SHADER(terrain_erosion_Path)
 
 void TerrainErosion::setup() {
     std::random_device global_random_device;
@@ -24,9 +24,9 @@ void TerrainErosion::setup() {
     GL_Call(glEnable(GL_PRIMITIVE_RESTART));
     GL_Call(glPrimitiveRestartIndex(~0));
 
-    pathShader = SHADER(terrain_erosion_Path);
+    pathShader = CREATE_DEFAULT_SHADER(terrain_erosion_Path);
 
-    shader = SHADER(terrain_erosion_Terrain);
+    shader = CREATE_DEFAULT_SHADER(terrain_erosion_Terrain);
     shader->bind();
 
     noise1 = new FastNoise();

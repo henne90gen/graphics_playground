@@ -13,10 +13,10 @@ const float Z_NEAR = 0.01F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(RayTracing)
-DEFINE_SHADER(ray_tracing_RayTracing)
+DEFINE_DEFAULT_SHADER(ray_tracing_RayTracing)
 
 void RayTracing::setup() {
-    shader = SHADER(ray_tracing_RayTracing);
+    shader = CREATE_DEFAULT_SHADER(ray_tracing_RayTracing);
     shader->bind();
     onAspectRatioChange();
 

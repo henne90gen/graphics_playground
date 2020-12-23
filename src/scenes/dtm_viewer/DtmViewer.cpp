@@ -14,12 +14,12 @@ constexpr float Z_FAR = 100000.0F;
 constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
 
 DEFINE_SCENE_MAIN(DtmViewer);
-DEFINE_SHADER(dtm_viewer_Terrain)
-DEFINE_SHADER(dtm_viewer_Simple)
+DEFINE_DEFAULT_SHADER(dtm_viewer_Terrain)
+DEFINE_DEFAULT_SHADER(dtm_viewer_Simple)
 
 void DtmViewer::setup() {
-    simpleShader = SHADER(dtm_viewer_Simple);
-    shader = SHADER(dtm_viewer_Terrain);
+    simpleShader = CREATE_DEFAULT_SHADER(dtm_viewer_Simple);
+    shader = CREATE_DEFAULT_SHADER(dtm_viewer_Terrain);
 
     GL_Call(glPointSize(5));
 
