@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "util/FileUtils.h"
-#include "util/ScreenRecorder.h"
 #include "util/TimeUtils.h"
 
 void initImGui(GLFWwindow *window);
@@ -21,8 +20,6 @@ void finishImGuiFrame();
 void pickColor(float *color);
 
 void pickColor(glm::vec3 &color);
-
-void pickPosition(glm::vec3 &position);
 
 void pickColorAndVertices(float *color, float *vertices);
 

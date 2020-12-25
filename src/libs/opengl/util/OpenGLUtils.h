@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 
-#include "InputData.h"
 #include "util/AssertUtils.h"
 
 #define GL_UnsafeCall(x, error)                                                                                        \

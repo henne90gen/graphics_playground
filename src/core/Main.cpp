@@ -4,12 +4,14 @@
 #include <iostream>
 #include <omp.h>
 #include <thread>
-#include <vector>
 
 #include "Scene.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
+
+#ifdef WITH_SCREEN_RECORDING
 #include "util/ScreenRecorder.h"
+#endif
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
@@ -61,8 +63,10 @@ void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
-        auto *sceneData = static_cast<SceneData *>(glfwGetWindowUserPointer(window));
-        sceneData->recorder->takeScreenshot();
+#ifdef WITH_SCREEN_RECORDER
+        auto *recorder = static_cast<ScreenRecorder *>(glfwGetWindowUserPointer(window));
+        recorder->takeScreenshot();
+#endif
     } else {
         bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
         input.keyboard.keys[key] = isDown;
@@ -85,6 +89,36 @@ void installCallbacks(GLFWwindow *window) {
     glfwSetFramebufferSizeCallback(window, resizeCallback);
 }
 
+#ifdef WITH_SCREEN_RECORDER
+void renderCaptureMenu(ScreenRecorder *recorder) {
+    ImGui::Begin("Recording Menu");
+    ImGui::SetWindowPos(ImVec2(0, 0));
+    const unsigned int windowWidth = 150;
+    const unsigned int windowHeight = 100;
+    ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
+
+    if (ImGui::Button("Take Screenshot")) {
+        recorder->takeScreenshot();
+    }
+
+    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&recorder->recordingType), ScreenRecorder::RecordingType::GIF);
+    ImGui::SameLine();
+    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&recorder->recordingType), ScreenRecorder::RecordingType::MP4);
+
+    if (recorder->isRecording()) {
+        if (ImGui::Button("Stop Recording")) {
+            recorder->stopRecording();
+        }
+    } else {
+        if (ImGui::Button("Start Recording")) {
+            recorder->startRecording();
+        }
+    }
+
+    ImGui::End();
+}
+#endif
+
 int runScene(Scene *scene) {
     setOmpThreadLimit();
 
@@ -98,7 +132,7 @@ int runScene(Scene *scene) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Graphics Playground", nullptr, nullptr);
+    window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, scene->getName().c_str(), nullptr, nullptr);
     if (window == nullptr) {
         glfwTerminate();
         return 1;
@@ -114,13 +148,18 @@ int runScene(Scene *scene) {
 
     initImGui(window);
 
+#ifdef WITH_SCREEN_RECORDER
     ScreenRecorder recorder = {};
-    SceneData sceneData = {window, &input, &recorder};
-    int windowWidth = 0;
-    int windowHeight = 0;
-    glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-scene->setup(windowWidth, windowHeight, sceneData);
-    glfwSetWindowUserPointer(window, &sceneData);
+    glfwSetWindowUserPointer(window, &recorder);
+#endif
+
+    SceneData sceneData = {window, &input};
+    {
+        int windowWidth = 0;
+        int windowHeight = 0;
+        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+        scene->setup(windowWidth, windowHeight, sceneData);
+    }
 
     glEnable(GL_DEPTH_TEST);
 
@@ -137,7 +176,10 @@ scene->setup(windowWidth, windowHeight, sceneData);
         glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
         scene->tick(windowWidth, windowHeight);
 
+#ifdef WITH_SCREEN_RECORDER
+        renderCaptureMenu(&recorder);
         recorder.tick(windowWidth, windowHeight);
+#endif
 
         finishImGuiFrame();
 

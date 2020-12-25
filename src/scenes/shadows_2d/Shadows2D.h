@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "Scene.h"
-#include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
+#include "gl/Shader.h"
+#include "gl/VertexArray.h"
 
 #include "RayTracer2D.h"
 

@@ -1,7 +1,8 @@
 #pragma once
 
+#include <vector>
+
 #include "util/OpenGLUtils.h"
-#include <util/Image.h>
 
 struct TextureSettings {
     unsigned int activeTexture = GL_TEXTURE0;
@@ -23,7 +24,6 @@ class Texture {
                 unsigned int unpackAlignment = 4) const;
     void update(const std::vector<glm::vec4> &data, unsigned int width, unsigned int height,
                 unsigned int unpackAlignment = 4) const;
-    void update(Image &image) const;
 
     void bind() const;
     static void unbind();

@@ -11,9 +11,3 @@ struct Image {
     char bitDepth = 8;
     std::vector<unsigned char> pixels;
 };
-
-namespace ImageOps {
-bool load(const std::string &fileName, Image &image);
-
-void save(Image &image);
-} // namespace ImageOps

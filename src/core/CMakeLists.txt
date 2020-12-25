@@ -4,23 +4,8 @@ add_library(core
         Scene.cpp
         util/DataReadUtils.cpp
         util/FileUtils.cpp
-        util/Image.cpp
         util/ImGuiUtils.cpp
-        util/ModelLoader.cpp
-        util/OpenGLUtils.cpp
-        util/RenderUtils.cpp
-        util/ScreenRecorder.cpp
         util/TimeUtils.cpp
-        util/VideoSaver.cpp
-        opengl/BufferLayout.cpp
-        opengl/BufferLayoutElement.cpp
-        opengl/IndexBuffer.cpp
-        opengl/Model.cpp
-        opengl/Shader.cpp
-        opengl/Texture.cpp
-        opengl/VertexBuffer.cpp
-        opengl/VertexArray.cpp
-        marching_cubes/MarchingCubes.cpp
         fourier_transform/Fourier.cpp
         )
 
@@ -53,13 +38,8 @@ target_link_libraries(core
         glfw
         glad
         imgui
-        OpenMP::OpenMP_CXX
-        FastNoise
-        ${LIBPNG_LIBRARY}
-        ${LIBJPEG_LIBRARY}
-        ${FFMPEG_LIBRARY}
-        ${ZLIB_LIBRARY}
-        )
+        opengl
+        OpenMP::OpenMP_CXX)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_package(OpenGL REQUIRED)
@@ -70,18 +50,9 @@ else ()
     target_link_libraries(core stdc++fs)
 endif ()
 
-target_include_directories(core PRIVATE
+target_include_directories(core PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${GLFW_DIR}/include
         ${GLAD_DIR}/include
         ${GLM_DIR}
-        ${IMGUI_DIR}
-        ${ZLIB_INCLUDE_DIR}
-        ${LIBPNG_INCLUDE_DIR}
-        ${LIBJPEG_INCLUDE_DIR}
-        ${GIF_H_DIR}
-        ${FFMPEG_INCLUDE_DIR}
-        ${FAST_NOISE_DIR}
-        )
-
-set(CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+        ${IMGUI_DIR})

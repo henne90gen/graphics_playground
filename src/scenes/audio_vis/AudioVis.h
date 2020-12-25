@@ -7,9 +7,9 @@
 
 #include "WavLoader.h"
 #include "fourier_transform/Fourier.h"
-#include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
-#include "opengl/VertexBuffer.h"
+#include "gl/Shader.h"
+#include "gl/VertexArray.h"
+#include "gl/VertexBuffer.h"
 
 struct PlayBack {
     WavFile *wav = nullptr;

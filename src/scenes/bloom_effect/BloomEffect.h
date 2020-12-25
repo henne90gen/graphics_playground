@@ -4,10 +4,10 @@
 
 #include <functional>
 
-#include "opengl/Model.h"
-#include "opengl/Shader.h"
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
+#include "Model.h"
+#include "gl/Shader.h"
+#include "gl/Texture.h"
+#include "gl/VertexArray.h"
 
 class BloomEffect : public Scene {
   public:

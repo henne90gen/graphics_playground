@@ -13,7 +13,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(MarchingCubesScene)
-DEFINE_DEFAULT_SHADER(marching_cubes_MarchingCubes)
+DEFINE_DEFAULT_SHADERS(marching_cubes_MarchingCubes)
 
 void MarchingCubesScene::setup() {
     shader = CREATE_DEFAULT_SHADER(marching_cubes_MarchingCubes);

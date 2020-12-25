@@ -10,8 +10,8 @@
 #include <random>
 
 #include "XyzLoader.h"
-#include "opengl/IndexBuffer.h"
-#include "opengl/VertexArray.h"
+#include "gl/IndexBuffer.h"
+#include "gl/VertexArray.h"
 #include "quad_tree/QuadTree.h"
 
 #define GPU_BATCH_COUNT_CONFIGURABLE 1

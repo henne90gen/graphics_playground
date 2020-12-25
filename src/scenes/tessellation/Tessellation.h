@@ -4,8 +4,8 @@
 
 #include <functional>
 
-#include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
+#include <gl/Shader.h>
+#include <gl/VertexArray.h>
 
 struct CameraSpace {
     glm::vec3 position = {0.0F, 70.0F, -2.0F};

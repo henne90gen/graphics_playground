@@ -1,16 +1,16 @@
 #include "ModelLoading.h"
 
+#include "Image.h"
 #include "Main.h"
+#include "ModelLoader.h"
 #include "util/ImGuiUtils.h"
-#include "util/Image.h"
-#include "util/ModelLoader.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(ModelLoading)
-DEFINE_DEFAULT_SHADER(model_loading_ModelLoading)
+DEFINE_DEFAULT_SHADERS(model_loading_ModelLoading)
 
 void ModelLoading::setup() {
     shader = CREATE_DEFAULT_SHADER(model_loading_ModelLoading);

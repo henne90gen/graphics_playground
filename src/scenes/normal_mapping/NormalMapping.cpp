@@ -1,15 +1,15 @@
 #include "NormalMapping.h"
 
+#include "Image.h"
 #include "Main.h"
 #include "util/ImGuiUtils.h"
-#include "util/Image.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(NormalMapping)
-DEFINE_DEFAULT_SHADER(normal_mapping_NormalMapping)
+DEFINE_DEFAULT_SHADERS(normal_mapping_NormalMapping)
 
 void NormalMapping::setup() {
     shader = CREATE_DEFAULT_SHADER(normal_mapping_NormalMapping);
@@ -47,7 +47,7 @@ void NormalMapping::setup() {
     shader->setUniform("u_NormalSampler", 1);
     Image normalMapImage = {};
     if (ImageOps::load("normal_mapping_resources/models/normals.jpg", normalMapImage)) {
-        normalMap->update(normalMapImage);
+        normalMap->update(normalMapImage.pixels.data(), normalMapImage.width, normalMapImage.height);
     }
 }
 

@@ -6,11 +6,11 @@
 #include <glad/glad.h>
 #include <memory>
 
-#include "opengl/IndexBuffer.h"
-#include "opengl/Shader.h"
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
-#include "opengl/VertexBuffer.h"
+#include "gl/IndexBuffer.h"
+#include "gl/Shader.h"
+#include "gl/Texture.h"
+#include "gl/VertexArray.h"
+#include "gl/VertexBuffer.h"
 #include "util/TimeUtils.h"
 
 #include "MetaBalls.h"

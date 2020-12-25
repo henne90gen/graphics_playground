@@ -8,7 +8,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 10000.0F;
 
 DEFINE_SCENE_MAIN(LSystems)
-DEFINE_DEFAULT_SHADER(l_systems_LSystems)
+DEFINE_DEFAULT_SHADERS(l_systems_LSystems)
 
 void LSystems::setup() {
     shader = CREATE_DEFAULT_SHADER(l_systems_LSystems);

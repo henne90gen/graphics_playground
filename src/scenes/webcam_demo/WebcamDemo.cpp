@@ -5,7 +5,7 @@
 #include "Main.h"
 
 DEFINE_SCENE_MAIN(WebcamDemo)
-DEFINE_DEFAULT_SHADER(webcam_demo_WebcamDemo)
+DEFINE_DEFAULT_SHADERS(webcam_demo_WebcamDemo)
 
 void WebcamDemo::setup() {
     shader = CREATE_DEFAULT_SHADER(webcam_demo_WebcamDemo);

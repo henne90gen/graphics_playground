@@ -15,8 +15,10 @@ constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 1000.0F;
 
 DEFINE_SCENE_MAIN(Landscape)
-DEFINE_DEFAULT_SHADER(landscape_Landscape)
-DEFINE_DEFAULT_SHADER(landscape_NoiseTexture)
+DEFINE_DEFAULT_SHADERS(landscape_Landscape)
+DEFINE_TESS_CONTROL_SHADER(landscape_Landscape)
+DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
+DEFINE_DEFAULT_SHADERS(landscape_NoiseTexture)
 
 void Landscape::setup() {
     textureShader = CREATE_DEFAULT_SHADER(landscape_NoiseTexture);
@@ -30,6 +32,9 @@ void Landscape::setup() {
     normalTexture = std::make_shared<Texture>();
 
     shader = CREATE_DEFAULT_SHADER(landscape_Landscape);
+    shader->attachTessControlShader(SHADER_CODE(landscape_LandscapeTcs));
+    shader->attachTessEvaluationShader(SHADER_CODE(landscape_LandscapeTes));
+    shader->compile();
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);

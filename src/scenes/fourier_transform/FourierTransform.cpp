@@ -8,7 +8,7 @@
 const int MAX_FOURIER_RESOLUTION = 500;
 
 DEFINE_SCENE_MAIN(FourierTransform)
-DEFINE_DEFAULT_SHADER(fourier_transform_FourierTransform)
+DEFINE_DEFAULT_SHADERS(fourier_transform_FourierTransform)
 
 void FourierTransform::setup() {
     shader = CREATE_DEFAULT_SHADER(fourier_transform_FourierTransform);

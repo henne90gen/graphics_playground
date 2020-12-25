@@ -1,7 +1,5 @@
 #include "Model.h"
 
-#include <util/Image.h>
-
 void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader) {
     meshes.clear();
 
@@ -80,30 +78,7 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
 void OpenGLMesh::updateTexture(ModelLoader::RawMesh &mesh) const {
     Image image = {};
     if (!mesh.material || !ImageOps::load(mesh.material->diffuseTextureMap, image)) {
-        createCheckerBoard(image);
+        ImageOps::createCheckerBoard(image);
     }
-    texture->update(image);
-}
-
-void OpenGLMesh::createCheckerBoard(Image &image) {
-    image.width = 128;
-    image.height = 128;
-    image.channels = 4;
-    image.pixels = std::vector<unsigned char>(image.width * image.height * image.channels);
-    for (unsigned long i = 0; i < image.pixels.size() / image.channels; i++) {
-        const float fullBrightness = 255.0F;
-        float r = fullBrightness;
-        float g = fullBrightness;
-        float b = fullBrightness;
-        unsigned int row = i / image.width;
-        if ((i % 2 == 0 && row % 2 == 0) || (i % 2 == 1 && row % 2 == 1)) {
-            r = 0.0F;
-            g = 0.0F;
-            b = 0.0F;
-        }
-        unsigned int idx = i * image.channels;
-        image.pixels[idx] = static_cast<char>(r);
-        image.pixels[idx + 1] = static_cast<char>(g);
-        image.pixels[idx + 2] = static_cast<char>(b);
-    }
+    texture->update(image.pixels.data(), image.width, image.height);
 }

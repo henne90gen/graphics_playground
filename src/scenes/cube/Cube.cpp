@@ -10,7 +10,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 10.0F;
 
 DEFINE_SCENE_MAIN(Cube)
-DEFINE_DEFAULT_SHADER(cube_Cube)
+DEFINE_DEFAULT_SHADERS(cube_Cube)
 
 void Cube::setup() {
     shader = CREATE_DEFAULT_SHADER(cube_Cube);

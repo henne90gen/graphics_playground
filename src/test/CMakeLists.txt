@@ -13,9 +13,8 @@ set_target_properties(Tests PROPERTIES
 
 target_include_directories(Tests PRIVATE
         ${CATCH_INCLUDE_DIR}
-        ${CORE_DIR}
         ${GLM_DIR}
         ${FFMPEG_INCLUDE_DIR})
-target_link_libraries(Tests core)
+target_link_libraries(Tests core model)
 
 catch_discover_tests(Tests)

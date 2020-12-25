@@ -1,14 +1,16 @@
-#include <utility>
-
 #pragma once
 
 #include <memory>
+#include <utility>
 #include <vector>
 
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
-#include "opengl/VertexBuffer.h"
-#include "util/ModelLoader.h"
+#include "ModelLoader.h"
+
+#include "Image.h"
+#include <ImageOps.h>
+#include <gl/Texture.h>
+#include <gl/VertexArray.h>
+#include <gl/VertexBuffer.h>
 
 class OpenGLMesh {
   public:
@@ -20,8 +22,6 @@ class OpenGLMesh {
     void updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) const;
 
     void updateTexture(ModelLoader::RawMesh &mesh) const;
-
-    static void createCheckerBoard(Image &image);
 
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexBuffer> vertexBuffer;

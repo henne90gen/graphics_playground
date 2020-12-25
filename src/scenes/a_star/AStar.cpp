@@ -4,7 +4,7 @@
 #include "util/RenderUtils.h"
 
 DEFINE_SCENE_MAIN(AStar)
-DEFINE_DEFAULT_SHADER(a_star_AStar)
+DEFINE_DEFAULT_SHADERS(a_star_AStar)
 
 void AStar::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));
