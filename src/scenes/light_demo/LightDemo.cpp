@@ -1,14 +1,14 @@
 #include "LightDemo.h"
 
 #include "Main.h"
-#include "opengl/Model.h"
+#include "Model.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(LightDemo)
-DEFINE_DEFAULT_SHADER(light_demo_LightDemo)
+DEFINE_DEFAULT_SHADERS(light_demo_LightDemo)
 
 void LightDemo::setup() {
     shader = CREATE_DEFAULT_SHADER(light_demo_LightDemo);

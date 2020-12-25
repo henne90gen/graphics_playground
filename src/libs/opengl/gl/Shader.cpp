@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -20,7 +19,7 @@ ShaderCode readShaderCodeFromFile(const std::string &filePath) {
 
     std::vector<std::string> lines = {};
     int j = 0;
-    for (int i = 0; i < shaderCode.size(); i++) {
+    for (int i = 0; i < static_cast<int>(shaderCode.size()); i++) {
         if (shaderCode[i] == '\n') {
             lines.push_back(shaderCode.substr(j, i - j));
             j = i;
@@ -32,25 +31,19 @@ ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     int *lineLengths = (int *)std::malloc(lineLengthsSize);
     unsigned int shaderSourceSize = lineCount * sizeof(char *);
     char **shaderSource = (char **)std::malloc(shaderSourceSize);
-    for (int i = 0; i < lines.size(); i++) {
-        int lineLength = lines[i].size();
+    for (int i = 0; i < static_cast<int>(lines.size()); i++) {
+        int lineLength = static_cast<int>(lines[i].size());
         lineLengths[i] = lineLength;
         shaderSource[i] = (char *)std::malloc(lineLength * sizeof(char));
-        for (int j = 0; j < lines[i].size(); j++) {
+        for (int j = 0; j < static_cast<int>(lines[i].size()); j++) {
             shaderSource[i][j] = lines[i][j];
         }
     }
 
-    ShaderCode code = ShaderCode(lineCount, lineLengths, shaderSource);
-    code.filePath = filePath;
-    return code;
+    return ShaderCode(lineCount, lineLengths, shaderSource, filePath.c_str());
 }
 
 void Shader::compile() {
-    if (id != 0) {
-        GL_Call(glDeleteProgram(id));
-    }
-
     GLuint newProgramId = 0;
     GL_Call(newProgramId = glCreateProgram());
 
@@ -73,7 +66,8 @@ void Shader::compile() {
     if (success != 1 || infoLogLength > 0) {
         std::vector<char> programErrorMessage(infoLogLength + 1);
         GL_Call(glGetProgramInfoLog(newProgramId, infoLogLength, nullptr, &programErrorMessage[0]));
-        std::cout << &programErrorMessage[0] << std::endl;
+        std::cout << &programErrorMessage[0];
+        std::cout.flush();
     }
 
     for (const auto &shaderId : shaderIds) {
@@ -82,6 +76,10 @@ void Shader::compile() {
     }
 
     if (success != 0) {
+        if (id != 0) {
+            GL_Call(glDeleteProgram(id));
+        }
+
         // assign new id at the very end to be able to tolerate failed compilation or failed linking
         id = newProgramId;
     }
@@ -95,15 +93,7 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     GL_Call(glCompileShader(shaderId));
 
     int success = 0;
-    int infoLogLength = 0;
     GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
-    GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
-    if (infoLogLength > 0) {
-        std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
-        GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &vertexShaderErrorMessage[0]));
-        std::cout << &vertexShaderErrorMessage[0] << std::endl;
-    }
-
     if (success == 0) {
         std::cerr << "Failed to compile ";
         if (shaderType == GL_VERTEX_SHADER) {
@@ -118,6 +108,17 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
             std::cerr << "unknown";
         }
         std::cerr << " shader" << std::endl;
+    }
+
+    int infoLogLength = 0;
+    GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
+    if (infoLogLength > 0) {
+        std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
+        GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &vertexShaderErrorMessage[0]));
+        std::cout << &vertexShaderErrorMessage[0] << std::endl;
+    }
+
+    if (success == 0) {
         return 0;
     }
 
@@ -156,21 +157,30 @@ int Shader::getAttributeLocation(const std::string &name) {
     return location;
 }
 
-void Shader::bind() { GL_Call(glUseProgram(id)); }
+void Shader::bind() {
+    bool recompile = false;
+    for (auto &entry : shaderComponents) {
+        int64_t currentAccessTime = std::filesystem::last_write_time(entry.second.filePath).time_since_epoch().count();
+        if (currentAccessTime > entry.second.lastAccessTime) {
+            entry.second = readShaderCodeFromFile(entry.second.filePath);
+            recompile = true;
+        }
+    }
+    if (recompile) {
+        compile();
+    }
+
+    GL_Call(glUseProgram(id));
+}
 
 void Shader::unbind() { GL_Call(glUseProgram(0)); }
-
-void Shader::attach(GLuint shaderType, const std::string &filePath) {
-    auto shaderCode = readShaderCodeFromFile(filePath);
-    attach(shaderType, shaderCode);
-}
 
 void Shader::attach(GLuint shaderType, const ShaderCode &shaderCode) { shaderComponents[shaderType] = shaderCode; }
 
 std::shared_ptr<Shader> createDefaultShader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode) {
     auto result = std::make_shared<Shader>();
-    result->attach(GL_VERTEX_SHADER, vertexCode);
-    result->attach(GL_FRAGMENT_SHADER, fragmentCode);
+    result->attachVertexShader(vertexCode);
+    result->attachFragmentShader(fragmentCode);
     result->compile();
     return result;
 }

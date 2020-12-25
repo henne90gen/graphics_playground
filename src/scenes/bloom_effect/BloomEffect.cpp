@@ -9,10 +9,10 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(BloomEffect)
-DEFINE_DEFAULT_SHADER(bloom_effect_BloomEffect)
-DEFINE_DEFAULT_SHADER(bloom_effect_Bloom)
-DEFINE_DEFAULT_SHADER(bloom_effect_Blur)
-DEFINE_DEFAULT_SHADER(bloom_effect_SimpleTexture)
+DEFINE_DEFAULT_SHADERS(bloom_effect_BloomEffect)
+DEFINE_DEFAULT_SHADERS(bloom_effect_Bloom)
+DEFINE_DEFAULT_SHADERS(bloom_effect_Blur)
+DEFINE_DEFAULT_SHADERS(bloom_effect_SimpleTexture)
 
 void BloomEffect::setup() {
     shader = CREATE_DEFAULT_SHADER(bloom_effect_BloomEffect);

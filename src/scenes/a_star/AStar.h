@@ -2,9 +2,9 @@
 
 #include "AStarSolver.h"
 #include "Scene.h"
-#include "opengl/Shader.h"
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
+#include "gl/Shader.h"
+#include "gl/Texture.h"
+#include "gl/VertexArray.h"
 
 #include <functional>
 #include <memory>

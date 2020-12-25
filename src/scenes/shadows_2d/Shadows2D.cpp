@@ -10,7 +10,7 @@ const int stencilMask = 0xFF;
 const int inverseStencilMask = 0x00;
 
 DEFINE_SCENE_MAIN(Shadows2D)
-DEFINE_DEFAULT_SHADER(shadows_2d_Shadows2D)
+DEFINE_DEFAULT_SHADERS(shadows_2d_Shadows2D)
 
 void Shadows2D::setup() {
     GL_Call(glDisable(GL_DEPTH_TEST));

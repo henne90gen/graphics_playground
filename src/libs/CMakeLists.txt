@@ -1,0 +1,13 @@
+
+file(GLOB DIRECTORIES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*")
+foreach (DIRECTORY ${DIRECTORIES})
+    if (${DIRECTORY} STREQUAL CMakeLists.txt)
+        continue()
+    endif ()
+    if (NOT (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/CMakeLists.txt"))
+        continue()
+    endif ()
+    add_subdirectory(${DIRECTORY})
+    message("-- Added library ${DIRECTORY}")
+endforeach ()
+message("")

@@ -9,8 +9,8 @@
 #include <FastNoise.h>
 
 #include "RainSimulation.h"
-#include "opengl/IndexBuffer.h"
-#include "opengl/VertexArray.h"
+#include "gl/IndexBuffer.h"
+#include "gl/VertexArray.h"
 
 struct TerrainLevels {
     float waterLevel = 0.0F;

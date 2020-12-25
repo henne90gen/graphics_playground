@@ -1,27 +1,26 @@
-#include <cmath>
-
 #include "ScreenRecorder.h"
 
+#include <cmath>
 #include <functional>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
-#include "Image.h"
-#include "OpenGLUtils.h"
+#include <Image.h>
+#include <ImageOps.h>
+#include <util/OpenGLUtils.h>
 
 std::string generateScreenshotFilename() {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
     buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H-%M-%S");
-    return "../../../screenshot-" + buffer.str() + ".png";
+    return "../../screenshot-" + buffer.str() + ".png";
 }
 
 std::string generateScreenrecordingDirectoryName(unsigned int recordingIndex) {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
     buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H-%M-%S");
-    return "../../../screenrecording-" + buffer.str() + "-" + std::to_string(recordingIndex) + "/";
+    return "../../screenrecording-" + buffer.str() + "-" + std::to_string(recordingIndex) + "/";
 }
 
 std::string generateScreenrecordingName(unsigned int recordingIndex, ScreenRecorder::RecordingType recordingType) {
@@ -57,23 +56,6 @@ void ScreenRecorder::saveScreenshot(unsigned int windowWidth, unsigned int windo
     std::cout << "Saved screenshot " << image.fileName << std::endl;
 }
 
-std::unique_ptr<Frame> captureFrame(unsigned int screenWidth, unsigned int screenHeight) {
-    const unsigned int channels = 4;
-    std::unique_ptr<Frame> frame = std::make_unique<Frame>();
-    frame->width = screenWidth;
-    frame->height = screenHeight;
-    frame->channels = channels;
-    const unsigned int numberOfPixels = frame->width * frame->height;
-    frame->buffer = static_cast<unsigned char *>(std::malloc(numberOfPixels * frame->channels * sizeof(unsigned char)));
-
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-    GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
-    GL_Call(glReadBuffer(GL_FRONT));
-    GL_Call(glReadPixels(0, 0, frame->width, frame->height, GL_RGBA, GL_UNSIGNED_BYTE, frame->buffer));
-
-    return frame;
-}
-
 void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
     if (shouldTakeScreenshot) {
         saveScreenshot(windowWidth, windowHeight);
@@ -81,10 +63,7 @@ void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
     }
 
     if (isRecording()) {
-        std::unique_ptr<Frame> frame = captureFrame(windowWidth, windowHeight);
-        videoSaver->acceptFrame(frame);
-        std::free(frame->buffer); // NOLINT(cppcoreguidelines-no-malloc)
-        frame = nullptr;
+        videoSaver->captureFrame(windowWidth, windowHeight);
     }
 }
 

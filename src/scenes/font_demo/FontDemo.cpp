@@ -5,7 +5,7 @@
 #include "util/ImGuiUtils.h"
 
 DEFINE_SCENE_MAIN(FontDemo)
-DEFINE_DEFAULT_SHADER(font_demo_FontDemo)
+DEFINE_DEFAULT_SHADERS(font_demo_FontDemo)
 
 void FontDemo::setup() {
     shader = CREATE_DEFAULT_SHADER(font_demo_FontDemo);

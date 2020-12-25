@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "util/ModelLoader.h"
+#include "ModelLoader.h"
 #include "util/TestUtils.h"
 
 TEST_CASE("Not existing file is handled correctly") {

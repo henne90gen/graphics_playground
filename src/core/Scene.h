@@ -8,13 +8,11 @@
 #include <utility>
 
 #include "util/InputData.h"
-#include "util/ScreenRecorder.h"
 #include "util/TimeUtils.h"
 
 struct SceneData {
     GLFWwindow *window;
     InputData *input;
-    ScreenRecorder *recorder;
 };
 
 class Scene {
@@ -28,7 +26,6 @@ class Scene {
 
     void setup(unsigned int windowWidth, unsigned int windowHeight, SceneData sceneData);
     void tick(unsigned int windowWidth, unsigned int windowHeight);
-    void renderCaptureMenu();
     void renderMetrics();
 
     virtual void destroy() = 0;

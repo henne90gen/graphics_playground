@@ -9,7 +9,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 100.0F;
 
 DEFINE_SCENE_MAIN(MetaBallsScene)
-DEFINE_DEFAULT_SHADER(meta_balls_MetaBalls)
+DEFINE_DEFAULT_SHADERS(meta_balls_MetaBalls)
 
 struct AnimatedBall {
     glm::vec3 startPos;

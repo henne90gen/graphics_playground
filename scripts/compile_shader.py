@@ -31,6 +31,7 @@ def run_compile_shader(input_file: str, output_file: str):
     lens = list(map(str, map(lambda l: l + 1, map(len, shader_lines))))
     lines.append(", ".join(lens))
     lines.append("};\n")
+    lines.append(f"const char* {shader_name}_file_path = \"{input_file}\";\n")
     lines.append("}\n")
 
     output_dir = os.path.split(output_file)[0]

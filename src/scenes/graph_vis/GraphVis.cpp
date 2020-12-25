@@ -5,7 +5,7 @@
 #include "util/ImGuiUtils.h"
 
 DEFINE_SCENE_MAIN(GraphVis)
-DEFINE_DEFAULT_SHADER(graph_vis_GraphVis)
+DEFINE_DEFAULT_SHADERS(graph_vis_GraphVis)
 
 void GraphVis::setup() {
     shader = CREATE_DEFAULT_SHADER(graph_vis_GraphVis);

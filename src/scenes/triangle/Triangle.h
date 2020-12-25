@@ -5,8 +5,8 @@
 #include <glad/glad.h>
 #include <memory>
 
-#include "opengl/Shader.h"
-#include "opengl/VertexBuffer.h"
+#include "gl/Shader.h"
+#include "gl/VertexBuffer.h"
 
 class Triangle : public Scene {
   public:

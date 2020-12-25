@@ -46,7 +46,7 @@ class VideoSaver {
     virtual bool doSave() = 0;
 
     void init(unsigned int frameWidth, unsigned int frameHeight);
-    void acceptFrame(const std::unique_ptr<Frame> &frame);
+    void captureFrame(unsigned int frameWidth, unsigned int frameHeight);
     void save();
 
     bool isInitialized() { return initialized; }

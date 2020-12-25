@@ -5,8 +5,8 @@
 #include <functional>
 
 #include "Graph.h"
-#include "opengl/Shader.h"
-#include "opengl/VertexArray.h"
+#include "gl/Shader.h"
+#include "gl/VertexArray.h"
 
 class GraphVis : public Scene {
   public:

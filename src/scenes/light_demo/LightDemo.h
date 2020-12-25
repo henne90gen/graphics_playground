@@ -5,8 +5,8 @@
 #include <functional>
 #include <memory>
 
-#include "opengl/Model.h"
-#include "opengl/Shader.h"
+#include "Model.h"
+#include "gl/Shader.h"
 
 class LightDemo : public Scene {
   public:

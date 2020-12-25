@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "marching_cubes/MarchingCubes.h"
+#include "MarchingCubes.h"
 
 static void BM_MarchingCubes(benchmark::State &state) {
     std::vector<glm::vec3> vertices = {};

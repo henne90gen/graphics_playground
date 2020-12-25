@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Model.h"
 #include "Scene.h"
-#include "opengl/Model.h"
-#include "opengl/Shader.h"
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
+#include "gl/Shader.h"
+#include "gl/Texture.h"
+#include "gl/VertexArray.h"
 #include "util/TimeUtils.h"
 
 #include <functional>

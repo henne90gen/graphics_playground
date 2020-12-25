@@ -9,7 +9,7 @@ const float Z_NEAR = 0.1F;
 const float Z_FAR = 1000.0F;
 
 DEFINE_SCENE_MAIN(FramebufferDemo)
-DEFINE_DEFAULT_SHADER(framebuffer_demo_FramebufferDemo)
+DEFINE_DEFAULT_SHADERS(framebuffer_demo_FramebufferDemo)
 
 void FramebufferDemo::setup() {
     shader = CREATE_DEFAULT_SHADER(framebuffer_demo_FramebufferDemo);

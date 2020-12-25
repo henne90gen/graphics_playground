@@ -1,35 +1,5 @@
 #include "Scene.h"
 
-void Scene::renderCaptureMenu() {
-    ImGui::Begin(name.c_str());
-    ImGui::SetWindowPos(ImVec2(0, 0));
-    const unsigned int windowWidth = 150;
-    const unsigned int windowHeight = 100;
-    ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
-
-    if (ImGui::Button("Take Screenshot")) {
-        data.recorder->takeScreenshot();
-    }
-
-    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&data.recorder->recordingType),
-                       ScreenRecorder::RecordingType::GIF);
-    ImGui::SameLine();
-    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&data.recorder->recordingType),
-                       ScreenRecorder::RecordingType::MP4);
-
-    if (data.recorder->isRecording()) {
-        if (ImGui::Button("Stop Recording")) {
-            data.recorder->stopRecording();
-        }
-    } else {
-        if (ImGui::Button("Start Recording")) {
-            data.recorder->startRecording();
-        }
-    }
-
-    ImGui::End();
-}
-
 void Scene::renderMetrics() {
     ImGui::Begin("Metrics");
 
@@ -60,12 +30,12 @@ void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
     setDimensions(windowWidth, windowHeight);
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    int64_t currentTimeNs = std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime).time_since_epoch().count();
+    int64_t currentTimeNs =
+          std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime).time_since_epoch().count();
     timeDelta = static_cast<double>(currentTimeNs - lastTimeNs) / 1000000000.0;
     lastTimeNs = currentTimeNs;
 
     tick();
 
-    renderCaptureMenu();
     renderMetrics();
 }

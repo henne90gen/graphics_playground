@@ -1,15 +1,13 @@
-#include "Image.h"
+#include "ImageOps.h"
 
 #define PNG_DEBUG 3
 
-#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <jpeglib.h>
 #include <png.h>
-#include <utility>
 
 bool hasExtension(const std::string &fileName, std::string extension) {
     unsigned long size = fileName.size();
@@ -260,4 +258,27 @@ void ImageOps::save(Image &image) {
     }
 
     std::cerr << "Image file type is not supported (" << image.fileName << ")" << std::endl;
+}
+
+void ImageOps::createCheckerBoard(Image &image) {
+    image.width = 128;
+    image.height = 128;
+    image.channels = 4;
+    image.pixels = std::vector<unsigned char>(image.width * image.height * image.channels);
+    for (unsigned long i = 0; i < image.pixels.size() / image.channels; i++) {
+        const float fullBrightness = 255.0F;
+        float r = fullBrightness;
+        float g = fullBrightness;
+        float b = fullBrightness;
+        unsigned int row = i / image.width;
+        if ((i % 2 == 0 && row % 2 == 0) || (i % 2 == 1 && row % 2 == 1)) {
+            r = 0.0F;
+            g = 0.0F;
+            b = 0.0F;
+        }
+        unsigned int idx = i * image.channels;
+        image.pixels[idx] = static_cast<char>(r);
+        image.pixels[idx + 1] = static_cast<char>(g);
+        image.pixels[idx + 2] = static_cast<char>(b);
+    }
 }

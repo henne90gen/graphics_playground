@@ -10,7 +10,7 @@
 #include "util/OpenGLUtils.h"
 
 DEFINE_SCENE_MAIN(TextureDemo)
-DEFINE_DEFAULT_SHADER(texture_demo_TextureDemo)
+DEFINE_DEFAULT_SHADERS(texture_demo_TextureDemo)
 
 void TextureDemo::setup() {
     shader = CREATE_DEFAULT_SHADER(texture_demo_TextureDemo);

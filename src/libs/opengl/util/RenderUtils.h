@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-#include "opengl/VertexArray.h"
+#include "gl/VertexArray.h"
 
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader);
 

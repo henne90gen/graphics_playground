@@ -11,7 +11,7 @@
 #include "util/OpenGLUtils.h"
 
 DEFINE_SCENE_MAIN(GammaCalculation)
-DEFINE_DEFAULT_SHADER(gamma_calculation_GammaCalculation)
+DEFINE_DEFAULT_SHADERS(gamma_calculation_GammaCalculation)
 
 void GammaCalculation::setup() {
     shader = CREATE_DEFAULT_SHADER(gamma_calculation_GammaCalculation);

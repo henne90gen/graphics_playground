@@ -6,7 +6,9 @@
 #define GIF_FLIP_VERT
 #include <gif.h>
 
-constexpr const char* VIDEO_TMP_FILE = "tmp.h264";
+#include <glad/glad.h>
+
+constexpr const char *VIDEO_TMP_FILE = "tmp.h264";
 
 constexpr const unsigned int SCALED_DOWN_WIDTH = 800;
 constexpr const unsigned int SCALED_DOWN_HEIGHT = 600;
@@ -21,7 +23,20 @@ void VideoSaver::init(unsigned int _frameWidth, unsigned int _frameHeight) {
     initialized = true;
 }
 
-void VideoSaver::acceptFrame(const std::unique_ptr<Frame> &frame) {
+void VideoSaver::captureFrame(unsigned int screenWidth, unsigned int screenHeight) {
+    const unsigned int channels = 4;
+    std::unique_ptr<Frame> frame = std::make_unique<Frame>();
+    frame->width = screenWidth;
+    frame->height = screenHeight;
+    frame->channels = channels;
+    const unsigned int numberOfPixels = frame->width * frame->height;
+    frame->buffer = static_cast<unsigned char *>(std::malloc(numberOfPixels * frame->channels * sizeof(unsigned char)));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, frame->width, frame->height, GL_RGBA, GL_UNSIGNED_BYTE, frame->buffer);
+
     if (!isInitialized()) {
         init(frame->width, frame->height);
         if (!isInitialized()) {
@@ -35,6 +50,8 @@ void VideoSaver::acceptFrame(const std::unique_ptr<Frame> &frame) {
     }
 
     doAcceptFrame(frame);
+
+    std::free(frame->buffer); // NOLINT(cppcoreguidelines-no-malloc)
 }
 
 void VideoSaver::save() {

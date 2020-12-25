@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "marching_cubes/MarchingCubes.h"
+#include "MarchingCubes.h"
 
 struct MetaBall {
     glm::vec3 position;

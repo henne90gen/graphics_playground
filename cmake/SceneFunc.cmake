@@ -3,10 +3,9 @@ function(create_scene)
 
     file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.glsl")
     foreach (INPUT_FILE ${SHADER_FILES})
-        get_filename_component(INPUT_FILE_DIR ${INPUT_FILE} DIRECTORY)
         get_filename_component(INPUT_FILE_NAME ${INPUT_FILE} NAME)
         set(SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-        set(OUTPUT_FILE_NAME ${INPUT_FILE_DIR}_${INPUT_FILE_NAME}.cpp)
+        set(OUTPUT_FILE_NAME ${INPUT_FILE_NAME}.cpp)
         set(OUTPUT_FILE ${SHADER_DIR}/${OUTPUT_FILE_NAME})
         add_custom_command(
                 OUTPUT ${OUTPUT_FILE}
@@ -19,14 +18,13 @@ function(create_scene)
     add_executable(${SCENE_NAME} ${ARGN} ${SHADERS})
     target_include_directories(${SCENE_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CORE_DIR}
+            ${CMAKE_SOURCE_DIR}/src/libraries/opengl
+            ${CMAKE_SOURCE_DIR}/src/core
             ${GLFW_DIR}/include
             ${GLAD_DIR}/include
             ${GLM_DIR}
-            ${IMGUI_DIR}
-            ${FAST_NOISE_DIR}
-            )
-    target_link_libraries(${SCENE_NAME} core)
+            ${IMGUI_DIR})
+    target_link_libraries(${SCENE_NAME} core opengl)
     set_target_properties(
             ${SCENE_NAME} PROPERTIES
             CXX_STANDARD 17
@@ -45,7 +43,7 @@ function(create_scene_test)
 
     target_include_directories(${SCENE_NAME}_test PRIVATE
             ${CATCH_INCLUDE_DIR}
-            ${CORE_DIR}
+            ${CMAKE_SOURCE_DIR}/src/core
             ${GLM_DIR}
             ${FFMPEG_INCLUDE_DIR})
     target_link_libraries(${SCENE_NAME}_test core)
@@ -62,7 +60,7 @@ function(create_scene_benchmark)
             benchmark::benchmark
             OpenMP::OpenMP_CXX)
     target_include_directories(${SCENE_NAME}_bench PRIVATE
-            ${CORE_DIR}
+            ${CMAKE_SOURCE_DIR}/src/core
             ${GLM_DIR})
     set_target_properties(
             ${SCENE_NAME}_bench PROPERTIES

@@ -8,9 +8,9 @@
 #include <FastNoise.h>
 
 #include "Layers.h"
-#include "opengl/IndexBuffer.h"
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
+#include "gl/IndexBuffer.h"
+#include "gl/Texture.h"
+#include "gl/VertexArray.h"
 
 struct TerrainLevels {
     float grassLevel = 0.25F;

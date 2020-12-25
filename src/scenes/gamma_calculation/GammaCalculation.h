@@ -6,10 +6,10 @@
 #include <glad/glad.h>
 #include <memory>
 
-#include "opengl/Shader.h"
-#include "opengl/Texture.h"
-#include "opengl/VertexArray.h"
-#include "opengl/VertexBuffer.h"
+#include "gl/Shader.h"
+#include "gl/Texture.h"
+#include "gl/VertexArray.h"
+#include "gl/VertexBuffer.h"
 
 class GammaCalculation : public Scene {
   public:

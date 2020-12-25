@@ -8,7 +8,7 @@
 #include "util/OpenGLUtils.h"
 
 DEFINE_SCENE_MAIN(Triangle)
-DEFINE_DEFAULT_SHADER(triangle_Triangle)
+DEFINE_DEFAULT_SHADERS(triangle_Triangle)
 
 void Triangle::setup() {
     shader = CREATE_DEFAULT_SHADER(triangle_Triangle);
