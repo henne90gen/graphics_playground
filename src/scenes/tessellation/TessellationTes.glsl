@@ -2,7 +2,7 @@
 
 layout (triangles, equal_spacing, cw) in;
 
-in vec3 position_es_in[];
+in vec3 position_tes_in[];
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;

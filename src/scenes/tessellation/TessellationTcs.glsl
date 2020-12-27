@@ -5,9 +5,9 @@ layout (vertices = 3) out;
 uniform float innerTess;
 uniform vec3 outerTess;
 
-in vec3 position_cs_in[];
+in vec3 position_tcs_in[];
 
-out vec3 position_es_in[];
+out vec3 position_tes_in[];
 
 void main() {
     gl_TessLevelInner[0] = innerTess;
