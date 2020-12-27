@@ -12,6 +12,11 @@
 #include "gl/Texture.h"
 #include "gl/VertexArray.h"
 
+struct TessellationLevels {
+    float innerTess = 20.0F;
+    glm::vec3 outerTess = glm::vec3(20.0F);
+};
+
 struct TerrainLevels {
     float grassLevel = 0.25F;
     float rockLevel = 0.75F;
@@ -20,8 +25,8 @@ struct TerrainLevels {
 
 struct ShaderToggles {
     bool useNormalMap = true;
-    bool showUVs;
-    bool drawWireframe;
+    bool showUVs = false;
+    bool drawWireframe = true;
 };
 
 class Landscape : public Scene {
@@ -55,17 +60,18 @@ class Landscape : public Scene {
     std::shared_ptr<Texture> noiseTexture;
     std::shared_ptr<Texture> normalTexture;
 
-    void generatePoints(unsigned int pointDensity);
-    void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,
-                            float power, float platformHeight);
+    void generatePoints();
+    void updateHeightBuffer(unsigned int pointDensity, const glm::vec3 &movement,
+                            const std::vector<NoiseLayer *> &layers, float power, float platformHeight);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight,
                        const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels,
-                       const ShaderToggles &shaderToggles, float uvScaleFactor);
+                       const ShaderToggles &shaderToggles, float uvScaleFactor, const TessellationLevels &tessLevels,
+                       const std::vector<NoiseLayer> &vector);
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
-    void updateNormalTexture(unsigned int pointDensity, const glm::vec3 &movement, const std::vector<Layer *> &layers,
-                             float power, float normalScale);
+    void updateNormalTexture(unsigned int pointDensity, const glm::vec3 &movement,
+                             const std::vector<NoiseLayer *> &layers, float power, float normalScale);
     void renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                              glm::vec3 &textureScale);
 };

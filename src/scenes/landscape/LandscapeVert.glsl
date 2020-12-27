@@ -1,5 +1,17 @@
 #version 330 core
 
+#if 1
+
+layout (location = 0) in vec3 position_in;
+
+out vec3 position_tcs_in;
+
+void main() {
+    position_tcs_in = position_in;
+}
+
+#else
+
 in vec2 position;
 in vec2 uv;
 in vec3 normal;
@@ -139,3 +151,5 @@ void main() {
     vPosition = vec3(worldPosition);
     gl_Position = projectionMatrix * viewMatrix * worldPosition;
 }
+
+#endif

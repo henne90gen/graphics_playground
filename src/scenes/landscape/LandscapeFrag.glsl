@@ -1,4 +1,14 @@
-#version 330
+#version 330 core
+
+#if 1
+
+out vec4 color;
+
+void main() {
+    color = vec4(1.0, 1.0, 1.0, 1.0);
+}
+
+#else
 
 in float vHeight;
 in vec3 vPosition;
@@ -121,3 +131,5 @@ void main() {
 
     color = vec4(colorv3, 1.0F);
 }
+
+#endif
