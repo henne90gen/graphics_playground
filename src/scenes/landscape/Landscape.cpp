@@ -12,12 +12,14 @@ constexpr int INITIAL_POINT_DENSITY = 15;
 
 constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
-constexpr float Z_FAR = 1000.0F;
+constexpr float Z_FAR = 10000.0F;
 
 DEFINE_SCENE_MAIN(Landscape)
+
 DEFINE_DEFAULT_SHADERS(landscape_Landscape)
 DEFINE_TESS_CONTROL_SHADER(landscape_Landscape)
 DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
+
 DEFINE_DEFAULT_SHADERS(landscape_NoiseTexture)
 
 void Landscape::setup() {
@@ -38,39 +40,45 @@ void Landscape::setup() {
     shader->bind();
 
     vertexArray = std::make_shared<VertexArray>(shader);
-    generatePoints(INITIAL_POINT_DENSITY);
+    generatePoints();
 }
 
 void Landscape::destroy() {}
 
-void showLayerMenu(std::vector<Layer *> &layers) {
+void showLayerMenu(std::vector<NoiseLayer> &layers) {
     ImGui::Begin("Layers");
     int layerToRemove = -1;
     for (int i = 0; i < static_cast<int>(layers.size()); i++) {
-        if (layers[i]->renderMenu(i)) {
+        ImGui::Separator();
+
+        const auto btnLabel = "Remove Layer " + std::to_string(i);
+        if (ImGui::Button(btnLabel.c_str())) {
             layerToRemove = i;
         }
+
+        ImGui::SameLine();
+        const auto enabledLabel = "Enabled " + std::to_string(i);
+        ImGui::Checkbox(enabledLabel.c_str(), &layers[i].enabled);
+
+        const auto frequencyLabel = "Frequency " + std::to_string(i);
+        ImGui::SliderFloat(frequencyLabel.c_str(), &layers[i].frequency, 0.0F, 500.0F);
+
+        const auto amplitudeLabel = "Amplitude " + std::to_string(i);
+        ImGui::SliderFloat(amplitudeLabel.c_str(), &layers[i].amplitude, 0.0F, 100.0F);
     }
     if (layerToRemove >= 0) {
-        delete layers[layerToRemove];
         layers.erase(layers.begin() + layerToRemove);
     }
 
     ImGui::Separator();
     static int layerType = 0;
-    static const std::array<const char *, 3> items = {"Noise", "Bowl", "Ridge"};
+    static const std::array<const char *, 2> items = {"Noise", "Ridge"};
     ImGui::Combo("", &layerType, items.data(), items.size());
     ImGui::SameLine();
     if (ImGui::Button("Add Layer")) {
         switch (layerType) {
         case 0:
-            layers.push_back(new NoiseLayer());
-            break;
-        case 1:
-            layers.push_back(new BowlLayer());
-            break;
-        case 2:
-            layers.push_back(new RidgeNoiseLayer());
+            layers.push_back(NoiseLayer());
             break;
         default:
             std::cout << "Invalid layer type" << std::endl;
@@ -81,20 +89,17 @@ void showLayerMenu(std::vector<Layer *> &layers) {
 }
 
 void Landscape::tick() {
-    constexpr float timeSpeed = 0.01F;
-    static auto modelScale = glm::vec3(50.0F, 50.0F, 50.0F);
+    static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
-    static auto cameraPosition = glm::vec3(0.0F, -200.0F, -160.0F);
-    static auto cameraRotation = glm::vec3(0.55F, 0.0F, 0.0F);
+    static auto cameraPosition = glm::vec3(0.0F, 70.0F, -2.0F);
+    static auto cameraRotation = glm::vec3(glm::pi<float>() + 0.1F, -0.6F, 0.0F);
     static auto playerPosition = glm::vec3(0.0F, -13.0F, 0.0F);
     static auto playerRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     static auto texturePosition = glm::vec3(0.0F);
     static auto textureRotation = glm::vec3(0.0F);
     static auto textureScale = glm::vec3(1.0F);
     static auto normalScale = 10.0F;
-    static auto pointDensity = INITIAL_POINT_DENSITY;
-    static auto normalMapPointDensity = 300;
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
     static auto uvScaleFactor = 20.0F;
@@ -109,33 +114,28 @@ void Landscape::tick() {
     static auto lightColor = glm::vec3(1.0F);
     static auto surfaceToLight = glm::vec3(-100.0F, 10.0F, 0.0F);
     static auto levels = TerrainLevels();
+    static auto tessLevels = TessellationLevels();
 
-    int lastPointDensity = pointDensity;
-
-    static std::vector<Layer *> layers = {
-          new BowlLayer(0.04F),              //
-          new NoiseLayer(1.0F, 0.1F),        //
-          new NoiseLayer(0.5F, 0.3F),        //
-          new NoiseLayer(0.35F, 0.5F),       //
-          new NoiseLayer(0.2F, 0.7F),        //
-          new NoiseLayer(0.1F, 0.9F),        //
-          new NoiseLayer(0.05F, 2.5F),       //
-          new NoiseLayer(0.025F, 5.0F),      //
-          new NoiseLayer(0.01F, 10.0F),      //
-          new RidgeNoiseLayer(0.23F, 0.37F), //
+    static std::vector<NoiseLayer> layers = {
+          NoiseLayer(300.0F, 30.0F), //
+          NoiseLayer(200.0F, 20.0F), //
+          NoiseLayer(150.0F, 15.0F), //
+          NoiseLayer(100.0F, 10.0F), //
+          NoiseLayer(75.0F, 7.5F),   //
+          NoiseLayer(50.0F, 5.0F),   //
+          NoiseLayer(30.0F, 2.5F),   //
+          NoiseLayer(10.0F, 1.0F),   //
     };
 
-    static std::vector<Layer *> normalLayers = {
-          new NoiseLayer(1.0F, 1.0F),  //
-          new NoiseLayer(0.7F, 3.0F),  //
-          new NoiseLayer(0.5F, 5.0F),  //
-          new NoiseLayer(0.3F, 7.0F),  //
-          new NoiseLayer(0.1F, 10.0F), //
+    static std::vector<NoiseLayer *> normalLayers = {
+          //          new NoiseLayer(1.0F, 1.0F),  //
+          //          new NoiseLayer(0.7F, 3.0F),  //
+          //          new NoiseLayer(0.5F, 5.0F),  //
+          //          new NoiseLayer(0.3F, 7.0F),  //
+          //          new NoiseLayer(0.1F, 10.0F), //
     };
 
     const float dragSpeed = 0.01F;
-    const int minimumPointDensity = 1;
-    const int maximumPointDensity = 80;
     ImGui::Begin("Settings");
     if (ImGui::Button("Show Terrain")) {
         thingToRender = 0;
@@ -165,10 +165,6 @@ void Landscape::tick() {
     ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
     ImGui::Separator();
     ImGui::DragFloat3("Noise Offset", reinterpret_cast<float *>(&movement), dragSpeed);
-    ImGui::SliderInt("Point Density", &pointDensity, minimumPointDensity, maximumPointDensity);
-    ImGui::Text("Point count: %d", pointDensity * pointDensity * WIDTH * HEIGHT);
-    ImGui::SliderInt("Normal Map Point Density", &normalMapPointDensity, 1, 1000);
-    ImGui::Text("Normal Count: %d", normalMapPointDensity * normalMapPointDensity);
     ImGui::Separator();
     ImGui::DragFloat3("Surface To Light", reinterpret_cast<float *>(&surfaceToLight));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
@@ -184,26 +180,15 @@ void Landscape::tick() {
     ImGui::Checkbox("Show Player View", &usePlayerPosition);
     ImGui::DragFloat("Power", &power, dragSpeed);
     ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
+    ImGui::Separator();
+    ImGui::DragFloat("Inner Tesselation", &tessLevels.innerTess);
+    ImGui::DragFloat3("Outer Tesselation", reinterpret_cast<float *>(&tessLevels.outerTess));
     ImGui::End();
 
     if (editNormalTexture) {
-        showLayerMenu(normalLayers);
+        //        showLayerMenu(normalLayers);
     } else {
         showLayerMenu(layers);
-    }
-
-    if (animate) {
-        movement.z += timeSpeed;
-    }
-
-    if (lastPointDensity != pointDensity) {
-        generatePoints(pointDensity);
-    }
-
-    if (editNormalTexture) {
-        updateNormalTexture(normalMapPointDensity, movement, normalLayers, power, normalScale);
-    } else {
-        updateHeightBuffer(pointDensity, movement, layers, power, platformHeight);
     }
 
     glm::mat4 viewMatrix;
@@ -216,7 +201,7 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, surfaceToLight,
-                      lightColor, lightPower, levels, shaderToggles, uvScaleFactor);
+                      lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessLevels, layers);
     } else if (thingToRender == 1) {
         renderNoiseTexture(textureRotation, texturePosition, textureScale);
     } else if (thingToRender == 2) {
@@ -228,7 +213,8 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
                               const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                               const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
                               float lightPower, const TerrainLevels &levels, const ShaderToggles &shaderToggles,
-                              const float uvScaleFactor) {
+                              float uvScaleFactor, const TessellationLevels &tessLevels,
+                              const std::vector<NoiseLayer> &layers) {
     shader->bind();
     vertexArray->bind();
 
@@ -243,6 +229,15 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("normalMatrix", normalMatrix);
+
+    shader->setUniform("innerTess", tessLevels.innerTess);
+    shader->setUniform("outerTess", tessLevels.outerTess);
+
+    for (int i = 0; i < layers.size(); i++) {
+        shader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", layers[i].amplitude);
+        shader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", layers[i].frequency);
+    }
+    shader->setUniform("numNoiseLayers", static_cast<int>(layers.size()));
 
     shader->setUniform("grassLevel", levels.grassLevel);
     shader->setUniform("rockLevel", levels.rockLevel);
@@ -262,7 +257,8 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    GL_Call(glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glPatchParameteri(GL_PATCH_VERTICES, 3));
+    GL_Call(glDrawElements(GL_PATCHES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
@@ -322,7 +318,55 @@ void Landscape::renderNormalTexture(const glm::vec3 &textureRotation, const glm:
     textureShader->unbind();
 }
 
-void Landscape::generatePoints(unsigned int pointDensity) {
+void Landscape::generatePoints() {
+#if 1
+    glm::vec2 uvMin = {0.0F, 0.0F};
+    glm::vec2 uvMax = {1.0F, 1.0F};
+    std::vector<float> quadVertices = {
+          0.0F, 0.0F, 0.0F, uvMin.x, uvMin.y, 0.0F, 1.0F, 0.0F, //
+          1.0F, 0.0F, 0.0F, uvMax.x, uvMin.y, 0.0F, 1.0F, 0.0F, //
+          1.0F, 0.0F, 1.0F, uvMax.x, uvMax.y, 0.0F, 1.0F, 0.0F, //
+          0.0F, 0.0F, 1.0F, uvMin.x, uvMax.y, 0.0F, 1.0F, 0.0F, //
+    };
+
+    int width = 10;
+    int height = 10;
+    std::vector<float> vertices = {};
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            for (int i = 0; i < quadVertices.size(); i++) {
+                float f = quadVertices[i];
+                if (i % 8 == 0) {
+                    f += static_cast<float>(row);
+                    f *= 100.0F;
+                } else if (i % 8 == 2) {
+                    f += static_cast<float>(col);
+                    f *= 100.0F;
+                }
+                vertices.push_back(f);
+            }
+        }
+    }
+
+    BufferLayout bufferLayout = {
+          {ShaderDataType::Float3, "position_in"},
+          {ShaderDataType::Float2, "uv_in"},
+          {ShaderDataType::Float3, "normal_in"},
+    };
+    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
+    vertexArray->addVertexBuffer(buffer);
+
+    std::vector<glm::ivec3> indices = {};
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            const int i = (row * width + col) * 4;
+            indices.emplace_back(i, i + 1, i + 2);
+            indices.emplace_back(i, i + 2, i + 3);
+        }
+    }
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    vertexArray->setIndexBuffer(indexBuffer);
+#else
     vertexArray->bind();
 
     const auto width = static_cast<unsigned int>(WIDTH * pointDensity);
@@ -387,6 +431,7 @@ void Landscape::generatePoints(unsigned int pointDensity) {
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     vertexArray->setIndexBuffer(indexBuffer);
+#endif
 }
 
 void updateNoiseTexture(const std::shared_ptr<Texture> &noiseTexture, const std::vector<float> &heightMap, int width,
@@ -425,7 +470,7 @@ void updateNormals(const std::shared_ptr<VertexBuffer> &normalBuffer, const std:
     normalBuffer->update(normals);
 }
 
-void evaluateNoiseLayers(std::vector<float> &heights, const std::vector<Layer *> &layers, const unsigned int width,
+void evaluateNoiseLayers(std::vector<float> &heights, const std::vector<NoiseLayer *> &layers, const unsigned int width,
                          const unsigned int height, const glm::vec3 &movement, const unsigned int pointDensity,
                          const float power, const float platformHeight) {
     float maxHeight = std::numeric_limits<float>::min();
@@ -448,8 +493,10 @@ void evaluateNoiseLayers(std::vector<float> &heights, const std::vector<Layer *>
 
             float realX = static_cast<float>(x) / static_cast<float>(pointDensity) + movement.x;
             float realY = static_cast<float>(y) / static_cast<float>(pointDensity) + movement.y;
+#if 0
             generatedHeight +=
                   layer->getWeightedValue(WIDTH, HEIGHT, glm::vec3(realX, realY, movement.z), generatedHeight);
+#endif
         }
 
         generatedHeight = std::pow(generatedHeight, power);
@@ -559,7 +606,8 @@ void updateTangentAndBiTangent(const std::vector<glm::ivec3> &indices, const std
 }
 
 void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::vec3 &movement,
-                                   const std::vector<Layer *> &layers, const float power, const float platformHeight) {
+                                   const std::vector<NoiseLayer *> &layers, const float power,
+                                   const float platformHeight) {
     auto width = static_cast<unsigned int>(WIDTH * pointDensity);
     auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
 
@@ -577,7 +625,8 @@ void Landscape::updateHeightBuffer(const unsigned int pointDensity, const glm::v
 }
 
 void Landscape::updateNormalTexture(const unsigned int pointDensity, const glm::vec3 &movement,
-                                    const std::vector<Layer *> &layers, const float power, const float normalScale) {
+                                    const std::vector<NoiseLayer *> &layers, const float power,
+                                    const float normalScale) {
     auto width = static_cast<unsigned int>(1 * pointDensity);
     auto height = static_cast<unsigned int>(1 * pointDensity);
 
