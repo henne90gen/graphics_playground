@@ -140,13 +140,13 @@ int runScene(Scene *scene) {
 
     glfwMakeContextCurrent(window);
     installCallbacks(window);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return 1;
     }
 
     initImGui(window);
+    glfwSwapInterval(0);
 
 #ifdef WITH_SCREEN_RECORDER
     ScreenRecorder recorder = {};
