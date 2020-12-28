@@ -19,7 +19,7 @@ void FourierTransform::setup() {
 
     std::vector<glm::vec2> vertices = {{-1.0, -1.0}, {0.0, 0.0}, {1.0, -1.0}, {1.0, 0.0},
                                        {1.0, 1.0},   {1.0, 1.0}, {-1.0, 1.0}, {0.0, 1.0}};
-    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}, {ShaderDataType::Float2, "a_UV"}};
+    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}, {ShaderDataType::Vec2, "a_UV"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     vertexArray->addVertexBuffer(vertexBuffer);
 
@@ -159,7 +159,7 @@ void FourierTransform::drawFourier(std::vector<glm::vec2> &drawnPoints, float t)
 
     drawnPoints.push_back(currentHead);
 
-    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
+    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     fourierVertexArray->addVertexBuffer(vertexBuffer);
 
@@ -179,7 +179,7 @@ void FourierTransform::drawConnectedPoints(const std::vector<glm::vec2> &drawnPo
     shader->setUniform("u_RenderCanvas", false);
     fourierVertexArray->bind();
 
-    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
+    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}};
     auto vertexBuffer = std::make_shared<VertexBuffer>(drawnPoints, layout);
     fourierVertexArray->addVertexBuffer(vertexBuffer);
 

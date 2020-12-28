@@ -16,5 +16,5 @@ void main() {
     gl_TessLevelOuter[1] = outerTess.y;
     gl_TessLevelOuter[2] = outerTess.z;
 
-    position_es_in[gl_InvocationID] = position_cs_in[gl_InvocationID];
+    position_tes_in[gl_InvocationID] = position_tcs_in[gl_InvocationID];
 }

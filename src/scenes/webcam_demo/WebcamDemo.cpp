@@ -21,8 +21,8 @@ void WebcamDemo::setup() {
           {-1.0F, 1.0F, 1.0F, 0.0F},
     };
     BufferLayout layout = {
-          {ShaderDataType::Float2, "position"},
-          {ShaderDataType::Float2, "inUV"},
+          {ShaderDataType::Vec2, "position"},
+          {ShaderDataType::Vec2, "inUV"},
     };
     auto vb = std::make_shared<VertexBuffer>(vertices, layout);
     va->addVertexBuffer(vb);

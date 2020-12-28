@@ -2,8 +2,24 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
+
+std::string shaderTypeToString(GLuint shaderType) {
+    switch (shaderType) {
+    case GL_VERTEX_SHADER:
+        return "vertex";
+    case GL_FRAGMENT_SHADER:
+        return "fragment";
+    case GL_TESS_CONTROL_SHADER:
+        return "tesselation control";
+    case GL_TESS_EVALUATION_SHADER:
+        return "tesselation evaluation";
+    default:
+        return "unknown";
+    }
+}
 
 ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     std::ifstream shaderStream(filePath, std::ios::in);
@@ -46,6 +62,7 @@ ShaderCode readShaderCodeFromFile(const std::string &filePath) {
 void Shader::compile() {
     GLuint newProgramId = 0;
     GL_Call(newProgramId = glCreateProgram());
+    std::cout << "Compiling shader program" << std::endl;
 
     auto shaderIds = std::vector<GLuint>();
     for (const auto &shaderCode : shaderComponents) {
@@ -80,8 +97,14 @@ void Shader::compile() {
             GL_Call(glDeleteProgram(id));
         }
 
+        uniformLocations = {};
+        attributeLocations = {};
+
         // assign new id at the very end to be able to tolerate failed compilation or failed linking
         id = newProgramId;
+        std::cout << "Compiling shader program - Done" << std::endl;
+    } else {
+        std::cout << "Failed to compile shader program" << std::endl;
     }
 }
 
@@ -95,19 +118,7 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     int success = 0;
     GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
     if (success == 0) {
-        std::cerr << "Failed to compile ";
-        if (shaderType == GL_VERTEX_SHADER) {
-            std::cerr << "vertex";
-        } else if (shaderType == GL_FRAGMENT_SHADER) {
-            std::cerr << "fragment";
-        } else if (shaderType == GL_TESS_CONTROL_SHADER) {
-            std::cerr << "tesselation control";
-        } else if (shaderType == GL_TESS_EVALUATION_SHADER) {
-            std::cerr << "tesselation evaluation";
-        } else {
-            std::cerr << "unknown";
-        }
-        std::cerr << " shader" << std::endl;
+        std::cerr << "  Failed to compile " << shaderTypeToString(shaderType) << " shader" << std::endl;
     }
 
     int infoLogLength = 0;
@@ -122,6 +133,7 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
         return 0;
     }
 
+    std::cout << "  Compiled " << shaderTypeToString(shaderType) << " shader" << std::endl;
     return shaderId;
 }
 

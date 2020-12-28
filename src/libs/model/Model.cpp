@@ -69,7 +69,7 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
         }
     }
 
-    BufferLayout positionLayout = {{Float3, "a_Position"}, {Float3, "a_Normal"}, {Float2, "a_UV"}};
+    BufferLayout positionLayout = {{Float3, "a_Position"}, {Float3, "a_Normal"}, {Vec2, "a_UV"}};
     vertexBuffer->setLayout(positionLayout);
     vertexBuffer->update(vertices);
     vertexArray->addVertexBuffer(vertexBuffer);
