@@ -319,15 +319,14 @@ void Landscape::renderNormalTexture(const glm::vec3 &textureRotation, const glm:
 
 void Landscape::generatePoints() {
 #if 1
-    glm::vec2 uvMin = {0.0F, 0.0F};
-    glm::vec2 uvMax = {1.0F, 1.0F};
     std::vector<float> quadVertices = {
-          0.0F, 0.0F, uvMin.x, uvMin.y, //
-          1.0F, 0.0F, uvMax.x, uvMin.y, //
-          1.0F, 1.0F, uvMax.x, uvMax.y, //
-          0.0F, 1.0F, uvMin.x, uvMax.y, //
+          0.0F, 0.0F, //
+          1.0F, 0.0F, //
+          1.0F, 1.0F, //
+          0.0F, 1.0F, //
     };
 
+    // generate a 10x10 grid of points in the range of -500 to 500
     int width = 10;
     int height = 10;
     std::vector<float> vertices = {};
@@ -335,11 +334,13 @@ void Landscape::generatePoints() {
         for (int col = 0; col < width; col++) {
             for (int i = 0; i < quadVertices.size(); i++) {
                 float f = quadVertices[i];
-                if (i % 4 == 0) {
+                if (i % 2 == 0) {
                     f += static_cast<float>(row);
+                    f -= 5.0F;
                     f *= 100.0F;
-                } else if (i % 4 == 1) {
+                } else if (i % 2 == 1) {
                     f += static_cast<float>(col);
+                    f -= 5.0F;
                     f *= 100.0F;
                 }
                 vertices.push_back(f);
@@ -349,7 +350,6 @@ void Landscape::generatePoints() {
 
     BufferLayout bufferLayout = {
           {ShaderDataType::Vec2, "position_in"},
-          {ShaderDataType::Vec2, "uv_in"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);

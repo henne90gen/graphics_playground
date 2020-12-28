@@ -24,10 +24,10 @@ struct TerrainLevels {
 };
 
 struct ShaderToggles {
-    bool useNormalMap = true;
-    bool showNormals = true;
+    bool showNormals = false;
     bool showUVs = false;
     bool drawWireframe = true;
+    bool useNormalMap = true;
 };
 
 class Landscape : public Scene {
