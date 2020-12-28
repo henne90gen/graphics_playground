@@ -146,7 +146,9 @@ int runScene(Scene *scene) {
     }
 
     initImGui(window);
-    glfwSwapInterval(0);
+
+    // to disable vsync uncomment this line
+    //    glfwSwapInterval(0);
 
 #ifdef WITH_SCREEN_RECORDER
     ScreenRecorder recorder = {};
