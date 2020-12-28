@@ -2,13 +2,93 @@
 
 #if 1
 
+in vec2 uv_frag_in;
+in vec3 normal_frag_in;
+in vec3 tangent_frag_in;
+in vec3 bitangent_frag_in;
+in vec3 camera_position;
+in vec3 model_position;
+
 out vec4 color;
 
-void main() {
-    color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform mat4 modelMatrix;
+uniform mat3 normalMatrix;
+uniform bool showNormals;
+uniform bool showUVs;
+
+// TODO look at all these and decide which ones are still needed
+uniform float waterLevel;
+uniform float grassLevel;
+uniform float rockLevel;
+uniform float blur;
+uniform vec3 surfaceToLight;
+uniform vec3 lightColor;
+uniform float lightPower;
+uniform sampler2D normalSampler;
+uniform bool useNormalMap;
+
+vec4 grassColor = vec4(19.0F/255.0F, 133.0F/255.0F, 16.0F/255.0F, 1.0F);
+vec4 rockColor = vec4(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F, 1.0F);
+vec4 snowColor = vec4(255.0F/255.0F, 250.0F/255.0F, 250.0F/255.0F, 1.0F);
+
+vec4 getSurfaceColor(float height) {
+    if (height < grassLevel-blur) {
+        return grassColor;
+    } else if (height < grassLevel+blur) {
+        float t = (height-(grassLevel-blur)) / (2.0F*blur);
+        return mix(grassColor, rockColor, t);
+    } else if (height < rockLevel-blur){
+        return rockColor;
+    } else if (height < rockLevel+blur) {
+        float t = (height-(rockLevel-blur)) / (2.0F*blur);
+        return mix(rockColor, snowColor, t);
+    } else {
+        return snowColor;
+    }
 }
 
-#else
+void main() {
+    vec3 normal = normalize(normal_frag_in);
+//    vec3 tangent = normalize(tangent_frag_in);
+//    vec3 bitangent = normalize(bitangent_frag_in);
+    normal = normalMatrix * normal;
+
+    if (showNormals) {
+        normal += 1.0F;
+        normal /= 2.0F;
+        color = vec4(normal, 1.0F);
+        return;
+    }
+
+    if (showUVs) {
+        color = vec4(uv_frag_in.x/300, uv_frag_in.y/300, 0.0F, 1.0F);
+        return;
+    }
+
+    float distanceToLight = length(surfaceToLight);
+    float brightness = dot(normal, surfaceToLight) / (distanceToLight * distanceToLight);
+    brightness *= lightPower;
+    brightness = clamp(brightness, 0, 1);
+
+    vec4 surfaceColor = getSurfaceColor(model_position.y);
+    vec3 diffuseColor = brightness * lightColor * surfaceColor.rgb;
+
+    vec3 specularColor = vec3(1.0F, 0.0F, 0.0F);
+    vec3 cameraDirection = normalize(camera_position - model_position);
+    vec3 reflectionDirection = reflect(surfaceToLight, normal);
+    float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0, 1);
+    specularColor *= lightColor * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
+
+    vec3 colorv3 = vec3(0.0);
+    vec3 ambientColor = vec3(0.1);
+    colorv3 += ambientColor;
+    colorv3 += diffuseColor;
+    colorv3 += specularColor;
+
+    color = vec4(colorv3, 1.0F);
+}
+
+    #else
 
 in float vHeight;
 in vec3 vPosition;
@@ -127,9 +207,9 @@ void main() {
     vec3 ambientColor = vec3(0.1);
     colorv3 += ambientColor;
     colorv3 += diffuseColor;
-    colorv3 += specularColor;
+    //    colorv3 += specularColor;
 
     color = vec4(colorv3, 1.0F);
 }
 
-#endif
+    #endif

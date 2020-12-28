@@ -2,19 +2,18 @@
 
 layout (vertices = 3) out;
 
-in vec3 position_tcs_in[];
+in vec2 position_tcs_in[];
 
-uniform float innerTess;
-uniform vec3 outerTess;
+uniform float tessellation;
 
-out vec3 position_tes_in[];
+out vec2 position_tes_in[];
 
 void main() {
-    gl_TessLevelInner[0] = innerTess;
+    gl_TessLevelInner[0] = tessellation;
 
-    gl_TessLevelOuter[0] = outerTess.x;
-    gl_TessLevelOuter[1] = outerTess.y;
-    gl_TessLevelOuter[2] = outerTess.z;
+    gl_TessLevelOuter[0] = tessellation;
+    gl_TessLevelOuter[1] = tessellation;
+    gl_TessLevelOuter[2] = tessellation;
 
     position_tes_in[gl_InvocationID] = position_tcs_in[gl_InvocationID];
 }

@@ -114,17 +114,17 @@ void Landscape::tick() {
     static auto lightColor = glm::vec3(1.0F);
     static auto surfaceToLight = glm::vec3(-100.0F, 10.0F, 0.0F);
     static auto levels = TerrainLevels();
-    static auto tessLevels = TessellationLevels();
+    static auto tessellation = 60.0F;
 
     static std::vector<NoiseLayer> layers = {
           NoiseLayer(300.0F, 30.0F), //
-          NoiseLayer(200.0F, 20.0F), //
-          NoiseLayer(150.0F, 15.0F), //
-          NoiseLayer(100.0F, 10.0F), //
-          NoiseLayer(75.0F, 7.5F),   //
-          NoiseLayer(50.0F, 5.0F),   //
-          NoiseLayer(30.0F, 2.5F),   //
-          NoiseLayer(10.0F, 1.0F),   //
+          NoiseLayer(200.0F, 25.0F), //
+          NoiseLayer(150.0F, 20.0F), //
+          NoiseLayer(100.0F, 15.0F), //
+          NoiseLayer(75.0F, 12.5F),  //
+          NoiseLayer(50.0F, 10.0F),  //
+          NoiseLayer(30.0F, 7.5F),   //
+          NoiseLayer(10.0F, 5.0F),   //
     };
 
     static std::vector<NoiseLayer *> normalLayers = {
@@ -145,7 +145,7 @@ void Landscape::tick() {
         thingToRender = 1;
     }
     ImGui::SameLine();
-    if (ImGui::Button("Show Normals")) {
+    if (ImGui::Button("Show Normal Texture")) {
         thingToRender = 2;
     }
     ImGui::Checkbox("Edit NormalTexture", &editNormalTexture);
@@ -174,6 +174,7 @@ void Landscape::tick() {
     ImGui::Separator();
     ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
     ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
+    ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
     ImGui::Checkbox("Use Normal Map", &shaderToggles.useNormalMap);
     ImGui::DragFloat("uvScaleFactor", &uvScaleFactor);
     ImGui::Checkbox("Animate", &animate);
@@ -181,8 +182,7 @@ void Landscape::tick() {
     ImGui::DragFloat("Power", &power, dragSpeed);
     ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
     ImGui::Separator();
-    ImGui::DragFloat("Inner Tesselation", &tessLevels.innerTess);
-    ImGui::DragFloat3("Outer Tesselation", reinterpret_cast<float *>(&tessLevels.outerTess));
+    ImGui::DragFloat("Tesselation", &tessellation);
     ImGui::End();
 
     if (editNormalTexture) {
@@ -201,7 +201,7 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, surfaceToLight,
-                      lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessLevels, layers);
+                      lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation, layers);
     } else if (thingToRender == 1) {
         renderNoiseTexture(textureRotation, texturePosition, textureScale);
     } else if (thingToRender == 2) {
@@ -213,8 +213,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
                               const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                               const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
                               float lightPower, const TerrainLevels &levels, const ShaderToggles &shaderToggles,
-                              float uvScaleFactor, const TessellationLevels &tessLevels,
-                              const std::vector<NoiseLayer> &layers) {
+                              float uvScaleFactor, const float tessellation, const std::vector<NoiseLayer> &layers) {
     shader->bind();
     vertexArray->bind();
 
@@ -230,8 +229,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("normalMatrix", normalMatrix);
 
-    shader->setUniform("innerTess", tessLevels.innerTess);
-    shader->setUniform("outerTess", tessLevels.outerTess);
+    shader->setUniform("tessellation", tessellation);
 
     for (int i = 0; i < layers.size(); i++) {
         shader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", layers[i].amplitude);
@@ -244,8 +242,9 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("blur", levels.blur);
     shader->setUniform("surfaceToLight", surfaceToLight);
     shader->setUniform("lightColor", lightColor);
-    shader->setUniform("uLightPower", lightPower);
+    shader->setUniform("lightPower", lightPower);
     shader->setUniform("showUVs", shaderToggles.showUVs);
+    shader->setUniform("showNormals", shaderToggles.showNormals);
     shader->setUniform("useNormalMap", shaderToggles.useNormalMap);
     shader->setUniform("uvScaleFactor", uvScaleFactor);
 
@@ -323,10 +322,10 @@ void Landscape::generatePoints() {
     glm::vec2 uvMin = {0.0F, 0.0F};
     glm::vec2 uvMax = {1.0F, 1.0F};
     std::vector<float> quadVertices = {
-          0.0F, 0.0F, 0.0F, uvMin.x, uvMin.y, 0.0F, 1.0F, 0.0F, //
-          1.0F, 0.0F, 0.0F, uvMax.x, uvMin.y, 0.0F, 1.0F, 0.0F, //
-          1.0F, 0.0F, 1.0F, uvMax.x, uvMax.y, 0.0F, 1.0F, 0.0F, //
-          0.0F, 0.0F, 1.0F, uvMin.x, uvMax.y, 0.0F, 1.0F, 0.0F, //
+          0.0F, 0.0F, uvMin.x, uvMin.y, //
+          1.0F, 0.0F, uvMax.x, uvMin.y, //
+          1.0F, 1.0F, uvMax.x, uvMax.y, //
+          0.0F, 1.0F, uvMin.x, uvMax.y, //
     };
 
     int width = 10;
@@ -336,10 +335,10 @@ void Landscape::generatePoints() {
         for (int col = 0; col < width; col++) {
             for (int i = 0; i < quadVertices.size(); i++) {
                 float f = quadVertices[i];
-                if (i % 8 == 0) {
+                if (i % 4 == 0) {
                     f += static_cast<float>(row);
                     f *= 100.0F;
-                } else if (i % 8 == 2) {
+                } else if (i % 4 == 1) {
                     f += static_cast<float>(col);
                     f *= 100.0F;
                 }
@@ -349,9 +348,8 @@ void Landscape::generatePoints() {
     }
 
     BufferLayout bufferLayout = {
-          {ShaderDataType::Float3, "position_in"},
-          {ShaderDataType::Float2, "uv_in"},
-          {ShaderDataType::Float3, "normal_in"},
+          {ShaderDataType::Vec2, "position_in"},
+          {ShaderDataType::Vec2, "uv_in"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);

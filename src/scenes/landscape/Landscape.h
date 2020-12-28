@@ -25,6 +25,7 @@ struct TerrainLevels {
 
 struct ShaderToggles {
     bool useNormalMap = true;
+    bool showNormals = true;
     bool showUVs = false;
     bool drawWireframe = true;
 };
@@ -66,7 +67,7 @@ class Landscape : public Scene {
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &surfaceToLight,
                        const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels,
-                       const ShaderToggles &shaderToggles, float uvScaleFactor, const TessellationLevels &tessLevels,
+                       const ShaderToggles &shaderToggles, float uvScaleFactor, float tessellation,
                        const std::vector<NoiseLayer> &vector);
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
