@@ -248,9 +248,13 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("useNormalMap", shaderToggles.useNormalMap);
     shader->setUniform("uvScaleFactor", uvScaleFactor);
 
-    GL_Call(glActiveTexture(GL_TEXTURE0));
+//    GL_Call(glActiveTexture(GL_TEXTURE0));
+//    texture->bind();
+//    shader->setUniform("textureSampler", 0);
+
+    GL_Call(glActiveTexture(GL_TEXTURE1));
     normalTexture->bind();
-    shader->setUniform("uNormalSampler", 0);
+    shader->setUniform("normalSampler", 1);
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));

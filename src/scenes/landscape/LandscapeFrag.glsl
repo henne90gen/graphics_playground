@@ -1,5 +1,10 @@
 #version 330 core
 
+struct NoiseLayer {
+    float frequency;
+    float amplitude;
+};
+
 in vec2 uv_frag_in;
 in vec3 normal_frag_in;
 in vec3 tangent_frag_in;
@@ -11,25 +16,41 @@ out vec4 color;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
+
 uniform bool showNormals;
 uniform bool showUVs;
+uniform bool useNormalMap;
 
-// TODO look at all these and decide which ones are still needed
-uniform float waterLevel;
+const int MAX_NUM_NOISE_LAYERS = 15;
+uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
+uniform int numNoiseLayers;
+
 uniform float grassLevel;
 uniform float rockLevel;
 uniform float blur;
+
 uniform vec3 surfaceToLight;
 uniform vec3 lightColor;
 uniform float lightPower;
+
 uniform sampler2D normalSampler;
-uniform bool useNormalMap;
 
 vec4 grassColor = vec4(19.0F/255.0F, 133.0F/255.0F, 16.0F/255.0F, 1.0F);
 vec4 rockColor = vec4(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F, 1.0F);
 vec4 snowColor = vec4(255.0F/255.0F, 250.0F/255.0F, 250.0F/255.0F, 1.0F);
 
 vec4 getSurfaceColor(float height) {
+    float noiseMin = 0.0F;
+    float noiseMax = 0.0F;
+    for (int i = 0; i < numNoiseLayers; i++) {
+        noiseMin -= noiseLayers[i].amplitude;
+        noiseMax += noiseLayers[i].amplitude;
+    }
+
+    height += abs(noiseMin);
+    height /= noiseMax - noiseMin;
+    return vec4(height, 0.0F, 0.0F, 1.0F);
+
     if (height < grassLevel-blur) {
         return grassColor;
     } else if (height < grassLevel+blur) {
@@ -71,6 +92,10 @@ void main() {
     brightness = clamp(brightness, 0, 1);
 
     vec4 surfaceColor = getSurfaceColor(model_position.y);
+    color = surfaceColor;
+    return;
+
+
     vec3 diffuseColor = brightness * lightColor * surfaceColor.rgb;
 
     vec3 specularColor = vec3(1.0F, 0.0F, 0.0F);
