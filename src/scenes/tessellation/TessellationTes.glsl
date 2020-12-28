@@ -39,9 +39,9 @@ float snoise2(vec2 v){
 }
 
 void main() {
-    vec3 pos = (gl_TessCoord.x * position_es_in[0]) +
-    (gl_TessCoord.y * position_es_in[1]) +
-    (gl_TessCoord.z * position_es_in[2]);
+    vec3 pos = (gl_TessCoord.x * position_tes_in[0]) +
+    (gl_TessCoord.y * position_tes_in[1]) +
+    (gl_TessCoord.z * position_tes_in[2]);
 
     pos.y = snoise2(pos.xz);
 

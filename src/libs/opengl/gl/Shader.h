@@ -29,7 +29,7 @@
 
 #define CREATE_DEFAULT_SHADER(name) createDefaultShader(SHADER_CODE(name##Vert), SHADER_CODE(name##Frag))
 
-enum ShaderDataType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
+enum ShaderDataType { Float = 0, Vec2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 
 struct ShaderCode {
     unsigned int lineCount = 0;
@@ -39,7 +39,6 @@ struct ShaderCode {
     int64_t lastAccessTime = 0;
 
     ShaderCode() = default;
-    ShaderCode(ShaderCode &code) = default;
     ShaderCode(const ShaderCode &code) = default;
     ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource, const char *filePath)
         : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(filePath) {
@@ -57,6 +56,7 @@ class Shader {
 
     std::unordered_map<std::string, int> uniformLocations;
     std::unordered_map<std::string, int> attributeLocations;
+    std::unordered_map<GLuint, ShaderCode> shaderComponents = {};
 
   public:
     explicit Shader() : id(0) {}
@@ -102,8 +102,6 @@ class Shader {
     }
 
   private:
-    std::unordered_map<GLuint, ShaderCode> shaderComponents = {};
-
     static GLuint load(GLuint shaderType, const ShaderCode &shaderCode);
 
     void attach(GLuint shaderType, const ShaderCode &shaderCode);

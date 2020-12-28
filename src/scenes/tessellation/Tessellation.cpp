@@ -53,7 +53,7 @@ void Tessellation::setup() {
     va = std::make_shared<VertexArray>(shader);
     BufferLayout bufferLayout = {
           {ShaderDataType::Float3, "position_in"},
-          {ShaderDataType::Float2, "uv_in"},
+          {ShaderDataType::Vec2, "uv_in"},
           {ShaderDataType::Float3, "normal_in"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);

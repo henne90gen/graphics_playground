@@ -196,7 +196,7 @@ void GraphVis::initNodeMesh() {
           {-0.5F, 0.5F},
     };
     BufferLayout layout = {
-          {ShaderDataType::Float2, "position"},
+          {ShaderDataType::Vec2, "position"},
     };
     auto vb = std::make_shared<VertexBuffer>(vertices, layout);
     nodeVa->addVertexBuffer(vb);
@@ -213,7 +213,7 @@ void GraphVis::initEdgeMesh() {
     edgesVa = std::make_shared<VertexArray>(shader);
 
     BufferLayout layout = {
-          {ShaderDataType::Float2, "position"},
+          {ShaderDataType::Vec2, "position"},
     };
     edgesVb = std::make_shared<VertexBuffer>(layout);
     edgesVa->addVertexBuffer(edgesVb);

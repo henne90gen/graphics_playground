@@ -392,11 +392,11 @@ void Landscape::generatePoints() {
         uvs[i] = glm::vec2(u, v);
     }
 
-    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
+    BufferLayout positionLayout = {{ShaderDataType::Vec2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
-    BufferLayout uvLayout = {{ShaderDataType::Float2, "uv"}};
+    BufferLayout uvLayout = {{ShaderDataType::Vec2, "uv"}};
     auto uvBuffer = std::make_shared<VertexBuffer>(uvs, uvLayout);
     vertexArray->addVertexBuffer(uvBuffer);
 

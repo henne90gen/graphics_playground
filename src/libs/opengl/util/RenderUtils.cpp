@@ -194,7 +194,7 @@ std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader,
     auto result = std::make_shared<VertexArray>(shader);
     BufferLayout bufferLayout = {
           {ShaderDataType::Float3, "a_Position"},
-          {ShaderDataType::Float2, "a_UV"},
+          {ShaderDataType::Vec2, "a_UV"},
           {ShaderDataType::Float3, "a_Normal"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
