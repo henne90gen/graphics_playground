@@ -23,6 +23,7 @@ def run_compile_shader(input_file: str, output_file: str):
         f"const char *{shader_name}[] = {{\n"
     ]
     for line in shader_lines:
+        line = line.replace("\"", "\\\"")
         lines.append(f"      \"{line}\\n\",\n")
     lines.append("};\n")
 
