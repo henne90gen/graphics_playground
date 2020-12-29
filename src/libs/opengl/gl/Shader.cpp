@@ -172,10 +172,11 @@ int Shader::getAttributeLocation(const std::string &name) {
 void Shader::bind() {
     bool recompile = false;
     for (auto &entry : shaderComponents) {
-        int64_t currentAccessTime = std::filesystem::last_write_time(entry.second.filePath).time_since_epoch().count();
-        if (currentAccessTime > entry.second.lastAccessTime) {
+        int64_t currentAccessTimeNano = std::filesystem::last_write_time(entry.second.filePath).time_since_epoch().count();
+        if (currentAccessTimeNano > entry.second.lastAccessTimeNano) {
             entry.second = readShaderCodeFromFile(entry.second.filePath);
             recompile = true;
+            break;
         }
     }
     if (recompile) {

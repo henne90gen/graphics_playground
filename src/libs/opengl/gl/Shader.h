@@ -36,17 +36,17 @@ struct ShaderCode {
     int *lineLengths = nullptr;
     char **shaderSource = nullptr;
     std::string filePath = "";
-    int64_t lastAccessTime = 0;
+    int64_t lastAccessTimeNano = 0;
 
     ShaderCode() = default;
     ShaderCode(const ShaderCode &code) = default;
     ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource, const char *filePath)
         : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(filePath) {
-        lastAccessTime = std::filesystem::last_write_time(filePath).time_since_epoch().count();
+        lastAccessTimeNano = std::filesystem::last_write_time(filePath).time_since_epoch().count();
     }
     ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource, std::string filePath)
         : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(std::move(filePath)) {
-        lastAccessTime = std::filesystem::last_write_time(filePath).time_since_epoch().count();
+        lastAccessTimeNano = std::filesystem::last_write_time(filePath).time_since_epoch().count();
     }
 };
 
