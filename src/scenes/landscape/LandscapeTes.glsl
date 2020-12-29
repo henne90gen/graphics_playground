@@ -3,6 +3,7 @@
 struct NoiseLayer {
     float frequency;
     float amplitude;
+    bool enabled;
 };
 
 layout (triangles, equal_spacing, cw) in;
@@ -14,6 +15,7 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform float uvScaleFactor;
+uniform float power;
 
 const int MAX_NUM_NOISE_LAYERS = 15;
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
@@ -23,7 +25,6 @@ out vec2 uv_frag_in;
 out vec3 normal_frag_in;
 out vec3 tangent_frag_in;
 out vec3 bitangent_frag_in;
-out vec3 camera_position;
 out vec3 model_position;
 
 // FAST32_hash
@@ -101,25 +102,36 @@ vec3 snoise2_deriv(vec2 P) {
     return vec3(dot(m4, grad_results), xderiv, yderiv) * FINAL_NORMALIZATION;
 }
 
+vec3 generateHeight(vec2 pos) {
+    vec3 noise = vec3(0.0F);
+    float noiseMin = 0.0F;
+    for (int i = 0; i < numNoiseLayers; i++) {
+        if (!noiseLayers[i].enabled) {
+            continue;
+        }
+        noise += snoise2_deriv(pos * (1.0F / noiseLayers[i].frequency)) * noiseLayers[i].amplitude;
+        noiseMin -= noiseLayers[i].amplitude;
+    }
+    noise.x -= noiseMin;
+    //    noise.x = pow(noise.x, power); // g(x) = f(x)^p -> g'(x) = p*f(x)^(p-1) * f'(x)
+    //    noise.y = power * pow(noise.x, power - 1.0F) * noise.y;
+    //    noise.z = power * pow(noise.x, power - 1.0F) * noise.z;
+    return noise;
+}
+
 void main() {
     vec2 pos = gl_TessCoord.x * position_tes_in[0];
     pos     += gl_TessCoord.y * position_tes_in[1];
     pos     += gl_TessCoord.z * position_tes_in[2];
 
-    vec3 noise = vec3(0.0F);
-    for (int i = 0; i < numNoiseLayers; i++) {
-        noise += snoise2_deriv(pos * (1.0F / noiseLayers[i].frequency)) * noiseLayers[i].amplitude;
-    }
-    float noiseValue = noise.x;
+    vec3 noise = generateHeight(pos);
     tangent_frag_in = vec3(1.0F, noise.y, 0.0F);
     bitangent_frag_in = vec3(0.0F, noise.z, 1.0F);
-    normal_frag_in = normalize(cross(tangent_frag_in, bitangent_frag_in));
+    normal_frag_in = -normalize(cross(tangent_frag_in, bitangent_frag_in));
 
-    vec4 position = modelMatrix * vec4(pos.x, noiseValue, pos.y, 1.0F);
+    vec4 position = modelMatrix * vec4(pos.x, noise.x, pos.y, 1.0F);
     model_position = position.xyz;
     gl_Position = projectionMatrix * viewMatrix * position;
 
     uv_frag_in = pos / uvScaleFactor;
-
-    camera_position = vec3(viewMatrix * vec4(0.0, 0.0, 0.0, 1.0));
 }
