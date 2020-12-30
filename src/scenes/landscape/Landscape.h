@@ -28,7 +28,7 @@ struct ShaderToggles {
     bool showTangents = false;
     bool showUVs = false;
     bool drawWireframe = true;
-    bool useNormalMap = true;
+    bool useFiniteDifferences = true;
 };
 
 class Landscape : public Scene {
@@ -61,7 +61,7 @@ class Landscape : public Scene {
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
                        const glm::vec3 &lightColor, float lightPower, const TerrainLevels &levels,
                        const ShaderToggles &shaderToggles, float uvScaleFactor, float tessellation,
-                       const std::vector<NoiseLayer> &vector, float power);
+                       const std::vector<NoiseLayer> &vector, float power, float finiteDifference);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
 

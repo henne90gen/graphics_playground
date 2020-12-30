@@ -105,7 +105,7 @@ void Landscape::tick() {
     static auto texturePosition = glm::vec3(0.0F);
     static auto textureRotation = glm::vec3(0.0F);
     static auto textureScale = glm::vec3(1.0F);
-    static auto normalScale = 10.0F;
+    static auto finiteDifference = 0.01F;
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
     static auto uvScaleFactor = 20.0F;
@@ -170,19 +170,17 @@ void Landscape::tick() {
     ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
     ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
     ImGui::Separator();
-    ImGui::DragFloat3("Noise Offset", reinterpret_cast<float *>(&movement), dragSpeed);
-    ImGui::Separator();
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, 0.1F);
     ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
-    ImGui::DragFloat("Normal Scale", &normalScale);
+    ImGui::DragFloat("Finite Difference", &finiteDifference, 0.001F);
     ImGui::Separator();
     ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
     ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
     ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
     ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
-    ImGui::Checkbox("Use Normal Map", &shaderToggles.useNormalMap);
+    ImGui::Checkbox("Use Finite Differences", &shaderToggles.useFiniteDifferences);
     ImGui::DragFloat("uvScaleFactor", &uvScaleFactor);
     ImGui::Checkbox("Animate", &animate);
     ImGui::Checkbox("Show Player View", &usePlayerPosition);
@@ -208,7 +206,7 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition, lightColor,
-                      lightPower, levels, shaderToggles, uvScaleFactor, tessellation, layers, power);
+                      lightPower, levels, shaderToggles, uvScaleFactor, tessellation, layers, power, finiteDifference);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
     } else if (thingToRender == 1) {
         renderNoiseTexture(textureRotation, texturePosition, textureScale);
@@ -222,7 +220,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
                               const glm::vec3 &modelScale, const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
                               float lightPower, const TerrainLevels &levels, const ShaderToggles &shaderToggles,
                               float uvScaleFactor, const float tessellation, const std::vector<NoiseLayer> &layers,
-                              const float power) {
+                              const float power, const float finiteDifference) {
     shader->bind();
     vertexArray->bind();
 
@@ -250,6 +248,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
         shader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", layers[i].enabled);
     }
     shader->setUniform("numNoiseLayers", static_cast<int>(layers.size()));
+    shader->setUniform("finiteDifference", finiteDifference);
 
     shader->setUniform("grassLevel", levels.grassLevel);
     shader->setUniform("rockLevel", levels.rockLevel);
@@ -262,7 +261,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("showUVs", shaderToggles.showUVs);
     shader->setUniform("showNormals", shaderToggles.showNormals);
     shader->setUniform("showTangents", shaderToggles.showTangents);
-//    shader->setUniform("useNormalMap", shaderToggles.useNormalMap);
+    shader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
     shader->setUniform("uvScaleFactor", uvScaleFactor);
     shader->setUniform("power", power);
 
