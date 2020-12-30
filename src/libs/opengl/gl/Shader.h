@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/FileUtils.h"
 #include "util/OpenGLUtils.h"
 
 #include <filesystem>
@@ -41,13 +42,11 @@ struct ShaderCode {
     ShaderCode() = default;
     ShaderCode(const ShaderCode &code) = default;
     ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource, const char *filePath)
-        : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(filePath) {
-        lastAccessTimeNano = std::filesystem::last_write_time(filePath).time_since_epoch().count();
-    }
+        : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(filePath),
+          lastAccessTimeNano(getLastModifiedTimeNano(filePath)) {}
     ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource, std::string filePath)
-        : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(std::move(filePath)) {
-        lastAccessTimeNano = std::filesystem::last_write_time(filePath).time_since_epoch().count();
-    }
+        : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(std::move(filePath)),
+          lastAccessTimeNano(getLastModifiedTimeNano(filePath)) {}
 };
 
 class Shader {

@@ -18,8 +18,6 @@ function(create_scene)
     add_executable(${SCENE_NAME} ${ARGN} ${SHADERS})
     target_include_directories(${SCENE_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_SOURCE_DIR}/src/libraries/opengl
-            ${CMAKE_SOURCE_DIR}/src/core
             ${GLFW_DIR}/include
             ${GLAD_DIR}/include
             ${GLM_DIR}

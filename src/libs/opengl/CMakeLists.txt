@@ -6,6 +6,7 @@ add_library(opengl
         gl/Texture.cpp
         gl/VertexArray.cpp
         gl/VertexBuffer.cpp
+        util/FileUtils.cpp
         util/OpenGLUtils.cpp
         util/RenderUtils.cpp)
 
