@@ -112,6 +112,8 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     GLuint shaderId = 0;
     GL_Call(shaderId = glCreateShader(shaderType));
 
+#endif
+
     GL_Call(glShaderSource(shaderId, shaderCode.lineCount, shaderCode.shaderSource, shaderCode.lineLengths));
     GL_Call(glCompileShader(shaderId));
 

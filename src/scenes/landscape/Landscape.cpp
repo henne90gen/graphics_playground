@@ -119,6 +119,7 @@ void Landscape::tick() {
     static auto lightPower = 100.0F;
     static auto lightColor = glm::vec3(1.0F);
     static auto lightPosition = glm::vec3(0.0F, 150.0F, 0.0F);
+    static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
     static auto levels = TerrainLevels();
     static auto tessellation = 60.0F;
 
@@ -170,6 +171,7 @@ void Landscape::tick() {
     ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
     ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
     ImGui::Separator();
+    ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, 0.1F);
@@ -205,8 +207,9 @@ void Landscape::tick() {
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     if (thingToRender == 0) {
-        renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition, lightColor,
-                      lightPower, levels, shaderToggles, uvScaleFactor, tessellation, layers, power, finiteDifference);
+        renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition,
+                      lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
+                      layers, power, finiteDifference);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
     } else if (thingToRender == 1) {
         renderNoiseTexture(textureRotation, texturePosition, textureScale);
@@ -217,10 +220,11 @@ void Landscape::tick() {
 
 void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                               const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
-                              const glm::vec3 &modelScale, const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
-                              float lightPower, const TerrainLevels &levels, const ShaderToggles &shaderToggles,
-                              float uvScaleFactor, const float tessellation, const std::vector<NoiseLayer> &layers,
-                              const float power, const float finiteDifference) {
+                              const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
+                              const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,
+                              const TerrainLevels &levels, const ShaderToggles &shaderToggles, float uvScaleFactor,
+                              const float tessellation, const std::vector<NoiseLayer> &layers, const float power,
+                              const float finiteDifference) {
     shader->bind();
     vertexArray->bind();
 
@@ -254,6 +258,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("rockLevel", levels.rockLevel);
     shader->setUniform("blur", levels.blur);
 
+    shader->setUniform("lightDirection", lightDirection);
     shader->setUniform("lightPosition", lightPosition);
     shader->setUniform("lightColor", lightColor);
     shader->setUniform("lightPower", lightPower);
@@ -269,9 +274,9 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     //    texture->bind();
     //    shader->setUniform("textureSampler", 0);
 
-//    GL_Call(glActiveTexture(GL_TEXTURE1));
-//    normalTexture->bind();
-//    shader->setUniform("normalSampler", 1);
+    //    GL_Call(glActiveTexture(GL_TEXTURE1));
+    //    normalTexture->bind();
+    //    shader->setUniform("normalSampler", 1);
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
