@@ -50,6 +50,7 @@ uniform float rockLevel;
 uniform float blur;
 
 uniform vec3 lightPosition;
+uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightPower;
 
@@ -126,61 +127,58 @@ vec4 calcDirLight(DirLight light, Material material, vec3 normal, vec3 viewDir) 
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    // combine results
-    vec3 lightColor = light.color * light.power;
-    vec3 ambient  = lightColor * material.ambient;
-    vec3 diffuse  = lightColor * diff * material.diffuse;
-    vec3 specular = lightColor * spec * material.specular;
-    vec3 result = ambient + diffuse + specular;
+
+    vec3 color = light.color * light.power;
+    vec3 ambient = color * 0.1F;
+    vec3 diffuse = color;
+    vec3 specular = color * 0.15F;
+
+    ambient  *= material.ambient;
+    diffuse  *= diff * material.diffuse;
+    specular *= spec * material.specular;
+
+    vec3 result = vec3(0.0F);
+    result += ambient;
+    result += diffuse;
+    result += specular;
     return vec4(result, 1.0F);
 }
 
-vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
+vec3 calcPointLightComplex(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     return vec3(1.0F);
-    #if 0
-    vec3 lightDir = normalize(light.position - fragPos);
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    // attenuation
-    float distance = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-    // combine results
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
-    #endif
+    /*
+        vec3 lightDir = normalize(light.position - fragPos);
+        // diffuse shading
+        float diff = max(dot(normal, lightDir), 0.0);
+        // specular shading
+        vec3 reflectDir = reflect(-lightDir, normal);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+        // attenuation
+        float distance = length(light.position - fragPos);
+        float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+        // combine results
+        vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+        vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+        vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+        ambient *= attenuation;
+        diffuse *= attenuation;
+        specular *= attenuation;
+        return (ambient + diffuse + specular);
+    */
 }
 
-vec4 calcLight3(PointLight light, Material material, vec3 normal, vec3 viewDir) {
+vec4 calcPointLightSimple(PointLight light, Material material, vec3 normal, vec3 viewDir) {
     vec3 lightDir = light.position - model_position;
     float distance = length(lightDir);
 
     lightDir = normalize(lightDir);
-    // Cosine of the angle between the normal and the light direction,
-    // clamped above 0
-    //  - light is at the vertical of the triangle -> 1
-    //  - light is perpendicular to the triangle -> 0
-    //  - light is behind the triangle -> 0
     float cosTheta = clamp(dot(normal, lightDir), 0, 1);
-
-    // Direction in which the triangle reflects the light
     vec3 reflectDir = reflect(-lightDir, normal);
-    // Cosine of the angle between the Eye vector and the Reflect vector,
-    // clamped to 0
-    //  - Looking into the reflection -> 1
-    //  - Looking elsewhere -> < 1
     float cosAlpha = clamp(dot(viewDir, reflectDir), 0, 1);
 
     vec3 color = material.ambient;
-    color += material.diffuse * lightColor * lightPower * cosTheta / (distance*distance);
-    color += material.specular * lightColor * lightPower * pow(cosAlpha, material.shininess) / (distance*distance);
+    color += lightColor * lightPower * material.diffuse * cosTheta / (distance*distance);
+    color += lightColor * lightPower * material.specular * pow(cosAlpha, material.shininess) / (distance*distance);
     return vec4(color, 1.0F);
 }
 
@@ -198,69 +196,14 @@ void main() {
     vec3 materialDiffuseColor = getSurfaceColor(model_position.y);
     vec3 materialAmbientColor = vec3(0.1, 0.1, 0.1) * materialDiffuseColor;
     vec3 materialSpecularColor = vec3(0.3, 0.3, 0.3);
-    Material material = Material(materialAmbientColor, materialDiffuseColor, materialSpecularColor, 8);
+    Material material = Material(materialAmbientColor, materialDiffuseColor, materialSpecularColor, 2);
     PointLight light = PointLight(lightPosition, lightColor, lightPower);
-    DirLight dirLight = DirLight(lightPosition, lightColor, lightPower);
+
+    DirLight dirLight = DirLight(lightDirection, lightColor, lightPower);
 
     color = vec4(0.0F);
-    color += calcLight3(light, material, normal, viewDir);
-//        color += calcDirLight(dirLight, material, normal, viewDir);
-}
-
-vec4 calcLight2() {
-    return vec4(1.0F, 1.0F, 1.0F, 1.0F);
-    #if 0
-    vec3 materialAmbient = vec3(0.1F);
-    vec3 materialDiffuse = getSurfaceColor(model_position.y);
-    vec3 materialSpecular = vec3(0.1F);
-    float materialShininess = 8;
-
-    // ambient
-    vec3 ambient = lightColor * materialAmbient;
-
-    // diffuse
-    //vec3 lightDir = normalize(lightPosition - model_position);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = lightColor * (diff * materialDiffuse);
-
-    // specular
-    vec3 viewDir = normalize(cameraPosition - model_position);
-    //    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(dot(viewDir, reflectDir), materialShininess);
-    vec3 specular = lightColor * (spec * materialSpecular);
-
-    vec3 result = vec3(0.0F);
-    result += ambient;
-    result += diffuse;
-    //    result += specular;
-    return vec4(result, 1.0F);
-    #endif
-}
-
-vec4 calcLight1() {
-    return vec4(1.0F, 1.0F, 1.0F, 1.0F);
-    #if 0
-    float brightness = max(dot(normal, surfaceToLight), 0.0F);
-    brightness *= lightPower;
-    brightness = clamp(brightness, 0, 1);
-
-    vec3 surfaceColor = getSurfaceColor(model_position.y);
-    vec3 diffuseColor = brightness * lightColor * surfaceColor;
-
-    vec3 specularColor = vec3(0.001F);
-    vec3 cameraDirection = normalize(cameraPosition - model_position);
-    vec3 reflectionDirection = reflect(surfaceToLight, normal);
-    float cosAlpha = max(dot(cameraDirection, reflectionDirection), 0.0F);
-    specularColor *= lightColor * pow(cosAlpha, 2) * lightPower;
-
-    vec3 color = vec3(0.0);
-    vec3 ambientColor = vec3(0.1F);
-    color += ambientColor;
-    color += diffuseColor;
-    color += specularColor;
-
-    return vec4(color, 1.0F);
-    #endif
+    color += calcPointLightSimple(light, material, normal, viewDir);
+    color += calcDirLight(dirLight, material, normal, viewDir);
 }
 
 vec3 getNormalFromNormalMap() {
