@@ -171,9 +171,15 @@ int Shader::getAttributeLocation(const std::string &name) {
 
 void Shader::bind() {
     bool recompile = false;
+    const int64_t waitTimeNano = 100000000;
+    const auto currentTime = std::chrono::system_clock::now();
+    const int64_t currentTimeNano =
+          std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime).time_since_epoch().count();
+
     for (auto &entry : shaderComponents) {
-        int64_t currentAccessTimeNano = std::filesystem::last_write_time(entry.second.filePath).time_since_epoch().count();
-        if (currentAccessTimeNano > entry.second.lastAccessTimeNano) {
+        const int64_t lastAccessTimeNano = getLastModifiedTimeNano(entry.second.filePath);
+        if (lastAccessTimeNano > entry.second.lastAccessTimeNano &&
+            currentTimeNano > lastAccessTimeNano + waitTimeNano) {
             entry.second = readShaderCodeFromFile(entry.second.filePath);
             recompile = true;
             break;
