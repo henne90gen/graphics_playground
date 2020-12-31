@@ -112,6 +112,14 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     GLuint shaderId = 0;
     GL_Call(shaderId = glCreateShader(shaderType));
 
+#if 0
+    std::cout << "----------- Shader code -----------" << std::endl;
+    for (int i = 0; i < shaderCode.lineCount; i++) {
+        for (int j = 0; j < shaderCode.lineLengths[i]; j++) {
+            std::cout << shaderCode.shaderSource[i][j];
+        }
+    }
+    std::cout << "----------- End -----------" << std::endl;
 #endif
 
     GL_Call(glShaderSource(shaderId, shaderCode.lineCount, shaderCode.shaderSource, shaderCode.lineLengths));
@@ -173,6 +181,8 @@ int Shader::getAttributeLocation(const std::string &name) {
 
 void Shader::bind() {
     bool recompile = false;
+    // NOTE we need to wait a little bit (100ms) before actually reading the file, because Windows gives us an empty
+    // file otherwise
     const int64_t waitTimeNano = 100000000;
     const auto currentTime = std::chrono::system_clock::now();
     const int64_t currentTimeNano =
