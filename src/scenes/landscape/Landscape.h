@@ -27,8 +27,8 @@ struct ShaderToggles {
     bool showNormals = false;
     bool showTangents = false;
     bool showUVs = false;
-    bool drawWireframe = true;
-    bool useFiniteDifferences = true;
+    bool drawWireframe = false;
+    bool useFiniteDifferences = false;
 };
 
 class Landscape : public Scene {
