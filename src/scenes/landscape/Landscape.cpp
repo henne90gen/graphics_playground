@@ -116,7 +116,7 @@ void Landscape::tick() {
     static auto power = 1.1F;
     static auto platformHeight = 0.15F;
 
-    static auto lightPower = 100.0F;
+    static auto lightPower = 1.0F;
     static auto lightColor = glm::vec3(1.0F);
     static auto lightPosition = glm::vec3(0.0F, 150.0F, 0.0F);
     static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
