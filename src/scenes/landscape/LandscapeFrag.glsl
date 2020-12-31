@@ -92,29 +92,26 @@ vec3 getSurfaceColor(float height) {
 }
 
 vec4 debugColors(vec3 normal, vec3 tangent, vec3 bitangent) {
+    if (showUVs) {
+        // this uv is only used for visualization (it shows the borders between neighboring textures)
+        vec2 uv = fract(uv_frag_in);
+        return vec4(uv, 0.0F, 1.0F);
+    }
+
     if (showNormals) {
-        //        normal = normal_frag_in;
         normal += 1.0F;
         normal /= 2.0F;
         return vec4(normal, 1.0F);
     }
 
     if (showTangents) {
-        //        tangent = tangent_frag_in;
         tangent += 1.0F;
         tangent /= 2.0F;
 
-        //        bitangent = bitangent_frag_in;
         bitangent += 1.0F;
         bitangent /= 2.0F;
 
         return vec4(tangent.y, bitangent.y, 0.0F, 1.0F);
-    }
-
-    if (showUVs) {
-        // this uv is only used for visualization (it shows the borders between neighboring textures)
-        vec2 uv = fract(uv_frag_in + 500);
-        return vec4(uv.x, uv.y, 0.0F, 1.0F);
     }
 
     return vec4(1.0F, 1.0F, 1.0F, 1.0F);
