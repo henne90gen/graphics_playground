@@ -54,14 +54,16 @@ uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightPower;
 
-uniform sampler2D normalSampler;
+//uniform sampler2D normalSampler;
+uniform sampler2D grassTexture;
 
 vec3 grassColor = vec3(19.0F/255.0F, 133.0F/255.0F, 16.0F/255.0F);
 vec3 rockColor = vec3(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F);
 vec3 snowColor = vec3(255.0F/255.0F, 250.0F/255.0F, 250.0F/255.0F);
 
 vec3 getSurfaceColor(float height) {
-    return rockColor;
+    vec3 grass = texture(grassTexture, uv_frag_in).rgb;
+    return grass;
 
     float noiseMin = 0.0F;
     float noiseMax = 0.0F;

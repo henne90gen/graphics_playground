@@ -1,8 +1,5 @@
 #pragma once
 
-#include "util/ImGuiUtils.h"
-#include "util/ImGuiUtilsFastNoise.h"
-
 struct NoiseLayer {
     enum NoiseType {
         NORMAL = 0,

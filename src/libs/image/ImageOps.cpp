@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <jpeglib.h>
 #include <png.h>
@@ -21,7 +22,7 @@ bool hasExtension(const std::string &fileName, std::string extension) {
 }
 
 int loadPng(Image &image) {
-    FILE *fp = fopen(image.fileName.c_str(), "rbe");
+    FILE *fp = fopen(image.fileName.c_str(), "rb");
     if (fp == nullptr) {
         std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
         return 1;
@@ -116,7 +117,7 @@ int loadPng(Image &image) {
 }
 
 int loadJpg(Image &image) {
-    FILE *infile = fopen(image.fileName.c_str(), "rbe");
+    FILE *infile = fopen(image.fileName.c_str(), "rb");
     if (infile == nullptr) {
         std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
         return 1;
@@ -169,6 +170,12 @@ int loadJpg(Image &image) {
 
 bool ImageOps::load(const std::string &fileName, Image &image) {
     if (fileName.empty()) {
+        std::cout << "File name cannot be empty." << std::endl;
+        return false;
+    }
+
+    if (!std::filesystem::exists(fileName)) {
+        std::cout << "File does not exist" << std::endl;
         return false;
     }
 
@@ -185,7 +192,7 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
 }
 
 void writePng(Image &image) {
-    FILE *fp = fopen(image.fileName.c_str(), "wbe");
+    FILE *fp = fopen(image.fileName.c_str(), "wb");
     if (fp == nullptr) {
         abort();
     }

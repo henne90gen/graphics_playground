@@ -5,6 +5,7 @@ set_target_properties(image PROPERTIES
         CXX_STANDARD_REQUIRED ON)
 
 target_link_libraries(image
+        opengl
         ${LIBPNG_LIBRARY}
         ${LIBJPEG_LIBRARY}
         ${ZLIB_LIBRARY})

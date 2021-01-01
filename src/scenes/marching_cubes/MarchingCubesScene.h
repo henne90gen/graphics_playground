@@ -6,13 +6,14 @@
 #include <glad/glad.h>
 #include <memory>
 
+#include <ImGuiUtilsFastNoise.h>
+
 #include "MarchingCubes.h"
 #include "gl/IndexBuffer.h"
 #include "gl/Shader.h"
 #include "gl/Texture.h"
 #include "gl/VertexArray.h"
 #include "gl/VertexBuffer.h"
-#include "util/ImGuiUtilsFastNoise.h"
 #include "util/TimeUtils.h"
 
 class MarchingCubesScene : public Scene {

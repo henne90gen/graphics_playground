@@ -30,8 +30,8 @@ void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shad
         glMesh->indexBuffer->update(mesh.indices);
 
         glMesh->texture->bind();
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
         glMesh->updateTexture(mesh);
 
