@@ -1,8 +1,10 @@
 #include "Landscape.h"
 
+#include "ImageOps.h"
 #include "Main.h"
 #include "util/RenderUtils.h"
 
+#include <array>
 #include <cmath>
 #include <memory>
 
@@ -47,6 +49,16 @@ void Landscape::setup() {
 
     vertexArray = std::make_shared<VertexArray>(shader);
     generatePoints();
+
+    Image grassImage;
+    if (!ImageOps::load("landscape_resources/textures/Ground037_1K_Color.png", grassImage)) {
+        ImageOps::createCheckerBoard(grassImage);
+    }
+
+    grassTexture = std::make_shared<Texture>();
+    grassImage.applyToTexture(grassTexture);
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 }
 
 void Landscape::destroy() {}
@@ -112,7 +124,6 @@ void Landscape::tick() {
     static auto animate = false;
     static auto usePlayerPosition = false;
     static auto thingToRender = 0;
-    static auto editNormalTexture = false;
     static auto power = 1.1F;
     static auto platformHeight = 0.15F;
 
@@ -155,7 +166,6 @@ void Landscape::tick() {
     if (ImGui::Button("Show Normal Texture")) {
         thingToRender = 2;
     }
-    ImGui::Checkbox("Edit NormalTexture", &editNormalTexture);
     ImGui::Separator();
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
     ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
@@ -192,11 +202,7 @@ void Landscape::tick() {
     ImGui::DragFloat("Tesselation", &tessellation);
     ImGui::End();
 
-    if (editNormalTexture) {
-        //        showLayerMenu(normalLayers);
-    } else {
-        showLayerMenu(layers);
-    }
+    showLayerMenu(layers);
 
     glm::mat4 viewMatrix;
     if (usePlayerPosition) {
@@ -246,7 +252,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
 
     shader->setUniform("tessellation", tessellation);
 
-    for (int i = 0; i < layers.size(); i++) {
+    for (int i = 0; i < static_cast<int64_t>(layers.size()); i++) {
         shader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", layers[i].amplitude);
         shader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", layers[i].frequency);
         shader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", layers[i].enabled);
@@ -270,9 +276,9 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("uvScaleFactor", uvScaleFactor);
     shader->setUniform("power", power);
 
-    //    GL_Call(glActiveTexture(GL_TEXTURE0));
-    //    texture->bind();
-    //    shader->setUniform("textureSampler", 0);
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    grassTexture->bind();
+    shader->setUniform("grassTexture", 0);
 
     //    GL_Call(glActiveTexture(GL_TEXTURE1));
     //    normalTexture->bind();
@@ -357,7 +363,6 @@ void Landscape::renderNormalTexture(const glm::vec3 &textureRotation, const glm:
 }
 
 void Landscape::generatePoints() {
-#if 1
     std::vector<float> quadVertices = {
           0.0F, 0.0F, //
           1.0F, 0.0F, //
@@ -371,7 +376,7 @@ void Landscape::generatePoints() {
     std::vector<float> vertices = {};
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            for (int i = 0; i < quadVertices.size(); i++) {
+            for (int i = 0; i < static_cast<int64_t>(quadVertices.size()); i++) {
                 float f = quadVertices[i];
                 if (i % 2 == 0) {
                     f += static_cast<float>(row);
@@ -403,269 +408,4 @@ void Landscape::generatePoints() {
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     vertexArray->setIndexBuffer(indexBuffer);
-#else
-    vertexArray->bind();
-
-    const auto width = static_cast<unsigned int>(WIDTH * pointDensity);
-    const auto height = static_cast<unsigned int>(HEIGHT * pointDensity);
-
-    const unsigned int verticesCount = width * height;
-    vertices = std::vector<glm::vec2>(verticesCount);
-    uvs = std::vector<glm::vec2>(verticesCount);
-#pragma omp parallel for
-    for (long i = 0; i < vertices.size(); i++) {
-        auto x = static_cast<float>(i % width);
-        x /= static_cast<float>(pointDensity);
-        x -= static_cast<float>(WIDTH) / 2.0F;
-
-        auto y = std::floor(static_cast<float>(i) / static_cast<float>(width));
-        y /= static_cast<float>(pointDensity);
-        y -= static_cast<float>(HEIGHT) / 2.0F;
-
-        vertices[i] = glm::vec2(x, y);
-
-        auto u = static_cast<float>(i % width);
-        auto v = static_cast<int>(std::floor(static_cast<float>(i) / static_cast<float>(width)));
-        uvs[i] = glm::vec2(u, v);
-    }
-
-    BufferLayout positionLayout = {{ShaderDataType::Vec2, "position"}};
-    auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
-    vertexArray->addVertexBuffer(positionBuffer);
-
-    BufferLayout uvLayout = {{ShaderDataType::Vec2, "uv"}};
-    auto uvBuffer = std::make_shared<VertexBuffer>(uvs, uvLayout);
-    vertexArray->addVertexBuffer(uvBuffer);
-
-    BufferLayout tangentLayout = {{ShaderDataType::Float3, "tangent"}};
-    tangentBuffer = std::make_shared<VertexBuffer>(tangentLayout);
-    vertexArray->addVertexBuffer(tangentBuffer);
-    BufferLayout biTangentLayout = {{ShaderDataType::Float3, "biTangent"}};
-    biTangentBuffer = std::make_shared<VertexBuffer>(biTangentLayout);
-    vertexArray->addVertexBuffer(biTangentBuffer);
-
-    const unsigned int heightMapCount = width * height;
-    heightMap = std::vector<float>(heightMapCount);
-    heightBuffer = std::make_shared<VertexBuffer>();
-    BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
-    heightBuffer->setLayout(heightLayout);
-    vertexArray->addVertexBuffer(heightBuffer);
-
-    normalBuffer = std::make_shared<VertexBuffer>();
-    BufferLayout normalLayout = {{ShaderDataType::Float3, "normal"}};
-    normalBuffer->setLayout(normalLayout);
-    vertexArray->addVertexBuffer(normalBuffer);
-
-    const unsigned int trianglesPerQuad = 2;
-    unsigned int indicesCount = width * height * trianglesPerQuad;
-    indices = std::vector<glm::ivec3>(indicesCount);
-    unsigned int counter = 0;
-    for (unsigned int y = 0; y < height - 1; y++) {
-        for (unsigned int x = 0; x < width - 1; x++) {
-            indices[counter++] = glm::ivec3((y + 1) * width + x, y * width + (x + 1), y * width + x);
-            indices[counter++] = glm::ivec3((y + 1) * width + x, (y + 1) * width + (x + 1), y * width + (x + 1));
-        }
-    }
-    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    vertexArray->setIndexBuffer(indexBuffer);
-#endif
-}
-
-void updateNoiseTexture(const std::shared_ptr<Texture> &noiseTexture, const std::vector<float> &heightMap, int width,
-                        int height) {
-    unsigned long colorCount = heightMap.size();
-    auto textureValues = std::vector<unsigned char>(colorCount);
-#pragma omp parallel for
-    for (int i = 0; i < colorCount; i++) {
-        float colorValue = heightMap[i] * 255.0F;
-        textureValues[i] = static_cast<unsigned char>(colorValue);
-    }
-    noiseTexture->update(textureValues.data(), width, height, 1);
-}
-
-float safeRetrieve(const std::vector<float> &heightMap, unsigned int width, int x, int y) {
-    int i = y * static_cast<int>(width) + x;
-    if (i < 0 || i >= heightMap.size()) {
-        return 0.0F;
-    }
-    return heightMap[i];
-}
-
-void updateNormals(const std::shared_ptr<VertexBuffer> &normalBuffer, const std::vector<float> &heightMap,
-                   const int width) {
-    auto normals = std::vector<glm::vec3>(heightMap.size());
-#pragma omp parallel for
-    for (int i = 0; i < heightMap.size(); i++) {
-        int x = i % width;
-        int y = i / width;
-        const float L = safeRetrieve(heightMap, width, x - 1, y);
-        const float R = safeRetrieve(heightMap, width, x + 1, y);
-        const float B = safeRetrieve(heightMap, width, x, y - 1);
-        const float T = safeRetrieve(heightMap, width, x, y + 1);
-        normals[i] = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
-    }
-    normalBuffer->update(normals);
-}
-
-void evaluateNoiseLayers(std::vector<float> &heights, const std::vector<NoiseLayer *> &layers, const unsigned int width,
-                         const unsigned int height, const glm::vec3 &movement, const unsigned int pointDensity,
-                         const float power, const float platformHeight) {
-    float maxHeight = std::numeric_limits<float>::min();
-    float minHeight = std::numeric_limits<float>::max();
-
-#define SEQUENTIAL 1
-#if SEQUENTIAL
-#else
-#pragma omp parallel for reduction(max : maxHeight), reduction(min : minHeight)
-#endif
-    for (int i = 0; i < width * height; i++) {
-        unsigned int x = i % width;
-        unsigned int y = i / width;
-
-        float generatedHeight = 0.0F;
-        for (auto *layer : layers) {
-            if (!layer->enabled) {
-                continue;
-            }
-
-            float realX = static_cast<float>(x) / static_cast<float>(pointDensity) + movement.x;
-            float realY = static_cast<float>(y) / static_cast<float>(pointDensity) + movement.y;
-#if 0
-            generatedHeight +=
-                  layer->getWeightedValue(WIDTH, HEIGHT, glm::vec3(realX, realY, movement.z), generatedHeight);
-#endif
-        }
-
-        generatedHeight = std::pow(generatedHeight, power);
-        if (std::isnan(generatedHeight)) {
-            generatedHeight = 0.0F;
-        }
-
-        if (generatedHeight > maxHeight) {
-            maxHeight = generatedHeight;
-        }
-        if (generatedHeight < minHeight) {
-            minHeight = generatedHeight;
-        }
-        heights[y * width + x] = generatedHeight;
-    }
-
-#pragma omp parallel for
-    for (int i = 0; i < heights.size(); i++) {
-        heights[i] -= minHeight;
-        heights[i] /= maxHeight - minHeight;
-
-        if (platformHeight <= 0.0F) {
-            continue;
-        }
-
-        unsigned int x = i % width;
-        unsigned int y = i / width;
-
-        float cx = static_cast<float>(width) / 2.0F;
-        float cy = static_cast<float>(height) / 2.0F;
-        float platform = static_cast<float>(width) / 15.0F;
-        float smoothing = static_cast<float>(width) / 20.0F;
-        float posM = 1.0F / smoothing;
-        float posN = 0.0F - posM * (cx - platform - smoothing);
-        float negM = -1.0F / smoothing;
-        float negN = 0.0F - negM * (cx + platform + smoothing);
-        float w = 1.0F;
-        if (x < cx - platform - smoothing || x > cx + platform + smoothing || //
-            y < cy - platform - smoothing || y > cy + platform + smoothing) {
-            w = 0.0F;
-        } else if (x > cx - platform && x < cx + platform && //
-                   y > cy - platform && y < cy + platform) {
-            w = 1.0F;
-        } else {
-            bool isLeftEdge = x <= cx - platform && x >= cx - platform - smoothing;
-            bool isRightEdge = x >= cx + platform && x <= cx + platform + smoothing;
-            bool isTopEdge = y >= cy + platform && y <= cy + platform + smoothing;
-            bool isBottomEdge = y <= cy - platform && y >= cy - platform - smoothing;
-            if (isLeftEdge) {
-                w *= posM * x + posN;
-            } else if (isRightEdge) {
-                w *= negM * x + negN;
-            }
-            if (isBottomEdge) {
-                w *= posM * y + posN;
-            } else if (isTopEdge) {
-                w *= negM * y + negN;
-            }
-        }
-        heights[i] = (1.0F - w) * heights[i] + w * platformHeight;
-    }
-}
-
-void updateTangentAndBiTangent(const std::vector<glm::ivec3> &indices, const std::vector<glm::vec2> &vertices,
-                               const std::vector<float> &heights, const std::vector<glm::vec2> &uvs,
-                               std::vector<glm::vec3> &tangents, std::vector<glm::vec3> &biTangents) {
-    tangents.resize(indices.size() * 3);
-    biTangents.resize(indices.size() * 3);
-
-#pragma omp parallel for
-    for (int i = 0; i < indices.size(); i++) {
-        const auto &index = indices[i];
-        auto p1_ = vertices[index.x];
-        auto p2_ = vertices[index.y];
-        auto p3_ = vertices[index.z];
-        auto p1 = glm::vec3(p1_.x, heights[index.x], p1_.y);
-        auto p2 = glm::vec3(p2_.x, heights[index.y], p2_.y);
-        auto p3 = glm::vec3(p3_.x, heights[index.z], p3_.y);
-        auto uv1 = uvs[index.x];
-        auto uv2 = uvs[index.y];
-        auto uv3 = uvs[index.z];
-
-        auto edge1 = p2 - p1;
-        auto edge2 = p3 - p1;
-        auto deltaUV1 = uv2 - uv1;
-        auto deltaUV2 = uv3 - uv1;
-
-        float f = 1.0F / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-        glm::vec3 tangent = {0.0, 0.0, 0.0};
-        tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-        tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-        tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-        tangent = glm::normalize(tangent);
-        tangents[i * 3 + 0] = tangent;
-        tangents[i * 3 + 1] = tangent;
-        tangents[i * 3 + 2] = tangent;
-
-        glm::vec3 biTangent = {0.0, 0.0, 0.0};
-        biTangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-        biTangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-        biTangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-        biTangent = glm::normalize(biTangent);
-        biTangents[i * 3 + 0] = biTangent;
-        biTangents[i * 3 + 1] = biTangent;
-        biTangents[i * 3 + 2] = biTangent;
-    }
-}
-
-void Landscape::updateNormalTexture(const unsigned int pointDensity, const glm::vec3 &movement,
-                                    const std::vector<NoiseLayer *> &layers, const float power,
-                                    const float normalScale) {
-    auto width = static_cast<unsigned int>(1 * pointDensity);
-    auto height = static_cast<unsigned int>(1 * pointDensity);
-
-    unsigned int noiseWidth = width + 2;
-    unsigned int noiseHeight = height + 2;
-    auto heights = std::vector<float>(noiseWidth * noiseHeight);
-    evaluateNoiseLayers(heights, layers, noiseWidth, noiseHeight, movement, pointDensity, power, 0.0F);
-
-    updateNoiseTexture(noiseTexture, heights, noiseWidth, noiseHeight);
-
-    auto normals = std::vector<glm::vec3>(width * height);
-#pragma omp parallel for
-    for (int i = 0; i < width * height; i++) {
-        const int x = (i % width) + 1;
-        const int y = (i / width) + 1;
-        const float L = safeRetrieve(heights, noiseWidth, x - 1, y) * normalScale;
-        const float R = safeRetrieve(heights, noiseWidth, x + 1, y) * normalScale;
-        const float B = safeRetrieve(heights, noiseWidth, x, y - 1) * normalScale;
-        const float T = safeRetrieve(heights, noiseWidth, x, y + 1) * normalScale;
-        const glm::vec3 normal = glm::normalize(glm::vec3(2 * (L - R), 4, 2 * (B - T)));
-        normals[i] = normal;
-    }
-    normalTexture->update(normals, width, height);
 }

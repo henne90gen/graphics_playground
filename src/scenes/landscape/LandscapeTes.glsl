@@ -117,16 +117,15 @@ vec3 generateHeight(vec2 pos) {
         const float amplitude = noiseLayers[i].amplitude;
 
         if (useFiniteDifferences) {
-            const vec3 n0 = snoise2(pos * (1.0F / frequency)) * amplitude;
+            const vec3 n0 = snoise2(pos / frequency) * amplitude;
             noise.x += n0.x;
             const float diff = finiteDifference;
-            const vec3 n1 = snoise2((pos + vec2(diff, 0.0F)) * (1.0F / frequency)) * amplitude;
-            const vec3 n2 = snoise2((pos + vec2(0.0F, diff)) * (1.0F / frequency)) * amplitude;
+            const vec3 n1 = snoise2((pos + vec2(diff, 0.0F)) / frequency) * amplitude;
+            const vec3 n2 = snoise2((pos + vec2(0.0F, diff)) / frequency) * amplitude;
             noise.y += (n0.x - n1.x) / -diff;
             noise.z += (n0.x - n2.x) / -diff;
         } else {
-            vec3 n = snoise2(pos * (1.0F / frequency)) * amplitude;
-            // TODO find out why we have to divide by the frequency
+            vec3 n = snoise2(pos / frequency) * amplitude;
             n.yz /= frequency;
             noise += n;
         }

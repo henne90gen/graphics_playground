@@ -1,11 +1,11 @@
 #include "ModelLoader.h"
 
-#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <regex>
+#include <sstream>
 #include <string>
 
 /**

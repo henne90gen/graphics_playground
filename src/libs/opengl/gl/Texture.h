@@ -20,6 +20,8 @@ class Texture {
 
     void update(const unsigned char *data, unsigned int width, unsigned int height,
                 unsigned int unpackAlignment = 4) const;
+    void update(const std::vector<unsigned char> &data, unsigned int width, unsigned int height,
+                unsigned int unpackAlignment = 4) const;
     void update(const std::vector<glm::vec3> &data, unsigned int width, unsigned int height,
                 unsigned int unpackAlignment = 4) const;
     void update(const std::vector<glm::vec4> &data, unsigned int width, unsigned int height,

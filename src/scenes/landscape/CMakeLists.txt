@@ -1,4 +1,4 @@
 
 create_scene(Landscape.cpp)
-target_include_directories(landscape PRIVATE ${FAST_NOISE_DIR})
-target_link_libraries(landscape FastNoise)
+add_scene_resource_directory(textures)
+target_link_libraries(landscape image)

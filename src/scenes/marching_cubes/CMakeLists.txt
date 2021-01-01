@@ -1,3 +1,3 @@
 
 create_scene(MarchingCubesScene.cpp)
-target_link_libraries(marching_cubes marching_cubes_lib)
+target_link_libraries(marching_cubes marching_cubes_lib fast_noise)

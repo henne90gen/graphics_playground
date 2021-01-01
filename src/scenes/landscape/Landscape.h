@@ -5,8 +5,6 @@
 #include <functional>
 #include <memory>
 
-#include <FastNoise.h>
-
 #include "Layers.h"
 #include "gl/IndexBuffer.h"
 #include "gl/Texture.h"
@@ -53,6 +51,7 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> flatShader;
     std::shared_ptr<VertexArray> cubeVA;
 
+    std::shared_ptr<Texture> grassTexture;
     std::shared_ptr<Texture> noiseTexture;
     std::shared_ptr<Texture> normalTexture;
 
@@ -67,8 +66,6 @@ class Landscape : public Scene {
 
     void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
-    void updateNormalTexture(unsigned int pointDensity, const glm::vec3 &movement,
-                             const std::vector<NoiseLayer *> &layers, float power, float normalScale);
     void renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                              glm::vec3 &textureScale);
 };
