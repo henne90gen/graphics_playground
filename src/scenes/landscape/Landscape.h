@@ -64,7 +64,7 @@ class Landscape : public Scene {
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
 
-    void renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
+    void renderGrassTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                             glm::vec3 &textureScale);
     void renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                              glm::vec3 &textureScale);
