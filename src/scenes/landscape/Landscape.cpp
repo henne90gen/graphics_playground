@@ -123,7 +123,7 @@ void Landscape::tick() {
     static auto uvScaleFactor = 20.0F;
     static auto animate = false;
     static auto usePlayerPosition = false;
-    static auto thingToRender = 0;
+    static auto thingToRender = 1;
     static auto power = 1.1F;
     static auto platformHeight = 0.15F;
 
@@ -218,7 +218,7 @@ void Landscape::tick() {
                       layers, power, finiteDifference);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
     } else if (thingToRender == 1) {
-        renderNoiseTexture(textureRotation, texturePosition, textureScale);
+        renderGrassTexture(textureRotation, texturePosition, textureScale);
     } else if (thingToRender == 2) {
         renderNormalTexture(textureRotation, texturePosition, textureScale);
     }
@@ -312,13 +312,13 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void Landscape::renderNoiseTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
+void Landscape::renderGrassTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
                                    glm::vec3 &textureScale) {
     textureShader->bind();
     textureVA->bind();
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
-    noiseTexture->bind();
+    grassTexture->bind();
 
     auto modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, texturePosition);
@@ -329,7 +329,7 @@ void Landscape::renderNoiseTexture(const glm::vec3 &textureRotation, const glm::
     modelMatrix = glm::scale(modelMatrix, textureScale);
     textureShader->setUniform("modelMatrix", modelMatrix);
     textureShader->setUniform("textureSampler", 0);
-    textureShader->setUniform("numChannels", 1);
+    textureShader->setUniform("numChannels", 3);
 
     GL_Call(glDrawElements(GL_TRIANGLES, textureVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 

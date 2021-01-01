@@ -60,8 +60,20 @@ int loadPng(Image &image) {
 
     image.width = png_get_image_width(png_ptr, info_ptr);
     image.height = png_get_image_height(png_ptr, info_ptr);
-    int colorType = png_get_color_type(png_ptr, info_ptr);
     image.bitDepth = png_get_bit_depth(png_ptr, info_ptr);
+    int colorType = png_get_color_type(png_ptr, info_ptr);
+    if (colorType == 0) {
+        image.channels = 1;
+    } else if (colorType == PNG_COLOR_TYPE_RGB) {
+        image.channels = 3;
+    } else if (colorType == 4) {
+        image.channels = 2;
+    } else if (colorType == PNG_COLOR_TYPE_RGBA) {
+        image.channels = 4;
+    } else {
+        std::cout << "Color type " << colorType << " not supported." << std::endl;
+        return 1;
+    }
 
     png_set_interlace_handling(png_ptr);
     png_read_update_info(png_ptr, info_ptr);
@@ -78,32 +90,43 @@ int loadPng(Image &image) {
 
     png_read_image(png_ptr, row_pointers);
 
-    if (colorType == 0) {
-        image.channels = 1;
-    } else if (colorType == PNG_COLOR_TYPE_RGB) {
-        image.channels = 3;
-    } else if (colorType == 4) {
-        image.channels = 2;
-    } else if (colorType == PNG_COLOR_TYPE_RGBA) {
-        image.channels = 4;
-    } else {
-        std::cout << "Color type " << colorType << " not supported." << std::endl;
-        return 1;
-    }
-
-    for (unsigned int y = 0; y < image.height; y++) {
-        png_bytep row = row_pointers[y];
-        for (unsigned int x = 0; x < image.width; x++) {
-            png_bytep px = &(row[x * image.channels]);
-            image.pixels.push_back(px[0]);
-            if (image.channels > 1) {
-                image.pixels.push_back(px[1]);
+    if (image.bitDepth == 8) {
+        for (unsigned int y = 0; y < image.height; y++) {
+            png_bytep row = row_pointers[y];
+            for (unsigned int x = 0; x < image.width; x++) {
+                png_bytep px = &(row[x * image.channels]);
+                image.pixels.push_back(px[0]);
+                if (image.channels > 1) {
+                    image.pixels.push_back(px[1]);
+                }
+                if (image.channels > 2) {
+                    image.pixels.push_back(px[2]);
+                }
+                if (image.channels > 3) {
+                    image.pixels.push_back(px[3]);
+                }
             }
-            if (image.channels > 2) {
-                image.pixels.push_back(px[2]);
-            }
-            if (image.channels > 3) {
-                image.pixels.push_back(px[3]);
+        }
+    } else if (image.bitDepth == 16) {
+#define SCALE_TO_BYTE(pix) static_cast<uint8_t>((static_cast<float>(pix - min) / (max - min)) * 255.0F)
+// #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 4095.0F) * 255.0F)
+// #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 1023.0F) * 255.0F)
+#define SCALE_TO_BYTE(pix) static_cast<unsigned char>(static_cast<float>(pix))
+#define SCALE_TO_BYTE(pix) pix
+        for (unsigned int y = 0; y < image.height; y++) {
+            png_uint_16p row = reinterpret_cast<png_uint_16p>(row_pointers[y]);
+            for (unsigned int x = 0; x < image.width; x++) {
+                png_uint_16p px = &(row[x * image.channels]);
+                image.pixels.push_back(SCALE_TO_BYTE(px[0]));
+                if (image.channels > 1) {
+                    image.pixels.push_back(SCALE_TO_BYTE(px[1]));
+                }
+                if (image.channels > 2) {
+                    image.pixels.push_back(SCALE_TO_BYTE(px[2]));
+                }
+                if (image.channels > 3) {
+                    image.pixels.push_back(SCALE_TO_BYTE(px[3]));
+                }
             }
         }
     }
