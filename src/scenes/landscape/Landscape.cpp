@@ -94,8 +94,9 @@ void showLayerMenu(std::vector<NoiseLayer> &layers) {
 
 void Landscape::tick() {
     static auto thingToRender = 0;
-    static float skyScale = 1000.0F;
+    static auto skyScale = glm::vec3(1000.0F, 500.0F, 1000.0F);
     static auto skyColor = glm::vec3(0.529F, 0.808F, 0.922F);
+    static auto cloudAnimationSpeed = 0.03F;
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
@@ -144,8 +145,9 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         ImGui::Begin("Settings");
-        ImGui::DragFloat("Sky Scale", &skyScale, 0.01F);
+        ImGui::DragFloat3("Sky Scale", reinterpret_cast<float *>(&skyScale));
         ImGui::ColorEdit3("Sky Color", reinterpret_cast<float *>(&skyColor));
+        ImGui::DragFloat("Animation Speed Clouds", &cloudAnimationSpeed, 0.001F);
         ImGui::Separator();
         ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
         ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
@@ -192,8 +194,7 @@ void Landscape::tick() {
                       lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
                       layers, power, finiteDifference);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
-        renderSky(projectionMatrix, viewMatrix, skyScale, skyColor);
-        //        renderClouds(projectionMatrix, viewMatrix);
+        renderSky(projectionMatrix, viewMatrix, skyScale, skyColor, cloudAnimationSpeed);
 
     } else if (thingToRender == 1) {
         static auto textureType = 0;
@@ -423,17 +424,20 @@ void Landscape::initTextures() {
 #endif
 }
 
-void Landscape::renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const float skyScale,
-                          const glm::vec3 &skyColor) {
-    auto skyScaleV3 = glm::vec3(skyScale);
+void Landscape::renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &skyScale,
+                          const glm::vec3 &skyColor, const float animationSpeed) {
+    static float animationTime = 0.0F;
+    animationTime += static_cast<float>(getLastFrameTime());
     cubeVA->bind();
     skyShader->bind();
     cubeVA->setShader(skyShader);
     glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::scale(modelMatrix, skyScaleV3);
+    modelMatrix = glm::scale(modelMatrix, skyScale);
     skyShader->setUniform("modelMatrix", modelMatrix);
     skyShader->setUniform("viewMatrix", viewMatrix);
     skyShader->setUniform("projectionMatrix", projectionMatrix);
     skyShader->setUniform("flatColor", skyColor);
+    skyShader->setUniform("animationTime", animationTime);
+    skyShader->setUniform("animationSpeed", animationSpeed);
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
