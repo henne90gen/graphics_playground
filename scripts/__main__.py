@@ -7,7 +7,7 @@ from .generate_coding_train import generate_coding_train
 from .generate_scene_template import generate_scene_template
 from .copy_resources import run_copy_resources
 from .compile_shader import run_compile_shader
-from . import gis_data
+from . import gis_data, landscape
 
 
 @group()
@@ -56,6 +56,11 @@ def download_gis_data(force: bool):
 @main.command()
 def analyze_gis_data():
     gis_data.analyze_dtm_files()
+
+
+@main.command()
+def download_landscape_textures():
+    landscape.download()
 
 
 @main.command()
