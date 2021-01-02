@@ -3,6 +3,7 @@
 #include "ImageOps.h"
 #include "Main.h"
 #include "util/RenderUtils.h"
+#include "util/TimeUtils.h"
 
 #include <array>
 #include <cmath>
@@ -31,12 +32,6 @@ void Landscape::setup() {
     textureShader->bind();
     textureVA = createQuadVA(textureShader);
 
-    TextureSettings textureSettings = {};
-    textureSettings.dataType = GL_RED;
-    noiseTexture = std::make_shared<Texture>(textureSettings);
-
-    normalTexture = std::make_shared<Texture>();
-
     flatShader = CREATE_DEFAULT_SHADER(landscape_FlatColor);
     flatShader->bind();
     cubeVA = createCubeVA(flatShader);
@@ -47,18 +42,9 @@ void Landscape::setup() {
     shader->compile();
     shader->bind();
 
-    vertexArray = std::make_shared<VertexArray>(shader);
-    generatePoints();
+    vertexArray = generatePoints(shader);
 
-    Image grassImage;
-    if (!ImageOps::load("landscape_resources/textures/Ground037_1K_Color.png", grassImage)) {
-        ImageOps::createCheckerBoard(grassImage);
-    }
-
-    grassTexture = std::make_shared<Texture>();
-    grassImage.applyToTexture(grassTexture);
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    initTextures();
 }
 
 void Landscape::destroy() {}
@@ -115,8 +101,7 @@ void Landscape::tick() {
     static auto playerPosition = glm::vec3(0.0F, -13.0F, 0.0F);
     static auto playerRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     static auto texturePosition = glm::vec3(0.0F);
-    static auto textureRotation = glm::vec3(0.0F);
-    static auto textureScale = glm::vec3(1.0F);
+    static auto textureZoom = 1.0F;
     static auto finiteDifference = 0.01F;
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
@@ -145,14 +130,6 @@ void Landscape::tick() {
           NoiseLayer(7.5F, 2.0F),    //
     };
 
-    static std::vector<NoiseLayer *> normalLayers = {
-          //          new NoiseLayer(1.0F, 1.0F),  //
-          //          new NoiseLayer(0.7F, 3.0F),  //
-          //          new NoiseLayer(0.5F, 5.0F),  //
-          //          new NoiseLayer(0.3F, 7.0F),  //
-          //          new NoiseLayer(0.1F, 10.0F), //
-    };
-
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     if (ImGui::Button("Show Terrain")) {
@@ -162,65 +139,75 @@ void Landscape::tick() {
     if (ImGui::Button("Show Texture")) {
         thingToRender = 1;
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Show Normal Texture")) {
-        thingToRender = 2;
-    }
     ImGui::Separator();
-    ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
-    ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
-    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
-    ImGui::Separator();
-    ImGui::DragFloat3("Texture Scale", reinterpret_cast<float *>(&textureScale), dragSpeed);
-    ImGui::DragFloat3("Texture Position", reinterpret_cast<float *>(&texturePosition), dragSpeed);
-    ImGui::DragFloat3("Texture Rotation", reinterpret_cast<float *>(&textureRotation), dragSpeed);
-    ImGui::Separator();
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
-    ImGui::Separator();
-    ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
-    ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
-    ImGui::Separator();
-    ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
-    ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
-    ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
-    ImGui::DragFloat("Light Power", &lightPower, 0.1F);
-    ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
-    ImGui::DragFloat("Finite Difference", &finiteDifference, 0.001F);
-    ImGui::Separator();
-    ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
-    ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
-    ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
-    ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
-    ImGui::Checkbox("Use Finite Differences", &shaderToggles.useFiniteDifferences);
-    ImGui::DragFloat("uvScaleFactor", &uvScaleFactor);
-    ImGui::Checkbox("Animate", &animate);
-    ImGui::Checkbox("Show Player View", &usePlayerPosition);
-    ImGui::DragFloat("Power", &power, 0.001F);
-    ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
-    ImGui::Separator();
-    ImGui::DragFloat("Tesselation", &tessellation);
     ImGui::End();
 
-    showLayerMenu(layers);
-
-    glm::mat4 viewMatrix;
-    if (usePlayerPosition) {
-        viewMatrix = createViewMatrix(playerPosition, playerRotation);
-    } else {
-        viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-    }
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-
     if (thingToRender == 0) {
+        ImGui::Begin("Settings");
+        ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
+        ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
+        ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
+        ImGui::Separator();
+        ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
+        ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
+        ImGui::Separator();
+        ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
+        ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
+        ImGui::Separator();
+        ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
+        ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
+        ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
+        ImGui::DragFloat("Light Power", &lightPower, 0.1F);
+        ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
+        ImGui::DragFloat("Finite Difference", &finiteDifference, 0.001F);
+        ImGui::Separator();
+        ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
+        ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
+        ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
+        ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
+        ImGui::Checkbox("Use Finite Differences", &shaderToggles.useFiniteDifferences);
+        ImGui::DragFloat("uvScaleFactor", &uvScaleFactor);
+        ImGui::Checkbox("Animate", &animate);
+        ImGui::Checkbox("Show Player View", &usePlayerPosition);
+        ImGui::DragFloat("Power", &power, 0.001F);
+        ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
+        ImGui::Separator();
+        ImGui::DragFloat("Tesselation", &tessellation);
+        ImGui::End();
+
+        showLayerMenu(layers);
+
+        glm::mat4 viewMatrix;
+        if (usePlayerPosition) {
+            viewMatrix = createViewMatrix(playerPosition, playerRotation);
+        } else {
+            viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+        }
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition,
                       lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
                       layers, power, finiteDifference);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
+
     } else if (thingToRender == 1) {
-        renderGrassTexture(textureRotation, texturePosition, textureScale);
-    } else if (thingToRender == 2) {
-        renderNormalTexture(textureRotation, texturePosition, textureScale);
+
+        static auto textureType = 0;
+        ImGui::Begin("Settings");
+        static const std::array<const char *, 3> items = {"Grass", "Dirt", "Rock"};
+        ImGui::Combo("", &textureType, items.data(), items.size());
+        ImGui::Separator();
+        ImGui::DragFloat("Zoom", &textureZoom, dragSpeed);
+        ImGui::DragFloat3("Position", reinterpret_cast<float *>(&texturePosition), dragSpeed);
+        ImGui::End();
+
+        if (textureType == 0) {
+            renderTexture(texturePosition, textureZoom, grassTexture);
+        } else if (textureType == 1) {
+            renderTexture(texturePosition, textureZoom, dirtTexture);
+        } else if (textureType == 2) {
+            renderTexture(texturePosition, textureZoom, rockTexture);
+        }
     }
 }
 
@@ -312,24 +299,20 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void Landscape::renderGrassTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
-                                   glm::vec3 &textureScale) {
+void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom,
+                              const std::shared_ptr<Texture> &texture) {
     textureShader->bind();
     textureVA->bind();
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
-    grassTexture->bind();
+    texture->bind();
 
     auto modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, texturePosition);
-    modelMatrix = glm::rotate(modelMatrix, textureRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, textureRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, textureRotation.z, glm::vec3(0, 0, 1));
-    textureScale.y = textureScale.x * getAspectRatio();
+    glm::vec3 textureScale = glm::vec3(zoom, zoom * getAspectRatio(), 1.0F);
     modelMatrix = glm::scale(modelMatrix, textureScale);
     textureShader->setUniform("modelMatrix", modelMatrix);
     textureShader->setUniform("textureSampler", 0);
-    textureShader->setUniform("numChannels", 3);
 
     GL_Call(glDrawElements(GL_TRIANGLES, textureVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
@@ -337,32 +320,9 @@ void Landscape::renderGrassTexture(const glm::vec3 &textureRotation, const glm::
     textureShader->unbind();
 }
 
-void Landscape::renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
-                                    glm::vec3 &textureScale) {
-    textureShader->bind();
-    textureVA->bind();
+std::shared_ptr<VertexArray> Landscape::generatePoints(const std::shared_ptr<Shader> &shader) {
+    auto result = std::make_shared<VertexArray>(shader);
 
-    GL_Call(glActiveTexture(GL_TEXTURE0));
-    normalTexture->bind();
-
-    auto modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::translate(modelMatrix, texturePosition);
-    modelMatrix = glm::rotate(modelMatrix, textureRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, textureRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, textureRotation.z, glm::vec3(0, 0, 1));
-    textureScale.y = textureScale.x * getAspectRatio();
-    modelMatrix = glm::scale(modelMatrix, textureScale);
-    textureShader->setUniform("modelMatrix", modelMatrix);
-    textureShader->setUniform("textureSampler", 0);
-    textureShader->setUniform("numChannels", 3);
-
-    GL_Call(glDrawElements(GL_TRIANGLES, textureVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-
-    textureVA->unbind();
-    textureShader->unbind();
-}
-
-void Landscape::generatePoints() {
     std::vector<float> quadVertices = {
           0.0F, 0.0F, //
           1.0F, 0.0F, //
@@ -396,7 +356,7 @@ void Landscape::generatePoints() {
           {ShaderDataType::Vec2, "position_in"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
-    vertexArray->addVertexBuffer(buffer);
+    result->addVertexBuffer(buffer);
 
     std::vector<glm::ivec3> indices = {};
     for (int row = 0; row < height; row++) {
@@ -407,5 +367,53 @@ void Landscape::generatePoints() {
         }
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    vertexArray->setIndexBuffer(indexBuffer);
+    result->setIndexBuffer(indexBuffer);
+
+    return result;
+}
+
+std::shared_ptr<Texture> createTextureFromImage(const Image &image) {
+    auto texture = std::make_shared<Texture>();
+    image.applyToTexture(texture);
+
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+    return texture;
+}
+
+std::shared_ptr<Texture> loadTexture(const std::string &fileName) {
+    Image image;
+    if (!ImageOps::load("landscape_resources/textures/" + fileName, image)) {
+        ImageOps::createCheckerBoard(image);
+    }
+
+    return createTextureFromImage(image);
+}
+
+void Landscape::initTextures() {
+    RECORD_SCOPE();
+#define LOAD_TEXTURES_PARALLEL 1
+#if LOAD_TEXTURES_PARALLEL
+    const std::array<std::string, 3> fileNames = {
+          "Ground037_1K_Color.png", //
+          "Ground039_1K_Color.png", //
+          "Ground02_1K_Color.png",  //
+    };
+    std::array<Image, 3> images = {};
+#pragma omp parallel for
+    for (int i = 0; i < images.size(); i++) {
+        if (!ImageOps::load("landscape_resources/textures/" + fileNames[i], images[i])) {
+            ImageOps::createCheckerBoard(images[i]);
+        }
+    }
+
+    grassTexture = createTextureFromImage(images[0]);
+    dirtTexture = createTextureFromImage(images[1]);
+    rockTexture = createTextureFromImage(images[2]);
+#else
+    grassTexture = loadTexture("Ground037_1K_Color.png");
+    dirtTexture = loadTexture("Ground039_1K_Color.png");
+    rockTexture = loadTexture("Ground022_1K_Color.png");
+#endif
 }
