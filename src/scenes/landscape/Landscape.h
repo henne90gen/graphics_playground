@@ -42,14 +42,14 @@ class Landscape : public Scene {
     void destroy() override;
 
   private:
-    std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
-
-    std::shared_ptr<Shader> textureShader;
     std::shared_ptr<VertexArray> textureVA;
-
-    std::shared_ptr<Shader> flatShader;
     std::shared_ptr<VertexArray> cubeVA;
+
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<Shader> textureShader;
+    std::shared_ptr<Shader> flatShader;
+    std::shared_ptr<Shader> skyShader;
 
     std::shared_ptr<Texture> grassTexture;
     std::shared_ptr<Texture> dirtTexture;
@@ -63,7 +63,10 @@ class Landscape : public Scene {
                        float tessellation, const std::vector<NoiseLayer> &vector, float power, float finiteDifference);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
+    void renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float skyScale,
+                   const glm::vec3 &skyColor);
 
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
     void initTextures();
+    std::shared_ptr<VertexArray> createSkyCubeVA(std::shared_ptr<Shader> &shader);
 };
