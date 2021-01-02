@@ -3,7 +3,6 @@
 #include "ImageOps.h"
 #include "Main.h"
 #include "util/RenderUtils.h"
-#include "util/TimeUtils.h"
 
 #include <array>
 #include <cmath>
@@ -24,11 +23,12 @@ DEFINE_TESS_CONTROL_SHADER(landscape_Landscape)
 DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
 
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
-
-DEFINE_DEFAULT_SHADERS(landscape_NoiseTexture)
+DEFINE_DEFAULT_SHADERS(landscape_Texture)
+DEFINE_DEFAULT_SHADERS(landscape_Sky)
 
 void Landscape::setup() {
-    textureShader = CREATE_DEFAULT_SHADER(landscape_NoiseTexture);
+    skyShader = CREATE_DEFAULT_SHADER(landscape_Sky);
+    textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
     textureVA = createQuadVA(textureShader);
 
@@ -94,6 +94,8 @@ void showLayerMenu(std::vector<NoiseLayer> &layers) {
 
 void Landscape::tick() {
     static auto thingToRender = 0;
+    static float skyScale = 1000.0F;
+    static auto skyColor = glm::vec3(0.529F, 0.808F, 0.922F);
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
@@ -142,6 +144,9 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         ImGui::Begin("Settings");
+        ImGui::DragFloat("Sky Scale", &skyScale, 0.01F);
+        ImGui::ColorEdit3("Sky Color", reinterpret_cast<float *>(&skyColor));
+        ImGui::Separator();
         ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
         ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
         ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
@@ -187,6 +192,8 @@ void Landscape::tick() {
                       lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
                       layers, power, finiteDifference);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
+        renderSky(projectionMatrix, viewMatrix, skyScale, skyColor);
+        //        renderClouds(projectionMatrix, viewMatrix);
 
     } else if (thingToRender == 1) {
         static auto textureType = 0;
@@ -286,6 +293,7 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
                             const glm::vec3 &lightPosition, const glm::vec3 &lightColor) {
     cubeVA->bind();
     flatShader->bind();
+    cubeVA->setShader(flatShader);
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, lightPosition);
     flatShader->setUniform("modelMatrix", modelMatrix);
@@ -392,7 +400,7 @@ void Landscape::initTextures() {
     const std::array<std::string, 3> fileNames = {
           "Ground037_1K_Color.png", //
           "Ground039_1K_Color.png", //
-          "Ground022_1K_Color.png",  //
+          "Ground022_1K_Color.png", //
     };
 
 #define LOAD_TEXTURES_PARALLEL 1
@@ -413,4 +421,19 @@ void Landscape::initTextures() {
     dirtTexture = loadTexture(fileNames[1]);
     rockTexture = loadTexture(fileNames[2]);
 #endif
+}
+
+void Landscape::renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const float skyScale,
+                          const glm::vec3 &skyColor) {
+    auto skyScaleV3 = glm::vec3(skyScale);
+    cubeVA->bind();
+    skyShader->bind();
+    cubeVA->setShader(skyShader);
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    modelMatrix = glm::scale(modelMatrix, skyScaleV3);
+    skyShader->setUniform("modelMatrix", modelMatrix);
+    skyShader->setUniform("viewMatrix", viewMatrix);
+    skyShader->setUniform("projectionMatrix", projectionMatrix);
+    skyShader->setUniform("flatColor", skyColor);
+    GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
