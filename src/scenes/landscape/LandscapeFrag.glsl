@@ -54,17 +54,15 @@ uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightPower;
 
-//uniform sampler2D normalSampler;
 uniform sampler2D grassTexture;
+uniform sampler2D dirtTexture;
+uniform sampler2D rockTexture;
 
-vec3 grassColor = vec3(19.0F/255.0F, 133.0F/255.0F, 16.0F/255.0F);
-vec3 rockColor = vec3(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F);
+//vec3 grassColor = vec3(19.0F/255.0F, 133.0F/255.0F, 16.0F/255.0F);
+//vec3 rockColor = vec3(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F);
 vec3 snowColor = vec3(255.0F/255.0F, 250.0F/255.0F, 250.0F/255.0F);
 
 vec3 getSurfaceColor(float height) {
-    vec3 grass = texture(grassTexture, uv_frag_in).rgb;
-    return grass;
-
     float noiseMin = 0.0F;
     float noiseMax = 0.0F;
     // TODO this can be done in the TES instead to increase performance
@@ -79,17 +77,24 @@ vec3 getSurfaceColor(float height) {
     height /= noiseMax - noiseMin;
 
     if (height < grassLevel-blur) {
+        vec3 grassColor = texture(grassTexture, uv_frag_in).rgb;
         return grassColor;
     } else if (height < grassLevel+blur) {
+        vec3 grassColor = texture(grassTexture, uv_frag_in).rgb;
+        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
         float t = (height-(grassLevel-blur)) / (2.0F*blur);
-        return mix(grassColor, rockColor, t);
+        return mix(grassColor, dirtColor, t);
     } else if (height < rockLevel-blur){
-        return rockColor;
+        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
+        return dirtColor;
     } else if (height < rockLevel+blur) {
+        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
+        vec3 rockColor = texture(rockTexture, uv_frag_in).rgb;
         float t = (height-(rockLevel-blur)) / (2.0F*blur);
-        return mix(rockColor, snowColor, t);
+        return mix(dirtColor, rockColor, t);
     } else {
-        return snowColor;
+        vec3 rockColor = texture(rockTexture, uv_frag_in).rgb;
+        return rockColor;
     }
 }
 

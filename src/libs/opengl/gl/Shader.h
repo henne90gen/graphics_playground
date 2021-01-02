@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Texture.h"
 #include "util/FileUtils.h"
 #include "util/OpenGLUtils.h"
 
@@ -72,6 +73,12 @@ class Shader {
     void setUniform(const std::string &name, float f) { GL_Call(glUniform1f(getUniformLocation(name), f)); }
 
     void setUniform(const std::string &name, int i) { GL_Call(glUniform1i(getUniformLocation(name), i)); }
+
+    void setUniform(const std::string &name, const std::shared_ptr<Texture> &texture, const GLuint slot) {
+        GL_Call(glActiveTexture(slot));
+        texture->bind();
+        setUniform(name, static_cast<int>(slot - 0x84C0));
+    }
 
     void setUniform(const std::string &name, bool b) { setUniform(name, (int)b); }
 

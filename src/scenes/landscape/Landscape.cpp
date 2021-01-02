@@ -93,6 +93,7 @@ void showLayerMenu(std::vector<NoiseLayer> &layers) {
 }
 
 void Landscape::tick() {
+    static auto thingToRender = 0;
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
@@ -100,15 +101,12 @@ void Landscape::tick() {
     static auto cameraRotation = glm::vec3(0.5F, -0.9F, 0.0F);
     static auto playerPosition = glm::vec3(0.0F, -13.0F, 0.0F);
     static auto playerRotation = glm::vec3(0.0F, 0.0F, 0.0F);
-    static auto texturePosition = glm::vec3(0.0F);
-    static auto textureZoom = 1.0F;
     static auto finiteDifference = 0.01F;
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
     static auto uvScaleFactor = 20.0F;
     static auto animate = false;
     static auto usePlayerPosition = false;
-    static auto thingToRender = 1;
     static auto power = 1.1F;
     static auto platformHeight = 0.15F;
 
@@ -191,8 +189,10 @@ void Landscape::tick() {
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
 
     } else if (thingToRender == 1) {
-
         static auto textureType = 0;
+        static auto texturePosition = glm::vec3(0.0F);
+        static auto textureZoom = 1.0F;
+
         ImGui::Begin("Settings");
         static const std::array<const char *, 3> items = {"Grass", "Dirt", "Rock"};
         ImGui::Combo("", &textureType, items.data(), items.size());
@@ -263,13 +263,9 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("uvScaleFactor", uvScaleFactor);
     shader->setUniform("power", power);
 
-    GL_Call(glActiveTexture(GL_TEXTURE0));
-    grassTexture->bind();
-    shader->setUniform("grassTexture", 0);
-
-    //    GL_Call(glActiveTexture(GL_TEXTURE1));
-    //    normalTexture->bind();
-    //    shader->setUniform("normalSampler", 1);
+    shader->setUniform("grassTexture", grassTexture, GL_TEXTURE0);
+    shader->setUniform("dirtTexture", dirtTexture, GL_TEXTURE1);
+    shader->setUniform("rockTexture", rockTexture, GL_TEXTURE2);
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
@@ -393,13 +389,14 @@ std::shared_ptr<Texture> loadTexture(const std::string &fileName) {
 
 void Landscape::initTextures() {
     RECORD_SCOPE();
-#define LOAD_TEXTURES_PARALLEL 1
-#if LOAD_TEXTURES_PARALLEL
     const std::array<std::string, 3> fileNames = {
           "Ground037_1K_Color.png", //
           "Ground039_1K_Color.png", //
-          "Ground02_1K_Color.png",  //
+          "Ground022_1K_Color.png",  //
     };
+
+#define LOAD_TEXTURES_PARALLEL 1
+#if LOAD_TEXTURES_PARALLEL
     std::array<Image, 3> images = {};
 #pragma omp parallel for
     for (int i = 0; i < images.size(); i++) {
@@ -412,8 +409,8 @@ void Landscape::initTextures() {
     dirtTexture = createTextureFromImage(images[1]);
     rockTexture = createTextureFromImage(images[2]);
 #else
-    grassTexture = loadTexture("Ground037_1K_Color.png");
-    dirtTexture = loadTexture("Ground039_1K_Color.png");
-    rockTexture = loadTexture("Ground022_1K_Color.png");
+    grassTexture = loadTexture(fileNames[0]);
+    dirtTexture = loadTexture(fileNames[1]);
+    rockTexture = loadTexture(fileNames[2]);
 #endif
 }
