@@ -198,7 +198,7 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
     }
 
     if (!std::filesystem::exists(fileName)) {
-        std::cout << "File does not exist" << std::endl;
+        std::cout << "File '" << fileName << "' does not exist" << std::endl;
         return false;
     }
 

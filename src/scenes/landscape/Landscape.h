@@ -52,10 +52,10 @@ class Landscape : public Scene {
     std::shared_ptr<VertexArray> cubeVA;
 
     std::shared_ptr<Texture> grassTexture;
-    std::shared_ptr<Texture> noiseTexture;
-    std::shared_ptr<Texture> normalTexture;
+    std::shared_ptr<Texture> dirtTexture;
+    std::shared_ptr<Texture> rockTexture;
 
-    void generatePoints();
+    std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
                        const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,
@@ -64,8 +64,6 @@ class Landscape : public Scene {
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
 
-    void renderGrassTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
-                            glm::vec3 &textureScale);
-    void renderNormalTexture(const glm::vec3 &textureRotation, const glm::vec3 &texturePosition,
-                             glm::vec3 &textureScale);
+    void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
+    void initTextures();
 };
