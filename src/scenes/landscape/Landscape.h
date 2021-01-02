@@ -16,8 +16,8 @@ struct TessellationLevels {
 };
 
 struct TerrainLevels {
-    float grassLevel = 0.25F;
-    float rockLevel = 0.75F;
+    float grassLevel = 0.4F;
+    float rockLevel = 1.0F;
     float blur = 0.05F;
 };
 
