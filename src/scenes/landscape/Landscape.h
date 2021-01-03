@@ -64,7 +64,7 @@ class Landscape : public Scene {
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
     void renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &skyScale,
-                   const glm::vec3 &skyColor, float cloudAnimationSpeed);
+                   const glm::vec3 &skyColor, const float animationSpeed, const float cloudBlend);
 
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
     void initTextures();
