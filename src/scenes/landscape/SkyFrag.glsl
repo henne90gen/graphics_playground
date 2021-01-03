@@ -5,6 +5,7 @@ in vec3 position_frag_in;
 uniform vec3 flatColor;
 uniform float animationTime;
 uniform float animationSpeed;
+uniform float cloudBlend;
 
 out vec4 color;
 
@@ -48,9 +49,9 @@ float fbm(vec2 n) {
 }
 
 // https://www.shadertoy.com/view/4tdSWr
-vec4 cloudColor(vec4 color, float iTime) {
-    // TODO refactor this method (extract recalculation of uv coordinates)
-    vec2 uv = position_frag_in.xz + 0.5F;
+vec4 cloudColor(vec3 skycolor, float iTime) {
+    vec2 uv_ = position_frag_in.xz + 0.5F;
+    vec2 uv = uv_;
     float time = iTime * animationSpeed;
     float q = fbm(uv * cloudscale * 0.5);
 
@@ -67,7 +68,7 @@ vec4 cloudColor(vec4 color, float iTime) {
 
     // noise shape
     float f = 0.0;
-    uv = position_frag_in.xz + 0.5F;
+    uv = uv_;
     uv *= cloudscale;
     uv -= q - time;
     weight = 0.7;
@@ -82,7 +83,7 @@ vec4 cloudColor(vec4 color, float iTime) {
     // noise color
     float c = 0.0;
     time = iTime * animationSpeed * 2.0;
-    uv = position_frag_in.xz + 0.5F;
+    uv = uv_;
     uv *= cloudscale*2.0;
     uv -= q - time;
     weight = 0.4;
@@ -95,7 +96,7 @@ vec4 cloudColor(vec4 color, float iTime) {
     // noise ridge colour
     float c1 = 0.0;
     time = iTime * animationSpeed * 3.0;
-    uv = position_frag_in.xz + 0.5F;
+    uv = uv_;
     uv *= cloudscale*3.0;
     uv -= q - time;
     weight = 0.4;
@@ -107,16 +108,21 @@ vec4 cloudColor(vec4 color, float iTime) {
 
     c += c1;
 
-    vec3 skycolor = color.xyz;
     vec3 cloudcolor = vec3(1.1, 1.1, 0.9) * clamp((clouddark + cloudlight*c), 0.0, 1.0);
 
     f = cloudcover + cloudalpha*f*r;
 
     vec3 result = mix(skycolor, clamp(skytint * skycolor + cloudcolor, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
 
-    // TODO fade into the skycolor towards the edges
-    uv = position_frag_in.xz + 0.5F;
-    result = mix(skycolor, result, uv.x);
+    uv = uv_;
+    float oneMinusB = 1.0F - cloudBlend;
+    float bInv = 1.0F / cloudBlend;
+    float tRight = 1.0F - clamp((uv.x - oneMinusB) * bInv, 0.0F, 1.0F);
+    float tLeft = clamp(uv.x * bInv, 0.0F, 1.0F);
+    float tTop = 1.0F - clamp((uv.y - oneMinusB) * bInv, 0.0F, 1.0F);
+    float tBottom = clamp(uv.y * bInv, 0.0F, 1.0F);
+    float t = tRight * tLeft * tTop * tBottom;
+    result = mix(skycolor, result, t);
 
     return vec4(result, 1.0);
 }
@@ -125,6 +131,6 @@ void main() {
     float height = position_frag_in.y;
     color = vec4(flatColor * (-height + 1.4F), 1.0F);
     if (height >= 0.4999F) {
-        color = cloudColor(color, animationTime);
+        color = cloudColor(color.xyz, animationTime);
     }
 }
