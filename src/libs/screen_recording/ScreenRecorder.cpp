@@ -45,8 +45,8 @@ void ScreenRecorder::saveScreenshot(unsigned int windowWidth, unsigned int windo
     image.height = windowHeight;
     image.channels = 3;
 
-    const int numberOfPixels = image.width * image.height * image.channels;
-    image.pixels = std::vector<unsigned char>(numberOfPixels);
+    const unsigned int numberOfPixels = image.width * image.height * image.channels;
+    image.pixels = std::vector<uint8_t>(numberOfPixels);
 
     GL_Call(glPixelStorei(GL_PACK_ALIGNMENT, 1));
     GL_Call(glReadBuffer(GL_FRONT));

@@ -4,7 +4,6 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <jpeglib.h>
@@ -74,6 +73,7 @@ int loadPng(Image &image) {
         std::cout << "Color type " << colorType << " not supported." << std::endl;
         return 1;
     }
+    image.pixels = std::vector<uint8_t>(image.width * image.height * image.channels);
 
     png_set_interlace_handling(png_ptr);
     png_read_update_info(png_ptr, info_ptr);
@@ -91,41 +91,42 @@ int loadPng(Image &image) {
     png_read_image(png_ptr, row_pointers);
 
     if (image.bitDepth == 8) {
-        for (unsigned int y = 0; y < image.height; y++) {
+        for (int y = 0; y < image.height; y++) {
             png_bytep row = row_pointers[y];
             for (unsigned int x = 0; x < image.width; x++) {
                 png_bytep px = &(row[x * image.channels]);
-                image.pixels.push_back(px[0]);
+                image.pixels[y * image.width * image.channels + x * image.channels] = px[0];
                 if (image.channels > 1) {
-                    image.pixels.push_back(px[1]);
+                    image.pixels[y * image.width * image.channels + x * image.channels + 1] = px[1];
                 }
                 if (image.channels > 2) {
-                    image.pixels.push_back(px[2]);
+                    image.pixels[y * image.width * image.channels + x * image.channels + 2] = px[2];
                 }
                 if (image.channels > 3) {
-                    image.pixels.push_back(px[3]);
+                    image.pixels[y * image.width * image.channels + x * image.channels + 3] = px[3];
                 }
             }
         }
     } else if (image.bitDepth == 16) {
+        // TODO somehow we don't need to scale the values from uint16 (0-65535) to uint8 (0-255)
 #define SCALE_TO_BYTE(pix) static_cast<uint8_t>((static_cast<float>(pix - min) / (max - min)) * 255.0F)
 // #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 4095.0F) * 255.0F)
 // #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 1023.0F) * 255.0F)
 #define SCALE_TO_BYTE(pix) static_cast<unsigned char>(static_cast<float>(pix))
 #define SCALE_TO_BYTE(pix) pix
-        for (unsigned int y = 0; y < image.height; y++) {
+        for (int y = 0; y < image.height; y++) {
             png_uint_16p row = reinterpret_cast<png_uint_16p>(row_pointers[y]);
-            for (unsigned int x = 0; x < image.width; x++) {
+            for (int x = 0; x < image.width; x++) {
                 png_uint_16p px = &(row[x * image.channels]);
-                image.pixels.push_back(SCALE_TO_BYTE(px[0]));
+                image.pixels[y * image.width * image.channels + x * image.channels] = SCALE_TO_BYTE(px[0]);
                 if (image.channels > 1) {
-                    image.pixels.push_back(SCALE_TO_BYTE(px[1]));
+                    image.pixels[y * image.width * image.channels + x * image.channels + 1] = SCALE_TO_BYTE(px[1]);
                 }
                 if (image.channels > 2) {
-                    image.pixels.push_back(SCALE_TO_BYTE(px[2]));
+                    image.pixels[y * image.width * image.channels + x * image.channels + 2] = SCALE_TO_BYTE(px[2]);
                 }
                 if (image.channels > 3) {
-                    image.pixels.push_back(SCALE_TO_BYTE(px[3]));
+                    image.pixels[y * image.width * image.channels + x * image.channels + 3] = SCALE_TO_BYTE(px[3]);
                 }
             }
         }
@@ -294,7 +295,7 @@ void ImageOps::createCheckerBoard(Image &image) {
     image.width = 128;
     image.height = 128;
     image.channels = 4;
-    image.pixels = std::vector<unsigned char>(image.width * image.height * image.channels);
+    image.pixels = std::vector<uint8_t>(image.width * image.height * image.channels);
     for (unsigned long i = 0; i < image.pixels.size() / image.channels; i++) {
         const float fullBrightness = 255.0F;
         float r = fullBrightness;

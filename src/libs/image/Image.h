@@ -1,8 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <gl/Texture.h>
 
@@ -12,7 +12,7 @@ struct Image {
     unsigned int height = 0;
     char channels = 3;
     char bitDepth = 8;
-    std::vector<unsigned char> pixels;
+    std::vector<uint8_t> pixels;
 
     void applyToTexture(std::shared_ptr<Texture> &texture) const {
         if (channels == 3) {
