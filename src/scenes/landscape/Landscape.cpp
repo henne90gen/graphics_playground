@@ -112,6 +112,7 @@ void Landscape::tick() {
     static auto animate = false;
     static auto usePlayerPosition = false;
     static auto power = 1.1F;
+    static auto bowlStrength = 20.0F;
     static auto platformHeight = 0.15F;
 
     static auto lightPower = 1.0F;
@@ -177,6 +178,7 @@ void Landscape::tick() {
         ImGui::Checkbox("Animate", &animate);
         ImGui::Checkbox("Show Player View", &usePlayerPosition);
         ImGui::DragFloat("Power", &power, 0.001F);
+        ImGui::DragFloat("Bowl Strength", &bowlStrength, 0.1F);
         ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
         ImGui::Separator();
         ImGui::DragFloat("Tesselation", &tessellation);
@@ -194,7 +196,7 @@ void Landscape::tick() {
 
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition,
                       lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
-                      layers, power, finiteDifference);
+                      layers, power, bowlStrength, finiteDifference, platformHeight);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
         renderSky(projectionMatrix, viewMatrix, skyScale, skyColor, cloudAnimationSpeed, cloudBlend);
 
@@ -224,10 +226,11 @@ void Landscape::tick() {
 void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                               const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                               const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
-                              const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,
-                              const TerrainLevels &levels, const ShaderToggles &shaderToggles, float uvScaleFactor,
-                              const float tessellation, const std::vector<NoiseLayer> &layers, const float power,
-                              const float finiteDifference) {
+                              const glm::vec3 &lightDirection, const glm::vec3 &lightColor, const float lightPower,
+                              const TerrainLevels &levels, const ShaderToggles &shaderToggles,
+                              const float uvScaleFactor, const float tessellation,
+                              const std::vector<NoiseLayer> &vector, const float power, const float bowlStrength,
+                              const float finiteDifference, const float platformHeight) {
     shader->bind();
     vertexArray->bind();
 
@@ -249,12 +252,12 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
 
     shader->setUniform("tessellation", tessellation);
 
-    for (int i = 0; i < static_cast<int64_t>(layers.size()); i++) {
-        shader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", layers[i].amplitude);
-        shader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", layers[i].frequency);
-        shader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", layers[i].enabled);
+    for (int i = 0; i < static_cast<int64_t>(vector.size()); i++) {
+        shader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", vector[i].amplitude);
+        shader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", vector[i].frequency);
+        shader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", vector[i].enabled);
     }
-    shader->setUniform("numNoiseLayers", static_cast<int>(layers.size()));
+    shader->setUniform("numNoiseLayers", static_cast<int>(vector.size()));
     shader->setUniform("finiteDifference", finiteDifference);
 
     shader->setUniform("grassLevel", levels.grassLevel);
@@ -272,6 +275,8 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     shader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
     shader->setUniform("uvScaleFactor", uvScaleFactor);
     shader->setUniform("power", power);
+    shader->setUniform("bowlStrength", bowlStrength);
+    shader->setUniform("platformHeight", platformHeight);
 
     shader->setUniform("grassTexture", grassTexture, GL_TEXTURE0);
     shader->setUniform("dirtTexture", dirtTexture, GL_TEXTURE1);

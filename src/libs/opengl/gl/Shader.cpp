@@ -183,7 +183,7 @@ void Shader::bind() {
     bool recompile = false;
     // NOTE we need to wait a little bit (100ms) before actually reading the file, because Windows gives us an empty
     // file otherwise
-    const int64_t waitTimeNano = 100000000;
+    const int64_t waitTimeNano = 200 * 1000 * 1000;
     const auto currentTime = std::chrono::system_clock::now();
     const int64_t currentTimeNano =
           std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime).time_since_epoch().count();

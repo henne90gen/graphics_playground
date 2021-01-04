@@ -16,6 +16,8 @@ uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform float uvScaleFactor;
 uniform float power;
+uniform float bowlStrength;
+uniform float platformHeight;
 
 const int MAX_NUM_NOISE_LAYERS = 15;
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
@@ -105,6 +107,67 @@ vec3 snoise2(vec2 P) {
     return vec3(dot(m4, grad_results), xderiv, yderiv) * FINAL_NORMALIZATION;
 }
 
+void applyPower(inout vec3 noise, inout float noiseMax) {
+    // f(x) = x^p
+    noise.x = pow(noise.x, power);
+    noiseMax = pow(noiseMax, power);
+
+    // f(x) = g(x)^p -> f'(x) = p*g(x)^(p-1) * g'(x)
+    noise.y = power * pow(noise.x, power - 1.0F) * noise.y;
+    noise.z = power * pow(noise.x, power - 1.0F) * noise.z;
+}
+
+void applyBowlEffect(inout vec3 noise, inout float noiseMax, in vec2 pos) {
+    // f(x,y) = g(x,y) + ((x/500)^2 + (y/500)^2) * bS
+    vec2 p = pos;
+    p /= 500.0F;
+    p *= p;
+    noise.x += (p.x + p.y) * bowlStrength;
+    noiseMax += (p.x + p.y) * bowlStrength;
+
+    // f'(y) = g'(y) + (x/125000) * bS
+    noise.y += pos.x/125000.0F * bowlStrength;
+    // f'(x) = g'(x) + (y/125000) * bS
+    noise.z += pos.y/125000.0F * bowlStrength;
+}
+
+void applyPlatform(inout vec3 noise, in float noiseMax, in vec2 pos) {
+    int width = 1000;
+    int height = 1000;
+    float cx = 0.0F;
+    float cy = 0.0F;
+    float platform = float(width) / 15.0F;
+    float smoothing = float(width) / 20.0F;
+    float posM = 1.0F / smoothing;
+    float posN = 0.0F - posM * (cx - platform - smoothing);
+    float negM = -1.0F / smoothing;
+    float negN = 0.0F - negM * (cx + platform + smoothing);
+    float w = 1.0F;
+    if (pos.x < cx - platform - smoothing || pos.x > cx + platform + smoothing || pos.y < cy - platform - smoothing || pos.y > cy + platform + smoothing) {
+        w = 0.0F;
+    } else if (pos.x > cx - platform && pos.x < cx + platform && pos.y > cy - platform && pos.y < cy + platform) {
+        w = 1.0F;
+    } else {
+        bool isLeftEdge = pos.x <= cx - platform && pos.x >= cx - platform - smoothing;
+        bool isRightEdge = pos.x >= cx + platform && pos.x <= cx + platform + smoothing;
+        bool isTopEdge = pos.y >= cy + platform && pos.y <= cy + platform + smoothing;
+        bool isBottomEdge = pos.y <= cy - platform && pos.y >= cy - platform - smoothing;
+        if (isLeftEdge) {
+            w *= posM * pos.x + posN;
+        } else if (isRightEdge) {
+            w *= negM * pos.x + negN;
+        }
+        if (isBottomEdge) {
+            w *= posM * pos.y + posN;
+        } else if (isTopEdge) {
+            w *= negM * pos.y + negN;
+        }
+    }
+    noise.x = (1.0F - w) * noise.x + w * platformHeight * noiseMax;
+    noise.y = (1.0F - w) * noise.y;
+    noise.z = (1.0F - w) * noise.z;
+}
+
 vec4 generateHeight(vec2 pos) {
     vec3 noise = vec3(0.0F);
     float noiseMin = 0.0F;
@@ -139,11 +202,9 @@ vec4 generateHeight(vec2 pos) {
     noise.x -= noiseMin;
     noiseMax -= noiseMin;
 
-    noise.x = pow(noise.x, power);// g(x) = f(x)^p -> g'(x) = p*f(x)^(p-1) * f'(x)
-    noise.y = power * pow(noise.x, power - 1.0F) * noise.y;
-    noise.z = power * pow(noise.x, power - 1.0F) * noise.z;
-
-    noiseMax = pow(noiseMax, power);
+    applyPower(noise, noiseMax);
+    applyBowlEffect(noise, noiseMax, pos);
+    applyPlatform(noise, noiseMax, pos);
 
     float normalizedHeight = noise.x / noiseMax;
     vec4 result = vec4(noise, normalizedHeight);
