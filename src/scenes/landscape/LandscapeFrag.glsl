@@ -304,11 +304,12 @@ vec3 render_grass(vec3 normal, vec2 uv, vec3 sight_dir, vec3 light_dir, vec3 lig
 // -------------------- End -------------------------
 
 vec3 getSurfaceColor(float height) {
+    const float grassDamper = 0.75F;
     if (height < grassLevel-blur) {
-        vec3 grassColor = texture(grassTexture, uv_frag_in).rgb;
+        vec3 grassColor = texture(grassTexture, uv_frag_in).rgb * grassDamper;
         return grassColor;
     } else if (height < grassLevel+blur) {
-        vec3 grassColor = texture(grassTexture, uv_frag_in).rgb;
+        vec3 grassColor = texture(grassTexture, uv_frag_in).rgb * grassDamper;
         vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
         float t = (height-(grassLevel-blur)) / (2.0F*blur);
         return mix(grassColor, dirtColor, t);
