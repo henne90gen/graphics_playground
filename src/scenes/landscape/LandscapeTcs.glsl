@@ -9,6 +9,7 @@ uniform float tessellation;
 out vec2 position_tes_in[];
 
 void main() {
+    // TODO calculate tessellation with distance to camera
     gl_TessLevelInner[0] = tessellation;
 
     gl_TessLevelOuter[0] = tessellation;

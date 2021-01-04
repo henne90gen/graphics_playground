@@ -55,7 +55,7 @@ class Landscape : public Scene {
     std::shared_ptr<Texture> dirtTexture;
     std::shared_ptr<Texture> rockTexture;
 
-    std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
+    static std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
                        const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,

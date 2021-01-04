@@ -28,6 +28,7 @@ out vec3 normal_frag_in;
 out vec3 tangent_frag_in;
 out vec3 bitangent_frag_in;
 out vec3 model_position;
+out float normalized_height;
 
 // FAST32_hash
 // A very fast hashing function.  Requires 32bit support.
@@ -104,9 +105,10 @@ vec3 snoise2(vec2 P) {
     return vec3(dot(m4, grad_results), xderiv, yderiv) * FINAL_NORMALIZATION;
 }
 
-vec3 generateHeight(vec2 pos) {
+vec4 generateHeight(vec2 pos) {
     vec3 noise = vec3(0.0F);
     float noiseMin = 0.0F;
+    float noiseMax = 0.0F;
 
     for (int i = 0; i < numNoiseLayers; i++) {
         if (!noiseLayers[i].enabled) {
@@ -130,16 +132,22 @@ vec3 generateHeight(vec2 pos) {
             noise += n;
         }
 
-        noiseMin -= noiseLayers[i].amplitude;
+        noiseMin -= amplitude;
+        noiseMax += amplitude;
     }
 
     noise.x -= noiseMin;
+    noiseMax -= noiseMin;
 
     noise.x = pow(noise.x, power);// g(x) = f(x)^p -> g'(x) = p*f(x)^(p-1) * f'(x)
     noise.y = power * pow(noise.x, power - 1.0F) * noise.y;
     noise.z = power * pow(noise.x, power - 1.0F) * noise.z;
 
-    return noise;
+    noiseMax = pow(noiseMax, power);
+
+    float normalizedHeight = noise.x / noiseMax;
+    vec4 result = vec4(noise, normalizedHeight);
+    return result;
 }
 
 void main() {
@@ -147,7 +155,8 @@ void main() {
     pos     += gl_TessCoord.y * position_tes_in[1];
     pos     += gl_TessCoord.z * position_tes_in[2];
 
-    vec3 noise = generateHeight(pos);
+    vec4 noise = generateHeight(pos);
+    normalized_height = noise.w;
     tangent_frag_in = vec3(1.0F, noise.y, 0.0F);
     bitangent_frag_in = vec3(0.0F, noise.z, 1.0F);
     normal_frag_in = -normalize(cross(tangent_frag_in, bitangent_frag_in));
