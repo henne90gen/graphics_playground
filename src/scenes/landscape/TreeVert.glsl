@@ -271,6 +271,7 @@ void main() {
 
     vec3 position = a_Position + vec3(pos.x, noise.x + 0.5F, pos.y);
 
+    // TODO try to place tree 10 times and then discard, if still no valid position was found
     if (discardTree(pos, noise)) {
         colorFactor = 0.0F;
         position.y = 0.0F;

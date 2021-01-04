@@ -304,6 +304,7 @@ vec3 render_grass(vec3 normal, vec2 uv, vec3 sight_dir, vec3 light_dir, vec3 lig
 // -------------------- End -------------------------
 
 vec3 getSurfaceColor(float height) {
+    // TODO make color dependent on normal
     const float grassDamper = 0.75F;
     if (height < grassLevel-blur) {
         vec3 grassColor = texture(grassTexture, uv_frag_in).rgb * grassDamper;
