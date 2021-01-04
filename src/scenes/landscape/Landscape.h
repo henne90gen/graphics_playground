@@ -50,6 +50,7 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
     std::shared_ptr<Shader> skyShader;
+    std::shared_ptr<Shader> treeShader;
 
     std::shared_ptr<Texture> grassTexture;
     std::shared_ptr<Texture> dirtTexture;
@@ -60,12 +61,15 @@ class Landscape : public Scene {
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
                        const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,
                        const TerrainLevels &levels, const ShaderToggles &shaderToggles, float uvScaleFactor,
-                       float tessellation, const std::vector<NoiseLayer> &vector, float power, float bowlStrength,
+                       float tessellation, const std::vector<NoiseLayer> &noiseLayers, float power, float bowlStrength,
                        float finiteDifference, float platformHeight);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
+    void renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, int treeCount,
+                     const std::vector<NoiseLayer> &noiseLayers, const ShaderToggles &shaderToggles,
+                     float finiteDifference, float power, float bowlStrength, float platformHeight);
     void renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &skyScale,
-                   const glm::vec3 &skyColor, const float animationSpeed, const float cloudBlend);
+                   const glm::vec3 &skyColor, float animationSpeed, float cloudBlend);
 
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
     void initTextures();
