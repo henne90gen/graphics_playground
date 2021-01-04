@@ -132,8 +132,8 @@ void Landscape::tick() {
           NoiseLayer(150.0F, 7.5F),  //
           NoiseLayer(100.0F, 5.0F),  //
           NoiseLayer(80.0F, 4.0F),   //
-          NoiseLayer(30.0F, 3.0F),   //
-          NoiseLayer(7.5F, 2.0F),    //
+          NoiseLayer(30.0F, 2.0F),   //
+          NoiseLayer(7.5F, 0.75F),    //
     };
 
     const float dragSpeed = 0.01F;
