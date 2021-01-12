@@ -10,9 +10,11 @@ textures = [
 ]
 
 
-def download(force: bool = False):
+def download_textures(force: bool):
+    print("Downloading Textures")
+
     for texture in textures:
-        dir_name = "src/scenes/landscape/textures/"
+        dir_name = "src/scenes/landscape/assets/textures/"
         zip_file = dir_name + texture.split("=")[1]
         if not os.path.exists(zip_file) or force:
             print(f"Downloading {texture}")
@@ -28,3 +30,9 @@ def download(force: bool = False):
         print(f"Extracting {texture}")
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             zip_ref.extractall(dir_name)
+
+    print("Downloading Textures - Done.")
+
+
+def download(force: bool = False):
+    download_textures(force)

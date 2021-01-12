@@ -59,7 +59,7 @@ def analyze_gis_data():
 
 
 @main.command()
-def download_landscape_textures():
+def download_landscape_assets():
     landscape.download()
 
 
