@@ -432,7 +432,7 @@ std::shared_ptr<Texture> createTextureFromImage(const Image &image) {
 
 std::shared_ptr<Texture> loadTexture(const std::string &fileName) {
     Image image;
-    if (!ImageOps::load("landscape_resources/textures/" + fileName, image)) {
+    if (!ImageOps::load("landscape_resources/assets/textures/" + fileName, image)) {
         ImageOps::createCheckerBoard(image);
     }
 
