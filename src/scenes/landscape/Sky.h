@@ -7,6 +7,7 @@
 
 class Sky {
     std::shared_ptr<Shader> shader;
+    std::shared_ptr<VertexArray> cubeVA;
 
     glm::vec3 skyScale = glm::vec3(2000.0F, 400.0F, 2000.0F);
     glm::vec3 skyColor = glm::vec3(0.529F, 0.808F, 0.922F);
@@ -16,6 +17,5 @@ class Sky {
   public:
     void init();
     void showGui();
-    void updateAndRender(const std::shared_ptr<VertexArray> &cubeVA, const glm::mat4 &projectionMatrix,
-                         const glm::mat4 &viewMatrix, float animationTime);
+    void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime);
 };

@@ -15,15 +15,15 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform float uvScaleFactor;
-uniform float power;
-uniform float bowlStrength;
-uniform float platformHeight;
 
 const int MAX_NUM_NOISE_LAYERS = 15;
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
 uniform int numNoiseLayers;
-uniform float finiteDifference;
 uniform bool useFiniteDifferences;
+uniform float finiteDifference;
+uniform float power;
+uniform float bowlStrength;
+uniform float platformHeight;
 
 out vec2 uv_frag_in;
 out vec3 normal_frag_in;
