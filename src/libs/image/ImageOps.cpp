@@ -194,12 +194,12 @@ int loadJpg(Image &image) {
 
 bool ImageOps::load(const std::string &fileName, Image &image) {
     if (fileName.empty()) {
-        std::cout << "File name cannot be empty." << std::endl;
+        std::cout << "Image: File name cannot be empty." << std::endl;
         return false;
     }
 
     if (!std::filesystem::exists(fileName)) {
-        std::cout << "File '" << fileName << "' does not exist" << std::endl;
+        std::cout << "Image: File '" << fileName << "' does not exist" << std::endl;
         return false;
     }
 
@@ -211,7 +211,7 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
         return loadJpg(image) == 0;
     }
 
-    std::cerr << "Image file type is not supported (" << fileName << ")" << std::endl;
+    std::cerr << "Image: Image file type is not supported (" << fileName << ")" << std::endl;
     return false;
 }
 
