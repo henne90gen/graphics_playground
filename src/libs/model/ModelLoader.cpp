@@ -151,10 +151,22 @@ RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &fac
     std::vector<glm::ivec3> indices = {};
 
     unsigned int index = 0;
-    for (auto &face : faces) {
+    for (const auto &face : faces) {
+        std::vector<int> triangleArrangement = {0, 1, 2};
+        if (face.vertices.size() == 3) {
+            // do nothing
+        } else if (face.vertices.size() == 4) {
+            triangleArrangement.push_back(0);
+            triangleArrangement.push_back(2);
+            triangleArrangement.push_back(3);
+        } else {
+            std::cerr << "Can only parse faces with 3 or 4 vertices" << std::endl;
+            return {};
+        }
+
         glm::ivec3 triangle = {};
-        unsigned int faceIndex = 0;
-        for (auto &vertex : face.vertices) {
+        for (const auto vertexIndex : triangleArrangement) {
+            const auto &vertex = face.vertices[vertexIndex];
             vertices.push_back(mesh.vertices[vertex.vertexIndex - 1]);
             if (vertex.textureCoordinateIndex != 0U) {
                 textureCoordinates.push_back(mesh.textureCoordinates[vertex.textureCoordinateIndex - 1]);
@@ -163,17 +175,16 @@ RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &fac
                 normals.push_back(mesh.normals[vertex.normalIndex - 1]);
             }
 
-            if (faceIndex == 0) {
+            if (vertexIndex == 0) {
                 triangle.x = index;
-            } else if (faceIndex == 1) {
+            } else if (vertexIndex == 1) {
                 triangle.y = index;
-            } else if (faceIndex == 2) {
+            } else if (vertexIndex == 2) {
                 triangle.z = index;
+                indices.push_back(triangle);
             }
             index++;
-            faceIndex++;
         }
-        indices.push_back(triangle);
     }
 
     return {mesh.name, vertices, normals, textureCoordinates, indices, mesh.material};
@@ -303,7 +314,7 @@ void parseFace(const std::string &fileName, unsigned long lineNumber, const std:
 
     std::istringstream iss(l);
     std::vector<std::string> tokens = {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-    if (tokens.size() != 3) {
+    if (tokens.size() != 3 && tokens.size() != 4) {
         std::cout << "Malformed face definition in " << fileName << " on line " << lineNumber << std::endl;
         return;
     }
@@ -312,17 +323,23 @@ void parseFace(const std::string &fileName, unsigned long lineNumber, const std:
     std::regex slashRegex("/");
     for (auto &s : tokens) {
         std::vector<std::string> parts = {std::sregex_token_iterator(s.begin(), s.end(), slashRegex, -1), {}};
-        if (parts.size() != 3) {
+        if (parts.empty() || parts.size() > 3) {
             std::cout << "Could not parse face vertex in " << fileName << " on line " << lineNumber << std::endl;
             return;
         }
+
         FaceVertex faceVertex = {};
         const int base = 10;
         faceVertex.vertexIndex = std::strtoul(parts[0].c_str(), nullptr, base);
-        faceVertex.textureCoordinateIndex = std::strtoul(parts[1].c_str(), nullptr, base);
-        faceVertex.normalIndex = std::strtoul(parts[2].c_str(), nullptr, base);
+        if (parts.size() > 1) {
+            faceVertex.textureCoordinateIndex = std::strtoul(parts[1].c_str(), nullptr, base);
+        }
+        if (parts.size() > 2) {
+            faceVertex.normalIndex = std::strtoul(parts[2].c_str(), nullptr, base);
+        }
         faceVertices.push_back(faceVertex);
     }
-    faces.push_back({faceVertices});
+    Face face = {faceVertices};
+    faces.push_back(face);
 }
 } // namespace ModelLoader
