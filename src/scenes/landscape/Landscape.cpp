@@ -24,10 +24,8 @@ DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
 
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
-DEFINE_DEFAULT_SHADERS(landscape_Tree)
 
 void Landscape::setup() {
-    treeShader = CREATE_DEFAULT_SHADER(landscape_Tree);
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
     textureVA = createQuadVA(textureShader);
@@ -48,52 +46,10 @@ void Landscape::setup() {
     initModels();
 
     sky.init();
+    trees.init();
 }
 
 void Landscape::destroy() {}
-
-void showLayerMenu(std::vector<NoiseLayer> &layers) {
-    ImGui::Begin("Layers");
-    int layerToRemove = -1;
-    for (int i = 0; i < static_cast<int>(layers.size()); i++) {
-        ImGui::Separator();
-
-        const auto btnLabel = "Remove Layer " + std::to_string(i);
-        if (ImGui::Button(btnLabel.c_str())) {
-            layerToRemove = i;
-        }
-
-        ImGui::SameLine();
-        const auto enabledLabel = "Enabled " + std::to_string(i);
-        ImGui::Checkbox(enabledLabel.c_str(), &layers[i].enabled);
-
-        const auto frequencyLabel = "Frequency " + std::to_string(i);
-        ImGui::SliderFloat(frequencyLabel.c_str(), &layers[i].frequency, 0.0F, 500.0F);
-
-        const auto amplitudeLabel = "Amplitude " + std::to_string(i);
-        ImGui::SliderFloat(amplitudeLabel.c_str(), &layers[i].amplitude, 0.0F, 100.0F);
-    }
-    if (layerToRemove >= 0) {
-        layers.erase(layers.begin() + layerToRemove);
-    }
-
-    ImGui::Separator();
-    static int layerType = 0;
-    static const std::array<const char *, 2> items = {"Noise", "Ridge"};
-    ImGui::Combo("", &layerType, items.data(), items.size());
-    ImGui::SameLine();
-    if (ImGui::Button("Add Layer")) {
-        switch (layerType) {
-        case 0:
-            layers.push_back(NoiseLayer());
-            break;
-        default:
-            std::cout << "Invalid layer type" << std::endl;
-            break;
-        }
-    }
-    ImGui::End();
-}
 
 void Landscape::tick() {
     static auto thingToRender = 0;
@@ -104,15 +60,10 @@ void Landscape::tick() {
     static auto cameraRotation = glm::vec3(0.5F, -0.9F, 0.0F);
     static auto playerPosition = glm::vec3(0.0F, -33.0F, 0.0F);
     static auto playerRotation = glm::vec3(-0.13F, 0.95F, 0.0F);
-    static auto finiteDifference = 0.01F;
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
     static auto uvScaleFactor = 20.0F;
-    static auto animate = false;
     static auto usePlayerPosition = false;
-    static auto power = 1.1F;
-    static auto bowlStrength = 20.0F;
-    static auto platformHeight = 0.15F;
 
     static auto lightPower = 1.0F;
     static auto lightColor = glm::vec3(1.0F);
@@ -120,18 +71,6 @@ void Landscape::tick() {
     static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
     static auto levels = TerrainLevels();
     static auto tessellation = 60.0F;
-    static auto treeCount = 10000;
-
-    static std::vector<NoiseLayer> layers = {
-          NoiseLayer(450.0F, 20.0F), //
-          NoiseLayer(300.0F, 15.0F), //
-          NoiseLayer(200.0F, 10.0F), //
-          NoiseLayer(150.0F, 7.5F),  //
-          NoiseLayer(100.0F, 5.0F),  //
-          NoiseLayer(80.0F, 4.0F),   //
-          NoiseLayer(30.0F, 2.0F),   //
-          NoiseLayer(7.5F, 0.75F),   //
-    };
 
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
@@ -149,6 +88,10 @@ void Landscape::tick() {
         ImGui::Begin("Settings");
         sky.showGui();
         ImGui::Separator();
+        trees.showGui();
+        ImGui::Separator();
+        terrainParams.showGui();
+        ImGui::Separator();
         ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
         ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
         ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
@@ -164,25 +107,18 @@ void Landscape::tick() {
         ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
         ImGui::DragFloat("Light Power", &lightPower, 0.1F);
         ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
-        ImGui::DragFloat("Finite Difference", &finiteDifference, 0.001F);
         ImGui::Separator();
         ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
         ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
         ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
         ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
-        ImGui::Checkbox("Use Finite Differences", &shaderToggles.useFiniteDifferences);
         ImGui::DragFloat("UV Scale", &uvScaleFactor);
-        ImGui::Checkbox("Animate", &animate);
         ImGui::Checkbox("Show Player View", &usePlayerPosition);
-        ImGui::DragFloat("Power", &power, 0.001F);
-        ImGui::DragFloat("Bowl Strength", &bowlStrength, 0.1F);
-        ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
         ImGui::Separator();
         ImGui::DragFloat("Tesselation", &tessellation);
-        ImGui::DragInt("Tree Count", &treeCount);
         ImGui::End();
 
-        showLayerMenu(layers);
+        terrainParams.showLayersGui();
 
         glm::mat4 viewMatrix;
         if (usePlayerPosition) {
@@ -194,14 +130,14 @@ void Landscape::tick() {
 
         renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition,
                       lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
-                      layers, power, bowlStrength, finiteDifference, platformHeight);
+                      terrainParams);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
-        renderTrees(projectionMatrix, viewMatrix, treeCount, layers, shaderToggles, finiteDifference, power,
-                    bowlStrength, platformHeight);
+
+        trees.render(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
 
         static float animationTime = 0.0F;
         animationTime += static_cast<float>(getLastFrameTime());
-        sky.updateAndRender(cubeVA, projectionMatrix, viewMatrix, animationTime);
+        sky.render(projectionMatrix, viewMatrix, animationTime);
     } else if (thingToRender == 1) {
         static auto textureType = 0;
         static auto texturePosition = glm::vec3(0.0F);
@@ -231,8 +167,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
                               const glm::vec3 &lightDirection, const glm::vec3 &lightColor, const float lightPower,
                               const TerrainLevels &levels, const ShaderToggles &shaderToggles,
                               const float uvScaleFactor, const float tessellation,
-                              const std::vector<NoiseLayer> &noiseLayers, const float power, const float bowlStrength,
-                              const float finiteDifference, const float platformHeight) {
+                              const TerrainParams &terrainParams) {
     terrainShader->bind();
     terrainVA->bind();
 
@@ -254,17 +189,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
 
     terrainShader->setUniform("tessellation", tessellation);
 
-    for (int i = 0; i < static_cast<int64_t>(noiseLayers.size()); i++) {
-        terrainShader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", noiseLayers[i].amplitude);
-        terrainShader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", noiseLayers[i].frequency);
-        terrainShader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", noiseLayers[i].enabled);
-    }
-    terrainShader->setUniform("numNoiseLayers", static_cast<int>(noiseLayers.size()));
-    terrainShader->setUniform("finiteDifference", finiteDifference);
-    terrainShader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
-    terrainShader->setUniform("power", power);
-    terrainShader->setUniform("bowlStrength", bowlStrength);
-    terrainShader->setUniform("platformHeight", platformHeight);
+    terrainParams.setShaderUniforms(terrainShader);
 
     terrainShader->setUniform("grassLevel", levels.grassLevel);
     terrainShader->setUniform("rockLevel", levels.rockLevel);
@@ -311,96 +236,6 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     flatShader->setUniform("projectionMatrix", projectionMatrix);
     flatShader->setUniform("flatColor", lightColor);
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-}
-
-void Landscape::renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const int treeCount,
-                            const std::vector<NoiseLayer> &noiseLayers, const ShaderToggles &shaderToggles,
-                            const float finiteDifference, const float power, const float bowlStrength,
-                            const float platformHeight) {
-#if 1
-    cubeVA->bind();
-    treeShader->bind();
-    cubeVA->setShader(treeShader);
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    treeShader->setUniform("modelMatrix", modelMatrix);
-    treeShader->setUniform("viewMatrix", viewMatrix);
-    treeShader->setUniform("projectionMatrix", projectionMatrix);
-
-    for (int i = 0; i < static_cast<int64_t>(noiseLayers.size()); i++) {
-        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", noiseLayers[i].amplitude);
-        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", noiseLayers[i].frequency);
-        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", noiseLayers[i].enabled);
-    }
-    treeShader->setUniform("numNoiseLayers", static_cast<int>(noiseLayers.size()));
-    treeShader->setUniform("finiteDifference", finiteDifference);
-    treeShader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
-    treeShader->setUniform("power", power);
-    treeShader->setUniform("bowlStrength", bowlStrength);
-    treeShader->setUniform("platformHeight", platformHeight);
-
-    treeShader->setUniform("treeCount", treeCount);
-
-    GL_Call(glDrawElementsInstanced(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr,
-                                    treeCount));
-#else
-    if (!treeModel) {
-        return;
-    }
-
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    static auto scale = 0.1F;
-    ImGui::Begin("Settings");
-    ImGui::DragFloat("Scale", &scale, 0.001);
-    ImGui::End();
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
-    //    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    //    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    //    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    treeShader->bind();
-    treeShader->setUniform("modelMatrix", modelMatrix);
-    treeShader->setUniform("viewMatrix", viewMatrix);
-    treeShader->setUniform("projectionMatrix", projectionMatrix);
-
-    for (int i = 0; i < static_cast<int64_t>(noiseLayers.size()); i++) {
-        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", noiseLayers[i].amplitude);
-        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", noiseLayers[i].frequency);
-        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", noiseLayers[i].enabled);
-    }
-    treeShader->setUniform("numNoiseLayers", static_cast<int>(noiseLayers.size()));
-    treeShader->setUniform("finiteDifference", finiteDifference);
-    treeShader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
-    treeShader->setUniform("power", power);
-    treeShader->setUniform("bowlStrength", bowlStrength);
-    treeShader->setUniform("platformHeight", platformHeight);
-
-    treeShader->setUniform("treeCount", treeCount);
-
-    //    treeShader->setUniform("u_TextureSampler", 0);
-
-    for (const auto &mesh : treeModel->getMeshes()) {
-        if (!mesh->visible) {
-            continue;
-        }
-
-        mesh->terrainVA->bind();
-
-        mesh->texture->bind();
-
-        //        if (drawWireframe) {
-        //            GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-        //        }
-
-        GL_Call(glDrawElementsInstanced(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr,
-                                        treeCount));
-        //        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
-
-        //        if (drawWireframe) {
-        //            GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-        //        }
-
-        mesh->terrainVA->unbind();
-    }
-#endif
 }
 
 void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom,

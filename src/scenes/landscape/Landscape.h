@@ -1,17 +1,18 @@
 #pragma once
 
-#include "Scene.h"
+#include <Scene.h>
 
+#include <Model.h>
 #include <functional>
+#include <gl/IndexBuffer.h>
+#include <gl/Texture.h>
+#include <gl/VertexArray.h>
 #include <memory>
 
 #include "Layers.h"
-#include "Model.h"
-#include "gl/IndexBuffer.h"
-#include "gl/Texture.h"
-#include "gl/VertexArray.h"
-
+#include "ShaderToggles.h"
 #include "Sky.h"
+#include "Trees.h"
 
 struct TessellationLevels {
     float innerTess = 20.0F;
@@ -22,14 +23,6 @@ struct TerrainLevels {
     float grassLevel = 0.4F;
     float rockLevel = 1.0F;
     float blur = 0.05F;
-};
-
-struct ShaderToggles {
-    bool showNormals = false;
-    bool showTangents = false;
-    bool showUVs = false;
-    bool drawWireframe = false;
-    bool useFiniteDifferences = false;
 };
 
 class Landscape : public Scene {
@@ -52,7 +45,6 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> terrainShader;
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
-    std::shared_ptr<Shader> treeShader;
 
     std::shared_ptr<Texture> grassTexture;
     std::shared_ptr<Texture> dirtTexture;
@@ -61,19 +53,17 @@ class Landscape : public Scene {
     std::shared_ptr<Model> treeModel;
 
     Sky sky = {};
+    Trees trees = {};
+    TerrainParams terrainParams = {};
 
     static std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
                        const glm::vec3 &modelRotation, const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
                        const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,
                        const TerrainLevels &levels, const ShaderToggles &shaderToggles, float uvScaleFactor,
-                       float tessellation, const std::vector<NoiseLayer> &noiseLayers, float power, float bowlStrength,
-                       float finiteDifference, float platformHeight);
+                       float tessellation, const TerrainParams &terrainParams);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
-    void renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, int treeCount,
-                     const std::vector<NoiseLayer> &noiseLayers, const ShaderToggles &shaderToggles,
-                     float finiteDifference, float power, float bowlStrength, float platformHeight);
 
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
 
