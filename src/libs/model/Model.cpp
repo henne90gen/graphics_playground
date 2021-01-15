@@ -45,27 +45,28 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
     bool hasTexture = !mesh.textureCoordinates.empty();
     shader->setUniform("u_HasTexture", hasTexture);
 
-    std::vector<float> vertices;
-    for (unsigned long i = 0; i < mesh.vertices.size(); i++) {
-        vertices.push_back(mesh.vertices[i].x);
-        vertices.push_back(mesh.vertices[i].y);
-        vertices.push_back(mesh.vertices[i].z);
+    auto vertices = std::vector<float>(mesh.vertices.size() * 8);
+#pragma omp parallel for
+    for (int i = 0; i < mesh.vertices.size(); i++) {
+        vertices[i * 8 + 0] = mesh.vertices[i].x;
+        vertices[i * 8 + 1] = mesh.vertices[i].y;
+        vertices[i * 8 + 2] = mesh.vertices[i].z;
 
         if (hasNormals) {
-            vertices.push_back(mesh.normals[i].x);
-            vertices.push_back(mesh.normals[i].y);
-            vertices.push_back(mesh.normals[i].z);
+            vertices[i * 8 + 3] = mesh.normals[i].x;
+            vertices[i * 8 + 4] = mesh.normals[i].y;
+            vertices[i * 8 + 5] = mesh.normals[i].z;
         } else {
-            vertices.push_back(0);
-            vertices.push_back(0);
-            vertices.push_back(0);
+            vertices[i * 8 +3] = 0;
+            vertices[i * 8 + 4] = 0;
+            vertices[i * 8 + 5] = 0;
         }
         if (hasTexture) {
-            vertices.push_back(mesh.textureCoordinates[i].x);
-            vertices.push_back(mesh.textureCoordinates[i].y);
+            vertices[i * 8 + 6] = mesh.textureCoordinates[i].x;
+            vertices[i * 8 + 7] = mesh.textureCoordinates[i].y;
         } else {
-            vertices.push_back(0);
-            vertices.push_back(0);
+            vertices[i * 8 + 6] = 0;
+            vertices[i * 8 + 7] = 0;
         }
     }
 
