@@ -274,7 +274,7 @@ void main() {
     // TODO try to place tree 10 times and then discard, if still no valid position was found
     if (discardTree(pos, noise)) {
         colorFactor = 0.0F;
-        position.y = 0.0F;
+//        position.y = 0.0F;
     } else {
         colorFactor = 1.0F;
     }
