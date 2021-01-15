@@ -6,9 +6,12 @@
 #include <memory>
 
 #include "Layers.h"
+#include "Model.h"
 #include "gl/IndexBuffer.h"
 #include "gl/Texture.h"
 #include "gl/VertexArray.h"
+
+#include "Sky.h"
 
 struct TessellationLevels {
     float innerTess = 20.0F;
@@ -42,19 +45,22 @@ class Landscape : public Scene {
     void destroy() override;
 
   private:
-    std::shared_ptr<VertexArray> vertexArray;
+    std::shared_ptr<VertexArray> terrainVA;
     std::shared_ptr<VertexArray> textureVA;
     std::shared_ptr<VertexArray> cubeVA;
 
-    std::shared_ptr<Shader> shader;
+    std::shared_ptr<Shader> terrainShader;
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
-    std::shared_ptr<Shader> skyShader;
     std::shared_ptr<Shader> treeShader;
 
     std::shared_ptr<Texture> grassTexture;
     std::shared_ptr<Texture> dirtTexture;
     std::shared_ptr<Texture> rockTexture;
+
+    std::shared_ptr<Model> treeModel;
+
+    Sky sky = {};
 
     static std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
     void renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &modelPosition,
@@ -68,9 +74,9 @@ class Landscape : public Scene {
     void renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, int treeCount,
                      const std::vector<NoiseLayer> &noiseLayers, const ShaderToggles &shaderToggles,
                      float finiteDifference, float power, float bowlStrength, float platformHeight);
-    void renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &skyScale,
-                   const glm::vec3 &skyColor, float animationSpeed, float cloudBlend);
 
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
+
     void initTextures();
+    void initModels();
 };

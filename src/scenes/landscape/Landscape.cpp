@@ -24,11 +24,9 @@ DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
 
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
-DEFINE_DEFAULT_SHADERS(landscape_Sky)
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
 
 void Landscape::setup() {
-    skyShader = CREATE_DEFAULT_SHADER(landscape_Sky);
     treeShader = CREATE_DEFAULT_SHADER(landscape_Tree);
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
@@ -38,15 +36,18 @@ void Landscape::setup() {
     flatShader->bind();
     cubeVA = createCubeVA(flatShader);
 
-    shader = CREATE_DEFAULT_SHADER(landscape_Landscape);
-    shader->attachTessControlShader(SHADER_CODE(landscape_LandscapeTcs));
-    shader->attachTessEvaluationShader(SHADER_CODE(landscape_LandscapeTes));
-    shader->compile();
-    shader->bind();
+    terrainShader = CREATE_DEFAULT_SHADER(landscape_Landscape);
+    terrainShader->attachTessControlShader(SHADER_CODE(landscape_LandscapeTcs));
+    terrainShader->attachTessEvaluationShader(SHADER_CODE(landscape_LandscapeTes));
+    terrainShader->compile();
+    terrainShader->bind();
 
-    vertexArray = generatePoints(shader);
+    terrainVA = generatePoints(terrainShader);
 
     initTextures();
+    initModels();
+
+    sky.init();
 }
 
 void Landscape::destroy() {}
@@ -96,10 +97,6 @@ void showLayerMenu(std::vector<NoiseLayer> &layers) {
 
 void Landscape::tick() {
     static auto thingToRender = 0;
-    static auto skyScale = glm::vec3(2000.0F, 400.0F, 2000.0F);
-    static auto skyColor = glm::vec3(0.529F, 0.808F, 0.922F);
-    static auto cloudAnimationSpeed = 0.005F;
-    static auto cloudBlend = 0.1F;
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto modelPosition = glm::vec3(0.0F);
     static auto modelRotation = glm::vec3(0.0F);
@@ -123,7 +120,7 @@ void Landscape::tick() {
     static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
     static auto levels = TerrainLevels();
     static auto tessellation = 60.0F;
-    static auto treeCount = 100000;
+    static auto treeCount = 10000;
 
     static std::vector<NoiseLayer> layers = {
           NoiseLayer(450.0F, 20.0F), //
@@ -133,7 +130,7 @@ void Landscape::tick() {
           NoiseLayer(100.0F, 5.0F),  //
           NoiseLayer(80.0F, 4.0F),   //
           NoiseLayer(30.0F, 2.0F),   //
-          NoiseLayer(7.5F, 0.75F),    //
+          NoiseLayer(7.5F, 0.75F),   //
     };
 
     const float dragSpeed = 0.01F;
@@ -150,10 +147,7 @@ void Landscape::tick() {
 
     if (thingToRender == 0) {
         ImGui::Begin("Settings");
-        ImGui::DragFloat3("Sky Scale", reinterpret_cast<float *>(&skyScale));
-        ImGui::ColorEdit3("Sky Color", reinterpret_cast<float *>(&skyColor));
-        ImGui::DragFloat("Animation Speed Clouds", &cloudAnimationSpeed, 0.001F);
-        ImGui::DragFloat("Cloud Blend", &cloudBlend, 0.001F);
+        sky.showGui();
         ImGui::Separator();
         ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
         ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
@@ -202,10 +196,12 @@ void Landscape::tick() {
                       lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
                       layers, power, bowlStrength, finiteDifference, platformHeight);
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
-        renderSky(projectionMatrix, viewMatrix, skyScale, skyColor, cloudAnimationSpeed, cloudBlend);
-        renderTrees(projectionMatrix, viewMatrix, treeCount, layers, shaderToggles, finiteDifference, power, bowlStrength,
-                    platformHeight);
+        renderTrees(projectionMatrix, viewMatrix, treeCount, layers, shaderToggles, finiteDifference, power,
+                    bowlStrength, platformHeight);
 
+        static float animationTime = 0.0F;
+        animationTime += static_cast<float>(getLastFrameTime());
+        sky.updateAndRender(cubeVA, projectionMatrix, viewMatrix, animationTime);
     } else if (thingToRender == 1) {
         static auto textureType = 0;
         static auto texturePosition = glm::vec3(0.0F);
@@ -237,8 +233,8 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
                               const float uvScaleFactor, const float tessellation,
                               const std::vector<NoiseLayer> &noiseLayers, const float power, const float bowlStrength,
                               const float finiteDifference, const float platformHeight) {
-    shader->bind();
-    vertexArray->bind();
+    terrainShader->bind();
+    terrainVA->bind();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, modelPosition);
@@ -247,60 +243,60 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, modelScale);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-    shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
-    shader->setUniform("normalMatrix", normalMatrix);
+    terrainShader->setUniform("modelMatrix", modelMatrix);
+    terrainShader->setUniform("viewMatrix", viewMatrix);
+    terrainShader->setUniform("projectionMatrix", projectionMatrix);
+    terrainShader->setUniform("normalMatrix", normalMatrix);
 
     glm::mat4 viewModel = inverse(viewMatrix);
     glm::vec3 cameraPosition(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
-    shader->setUniform("cameraPosition", cameraPosition);
+    terrainShader->setUniform("cameraPosition", cameraPosition);
 
-    shader->setUniform("tessellation", tessellation);
+    terrainShader->setUniform("tessellation", tessellation);
 
     for (int i = 0; i < static_cast<int64_t>(noiseLayers.size()); i++) {
-        shader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", noiseLayers[i].amplitude);
-        shader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", noiseLayers[i].frequency);
-        shader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", noiseLayers[i].enabled);
+        terrainShader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", noiseLayers[i].amplitude);
+        terrainShader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", noiseLayers[i].frequency);
+        terrainShader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", noiseLayers[i].enabled);
     }
-    shader->setUniform("numNoiseLayers", static_cast<int>(noiseLayers.size()));
-    shader->setUniform("finiteDifference", finiteDifference);
-    shader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
-    shader->setUniform("power", power);
-    shader->setUniform("bowlStrength", bowlStrength);
-    shader->setUniform("platformHeight", platformHeight);
+    terrainShader->setUniform("numNoiseLayers", static_cast<int>(noiseLayers.size()));
+    terrainShader->setUniform("finiteDifference", finiteDifference);
+    terrainShader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
+    terrainShader->setUniform("power", power);
+    terrainShader->setUniform("bowlStrength", bowlStrength);
+    terrainShader->setUniform("platformHeight", platformHeight);
 
-    shader->setUniform("grassLevel", levels.grassLevel);
-    shader->setUniform("rockLevel", levels.rockLevel);
-    shader->setUniform("blur", levels.blur);
+    terrainShader->setUniform("grassLevel", levels.grassLevel);
+    terrainShader->setUniform("rockLevel", levels.rockLevel);
+    terrainShader->setUniform("blur", levels.blur);
 
-    shader->setUniform("lightDirection", lightDirection);
-    shader->setUniform("lightPosition", lightPosition);
-    shader->setUniform("lightColor", lightColor);
-    shader->setUniform("lightPower", lightPower);
+    terrainShader->setUniform("lightDirection", lightDirection);
+    terrainShader->setUniform("lightPosition", lightPosition);
+    terrainShader->setUniform("lightColor", lightColor);
+    terrainShader->setUniform("lightPower", lightPower);
 
-    shader->setUniform("showUVs", shaderToggles.showUVs);
-    shader->setUniform("showNormals", shaderToggles.showNormals);
-    shader->setUniform("showTangents", shaderToggles.showTangents);
-    shader->setUniform("uvScaleFactor", uvScaleFactor);
+    terrainShader->setUniform("showUVs", shaderToggles.showUVs);
+    terrainShader->setUniform("showNormals", shaderToggles.showNormals);
+    terrainShader->setUniform("showTangents", shaderToggles.showTangents);
+    terrainShader->setUniform("uvScaleFactor", uvScaleFactor);
 
-    shader->setUniform("grassTexture", grassTexture, GL_TEXTURE0);
-    shader->setUniform("dirtTexture", dirtTexture, GL_TEXTURE1);
-    shader->setUniform("rockTexture", rockTexture, GL_TEXTURE2);
+    terrainShader->setUniform("grassTexture", grassTexture, GL_TEXTURE0);
+    terrainShader->setUniform("dirtTexture", dirtTexture, GL_TEXTURE1);
+    terrainShader->setUniform("rockTexture", rockTexture, GL_TEXTURE2);
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
     GL_Call(glPatchParameteri(GL_PATCH_VERTICES, 3));
-    GL_Call(glDrawElements(GL_PATCHES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glDrawElements(GL_PATCHES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 
-    vertexArray->unbind();
-    shader->unbind();
+    terrainVA->unbind();
+    terrainShader->unbind();
 }
 
 void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
@@ -317,10 +313,11 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void Landscape::renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                            const int treeCount, const std::vector<NoiseLayer> &noiseLayers,
-                            const ShaderToggles &shaderToggles, const float finiteDifference, const float power,
-                            const float bowlStrength, const float platformHeight) {
+void Landscape::renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const int treeCount,
+                            const std::vector<NoiseLayer> &noiseLayers, const ShaderToggles &shaderToggles,
+                            const float finiteDifference, const float power, const float bowlStrength,
+                            const float platformHeight) {
+#if 1
     cubeVA->bind();
     treeShader->bind();
     cubeVA->setShader(treeShader);
@@ -345,6 +342,65 @@ void Landscape::renderTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &
 
     GL_Call(glDrawElementsInstanced(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr,
                                     treeCount));
+#else
+    if (!treeModel) {
+        return;
+    }
+
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    static auto scale = 0.1F;
+    ImGui::Begin("Settings");
+    ImGui::DragFloat("Scale", &scale, 0.001);
+    ImGui::End();
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+    //    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+    //    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+    //    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+    treeShader->bind();
+    treeShader->setUniform("modelMatrix", modelMatrix);
+    treeShader->setUniform("viewMatrix", viewMatrix);
+    treeShader->setUniform("projectionMatrix", projectionMatrix);
+
+    for (int i = 0; i < static_cast<int64_t>(noiseLayers.size()); i++) {
+        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].amplitude", noiseLayers[i].amplitude);
+        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].frequency", noiseLayers[i].frequency);
+        treeShader->setUniform("noiseLayers[" + std::to_string(i) + "].enabled", noiseLayers[i].enabled);
+    }
+    treeShader->setUniform("numNoiseLayers", static_cast<int>(noiseLayers.size()));
+    treeShader->setUniform("finiteDifference", finiteDifference);
+    treeShader->setUniform("useFiniteDifferences", shaderToggles.useFiniteDifferences);
+    treeShader->setUniform("power", power);
+    treeShader->setUniform("bowlStrength", bowlStrength);
+    treeShader->setUniform("platformHeight", platformHeight);
+
+    treeShader->setUniform("treeCount", treeCount);
+
+    //    treeShader->setUniform("u_TextureSampler", 0);
+
+    for (const auto &mesh : treeModel->getMeshes()) {
+        if (!mesh->visible) {
+            continue;
+        }
+
+        mesh->terrainVA->bind();
+
+        mesh->texture->bind();
+
+        //        if (drawWireframe) {
+        //            GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+        //        }
+
+        GL_Call(glDrawElementsInstanced(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr,
+                                        treeCount));
+        //        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+
+        //        if (drawWireframe) {
+        //            GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+        //        }
+
+        mesh->terrainVA->unbind();
+    }
+#endif
 }
 
 void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom,
@@ -467,21 +523,9 @@ void Landscape::initTextures() {
 #endif
 }
 
-void Landscape::renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &skyScale,
-                          const glm::vec3 &skyColor, const float animationSpeed, const float cloudBlend) {
-    static float animationTime = 0.0F;
-    animationTime += static_cast<float>(getLastFrameTime());
-    cubeVA->bind();
-    skyShader->bind();
-    cubeVA->setShader(skyShader);
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::scale(modelMatrix, skyScale);
-    skyShader->setUniform("modelMatrix", modelMatrix);
-    skyShader->setUniform("viewMatrix", viewMatrix);
-    skyShader->setUniform("projectionMatrix", projectionMatrix);
-    skyShader->setUniform("flatColor", skyColor);
-    skyShader->setUniform("animationTime", animationTime);
-    skyShader->setUniform("animationSpeed", animationSpeed);
-    skyShader->setUniform("cloudBlend", cloudBlend);
-    GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+void Landscape::initModels() {
+#if 0
+    treeModel = std::make_shared<Model>();
+    treeModel->loadFromFile("landscape_resources/assets/models/Tree1/Tree1.obj", treeShader);
+#endif
 }
