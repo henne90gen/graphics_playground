@@ -65,11 +65,11 @@ uniform sampler2D rockTexture;
 
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
-const float PHI = 1.61803398874989484820459;// Φ = Golden Ratio
-float gold_noise(in vec2 uv, in float seed){
+const float PHI = 1.61803398874989484820459;// = Golden Ratio
+float gold_noise(in vec2 uv, in float seed) {
     return fract(tan(distance(uv * PHI, uv) * seed) * uv.x);
 }
-float rand(vec2 co){
+float rand(vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 

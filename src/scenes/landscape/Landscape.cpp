@@ -18,6 +18,8 @@ constexpr float Z_FAR = 10000.0F;
 
 DEFINE_SCENE_MAIN(Landscape)
 
+DEFINE_SHADER(landscape_NoiseLib)
+
 DEFINE_DEFAULT_SHADERS(landscape_Landscape)
 DEFINE_TESS_CONTROL_SHADER(landscape_Landscape)
 DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
@@ -31,13 +33,14 @@ void Landscape::setup() {
     textureVA = createQuadVA(textureShader);
 
     flatShader = CREATE_DEFAULT_SHADER(landscape_FlatColor);
+    flatShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
     flatShader->bind();
     cubeVA = createCubeVA(flatShader);
 
     terrainShader = CREATE_DEFAULT_SHADER(landscape_Landscape);
     terrainShader->attachTessControlShader(SHADER_CODE(landscape_LandscapeTcs));
     terrainShader->attachTessEvaluationShader(SHADER_CODE(landscape_LandscapeTes));
-    terrainShader->compile();
+    terrainShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
     terrainShader->bind();
 
     terrainVA = generatePoints(terrainShader);
@@ -166,8 +169,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
                               const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
                               const glm::vec3 &lightDirection, const glm::vec3 &lightColor, const float lightPower,
                               const TerrainLevels &levels, const ShaderToggles &shaderToggles,
-                              const float uvScaleFactor, const float tessellation,
-                              const TerrainParams &terrainParams) {
+                              const float uvScaleFactor, const float tessellation, const TerrainParams &terrainParams) {
     terrainShader->bind();
     terrainVA->bind();
 

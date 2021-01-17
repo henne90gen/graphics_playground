@@ -32,6 +32,8 @@ out vec3 bitangent_frag_in;
 out vec3 model_position;
 out float normalized_height;
 
+#include "NoiseLib.glsl"
+
 // FAST32_hash
 // A very fast hashing function.  Requires 32bit support.
 // http://briansharpe.wordpress.com/2011/11/15/a-fast-and-simple-32bit-floating-point-hash-function/

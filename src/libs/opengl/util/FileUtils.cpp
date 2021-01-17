@@ -51,7 +51,7 @@ int64_t getLastModifiedTimeNano(const std::string &filePath) {
 #else
     {
         auto fsTime = std::filesystem::last_write_time(filePath);
-        return decltype(fsTime)::clock::to_time_t(fsTime);
+        return fsTime.time_since_epoch().count();
     }
 #endif
 }
