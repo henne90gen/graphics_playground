@@ -24,7 +24,7 @@ std::string shaderTypeToString(GLuint shaderType) {
 ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     std::ifstream shaderStream(filePath, std::ios::in);
     if (!shaderStream.is_open()) {
-        std::cerr << "Could not open " << filePath << std::endl;
+        std::cout << "Could not open " << filePath << std::endl;
         return ShaderCode();
     }
 
@@ -148,8 +148,8 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
 #endif
 
     ShaderCode finalShaderCode = shaderCode;
-    for (int i = 0; i < shaderCode.lineCount; i++) {
-        std::string sourceLine = std::basic_string(shaderCode.shaderSource[i], shaderCode.lineLengths[i]);
+    for (int i = 0; i < finalShaderCode.lineCount; i++) {
+        std::string sourceLine = std::basic_string(finalShaderCode.shaderSource[i], finalShaderCode.lineLengths[i]);
         if (sourceLine.size() < 12) {
             continue;
         }
@@ -158,7 +158,7 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
         }
         std::string importString = sourceLine.substr(10, sourceLine.find_last_of('"') - 10);
         ShaderCode &importCode = shaderLibs[importString];
-        finalShaderCode = insertShaderCode(shaderCode, importCode, i);
+        finalShaderCode = insertShaderCode(finalShaderCode, importCode, i);
     }
 
     GL_Call(glShaderSource(shaderId, finalShaderCode.lineCount, finalShaderCode.shaderSource,
@@ -168,16 +168,16 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     int success = 0;
     GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
     if (success == 0) {
-        std::cerr << "  Failed to compile " << shaderTypeToString(shaderType) << " shader (" << finalShaderCode.filePath
+        std::cout << "  Failed to compile " << shaderTypeToString(shaderType) << " shader (" << finalShaderCode.filePath
                   << ")" << std::endl;
     }
 
     int infoLogLength = 0;
     GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
     if (infoLogLength > 0) {
-        std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
-        GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &vertexShaderErrorMessage[0]));
-        std::cout << &vertexShaderErrorMessage[0] << std::endl;
+        char *errorMessage = reinterpret_cast<char *>(std::malloc(infoLogLength));
+        GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, errorMessage));
+        std::cout << errorMessage << std::endl;
     }
 
     if (success == 0) {
@@ -239,6 +239,16 @@ void Shader::bind() {
             break;
         }
     }
+    for (auto &entry : shaderLibs) {
+        const int64_t lastAccessTimeNano = getLastModifiedTimeNano(entry.second.filePath);
+        if (lastAccessTimeNano > entry.second.lastAccessTimeNano &&
+            currentTimeNano > lastAccessTimeNano + waitTimeNano) {
+            entry.second = readShaderCodeFromFile(entry.second.filePath);
+            recompile = true;
+            break;
+        }
+    }
+
     if (id == 0 || recompile) {
         compile();
     }
