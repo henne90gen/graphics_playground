@@ -12,15 +12,16 @@ flat out float colorFactor;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
-uniform float power;
-uniform float bowlStrength;
-uniform float platformHeight;
 uniform int treeCount;
 
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
 uniform int numNoiseLayers;
 uniform float finiteDifference;
 uniform bool useFiniteDifferences;
+uniform float power;
+uniform float bowlStrength;
+uniform float platformHeight;
+uniform int seed;
 
 void placementRandom(inout vec2 pos) {
     pos = vec2(gold_noise(pos.xx, float(gl_InstanceID)), gold_noise(pos.yy, float(gl_InstanceID)));
@@ -72,7 +73,7 @@ void main() {
     pos *= 1000.0F;// width of the grid
     pos -= 500.0F;// half of the width of the grid
 
-    vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight);
+    vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight, seed);
     height = noise.x;
     normalized_height = noise.w;
 

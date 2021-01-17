@@ -19,6 +19,7 @@ uniform float finiteDifference;
 uniform float power;
 uniform float bowlStrength;
 uniform float platformHeight;
+uniform int seed;
 
 out vec2 uv_frag_in;
 out vec3 normal_frag_in;
@@ -32,7 +33,7 @@ void main() {
     pos     += gl_TessCoord.y * position_tes_in[1];
     pos     += gl_TessCoord.z * position_tes_in[2];
 
-    vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight);
+    vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight, seed);
     normalized_height = noise.w;
     tangent_frag_in = vec3(1.0F, noise.y, 0.0F);
     bitangent_frag_in = vec3(0.0F, noise.z, 1.0F);
