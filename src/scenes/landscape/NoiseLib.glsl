@@ -150,10 +150,10 @@ void applyPlatform(inout vec3 noise, in float noiseMax, in vec2 pos, in float pl
     noise.z = (1.0F - w) * noise.z;
 }
 
-vec4 generateHeight(vec2 pos,
-NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS], int numNoiseLayers,
-bool useFiniteDifferences, float finiteDifference,
-float power, float bowlStrength, float platformHeight
+vec4 generateHeight(in vec2 pos,
+in NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS], in int numNoiseLayers,
+in bool useFiniteDifferences, in float finiteDifference,
+float power, float bowlStrength, in float platformHeight
 ) {
 
     vec3 noise = vec3(0.0F);
