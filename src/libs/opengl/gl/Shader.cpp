@@ -108,6 +108,31 @@ void Shader::compile() {
     }
 }
 
+ShaderCode insertShaderCode(const ShaderCode &original, const ShaderCode &import, int line) {
+    ShaderCode result = {};
+    result.filePath = original.filePath;
+    result.lineCount = original.lineCount + import.lineCount - 1;
+    result.lineLengths = reinterpret_cast<int *>(std::malloc(result.lineCount * sizeof(int)));
+    result.shaderSource = reinterpret_cast<char **>(std::malloc(result.lineCount * sizeof(char *)));
+    for (int i = 0; i < result.lineCount; i++) {
+        int lineLength = 0;
+        char *shaderSource = nullptr;
+        if (i >= line && i < line + import.lineCount) {
+            lineLength = import.lineLengths[i - line];
+            shaderSource = import.shaderSource[i - line];
+        } else if (i >= line + import.lineCount) {
+            lineLength = original.lineLengths[i - import.lineCount + 1];
+            shaderSource = original.shaderSource[i - import.lineCount + 1];
+        } else {
+            lineLength = original.lineLengths[i];
+            shaderSource = original.shaderSource[i];
+        }
+        result.lineLengths[i] = lineLength;
+        result.shaderSource[i] = shaderSource;
+    }
+    return result;
+}
+
 GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     GLuint shaderId = 0;
     GL_Call(shaderId = glCreateShader(shaderType));
@@ -122,13 +147,29 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     std::cout << "----------- End -----------" << std::endl;
 #endif
 
-    GL_Call(glShaderSource(shaderId, shaderCode.lineCount, shaderCode.shaderSource, shaderCode.lineLengths));
+    ShaderCode finalShaderCode = shaderCode;
+    for (int i = 0; i < shaderCode.lineCount; i++) {
+        std::string sourceLine = std::basic_string(shaderCode.shaderSource[i], shaderCode.lineLengths[i]);
+        if (sourceLine.size() < 12) {
+            continue;
+        }
+        if (sourceLine.substr(0, 10) != "#include \"") {
+            continue;
+        }
+        std::string importString = sourceLine.substr(10, sourceLine.find_last_of('"') - 10);
+        ShaderCode &importCode = shaderLibs[importString];
+        finalShaderCode = insertShaderCode(shaderCode, importCode, i);
+    }
+
+    GL_Call(glShaderSource(shaderId, finalShaderCode.lineCount, finalShaderCode.shaderSource,
+                           finalShaderCode.lineLengths));
     GL_Call(glCompileShader(shaderId));
 
     int success = 0;
     GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
     if (success == 0) {
-        std::cerr << "  Failed to compile " << shaderTypeToString(shaderType) << " shader" << std::endl;
+        std::cerr << "  Failed to compile " << shaderTypeToString(shaderType) << " shader (" << finalShaderCode.filePath
+                  << ")" << std::endl;
     }
 
     int infoLogLength = 0;
@@ -143,7 +184,8 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
         return 0;
     }
 
-    std::cout << "  Compiled " << shaderTypeToString(shaderType) << " shader" << std::endl;
+    std::cout << "  Compiled " << shaderTypeToString(shaderType) << " shader (" << finalShaderCode.filePath << ")"
+              << std::endl;
     return shaderId;
 }
 
@@ -197,7 +239,7 @@ void Shader::bind() {
             break;
         }
     }
-    if (recompile) {
+    if (id == 0 || recompile) {
         compile();
     }
 
@@ -208,10 +250,16 @@ void Shader::unbind() { GL_Call(glUseProgram(0)); }
 
 void Shader::attach(GLuint shaderType, const ShaderCode &shaderCode) { shaderComponents[shaderType] = shaderCode; }
 
+void Shader::attachShaderLib(const ShaderCode &shaderCode) {
+    std::string key = shaderCode.filePath;
+    int lastSlash = key.find_last_of('/');
+    key = key.substr(lastSlash + 1);
+    shaderLibs[key] = shaderCode;
+}
+
 std::shared_ptr<Shader> createDefaultShader(const ShaderCode &vertexCode, const ShaderCode &fragmentCode) {
     auto result = std::make_shared<Shader>();
     result->attachVertexShader(vertexCode);
     result->attachFragmentShader(fragmentCode);
-    result->compile();
     return result;
 }

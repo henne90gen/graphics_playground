@@ -28,11 +28,11 @@ uniform float finiteDifference;
 uniform bool useFiniteDifferences;
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
-const float PHI = 1.61803398874989484820459;// Φ = Golden Ratio
-float gold_noise(in vec2 uv, in float seed){
+const float PHI = 1.61803398874989484820459;// = Golden Ratio
+float gold_noise(in vec2 uv, in float seed) {
     return fract(tan(distance(uv * PHI, uv) * seed) * uv.x);
 }
-float rand(vec2 uv){
+float rand(vec2 uv) {
     return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
@@ -274,7 +274,7 @@ void main() {
     // TODO try to place tree 10 times and then discard, if still no valid position was found
     if (discardTree(pos, noise)) {
         colorFactor = 0.0F;
-//        position.y = 0.0F;
+        //        position.y = 0.0F;
     } else {
         colorFactor = 1.0F;
     }

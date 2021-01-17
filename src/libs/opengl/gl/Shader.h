@@ -57,6 +57,7 @@ class Shader {
     std::unordered_map<std::string, int> uniformLocations;
     std::unordered_map<std::string, int> attributeLocations;
     std::unordered_map<GLuint, ShaderCode> shaderComponents = {};
+    std::unordered_map<std::string, ShaderCode> shaderLibs = {};
 
   public:
     explicit Shader() : id(0) {}
@@ -106,9 +107,10 @@ class Shader {
     void attachTessEvaluationShader(const ShaderCode &shaderCode) {
         this->attach(GL_TESS_EVALUATION_SHADER, shaderCode);
     }
+    void attachShaderLib(const ShaderCode &shaderCode);
 
   private:
-    static GLuint load(GLuint shaderType, const ShaderCode &shaderCode);
+    GLuint load(GLuint shaderType, const ShaderCode &shaderCode);
 
     void attach(GLuint shaderType, const ShaderCode &shaderCode);
 
