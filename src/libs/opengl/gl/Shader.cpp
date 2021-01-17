@@ -111,18 +111,32 @@ void Shader::compile() {
 ShaderCode insertShaderCode(const ShaderCode &original, const ShaderCode &import, int line) {
     ShaderCode result = {};
     result.filePath = original.filePath;
-    result.lineCount = original.lineCount + import.lineCount - 1;
+    result.lineCount = original.lineCount + import.lineCount + 1;
     result.lineLengths = reinterpret_cast<int *>(std::malloc(result.lineCount * sizeof(int)));
     result.shaderSource = reinterpret_cast<char **>(std::malloc(result.lineCount * sizeof(char *)));
     for (int i = 0; i < result.lineCount; i++) {
         int lineLength = 0;
         char *shaderSource = nullptr;
-        if (i >= line && i < line + import.lineCount) {
-            lineLength = import.lineLengths[i - line];
-            shaderSource = import.shaderSource[i - line];
-        } else if (i >= line + import.lineCount) {
-            lineLength = original.lineLengths[i - import.lineCount + 1];
-            shaderSource = original.shaderSource[i - import.lineCount + 1];
+        if (i == line) {
+            // insert first line correction
+            std::string lineCountStr = "#line 1\n";
+            lineLength = lineCountStr.size();
+            size_t size = (lineLength + 1) * sizeof(char);
+            shaderSource = reinterpret_cast<char *>(std::malloc(size));
+            std::memcpy(shaderSource, lineCountStr.c_str(), size);
+        } else if (i > line && i <= line + import.lineCount) {
+            lineLength = import.lineLengths[i - line - 1];
+            shaderSource = import.shaderSource[i - line - 1];
+        } else if (i == line + import.lineCount + 1) {
+            // insert second line correction
+            std::string lineCountStr = "#line " + std::to_string(line + 1) + "\n";
+            lineLength = lineCountStr.size();
+            size_t size = (lineLength + 1) * sizeof(char);
+            shaderSource = reinterpret_cast<char *>(std::malloc(size));
+            std::memcpy(shaderSource, lineCountStr.c_str(), size);
+        } else if (i > line + import.lineCount + 1) {
+            lineLength = original.lineLengths[i - import.lineCount - 1];
+            shaderSource = original.shaderSource[i - import.lineCount - 1];
         } else {
             lineLength = original.lineLengths[i];
             shaderSource = original.shaderSource[i];
@@ -150,6 +164,9 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     ShaderCode finalShaderCode = shaderCode;
     for (int i = 0; i < finalShaderCode.lineCount; i++) {
         std::string sourceLine = std::basic_string(finalShaderCode.shaderSource[i], finalShaderCode.lineLengths[i]);
+        if (sourceLine[0] == '\n') {
+            sourceLine = sourceLine.substr(1);
+        }
         if (sourceLine.size() < 12) {
             continue;
         }
