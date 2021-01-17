@@ -10,6 +10,10 @@ const float PHI = 1.61803398874989484820459;// = Golden Ratio
 float gold_noise(in vec2 uv, in float seed) {
     return fract(tan(distance(uv * PHI, uv) * seed) * uv.x);
 }
+float gold_noise(in float seed) {
+    vec2 uv = vec2(1.0);
+    return fract(tan(distance(uv * PHI, uv) * seed) * uv.x);
+}
 float rand(vec2 uv) {
     return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -153,13 +157,14 @@ void applyPlatform(inout vec3 noise, in float noiseMax, in vec2 pos, in float pl
 vec4 generateHeight(in vec2 pos,
 in NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS], in int numNoiseLayers,
 in bool useFiniteDifferences, in float finiteDifference,
-float power, float bowlStrength, in float platformHeight
+in float power, in float bowlStrength, in float platformHeight,
+in int seed
 ) {
-
     vec3 noise = vec3(0.0F);
     float noiseMin = 0.0F;
     float noiseMax = 0.0F;
 
+    vec2 seedOffset = vec2(gold_noise(float(seed))*10000, gold_noise(float(seed))*10000);
     for (int i = 0; i < numNoiseLayers; i++) {
         if (!noiseLayers[i].enabled) {
             continue;
@@ -169,15 +174,17 @@ float power, float bowlStrength, in float platformHeight
         float amplitude = noiseLayers[i].amplitude;
 
         if (useFiniteDifferences) {
-            vec3 n0 = snoise2(pos / frequency) * amplitude;
+            vec2 p = pos + seedOffset;
+            vec3 n0 = snoise2(p / frequency) * amplitude;
             noise.x += n0.x;
             float diff = finiteDifference;
-            vec3 n1 = snoise2((pos + vec2(diff, 0.0F)) / frequency) * amplitude;
-            vec3 n2 = snoise2((pos + vec2(0.0F, diff)) / frequency) * amplitude;
+            vec3 n1 = snoise2((p + vec2(diff, 0.0F)) / frequency) * amplitude;
+            vec3 n2 = snoise2((p + vec2(0.0F, diff)) / frequency) * amplitude;
             noise.y += (n0.x - n1.x) / -diff;
             noise.z += (n0.x - n2.x) / -diff;
         } else {
-            vec3 n = snoise2(pos / frequency) * amplitude;
+            vec2 p = pos + seedOffset;
+            vec3 n = snoise2(p / frequency) * amplitude;
             n.yz /= frequency;
             noise += n;
         }
@@ -197,3 +204,4 @@ float power, float bowlStrength, in float platformHeight
     vec4 result = vec4(noise, normalizedHeight);
     return result;
 }
+

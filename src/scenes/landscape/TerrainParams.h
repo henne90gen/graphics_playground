@@ -14,6 +14,7 @@ struct TerrainParams {
     float power = 1.1F;
     float bowlStrength = 20.0F;
     float platformHeight = 0.15F;
+    int seed = 1337;
 
   public:
     TerrainParams();

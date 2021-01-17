@@ -1,7 +1,8 @@
 #include "TerrainParams.h"
 
-#include <imgui.h>
 #include <array>
+#include <imgui.h>
+#include <random>
 
 TerrainParams::TerrainParams() {
     noiseLayers = {
@@ -22,6 +23,13 @@ void TerrainParams::showGui() {
     ImGui::DragFloat("Power", &power, 0.001F);
     ImGui::DragFloat("Bowl Strength", &bowlStrength, 0.1F);
     ImGui::SliderFloat("Platform Height", &platformHeight, 0.0F, 1.0F);
+    ImGui::DragInt("Seed", &seed);
+    if (ImGui::Button("New Seed")) {
+        std::random_device rand_dev;
+        std::mt19937 generator(rand_dev());
+        std::uniform_int_distribution<int> distr(0, 1000000);
+        seed = distr(generator);
+    }
 }
 
 void TerrainParams::showLayersGui() {
@@ -79,4 +87,5 @@ void TerrainParams::setShaderUniforms(const std::shared_ptr<Shader> &shader) con
     shader->setUniform("power", power);
     shader->setUniform("bowlStrength", bowlStrength);
     shader->setUniform("platformHeight", platformHeight);
+    shader->setUniform("seed", seed);
 }
