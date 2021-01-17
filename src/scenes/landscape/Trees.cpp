@@ -5,8 +5,11 @@
 
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
 
+DEFINE_SHADER(landscape_NoiseLib)
+
 void Trees::init() {
     shader = CREATE_DEFAULT_SHADER(landscape_Tree);
+    shader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
     cubeVA = createCubeVA(shader);
 }
 
