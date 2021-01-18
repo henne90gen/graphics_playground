@@ -5,10 +5,10 @@ from typing import Tuple, Union
 CPP_TEMPLATE = """\
 #include "{name}.h"
 
-#include "Main.h"
+#include <Main.h>
 
 DEFINE_SCENE_MAIN({name})
-DEFINE_DEFAULT_SHADER({folder_name}_{name})
+DEFINE_DEFAULT_SHADERS({folder_name}_{name})
 
 void {name}::setup() {{
     shader = CREATE_DEFAULT_SHADER({folder_name}_{name});
@@ -22,11 +22,11 @@ void {name}::tick() {{}}\
 H_TEMPLATE = """\
 #pragma once
 
-#include "Scene.h"
+#include <Scene.h>
 
 #include <functional>
 
-#include "opengl/Shader.h"
+#include <gl/Shader.h>
 
 class {name} : public Scene {{
   public:
