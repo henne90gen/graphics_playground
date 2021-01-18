@@ -86,6 +86,7 @@ void main() {
     } else {
         colorFactor = 1.0F;
     }
+    colorFactor = 1.0F;
 
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0F);
     instanceId = gl_InstanceID;

@@ -50,8 +50,6 @@ class Landscape : public Scene {
     std::shared_ptr<Texture> dirtTexture;
     std::shared_ptr<Texture> rockTexture;
 
-    std::shared_ptr<Model> treeModel;
-
     Sky sky = {};
     Trees trees = {};
     TerrainParams terrainParams = {};
