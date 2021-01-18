@@ -46,7 +46,6 @@ void Landscape::setup() {
     terrainVA = generatePoints(terrainShader);
 
     initTextures();
-    initModels();
 
     sky.init();
     trees.init();
@@ -95,20 +94,19 @@ void Landscape::tick() {
         ImGui::Separator();
         terrainParams.showGui();
         ImGui::Separator();
-        ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
-        ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), dragSpeed);
-        ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
-        ImGui::Separator();
         ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
         ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
         ImGui::Separator();
         ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
         ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
         ImGui::Separator();
-        ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
-        ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
-        ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
-        ImGui::DragFloat("Light Power", &lightPower, 0.1F);
+        if (ImGui::TreeNode("Light Properties")) {
+            ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
+            ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
+            ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
+            ImGui::DragFloat("Light Power", &lightPower, 0.1F);
+            ImGui::TreePop();
+        }
         ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
         ImGui::Separator();
         ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
@@ -357,12 +355,5 @@ void Landscape::initTextures() {
     grassTexture = loadTexture(fileNames[0]);
     dirtTexture = loadTexture(fileNames[1]);
     rockTexture = loadTexture(fileNames[2]);
-#endif
-}
-
-void Landscape::initModels() {
-#if 0
-    treeModel = std::make_shared<Model>();
-    treeModel->loadFromFile("landscape_resources/assets/models/Tree1/Tree1.obj", treeShader);
 #endif
 }

@@ -2,6 +2,7 @@
 
 #include <gl/Shader.h>
 #include <gl/VertexArray.h>
+#include <Model.h>
 #include <memory>
 
 #include "Layers.h"
@@ -11,8 +12,9 @@
 class Trees {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> cubeVA;
+    std::shared_ptr<Model> treeModel;
 
-    int treeCount = 10000;
+    int treeCount = 1000;
 
   public:
     void init();

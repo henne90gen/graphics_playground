@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 
+#include <util/TimeUtils.h>
+
 /**
  * Trim from start (in place)
  */
@@ -69,6 +71,8 @@ void parseMaterialLib(
 RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &faces);
 
 unsigned int fromFile(const std::string &fileName, std::shared_ptr<RawModel> &model) {
+    TIME_SCOPE_NAME("fromFile");
+
     if (fileName.find(".obj") == std::string::npos) {
         std::cerr << fileName << " is not an obj file" << std::endl;
         return 1;
@@ -92,6 +96,8 @@ unsigned int fromFile(const std::string &fileName, std::shared_ptr<RawModel> &mo
 
 unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines,
                              std::shared_ptr<RawModel> &model) {
+    TIME_SCOPE_NAME("fromFileContent");
+
     if (lines.empty()) {
         return 1;
     }
@@ -145,6 +151,8 @@ unsigned int fromFileContent(const std::string &fileName, const std::vector<std:
 }
 
 RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &faces) {
+    TIME_SCOPE_NAME("createIndicesFromFaces");
+
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::vec3> normals = {};
     std::vector<glm::vec2> textureCoordinates = {};

@@ -1,6 +1,10 @@
 #include "Model.h"
 
+#include <util/TimeUtils.h>
+
 void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader) {
+    TIME_SCOPE_NAME("loadFromFile");
+
     meshes.clear();
 
     shader->bind();
@@ -40,6 +44,7 @@ void Model::loadFromFile(const std::string &fileName, const std::shared_ptr<Shad
 }
 
 void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) const {
+    TIME_SCOPE_NAME("updateMeshVertices");
     bool hasNormals = !mesh.normals.empty();
     shader->setUniform("u_HasNormals", hasNormals);
     bool hasTexture = !mesh.textureCoordinates.empty();
@@ -57,7 +62,7 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
             vertices[i * 8 + 4] = mesh.normals[i].y;
             vertices[i * 8 + 5] = mesh.normals[i].z;
         } else {
-            vertices[i * 8 +3] = 0;
+            vertices[i * 8 + 3] = 0;
             vertices[i * 8 + 4] = 0;
             vertices[i * 8 + 5] = 0;
         }
@@ -78,8 +83,8 @@ void OpenGLMesh::updateMeshVertices(const ModelLoader::RawMesh &mesh, const std:
 
 void OpenGLMesh::updateTexture(ModelLoader::RawMesh &mesh) const {
     Image image = {};
-    if (!mesh.material || !ImageOps::load(mesh.material->diffuseTextureMap, image)) {
-        ImageOps::createCheckerBoard(image);
-    }
+    //    if (!mesh.material || !ImageOps::load(mesh.material->diffuseTextureMap, image)) {
+    ImageOps::createCheckerBoard(image);
+    //    }
     texture->update(image.pixels.data(), image.width, image.height);
 }
