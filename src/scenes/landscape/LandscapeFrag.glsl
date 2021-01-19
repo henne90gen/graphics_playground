@@ -345,11 +345,11 @@ vec4 debugColors(vec3 normal, vec3 tangent, vec3 bitangent) {
 }
 
 vec4 calcDirLight(DirLight light, Material material, vec3 normal, vec3 viewDir) {
-    vec3 lightDir = normalize(light.direction);
+    vec3 lightDir = -normalize(light.direction);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 reflectDir = reflect(lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
     vec3 color = light.color * light.power;
@@ -410,7 +410,7 @@ void main() {
     vec3 normal = normalize(normalMatrix * normal_frag_in);
     vec3 tangent = normalize(normalMatrix * tangent_frag_in);
     vec3 bitangent = normalize(normalMatrix * bitangent_frag_in);
-    vec3 viewDir = normalize(cameraPosition - model_position);
+    vec3 viewDir = normalize(model_position - cameraPosition);
 
     if (showNormals || showTangents || showUVs) {
         color = debugColors(normal, tangent, bitangent);

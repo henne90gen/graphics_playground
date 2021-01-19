@@ -20,19 +20,27 @@ struct Material {
 };
 
 in vec3 normal_frag_in;
-in vec3 model_position;
+in vec3 modelPosition;
 in float normalized_height;
+
+in vec3 Fex;
+in vec3 Lin;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
 uniform vec3 cameraPosition;
+uniform vec3 lightDirection;
+
+uniform bool showFex;
+uniform bool useFex;
+uniform bool showLin;
+uniform bool useLin;
 
 out vec4 color;
 
 const vec3 lightPosition = vec3(0.0F, 150.0F, 0.0F);
-const vec3 lightDirection = vec3(0.0F, 150.0F, 0.0F);
 const vec3 lightColor = vec3(1.0F);
-const float lightPower = 1.0F;
+const float lightPower = 2.0F;
 
 const float grassLevel = 0.4F;
 const float rockLevel = 1.0F;
@@ -60,11 +68,11 @@ vec3 getSurfaceColor(float height) {
 }
 
 vec4 calcDirLight(DirLight light, Material material, vec3 normal, vec3 viewDir) {
-    vec3 lightDir = normalize(light.direction);
+    vec3 lightDir = -normalize(light.direction);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 reflectDir = reflect(lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
     vec3 color = light.color * light.power;
@@ -83,9 +91,18 @@ vec4 calcDirLight(DirLight light, Material material, vec3 normal, vec3 viewDir) 
     return vec4(result, 1.0F);
 }
 
+vec3 ACESFilm(vec3 x) {
+    float tA = 2.51;
+    float tB = 0.03;
+    float tC = 2.43;
+    float tD = 0.59;
+    float tE = 0.14;
+    return clamp((x*(tA*x+tB))/(x*(tC*x+tD)+tE),0.0,1.0);
+}
+
 void main() {
     vec3 normal = normalize(normalMatrix * normal_frag_in);
-    vec3 viewDir = normalize(cameraPosition - model_position);
+    vec3 viewDir = normalize(modelPosition - cameraPosition);
 
     vec3 materialDiffuseColor = getSurfaceColor(normalized_height);
     vec3 materialAmbientColor = vec3(0.1, 0.1, 0.1) * materialDiffuseColor;
@@ -95,6 +112,21 @@ void main() {
     DirLight dirLight = DirLight(lightDirection, lightColor, lightPower);
 
     color = vec4(0.0F);
-    //    color += calcPointLightSimple(light, material, normal, viewDir);
     color += calcDirLight(dirLight, material, normal, viewDir);
+
+    if (useFex) {
+        color *= vec4(Fex, 1.0F);
+    }
+    if (showFex) {
+        color = vec4(Fex, 1.0F);
+    }
+
+    if (useLin) {
+        color += vec4(Lin, 0.0F);
+    }
+    if (showLin) {
+        color = vec4(Lin, 1.0F);
+    }
+
+    color = vec4(ACESFilm(color.xyz), 1.0F);
 }
