@@ -1,11 +1,5 @@
 #version 330 core
 
-struct NoiseLayer {
-    float frequency;
-    float amplitude;
-    bool enabled;
-};
-
 struct DirLight {
     vec3 direction;
     vec3 color;
@@ -41,10 +35,6 @@ uniform vec3 cameraPosition;
 uniform bool showNormals;
 uniform bool showTangents;
 uniform bool showUVs;
-
-const int MAX_NUM_NOISE_LAYERS = 15;
-uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
-uniform int numNoiseLayers;
 
 uniform float grassLevel;
 uniform float rockLevel;
@@ -447,50 +437,4 @@ void main() {
     //    color = vec4(render_grass(normal, uv, sight_dir, light_dir, light_color, ambient_color), 1.0F);
     //    color = vec4(gold_noise(uv, 1.0F), gold_noise(uv, 2.0F), gold_noise(uv, 3.0F), 1.0F);
     //    color = vec4(rand(uv), rand(uv), rand(uv), 1.0F);
-}
-
-vec3 getNormalFromNormalMap() {
-    #if 1
-    return vec3(0.0, 1.0F, 0.0F);
-    #else
-    float overlap = 0.1F;
-
-    vec2 uv = vUV;
-    uv.x = fract(uv.x);
-    uv.x *= 1.0F - overlap;
-    uv.x += overlap * 0.5F;
-
-    vec3 normal = texture(uNormalSampler, uv).rgb;
-
-    float xFrac = fract(uv.x);
-    float xFracInv = 1.0F - xFrac;
-    if (xFrac > 1.0F - overlap) {
-        vec2 uvNext = vec2(overlap - xFracInv, uv.y);
-        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
-        normal = mix(normal, normalNext, 1.0F - ((1.0F - xFrac) * (1.0F / overlap)));
-    }
-    if (xFrac < overlap) {
-        vec2 uvNext = vec2(1.0F - (overlap - xFrac), uv.y);
-        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
-        normal = mix(normal, normalNext, 1.0F - (xFrac * (1.0F / overlap)));
-    }
-
-    float yFrac = fract(uv.y);
-    float yFracInv = 1.0F - yFrac;
-    if (yFrac > 1.0F - overlap) {
-        vec2 uvNext = vec2(overlap - yFracInv, uv.y);
-        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
-        normal = mix(normal, normalNext, 1.0F - ((1.0F - yFrac) * (1.0F / overlap)));
-    }
-    if (yFrac < overlap) {
-        vec2 uvNext = vec2(1.0F - (overlap - yFrac), uv.y);
-        vec3 normalNext = texture(uNormalSampler, uvNext).rgb;
-        normal = mix(normal, normalNext, 1.0F - (yFrac * (1.0F / overlap)));
-    }
-
-    normal = normalize(normal * 2.0 - 1.0);
-    normal = normalize(vTBN * normal);
-
-    return normal;
-    #endif
 }

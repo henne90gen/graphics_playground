@@ -171,12 +171,7 @@ void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4
     terrainShader->bind();
     terrainVA->bind();
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::translate(modelMatrix, modelPosition);
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    modelMatrix = glm::scale(modelMatrix, modelScale);
+    glm::mat4 modelMatrix = createModelMatrix(modelPosition, modelRotation, modelScale);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
     terrainShader->setUniform("modelMatrix", modelMatrix);
     terrainShader->setUniform("viewMatrix", viewMatrix);
