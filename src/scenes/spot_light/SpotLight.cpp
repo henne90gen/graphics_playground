@@ -69,8 +69,7 @@ void SpotLight::tick() {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-    auto modelMatrix = glm::identity<glm::mat4>();
-    modelMatrix = glm::translate(modelMatrix, modelPosition);
+    auto modelMatrix = createModelMatrix(modelPosition);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
     auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
     shader->setUniform("u_ModelMatrix", modelMatrix);
