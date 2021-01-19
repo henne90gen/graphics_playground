@@ -1,16 +1,24 @@
 #version 330 core
 
 #include "NoiseLib.glsl"
+#include "ScatterLib.glsl"
 
 in vec3 a_Position;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform vec3 cameraPosition;
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
+uniform float lightPower;
 
 out vec3 normal_frag_in;
-out vec3 model_position;
+out vec3 modelPosition;
 out float normalized_height;
+
+out vec3 Fex;
+out vec3 Lin;
 
 void main() {
     NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
@@ -47,11 +55,14 @@ void main() {
     vec4 noise = generateHeight(pos2D, noiseLayers, numNoiseLayers, useFiniteDifferences, 0.0F, power, seed);
     float height = noise.x;
     vec4 position = modelMatrix * vec4(a_Position.x, height, a_Position.z, 1.0F);
-    model_position = position.xyz;
+    modelPosition = position.xyz;
     gl_Position = projectionMatrix * viewMatrix * position;
 
     normalized_height = noise.w;
     vec3 tangent = vec3(1.0F, noise.y, 0.0F);
     vec3 bitangent = vec3(0.0F, noise.z, 1.0F);
     normal_frag_in = -normalize(cross(tangent, bitangent));
+
+    Fex = calcFex(cameraPosition, modelPosition);
+    Lin = calcLin(cameraPosition, modelPosition, lightDirection, lightColor, lightPower);
 }

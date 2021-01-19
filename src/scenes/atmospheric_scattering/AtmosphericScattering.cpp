@@ -11,12 +11,21 @@ DEFINE_SCENE_MAIN(AtmosphericScattering)
 
 DEFINE_DEFAULT_SHADERS(atmospheric_scattering_AtmosphericScattering)
 DEFINE_SHADER(atmospheric_scattering_NoiseLib)
+DEFINE_SHADER(atmospheric_scattering_ScatterLib)
+
+DEFINE_DEFAULT_SHADERS(atmospheric_scattering_Cube)
 
 void AtmosphericScattering::setup() {
-    shader = CREATE_DEFAULT_SHADER(atmospheric_scattering_AtmosphericScattering);
-    shader->attachShaderLib(SHADER_CODE(atmospheric_scattering_NoiseLib));
+    cubeShader = CREATE_DEFAULT_SHADER(atmospheric_scattering_Cube);
+    cubeShader->attachShaderLib(SHADER_CODE(atmospheric_scattering_ScatterLib));
+    cubeVA = createCubeVA(cubeShader);
 
-    quadVA = std::make_shared<VertexArray>(shader);
+    terrainShader = CREATE_DEFAULT_SHADER(atmospheric_scattering_AtmosphericScattering);
+    terrainShader->attachShaderLib(SHADER_CODE(atmospheric_scattering_NoiseLib));
+    terrainShader->attachShaderLib(SHADER_CODE(atmospheric_scattering_ScatterLib));
+
+    terrainVA = std::make_shared<VertexArray>(terrainShader);
+    terrainVA->bind();
     std::vector<glm::vec3> vertices = {};
     for (int i = 0; i < 100; i++) {
         for (int j = 0; j < 100; j++) {
@@ -27,7 +36,7 @@ void AtmosphericScattering::setup() {
           {ShaderDataType::Float3, "a_Position"},
     };
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
-    quadVA->addVertexBuffer(vertexBuffer);
+    terrainVA->addVertexBuffer(vertexBuffer);
 
     std::vector<glm::ivec3> indices = {};
     for (int i = 0; i < 100 * 100; i++) {
@@ -38,40 +47,65 @@ void AtmosphericScattering::setup() {
         indices.emplace_back(i + 100, i + 101, i + 1);
     }
     auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    quadVA->setIndexBuffer(indexBuffer);
+    terrainVA->setIndexBuffer(indexBuffer);
 }
 
 void AtmosphericScattering::destroy() {}
 
 void AtmosphericScattering::tick() {
-    static auto cameraPosition = glm::vec3(-55.0F, -75.0F, -85.0F);
-    static auto cameraRotation = glm::vec3(0.4F, -1.01F, 0.0F);
-    static auto modelPosition = glm::vec3(-50.0F, -5.0F, -15.0F);
-    static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
-    static auto modelScale = glm::vec3(1.0F);
-
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.1F);
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), 0.01F);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
+    ImGui::Separator();
+    ImGui::DragFloat3("Cube Position", reinterpret_cast<float *>(&cubePosition), 0.01F);
+    ImGui::DragFloat3("Cube Rotation", reinterpret_cast<float *>(&cubeRotation), 0.01F);
+    ImGui::DragFloat3("Cube Scale", reinterpret_cast<float *>(&cubeScale), 0.01F);
+    ImGui::Separator();
+    ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection), 0.1F);
+    ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
+    ImGui::DragFloat("Light Power", &lightPower, 0.1F);
+    ImGui::Separator();
+    ImGui::Checkbox("Show Fex", &showFex);
+    ImGui::Checkbox("Use Fex", &useFex);
+    ImGui::Checkbox("Show Lin", &showLin);
+    ImGui::Checkbox("Use Lin", &useLin);
     ImGui::End();
 
+    auto modelMatrix = createModelMatrix(modelPosition, modelRotation, modelScale);
+    setUniforms(terrainShader, modelMatrix);
+
+    terrainVA->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    modelMatrix = createModelMatrix(cubePosition, cubeRotation, cubeScale);
+    setUniforms(cubeShader, modelMatrix);
+
+    cubeVA->bind();
+    GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void AtmosphericScattering::setUniforms(const std::shared_ptr<Shader> &shader, const glm::mat4 &modelMatrix) {
     shader->bind();
-    quadVA->bind();
 
     auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-    auto modelMatrix = createModelMatrix(modelPosition, modelRotation, modelScale);
     auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-    shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("normalMatrix", normalMatrix);
+
+    shader->setUniform("showFex", showFex);
+    shader->setUniform("useFex", useFex);
+    shader->setUniform("showLin", showLin);
+    shader->setUniform("useLin", useLin);
 
     glm::mat4 viewModel = inverse(viewMatrix);
     glm::vec3 cameraPos(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
     shader->setUniform("cameraPosition", cameraPos);
-
-    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    shader->setUniform("lightDirection", lightDirection);
+    shader->setUniform("lightColor", lightColor);
+    shader->setUniform("lightPower", lightPower);
 }
