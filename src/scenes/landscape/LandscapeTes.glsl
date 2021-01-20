@@ -16,9 +16,7 @@ uniform vec3 cameraPosition;
 
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
-uniform float rStrength = 1.0F;
-uniform float mStrength = 1.0F;
-uniform float gStrength = 1.0F;
+uniform vec3 atmosphere;
 
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
 uniform int numNoiseLayers;
@@ -57,5 +55,5 @@ void main() {
     uv_frag_in = pos / uvScaleFactor;
 
     float lightPower = 200;
-    calcScattering(cameraPosition, model_position, -lightDirection, lightColor, lightPower, rStrength, mStrength, gStrength, extinction, inScatter);
+    calcScattering(cameraPosition, model_position, -lightDirection, lightColor, lightPower, atmosphere, extinction, inScatter);
 }
