@@ -11,12 +11,11 @@ const float _g = 0.76F;
 
 // http://developer.amd.com/wordpress/media/2012/10/GDC_02_HoffmanPreetham.pdf
 // https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/simulating-sky/simulating-colors-of-the-sky
-void calcScattering(vec3 cameraPosition, vec3 modelPosition, vec3 lightDirection, vec3 lightColor, float lightPower,
-float rStrength, float mStrength, float gStrength,
+void calcScattering(vec3 cameraPosition, vec3 modelPosition, vec3 lightDirection, vec3 lightColor, float lightPower, vec3 atmosphere,
 out vec3 extinction, out vec3 inScatter) {
-    vec3 bR = _bR * rStrength;
-    float bM = _bM * mStrength;
-    float g = _g * gStrength;
+    vec3 bR = _bR * atmosphere.x;
+    float bM = _bM * atmosphere.y;
+    float g = _g * atmosphere.z;
 
     vec3 modelToCamera = cameraPosition - modelPosition;
     float s = length(modelToCamera);

@@ -31,6 +31,8 @@ class Terrain {
     float tessellation = 60.0F;
     float uvScaleFactor = 20.0F;
 
+    glm::vec3 atmosphere = glm::vec3(0.6F, 0.8F, 1.1F);
+
     void initTextures();
     static std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
 
