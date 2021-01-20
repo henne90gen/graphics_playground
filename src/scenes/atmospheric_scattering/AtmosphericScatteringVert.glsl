@@ -17,8 +17,8 @@ out vec3 normal_frag_in;
 out vec3 modelPosition;
 out float normalized_height;
 
-out vec3 Fex;
-out vec3 Lin;
+out vec3 extinction;
+out vec3 inScatter;
 
 void main() {
     NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
@@ -51,8 +51,9 @@ void main() {
     float power = 1.1F;
     vec2 pos2D = a_Position.xz;
     bool useFiniteDifferences = false;
+    float platformHeight = 0.0F;
     int seed = 1337;
-    vec4 noise = generateHeight(pos2D, noiseLayers, numNoiseLayers, useFiniteDifferences, 0.0F, power, seed);
+    vec4 noise = generateHeight(pos2D, noiseLayers, numNoiseLayers, useFiniteDifferences, platformHeight, power, seed);
     float height = noise.x;
     vec4 position = modelMatrix * vec4(a_Position.x, height, a_Position.z, 1.0F);
     modelPosition = position.xyz;
@@ -63,6 +64,5 @@ void main() {
     vec3 bitangent = vec3(0.0F, noise.z, 1.0F);
     normal_frag_in = -normalize(cross(tangent, bitangent));
 
-    Fex = calcFex(cameraPosition, modelPosition);
-    Lin = calcLin(cameraPosition, modelPosition, lightDirection, lightColor, lightPower);
+    calcScattering(cameraPosition, modelPosition, lightDirection, lightColor, lightPower, extinction, inScatter);
 }

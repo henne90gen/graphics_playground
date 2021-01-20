@@ -23,8 +23,8 @@ in vec3 normal_frag_in;
 in vec3 modelPosition;
 in float normalized_height;
 
-in vec3 Fex;
-in vec3 Lin;
+in vec3 extinction;
+in vec3 inScatter;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -115,18 +115,18 @@ void main() {
     color += calcDirLight(dirLight, material, normal, viewDir);
 
     if (useFex) {
-        color *= vec4(Fex, 1.0F);
+        color *= vec4(extinction, 1.0F);
     }
     if (showFex) {
-        color = vec4(Fex, 1.0F);
+        color = vec4(extinction, 1.0F);
     }
 
     if (useLin) {
-        color += vec4(Lin, 0.0F);
+        color += vec4(inScatter, 0.0F);
     }
     if (showLin) {
-        color = vec4(Lin, 1.0F);
+        color = vec4(inScatter, 1.0F);
     }
 
-    color = vec4(ACESFilm(color.xyz), 1.0F);
+    // color = vec4(ACESFilm(color.xyz), 1.0F);
 }

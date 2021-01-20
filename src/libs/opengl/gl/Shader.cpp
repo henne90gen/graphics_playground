@@ -147,6 +147,11 @@ ShaderCode insertShaderCode(const ShaderCode &original, const ShaderCode &import
     return result;
 }
 
+std::string getFileName(const std::string &path) {
+    int lastSlash = path.find_last_of('/');
+    return path.substr(lastSlash + 1);
+}
+
 GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     GLuint shaderId = 0;
     GL_Call(shaderId = glCreateShader(shaderType));
@@ -201,8 +206,8 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
         return 0;
     }
 
-    std::cout << "  Compiled " << shaderTypeToString(shaderType) << " shader (" << finalShaderCode.filePath << ")"
-              << std::endl;
+    std::cout << "  Compiled " << shaderTypeToString(shaderType) << " shader (" << getFileName(finalShaderCode.filePath)
+              << ")" << std::endl;
     return shaderId;
 }
 
