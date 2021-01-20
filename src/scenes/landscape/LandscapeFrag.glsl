@@ -26,6 +26,9 @@ in vec3 bitangent_frag_in;
 in vec3 model_position;
 in float normalized_height;
 
+in vec3 extinction;
+in vec3 inScatter;
+
 out vec4 color;
 
 uniform mat4 modelMatrix;
@@ -35,6 +38,8 @@ uniform vec3 cameraPosition;
 uniform bool showNormals;
 uniform bool showTangents;
 uniform bool showUVs;
+uniform bool useAtmosphericScattering;
+uniform bool useACESFilm = true;
 
 uniform float grassLevel;
 uniform float rockLevel;
@@ -296,19 +301,20 @@ vec3 render_grass(vec3 normal, vec2 uv, vec3 sight_dir, vec3 light_dir, vec3 lig
 vec3 getSurfaceColor(float height) {
     // TODO make color dependent on normal
     const float grassDamper = 0.75F;
+    const float dirtDamper = 0.9F;
     if (height < grassLevel-blur) {
         vec3 grassColor = texture(grassTexture, uv_frag_in).rgb * grassDamper;
         return grassColor;
     } else if (height < grassLevel+blur) {
         vec3 grassColor = texture(grassTexture, uv_frag_in).rgb * grassDamper;
-        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
+        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb * dirtDamper;
         float t = (height-(grassLevel-blur)) / (2.0F*blur);
         return mix(grassColor, dirtColor, t);
     } else if (height < rockLevel-blur){
-        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
+        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb * dirtDamper;
         return dirtColor;
     } else if (height < rockLevel+blur) {
-        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb;
+        vec3 dirtColor = texture(dirtTexture, uv_frag_in).rgb * dirtDamper;
         vec3 rockColor = texture(rockTexture, uv_frag_in).rgb;
         float t = (height-(rockLevel-blur)) / (2.0F*blur);
         return mix(dirtColor, rockColor, t);
@@ -345,7 +351,7 @@ vec4 debugColors(vec3 normal, vec3 tangent, vec3 bitangent) {
 }
 
 vec4 calcDirLight(DirLight light, Material material, vec3 normal, vec3 viewDir) {
-    vec3 lightDir = -normalize(light.direction);
+    vec3 lightDir = normalize(light.direction);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
@@ -406,6 +412,25 @@ vec4 calcPointLightSimple(PointLight light, Material material, vec3 normal, vec3
     return vec4(color, 1.0F);
 }
 
+// https://www.shadertoy.com/view/WlSSzK
+vec3 ACESFilm(vec3 x) {
+    #if 0
+    // original values
+    float tA = 2.51;
+    float tB = 0.03;
+    float tC = 2.43;
+    float tD = 0.59;
+    float tE = 0.14;
+    #else
+    float tA = 3.01;
+    float tB = 0.03;
+    float tC = 2.43;
+    float tD = 0.2;
+    float tE = 0.8;
+    #endif
+    return clamp((x*(tA*x+tB))/(x*(tC*x+tD)+tE), 0.0, 1.0);
+}
+
 void main() {
     vec3 normal = normalize(normalMatrix * normal_frag_in);
     vec3 tangent = normalize(normalMatrix * tangent_frag_in);
@@ -428,12 +453,21 @@ void main() {
     //    color += calcPointLightSimple(light, material, normal, viewDir);
     color += calcDirLight(dirLight, material, normal, viewDir);
 
+    if (useAtmosphericScattering) {
+        color *= vec4(extinction, 1.0F);
+        color += vec4(inScatter, 1.0F);
+    }
+
+    if (useACESFilm) {
+        color = vec4(ACESFilm(color.xyz), 1.0F);
+    }
+
     //    color = vec4(getTerrainColor(model_position, normal, normalized_height, length(viewDir)), 1.0F);
-    vec2 uv = uv_frag_in;
-    vec3 sight_dir = viewDir;
-    vec3 light_dir = lightDirection;
-    vec3 light_color = lightColor;
-    vec3 ambient_color = vec3(1.9);
+    //    vec2 uv = uv_frag_in;
+    //    vec3 sight_dir = viewDir;
+    //    vec3 light_dir = lightDirection;
+    //    vec3 light_color = lightColor;
+    //    vec3 ambient_color = vec3(1.9);
     //    color = vec4(render_grass(normal, uv, sight_dir, light_dir, light_color, ambient_color), 1.0F);
     //    color = vec4(gold_noise(uv, 1.0F), gold_noise(uv, 2.0F), gold_noise(uv, 3.0F), 1.0F);
     //    color = vec4(rand(uv), rand(uv), rand(uv), 1.0F);

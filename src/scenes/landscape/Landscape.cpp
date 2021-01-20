@@ -19,6 +19,7 @@ constexpr float Z_FAR = 10000.0F;
 DEFINE_SCENE_MAIN(Landscape)
 
 DEFINE_SHADER(landscape_NoiseLib)
+DEFINE_SHADER(landscape_ScatterLib)
 
 DEFINE_DEFAULT_SHADERS(landscape_Landscape)
 DEFINE_TESS_CONTROL_SHADER(landscape_Landscape)
@@ -37,42 +38,27 @@ void Landscape::setup() {
     flatShader->bind();
     cubeVA = createCubeVA(flatShader);
 
-    terrainShader = CREATE_DEFAULT_SHADER(landscape_Landscape);
-    terrainShader->attachTessControlShader(SHADER_CODE(landscape_LandscapeTcs));
-    terrainShader->attachTessEvaluationShader(SHADER_CODE(landscape_LandscapeTes));
-    terrainShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
-    terrainShader->bind();
-
-    terrainVA = generatePoints(terrainShader);
-
-    initTextures();
-
     sky.init();
     trees.init();
+    terrain.init();
 }
 
 void Landscape::destroy() {}
 
 void Landscape::tick() {
     static auto thingToRender = 0;
-    static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
-    static auto modelPosition = glm::vec3(0.0F);
-    static auto modelRotation = glm::vec3(0.0F);
     static auto cameraPosition = glm::vec3(-100.0F, -150.0F, -100.0F);
     static auto cameraRotation = glm::vec3(0.5F, -0.9F, 0.0F);
     static auto playerPosition = glm::vec3(0.0F, -33.0F, 0.0F);
     static auto playerRotation = glm::vec3(-0.13F, 0.95F, 0.0F);
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
-    static auto uvScaleFactor = 20.0F;
     static auto usePlayerPosition = false;
 
     static auto lightPower = 1.0F;
     static auto lightColor = glm::vec3(1.0F);
     static auto lightPosition = glm::vec3(0.0F, 150.0F, 0.0F);
     static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
-    static auto levels = TerrainLevels();
-    static auto tessellation = 60.0F;
 
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
@@ -92,8 +78,6 @@ void Landscape::tick() {
         ImGui::Separator();
         trees.showGui();
         ImGui::Separator();
-        terrainParams.showGui();
-        ImGui::Separator();
         ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
         ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
         ImGui::Separator();
@@ -107,19 +91,18 @@ void Landscape::tick() {
             ImGui::DragFloat("Light Power", &lightPower, 0.1F);
             ImGui::TreePop();
         }
-        ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
         ImGui::Separator();
         ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
         ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
         ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
         ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
-        ImGui::DragFloat("UV Scale", &uvScaleFactor);
+        ImGui::Checkbox("Use Atmospheric Scattering", &shaderToggles.useAtmosphericScattering);
         ImGui::Checkbox("Show Player View", &usePlayerPosition);
         ImGui::Separator();
-        ImGui::DragFloat("Tesselation", &tessellation);
+        terrain.showGui();
         ImGui::End();
 
-        terrainParams.showLayersGui();
+        terrain.showLayersGui();
 
         glm::mat4 viewMatrix;
         if (usePlayerPosition) {
@@ -129,17 +112,18 @@ void Landscape::tick() {
         }
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
-        renderTerrain(projectionMatrix, viewMatrix, modelPosition, modelRotation, modelScale, lightPosition,
-                      lightDirection, lightColor, lightPower, levels, shaderToggles, uvScaleFactor, tessellation,
-                      terrainParams);
+        terrain.render(projectionMatrix, viewMatrix, lightPosition, lightDirection, lightColor, lightPower,
+                       shaderToggles);
+
         renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
 
-        trees.render(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+        trees.render(projectionMatrix, viewMatrix, shaderToggles, terrain.terrainParams);
 
         static float animationTime = 0.0F;
         animationTime += static_cast<float>(getLastFrameTime());
         sky.render(projectionMatrix, viewMatrix, animationTime);
     } else if (thingToRender == 1) {
+#if 0
         static auto textureType = 0;
         static auto texturePosition = glm::vec3(0.0F);
         static auto textureZoom = 1.0F;
@@ -159,64 +143,8 @@ void Landscape::tick() {
         } else if (textureType == 2) {
             renderTexture(texturePosition, textureZoom, rockTexture);
         }
+#endif
     }
-}
-
-void Landscape::renderTerrain(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                              const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
-                              const glm::vec3 &modelScale, const glm::vec3 &lightPosition,
-                              const glm::vec3 &lightDirection, const glm::vec3 &lightColor, const float lightPower,
-                              const TerrainLevels &levels, const ShaderToggles &shaderToggles,
-                              const float uvScaleFactor, const float tessellation, const TerrainParams &terrainParams) {
-    terrainShader->bind();
-    terrainVA->bind();
-
-    glm::mat4 modelMatrix = createModelMatrix(modelPosition, modelRotation, modelScale);
-    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-    terrainShader->setUniform("modelMatrix", modelMatrix);
-    terrainShader->setUniform("viewMatrix", viewMatrix);
-    terrainShader->setUniform("projectionMatrix", projectionMatrix);
-    terrainShader->setUniform("normalMatrix", normalMatrix);
-
-    glm::mat4 viewModel = inverse(viewMatrix);
-    glm::vec3 cameraPosition(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
-    terrainShader->setUniform("cameraPosition", cameraPosition);
-
-    terrainShader->setUniform("tessellation", tessellation);
-
-    terrainParams.setShaderUniforms(terrainShader);
-
-    terrainShader->setUniform("grassLevel", levels.grassLevel);
-    terrainShader->setUniform("rockLevel", levels.rockLevel);
-    terrainShader->setUniform("blur", levels.blur);
-
-    terrainShader->setUniform("lightDirection", lightDirection);
-    terrainShader->setUniform("lightPosition", lightPosition);
-    terrainShader->setUniform("lightColor", lightColor);
-    terrainShader->setUniform("lightPower", lightPower);
-
-    terrainShader->setUniform("showUVs", shaderToggles.showUVs);
-    terrainShader->setUniform("showNormals", shaderToggles.showNormals);
-    terrainShader->setUniform("showTangents", shaderToggles.showTangents);
-    terrainShader->setUniform("uvScaleFactor", uvScaleFactor);
-
-    terrainShader->setUniform("grassTexture", grassTexture, GL_TEXTURE0);
-    terrainShader->setUniform("dirtTexture", dirtTexture, GL_TEXTURE1);
-    terrainShader->setUniform("rockTexture", rockTexture, GL_TEXTURE2);
-
-    if (shaderToggles.drawWireframe) {
-        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-    }
-
-    GL_Call(glPatchParameteri(GL_PATCH_VERTICES, 3));
-    GL_Call(glDrawElements(GL_PATCHES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-
-    if (shaderToggles.drawWireframe) {
-        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-    }
-
-    terrainVA->unbind();
-    terrainShader->unbind();
 }
 
 void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
@@ -252,103 +180,4 @@ void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom
 
     textureVA->unbind();
     textureShader->unbind();
-}
-
-std::shared_ptr<VertexArray> Landscape::generatePoints(const std::shared_ptr<Shader> &shader) {
-    auto result = std::make_shared<VertexArray>(shader);
-
-    std::vector<float> quadVertices = {
-          0.0F, 0.0F, //
-          1.0F, 0.0F, //
-          1.0F, 1.0F, //
-          0.0F, 1.0F, //
-    };
-
-    // generate a 10x10 grid of points in the range of -500 to 500
-    int width = 10;
-    int height = 10;
-    std::vector<float> vertices = {};
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            for (int i = 0; i < static_cast<int64_t>(quadVertices.size()); i++) {
-                float f = quadVertices[i];
-                if (i % 2 == 0) {
-                    f += static_cast<float>(row);
-                    f -= 5.0F;
-                    f *= 100.0F;
-                } else if (i % 2 == 1) {
-                    f += static_cast<float>(col);
-                    f -= 5.0F;
-                    f *= 100.0F;
-                }
-                vertices.push_back(f);
-            }
-        }
-    }
-
-    BufferLayout bufferLayout = {
-          {ShaderDataType::Vec2, "position_in"},
-    };
-    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
-    result->addVertexBuffer(buffer);
-
-    std::vector<glm::ivec3> indices = {};
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            const int i = (row * width + col) * 4;
-            indices.emplace_back(i, i + 1, i + 2);
-            indices.emplace_back(i, i + 2, i + 3);
-        }
-    }
-    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
-    result->setIndexBuffer(indexBuffer);
-
-    return result;
-}
-
-std::shared_ptr<Texture> createTextureFromImage(const Image &image) {
-    auto texture = std::make_shared<Texture>();
-    image.applyToTexture(texture);
-
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-
-    return texture;
-}
-
-std::shared_ptr<Texture> loadTexture(const std::string &fileName) {
-    Image image;
-    if (!ImageOps::load("landscape_resources/assets/textures/" + fileName, image)) {
-        ImageOps::createCheckerBoard(image);
-    }
-
-    return createTextureFromImage(image);
-}
-
-void Landscape::initTextures() {
-    RECORD_SCOPE();
-    const std::array<std::string, 3> fileNames = {
-          "Ground037_1K_Color.png", //
-          "Ground039_1K_Color.png", //
-          "Ground022_1K_Color.png", //
-    };
-
-#define LOAD_TEXTURES_PARALLEL 1
-#if LOAD_TEXTURES_PARALLEL
-    std::array<Image, 3> images = {};
-#pragma omp parallel for
-    for (int i = 0; i < images.size(); i++) {
-        if (!ImageOps::load("landscape_resources/textures/" + fileNames[i], images[i])) {
-            ImageOps::createCheckerBoard(images[i]);
-        }
-    }
-
-    grassTexture = createTextureFromImage(images[0]);
-    dirtTexture = createTextureFromImage(images[1]);
-    rockTexture = createTextureFromImage(images[2]);
-#else
-    grassTexture = loadTexture(fileNames[0]);
-    dirtTexture = loadTexture(fileNames[1]);
-    rockTexture = loadTexture(fileNames[2]);
-#endif
 }

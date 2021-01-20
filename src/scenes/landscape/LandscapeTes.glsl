@@ -1,6 +1,7 @@
 #version 440 core
 
 #include "NoiseLib.glsl"
+#include "ScatterLib.glsl"
 
 layout (triangles, equal_spacing, cw) in;
 
@@ -11,6 +12,13 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform float uvScaleFactor;
+uniform vec3 cameraPosition;
+
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
+uniform float rStrength = 1.0F;
+uniform float mStrength = 1.0F;
+uniform float gStrength = 1.0F;
 
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
 uniform int numNoiseLayers;
@@ -28,6 +36,9 @@ out vec3 bitangent_frag_in;
 out vec3 model_position;
 out float normalized_height;
 
+out vec3 extinction;
+out vec3 inScatter;
+
 void main() {
     vec2 pos = gl_TessCoord.x * position_tes_in[0];
     pos     += gl_TessCoord.y * position_tes_in[1];
@@ -44,4 +55,7 @@ void main() {
     gl_Position = projectionMatrix * viewMatrix * position;
 
     uv_frag_in = pos / uvScaleFactor;
+
+    float lightPower = 200;
+    calcScattering(cameraPosition, model_position, -lightDirection, lightColor, lightPower, rStrength, mStrength, gStrength, extinction, inScatter);
 }
