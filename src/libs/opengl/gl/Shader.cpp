@@ -179,7 +179,14 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
             continue;
         }
         std::string importString = sourceLine.substr(10, sourceLine.find_last_of('"') - 10);
-        ShaderCode &importCode = shaderLibs[importString];
+        auto itr = shaderLibs.find(importString);
+        if (itr == shaderLibs.end()) {
+            std::cout << "  Failed to compile " << shaderTypeToString(shaderType) << " shader ("
+                      << getFileName(finalShaderCode.filePath) << ")" << std::endl;
+            std::cout << "    Could not find shader lib: " << importString << std::endl;
+            return 0;
+        }
+        ShaderCode &importCode = itr->second;
         finalShaderCode = insertShaderCode(finalShaderCode, importCode, i);
     }
 
@@ -190,8 +197,8 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
     int success = 0;
     GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
     if (success == 0) {
-        std::cout << "  Failed to compile " << shaderTypeToString(shaderType) << " shader (" << finalShaderCode.filePath
-                  << ")" << std::endl;
+        std::cout << "  Failed to compile " << shaderTypeToString(shaderType) << " shader ("
+                  << getFileName(finalShaderCode.filePath) << ")" << std::endl;
     }
 
     int infoLogLength = 0;
