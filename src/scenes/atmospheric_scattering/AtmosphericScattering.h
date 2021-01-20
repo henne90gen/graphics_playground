@@ -34,7 +34,7 @@ class AtmosphericScattering : public Scene {
 
     glm::vec3 lightDirection = glm::vec3(0.0F, -10.0F, 50.0F);
     glm::vec3 lightColor = glm::vec3(1.0F, 1.0F, 1.0F);
-    float lightPower = 10.0F;
+    float lightPower = 100.0F;
 
     bool showFex = false;
     bool useFex = true;
@@ -42,4 +42,6 @@ class AtmosphericScattering : public Scene {
     bool useLin = true;
 
     void setUniforms(const std::shared_ptr<Shader> &shader, const glm::mat4 &modelMatrix);
+    void renderTerrain();
+    void renderSkyCube();
 };

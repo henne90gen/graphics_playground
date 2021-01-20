@@ -69,8 +69,6 @@ void FramebufferDemo::tick() {
     renderObjects(viewMatrix);
 
     renderMirror(viewMatrix, mirrorPosition, mirrorRotation);
-
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 void FramebufferDemo::renderObjects(const glm::mat4 &viewMatrix) {

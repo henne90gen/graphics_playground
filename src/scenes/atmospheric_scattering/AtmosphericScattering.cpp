@@ -10,10 +10,10 @@ constexpr float Z_FAR = 10000.0F;
 DEFINE_SCENE_MAIN(AtmosphericScattering)
 
 DEFINE_DEFAULT_SHADERS(atmospheric_scattering_AtmosphericScattering)
+DEFINE_DEFAULT_SHADERS(atmospheric_scattering_Cube)
+
 DEFINE_SHADER(atmospheric_scattering_NoiseLib)
 DEFINE_SHADER(atmospheric_scattering_ScatterLib)
-
-DEFINE_DEFAULT_SHADERS(atmospheric_scattering_Cube)
 
 void AtmosphericScattering::setup() {
     cubeShader = CREATE_DEFAULT_SHADER(atmospheric_scattering_Cube);
@@ -73,13 +73,20 @@ void AtmosphericScattering::tick() {
     ImGui::Checkbox("Use Lin", &useLin);
     ImGui::End();
 
+    renderTerrain();
+    renderSkyCube();
+}
+
+void AtmosphericScattering::renderTerrain() {
     auto modelMatrix = createModelMatrix(modelPosition, modelRotation, modelScale);
     setUniforms(terrainShader, modelMatrix);
 
     terrainVA->bind();
     GL_Call(glDrawElements(GL_TRIANGLES, terrainVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
 
-    modelMatrix = createModelMatrix(cubePosition, cubeRotation, cubeScale);
+void AtmosphericScattering::renderSkyCube() {
+    auto modelMatrix = createModelMatrix(cubePosition, cubeRotation, cubeScale);
     setUniforms(cubeShader, modelMatrix);
 
     cubeVA->bind();
