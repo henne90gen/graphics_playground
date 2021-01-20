@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <util/RenderUtils.h>
 
-#define USE_TREE_MODELS 1
+#define USE_TREE_MODELS 0
 
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
 
@@ -22,8 +22,9 @@ void Trees::init() {
 
 void Trees::showGui() {
     ImGui::DragInt("Tree Count", &treeCount);
+#if USE_TREE_MODELS
     ImGui::Text("Mesh count: %d", treeModel->getMeshes().size());
-//    ImGui::Text("Mesh count: %d", treeModel->getMeshes().size());
+#endif
 }
 
 void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
