@@ -35,8 +35,6 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
 
-    Camera camera = Camera();
-
     Sky sky = {};
     Trees trees = {};
     Terrain terrain = {};
