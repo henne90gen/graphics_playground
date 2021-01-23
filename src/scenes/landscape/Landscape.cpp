@@ -25,7 +25,9 @@ DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
 
 void Landscape::setup() {
-    getCamera().setFocalPoint(glm::vec3(0.0F,150.0F,0.0F));
+    getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
+    playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
+    playerCamera.setViewportSize(getWidth(), getHeight());
 
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
@@ -106,17 +108,23 @@ void Landscape::tick() {
         //        glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR,
         //        Z_FAR);
 
-         auto &camera = getCamera();
-        terrain.render(camera.projectionMatrix, camera.viewMatrix, lightPosition, lightDirection, lightColor,
+        Camera camera;
+        if (usePlayerPosition) {
+            playerCamera.update(getInput());
+            camera = playerCamera;
+        } else {
+            camera = getCamera();
+        }
+        terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightDirection, lightColor,
                        lightPower, shaderToggles);
 
-        renderLight(camera.projectionMatrix, camera.viewMatrix, lightPosition, lightColor);
+        renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
 
-        trees.render(camera.projectionMatrix, camera.viewMatrix, shaderToggles, terrain.terrainParams);
+        trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
 
         static float animationTime = 0.0F;
         animationTime += static_cast<float>(getLastFrameTime());
-        sky.render(camera.projectionMatrix, camera.viewMatrix, animationTime);
+        sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
     } else if (thingToRender == 1) {
 #if 0
         static auto textureType = 0;

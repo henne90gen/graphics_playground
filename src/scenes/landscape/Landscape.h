@@ -28,6 +28,10 @@ class Landscape : public Scene {
 
     void destroy() override;
 
+    void onAspectRatioChange() override {
+        playerCamera.setViewportSize(static_cast<float>(getWidth()), static_cast<float>(getHeight()));
+    }
+
   private:
     std::shared_ptr<VertexArray> textureVA;
     std::shared_ptr<VertexArray> cubeVA;
@@ -35,6 +39,7 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
 
+    Camera playerCamera = {};
     Sky sky = {};
     Trees trees = {};
     Terrain terrain = {};

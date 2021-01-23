@@ -93,8 +93,8 @@ void AtmosphericScattering::setUniforms(const std::shared_ptr<Shader> &shader, c
     shader->bind();
 
     auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-    shader->setUniform("viewMatrix", getCamera().viewMatrix);
-    shader->setUniform("projectionMatrix", getCamera().projectionMatrix);
+    shader->setUniform("viewMatrix", getCamera().getViewMatrix());
+    shader->setUniform("projectionMatrix", getCamera().getProjectionMatrix());
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("normalMatrix", normalMatrix);
 

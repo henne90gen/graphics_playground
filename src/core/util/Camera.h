@@ -12,10 +12,6 @@
  */
 class Camera {
   public:
-    // exposing projection and view matrix for ease of use
-    glm::mat4 projectionMatrix;
-    glm::mat4 viewMatrix;
-
     Camera() = default;
     Camera(float fov, float aspectRatio, float nearClip, float farClip);
 
@@ -31,6 +27,8 @@ class Camera {
     glm::vec3 getForwardDirection() const;
     glm::quat getOrientation() const;
     glm::vec3 getPosition() const;
+    const glm::mat4 &getProjectionMatrix() const { return projectionMatrix; }
+    const glm::mat4 &getViewMatrix() const { return viewMatrix; }
 
   private:
     void updateProjection();
@@ -44,7 +42,7 @@ class Camera {
     float rotationSpeed() const;
     float zoomSpeed() const;
 
-    float fov = 45.0F, aspectRatio = 1.778F, nearClip = 0.1F, farClip = 1000.0F;
+    float fov = 45.0F, aspectRatio = 1.778F, nearClip = 0.1F, farClip = 10000.0F;
 
     glm::vec3 position = {0.0F, 0.0F, 0.0F};
     glm::vec3 focalPoint = {0.0F, 0.0F, 0.0F};
@@ -54,6 +52,9 @@ class Camera {
     float distance = 10.0F;
     float pitch = 0.0F;
     float yaw = 0.0F;
+
+    glm::mat4 projectionMatrix;
+    glm::mat4 viewMatrix;
 
     float viewportWidth = 1280, viewportHeight = 720;
 };
