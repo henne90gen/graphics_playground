@@ -7,13 +7,9 @@
 #include <imgui.h>
 #include <utility>
 
+#include "util/Camera.h"
 #include "util/InputData.h"
 #include "util/TimeUtils.h"
-
-struct SceneData {
-    GLFWwindow *window;
-    InputData *input;
-};
 
 class Scene {
   public:
@@ -24,42 +20,45 @@ class Scene {
 
     virtual ~Scene() = default;
 
-    void setup(unsigned int windowWidth, unsigned int windowHeight, SceneData sceneData);
-    void tick(unsigned int windowWidth, unsigned int windowHeight);
-    void renderMetrics();
+    void setup(GLFWwindow *window);
+    void internalTick();
 
-    virtual void destroy() = 0;
+    void renderMetrics();
 
     const std::string &getName() { return name; }
 
-    void setDimensions(const unsigned int _width, const unsigned int _height) {
-        this->width = _width;
-        this->height = _height;
-        this->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-        onAspectRatioChange();
-    }
+    virtual void onWindowResize(int w, int h);
+    virtual void onKey(int key, int scancode, int action, int mods);
+    virtual void onCursorPos(double xPos, double yPos);
+    virtual void onMouseButton(int button, int action, int mods);
+    virtual void onCharacterTyped(unsigned int i) {}
+    virtual void onScroll(double xOffset, double yOffset);
 
   protected:
     virtual void setup() = 0;
     virtual void tick() = 0;
+    virtual void destroy() = 0;
     virtual void onAspectRatioChange(){};
 
     inline float getAspectRatio() const { return aspectRatio; }
     inline unsigned int getWidth() const { return width; }
     inline unsigned int getHeight() const { return height; }
     inline double getLastFrameTime() const { return timeDelta; }
-    inline InputData *getInput() const { return data.input; }
+    inline const InputData &getInput() const { return input; }
+    inline Camera &getCamera() { return camera; }
     inline PerformanceCounter *getPerformanceCounter() { return &this->performanceCounter; }
 
   private:
     const std::string name;
-    SceneData data;
+    GLFWwindow *window = nullptr;
+    InputData input = {};
+    Camera camera = {};
     double timeDelta = 0.0;
     int64_t lastTimeNs = 0L;
 
     unsigned int width = 0;
     unsigned int height = 0;
-    float aspectRatio = 16.0f / 9.0f;
+    float aspectRatio = 16.0F / 9.0F;
 
     PerformanceCounter performanceCounter = {};
 };

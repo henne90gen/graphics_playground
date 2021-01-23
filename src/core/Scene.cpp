@@ -1,5 +1,9 @@
 #include "Scene.h"
 
+constexpr float FIELD_OF_VIEW = 45.0F;
+constexpr float Z_NEAR = 0.1F;
+constexpr float Z_FAR = 10000.0F;
+
 void Scene::renderMetrics() {
     ImGui::Begin("Metrics");
 
@@ -16,18 +20,18 @@ void Scene::renderMetrics() {
     ImGui::End();
 }
 
-void Scene::setup(unsigned int windowWidth, unsigned int windowHeight, SceneData sceneData) {
+void Scene::setup(GLFWwindow *w) {
     RECORD_SCOPE();
 
-    this->data = sceneData;
-    setDimensions(windowWidth, windowHeight);
+    window = w;
+
+    camera = Camera(FIELD_OF_VIEW, getAspectRatio(), Z_NEAR, Z_FAR);
+
     setup();
 }
 
-void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
+void Scene::internalTick() {
     RECORD_SCOPE();
-
-    setDimensions(windowWidth, windowHeight);
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     int64_t currentTimeNs =
@@ -35,7 +39,50 @@ void Scene::tick(unsigned int windowWidth, unsigned int windowHeight) {
     timeDelta = static_cast<double>(currentTimeNs - lastTimeNs) / 1000000000.0;
     lastTimeNs = currentTimeNs;
 
+    camera.update(input);
     tick();
 
     renderMetrics();
 }
+
+void Scene::onWindowResize(const int w, const int h) {
+    width = w;
+    height = h;
+    glViewport(0, 0, width, height);
+
+    camera.setViewportSize(width, height);
+
+    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    onAspectRatioChange();
+}
+
+void Scene::onKey(int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+        glfwSetWindowShouldClose(window, 1);
+    } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
+#ifdef WITH_SCREEN_RECORDER
+        auto *recorder = static_cast<ScreenRecorder *>(glfwGetWindowUserPointer(window));
+        recorder->takeScreenshot();
+#endif
+    } else {
+        bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
+        input.keyboard.keys[key] = isDown;
+    }
+}
+
+void Scene::onCursorPos(double xPos, double yPos) {
+    input.mouse.pos.x = xPos;
+    input.mouse.pos.y = yPos;
+}
+
+void Scene::onMouseButton(int button, int action, int /*mods*/) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        input.mouse.left = action == GLFW_PRESS;
+    } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        input.mouse.right = action == GLFW_PRESS;
+    } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+        input.mouse.middle = action == GLFW_PRESS;
+    }
+}
+
+void Scene::onScroll(double xOffset, double yOffset) { camera.onScroll(yOffset); }

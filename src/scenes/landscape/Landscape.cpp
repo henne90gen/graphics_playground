@@ -12,10 +12,6 @@ constexpr unsigned int WIDTH = 10;
 constexpr unsigned int HEIGHT = 10;
 constexpr int INITIAL_POINT_DENSITY = 15;
 
-constexpr float FIELD_OF_VIEW = 45.0F;
-constexpr float Z_NEAR = 0.1F;
-constexpr float Z_FAR = 10000.0F;
-
 DEFINE_SCENE_MAIN(Landscape)
 
 DEFINE_SHADER(landscape_NoiseLib)
@@ -29,7 +25,7 @@ DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
 
 void Landscape::setup() {
-    camera = Camera(FIELD_OF_VIEW, getAspectRatio(), Z_NEAR, Z_FAR);
+    getCamera().setFocalPoint(glm::vec3(0.0F,150.0F,0.0F));
 
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
@@ -49,8 +45,6 @@ void Landscape::destroy() {}
 
 void Landscape::tick() {
     static auto thingToRender = 0;
-    static auto cameraPosition = glm::vec3(-100.0F, -150.0F, -100.0F);
-    static auto cameraRotation = glm::vec3(0.5F, -0.9F, 0.0F);
     static auto playerPosition = glm::vec3(0.0F, -33.0F, 0.0F);
     static auto playerRotation = glm::vec3(-0.13F, 0.95F, 0.0F);
     static auto movement = glm::vec3(0.0F);
@@ -79,9 +73,6 @@ void Landscape::tick() {
         sky.showGui();
         ImGui::Separator();
         trees.showGui();
-        ImGui::Separator();
-        ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
-        ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
         ImGui::Separator();
         ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
         ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
@@ -115,9 +106,7 @@ void Landscape::tick() {
         //        glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR,
         //        Z_FAR);
 
-        camera.SetViewportSize(getWidth(), getHeight());
-        camera.update(getInput());
-
+         auto &camera = getCamera();
         terrain.render(camera.projectionMatrix, camera.viewMatrix, lightPosition, lightDirection, lightColor,
                        lightPower, shaderToggles);
 

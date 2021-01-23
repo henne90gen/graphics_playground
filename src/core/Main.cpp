@@ -16,8 +16,6 @@
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
 
-InputData input = {};
-
 void setOmpThreadLimit() {
     auto coreCount = std::thread::hardware_concurrency();
     if (coreCount == 0) {
@@ -42,40 +40,35 @@ void enableOpenGLDebugging() {
 #endif
 }
 
-void mouseButtonCallback(GLFWwindow * /*window*/, int button, int action, int /*mods*/) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        input.mouse.left = action == GLFW_PRESS;
-    } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        input.mouse.right = action == GLFW_PRESS;
-    } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-        input.mouse.middle = action == GLFW_PRESS;
-    }
+void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+    auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
+    scene->onMouseButton(button, action, mods);
 }
 
-void cursorPosCallback(GLFWwindow * /*window*/, double xpos, double ypos) {
-    input.mouse.pos.x = xpos;
-    input.mouse.pos.y = ypos;
+void cursorPosCallback(GLFWwindow *window, double xPos, double yPos) {
+    auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
+    scene->onCursorPos(xPos, yPos);
 }
 
-void scrollCallback(GLFWwindow * /*window*/, double /*xoffset*/, double /*yoffset*/) {}
-
-void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int /*mods*/) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-        glfwSetWindowShouldClose(window, 1);
-    } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
-#ifdef WITH_SCREEN_RECORDER
-        auto *recorder = static_cast<ScreenRecorder *>(glfwGetWindowUserPointer(window));
-        recorder->takeScreenshot();
-#endif
-    } else {
-        bool isDown = (action == GLFW_PRESS || action == GLFW_REPEAT) && action != GLFW_RELEASE;
-        input.keyboard.keys[key] = isDown;
-    }
+void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
+    scene->onScroll(xOffset, yOffset);
 }
 
-void charCallback(GLFWwindow * /*window*/, unsigned int /*c*/) {}
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
+    scene->onKey(key, scancode, action, mods);
+}
 
-void resizeCallback(GLFWwindow * /*window*/, int width, int height) { glViewport(0, 0, width, height); }
+void charCallback(GLFWwindow *window, unsigned int c) {
+    auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
+    scene->onCharacterTyped(c);
+}
+
+void resizeCallback(GLFWwindow *window, int width, int height) {
+    auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
+    scene->onWindowResize(width, height);
+}
 
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -132,12 +125,12 @@ int runScene(Scene *scene) {
 
     window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, scene->getName().c_str(), nullptr, nullptr);
     if (window == nullptr) {
+        std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
         return 1;
     }
 
     glfwMakeContextCurrent(window);
-    installCallbacks(window);
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return 1;
@@ -153,13 +146,12 @@ int runScene(Scene *scene) {
     glfwSetWindowUserPointer(window, &recorder);
 #endif
 
-    SceneData sceneData = {window, &input};
-    {
-        int windowWidth = 0;
-        int windowHeight = 0;
-        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-        scene->setup(windowWidth, windowHeight, sceneData);
-    }
+    glfwSetWindowUserPointer(window, scene);
+    // triggering it once "manually" to ensure the aspect ratio is set up correctly
+    scene->onWindowResize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+    installCallbacks(window);
+
+    scene->setup(window);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -171,10 +163,7 @@ int runScene(Scene *scene) {
 
         startImGuiFrame();
 
-        int windowWidth = 0;
-        int windowHeight = 0;
-        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-        scene->tick(windowWidth, windowHeight);
+        scene->internalTick();
 
 #ifdef WITH_SCREEN_RECORDER
         renderCaptureMenu(&recorder);

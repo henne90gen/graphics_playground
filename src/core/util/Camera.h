@@ -12,10 +12,41 @@
  */
 class Camera {
   public:
-    float fov = 45.0F, aspectRatio = 1.778F, nearClip = 0.1F, farClip = 1000.0F;
-
+    // exposing projection and view matrix for ease of use
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
+
+    Camera() = default;
+    Camera(float fov, float aspectRatio, float nearClip, float farClip);
+
+    void update(const InputData &input);
+
+    void onScroll(double yOffset);
+
+    void setViewportSize(float width, float height);
+    inline void setFocalPoint(const glm::vec3 &point) { focalPoint = point; }
+
+    glm::vec3 getUpDirection() const;
+    glm::vec3 getRightDirection() const;
+    glm::vec3 getForwardDirection() const;
+    glm::quat getOrientation() const;
+
+  private:
+    void updateProjection();
+    void updateView();
+
+    void mousePan(const glm::vec2 &delta);
+    void mouseRotate(const glm::vec2 &delta);
+    void mouseZoom(float delta);
+
+    glm::vec3 calculatePosition() const;
+
+    glm::vec2 panSpeed() const;
+    float rotationSpeed() const;
+    float zoomSpeed() const;
+
+    float fov = 45.0F, aspectRatio = 1.778F, nearClip = 0.1F, farClip = 1000.0F;
+
     glm::vec3 position = {0.0F, 0.0F, 0.0F};
     glm::vec3 focalPoint = {0.0F, 0.0F, 0.0F};
 
@@ -26,48 +57,4 @@ class Camera {
     float yaw = 0.0F;
 
     float viewportWidth = 1280, viewportHeight = 720;
-
-    Camera() = default;
-    Camera(float fov, float aspectRatio, float nearClip, float farClip);
-
-    void update(const InputData *input);
-
-    // TODO make scroll to zoom possible
-    // void OnEvent(Event &e);
-    // void Camera::OnEvent(Event &e) {
-    //    EventDispatcher dispatcher(e);
-    //    dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(Camera::OnMouseScroll));
-    //}
-    //
-    // bool Camera::OnMouseScroll(MouseScrolledEvent &e) {
-    //    float delta = e.GetYOffset() * 0.1f;
-    //    mouseZoom(delta);
-    //    updateView();
-    //    return false;
-    //}
-
-    inline void SetViewportSize(float width, float height) {
-        viewportWidth = width;
-        viewportHeight = height;
-        updateProjection();
-    }
-
-    glm::vec3 GetUpDirection() const;
-    glm::vec3 GetRightDirection() const;
-    glm::vec3 GetForwardDirection() const;
-    glm::quat GetOrientation() const;
-
-  private:
-    void updateProjection();
-    void updateView();
-
-    void mousePan(const glm::vec2 &delta);
-    void mouseRotate(const glm::vec2 &delta);
-    void mouseZoom(float delta);
-
-    glm::vec3 CalculatePosition() const;
-
-    glm::vec2 panSpeed() const;
-    float rotationSpeed() const;
-    float zoomSpeed() const;
 };
