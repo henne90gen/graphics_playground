@@ -29,6 +29,8 @@ DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
 
 void Landscape::setup() {
+    camera = Camera(FIELD_OF_VIEW, getAspectRatio(), Z_NEAR, Z_FAR);
+
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
     textureVA = createQuadVA(textureShader);
@@ -104,24 +106,28 @@ void Landscape::tick() {
 
         terrain.showLayersGui();
 
-        glm::mat4 viewMatrix;
-        if (usePlayerPosition) {
-            viewMatrix = createViewMatrix(playerPosition, playerRotation);
-        } else {
-            viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-        }
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+        //        glm::mat4 viewMatrix;
+        //        if (usePlayerPosition) {
+        //            viewMatrix = createViewMatrix(playerPosition, playerRotation);
+        //        } else {
+        //            viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+        //        }
+        //        glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR,
+        //        Z_FAR);
 
-        terrain.render(projectionMatrix, viewMatrix, lightPosition, lightDirection, lightColor, lightPower,
-                       shaderToggles);
+        camera.SetViewportSize(getWidth(), getHeight());
+        camera.update(getInput());
 
-        renderLight(projectionMatrix, viewMatrix, lightPosition, lightColor);
+        terrain.render(camera.projectionMatrix, camera.viewMatrix, lightPosition, lightDirection, lightColor,
+                       lightPower, shaderToggles);
 
-        trees.render(projectionMatrix, viewMatrix, shaderToggles, terrain.terrainParams);
+        renderLight(camera.projectionMatrix, camera.viewMatrix, lightPosition, lightColor);
+
+        trees.render(camera.projectionMatrix, camera.viewMatrix, shaderToggles, terrain.terrainParams);
 
         static float animationTime = 0.0F;
         animationTime += static_cast<float>(getLastFrameTime());
-        sky.render(projectionMatrix, viewMatrix, animationTime);
+        sky.render(camera.projectionMatrix, camera.viewMatrix, animationTime);
     } else if (thingToRender == 1) {
 #if 0
         static auto textureType = 0;

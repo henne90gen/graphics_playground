@@ -23,7 +23,7 @@ void setOmpThreadLimit() {
     if (coreCount == 0) {
         coreCount = 2;
     }
-    // setting to one less than the core count, to leave one core empty for the graphics thread
+    // setting to one less than the core count, to leave one core empty for the rendering thread
     omp_set_num_threads(coreCount - 1);
 }
 
@@ -34,18 +34,21 @@ void GLAPIENTRY messageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, G
 }
 
 void enableOpenGLDebugging() {
+#if 0
     // TODO(henne): this does not work on MacOS
-    //    GL_Call(glEnable(GL_DEBUG_OUTPUT));
-    //    GL_Call(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    //    GL_Call(glDebugMessageCallback(messageCallback, nullptr));
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(messageCallback, nullptr);
+#endif
 }
 
 void mouseButtonCallback(GLFWwindow * /*window*/, int button, int action, int /*mods*/) {
-    // std::cout << "Mouse " << button << std::endl;
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         input.mouse.left = action == GLFW_PRESS;
     } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
         input.mouse.right = action == GLFW_PRESS;
+    } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+        input.mouse.middle = action == GLFW_PRESS;
     }
 }
 
@@ -54,12 +57,9 @@ void cursorPosCallback(GLFWwindow * /*window*/, double xpos, double ypos) {
     input.mouse.pos.y = ypos;
 }
 
-void scrollCallback(GLFWwindow * /*window*/, double /*xoffset*/, double /*yoffset*/) {
-    // std::cout << "Scrolled " << xoffset << ", " << yoffset << std::endl;
-}
+void scrollCallback(GLFWwindow * /*window*/, double /*xoffset*/, double /*yoffset*/) {}
 
 void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int /*mods*/) {
-    // std::cout << "Key " << key << std::endl;
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, 1);
     } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
@@ -73,9 +73,7 @@ void keyCallback(GLFWwindow *window, int key, int /*scancode*/, int action, int 
     }
 }
 
-void charCallback(GLFWwindow * /*window*/, unsigned int /*c*/) {
-    //  std::cout << "Entered character " << c << std::endl;
-}
+void charCallback(GLFWwindow * /*window*/, unsigned int /*c*/) {}
 
 void resizeCallback(GLFWwindow * /*window*/, int width, int height) { glViewport(0, 0, width, height); }
 
