@@ -22,8 +22,6 @@ class AtmosphericScattering : public Scene {
     std::shared_ptr<VertexArray> terrainVA;
     std::shared_ptr<VertexArray> cubeVA;
 
-    glm::vec3 cameraPosition = glm::vec3(20.0F, 0.0F, -50.0F);
-    glm::vec3 cameraRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     glm::vec3 modelPosition = glm::vec3(-50.0F, -50.0F, -50.0F);
     glm::vec3 modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
     glm::vec3 modelScale = glm::vec3(1.0F);

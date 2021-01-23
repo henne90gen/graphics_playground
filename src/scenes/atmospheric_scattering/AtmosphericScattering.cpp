@@ -3,10 +3,6 @@
 #include <Main.h>
 #include <util/RenderUtils.h>
 
-constexpr float FIELD_OF_VIEW = 45.0F;
-constexpr float Z_NEAR = 0.1F;
-constexpr float Z_FAR = 10000.0F;
-
 DEFINE_SCENE_MAIN(AtmosphericScattering)
 
 DEFINE_DEFAULT_SHADERS(atmospheric_scattering_AtmosphericScattering)
@@ -16,6 +12,8 @@ DEFINE_SHADER(atmospheric_scattering_NoiseLib)
 DEFINE_SHADER(atmospheric_scattering_ScatterLib)
 
 void AtmosphericScattering::setup() {
+    getCamera().setFocalPoint({0.0F, 0.0F, 0.0F});
+
     cubeShader = CREATE_DEFAULT_SHADER(atmospheric_scattering_Cube);
     cubeShader->attachShaderLib(SHADER_CODE(atmospheric_scattering_ScatterLib));
     cubeVA = createCubeVA(cubeShader);
@@ -54,8 +52,6 @@ void AtmosphericScattering::destroy() {}
 
 void AtmosphericScattering::tick() {
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.1F);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&modelPosition), 0.01F);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::Separator();
@@ -96,11 +92,9 @@ void AtmosphericScattering::renderSkyCube() {
 void AtmosphericScattering::setUniforms(const std::shared_ptr<Shader> &shader, const glm::mat4 &modelMatrix) {
     shader->bind();
 
-    auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-    auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
     auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("viewMatrix", getCamera().viewMatrix);
+    shader->setUniform("projectionMatrix", getCamera().projectionMatrix);
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("normalMatrix", normalMatrix);
 
@@ -109,8 +103,7 @@ void AtmosphericScattering::setUniforms(const std::shared_ptr<Shader> &shader, c
     shader->setUniform("showLin", showLin);
     shader->setUniform("useLin", useLin);
 
-    glm::mat4 viewModel = inverse(viewMatrix);
-    glm::vec3 cameraPos(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
+    glm::vec3 cameraPos = getCamera().getPosition();
     shader->setUniform("cameraPosition", cameraPos);
     shader->setUniform("lightDirection", lightDirection);
     shader->setUniform("lightColor", lightColor);
