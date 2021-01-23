@@ -136,8 +136,6 @@ int runScene(Scene *scene) {
         return 1;
     }
 
-    initImGui(window);
-
     // to disable vsync uncomment this line
     //    glfwSwapInterval(0);
 
@@ -150,6 +148,9 @@ int runScene(Scene *scene) {
     // triggering it once "manually" to ensure the aspect ratio is set up correctly
     scene->onWindowResize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
     installCallbacks(window);
+
+    // ImGui installs its own glfw callbacks, which will then call our previously installed callbacks
+    initImGui(window);
 
     scene->setup(window);
 
