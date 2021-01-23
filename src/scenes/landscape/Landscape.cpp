@@ -27,7 +27,6 @@ DEFINE_DEFAULT_SHADERS(landscape_Texture)
 void Landscape::setup() {
     getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
     playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
-    playerCamera.setViewportSize(getWidth(), getHeight());
 
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
     textureShader->bind();
@@ -47,8 +46,6 @@ void Landscape::destroy() {}
 
 void Landscape::tick() {
     static auto thingToRender = 0;
-    static auto playerPosition = glm::vec3(0.0F, -33.0F, 0.0F);
-    static auto playerRotation = glm::vec3(-0.13F, 0.95F, 0.0F);
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
     static auto usePlayerPosition = false;
@@ -76,8 +73,6 @@ void Landscape::tick() {
         ImGui::Separator();
         trees.showGui();
         ImGui::Separator();
-        ImGui::DragFloat3("Player Position", reinterpret_cast<float *>(&playerPosition), dragSpeed);
-        ImGui::DragFloat3("Player Rotation", reinterpret_cast<float *>(&playerRotation), dragSpeed);
         ImGui::Separator();
         if (ImGui::TreeNode("Light Properties")) {
             ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
@@ -98,15 +93,6 @@ void Landscape::tick() {
         ImGui::End();
 
         terrain.showLayersGui();
-
-        //        glm::mat4 viewMatrix;
-        //        if (usePlayerPosition) {
-        //            viewMatrix = createViewMatrix(playerPosition, playerRotation);
-        //        } else {
-        //            viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-        //        }
-        //        glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR,
-        //        Z_FAR);
 
         Camera camera;
         if (usePlayerPosition) {
