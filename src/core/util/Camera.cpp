@@ -19,7 +19,7 @@ void Camera::updateProjection() {
 
 void Camera::updateView() {
     // m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
-    position = calculatePosition();
+    position = getPosition();
 
     glm::quat orientation = getOrientation();
     viewMatrix = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(orientation);
@@ -105,6 +105,6 @@ glm::vec3 Camera::getRightDirection() const { return glm::rotate(getOrientation(
 
 glm::vec3 Camera::getForwardDirection() const { return glm::rotate(getOrientation(), glm::vec3(0.0f, 0.0f, -1.0f)); }
 
-glm::vec3 Camera::calculatePosition() const { return focalPoint - getForwardDirection() * distance; }
+glm::vec3 Camera::getPosition() const { return focalPoint - getForwardDirection() * distance; }
 
 glm::quat Camera::getOrientation() const { return glm::quat(glm::vec3(-pitch, -yaw, 0.0f)); }

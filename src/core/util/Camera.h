@@ -30,6 +30,7 @@ class Camera {
     glm::vec3 getRightDirection() const;
     glm::vec3 getForwardDirection() const;
     glm::quat getOrientation() const;
+    glm::vec3 getPosition() const;
 
   private:
     void updateProjection();
@@ -38,8 +39,6 @@ class Camera {
     void mousePan(const glm::vec2 &delta);
     void mouseRotate(const glm::vec2 &delta);
     void mouseZoom(float delta);
-
-    glm::vec3 calculatePosition() const;
 
     glm::vec2 panSpeed() const;
     float rotationSpeed() const;
