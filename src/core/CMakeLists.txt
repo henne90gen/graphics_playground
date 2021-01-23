@@ -2,6 +2,7 @@
 add_library(core
         Main.cpp
         Scene.cpp
+        util/Camera.cpp
         util/DataReadUtils.cpp
         util/ImGuiUtils.cpp
         util/TimeUtils.cpp

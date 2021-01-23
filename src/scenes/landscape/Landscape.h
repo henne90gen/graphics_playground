@@ -8,6 +8,7 @@
 #include <gl/Texture.h>
 #include <gl/VertexArray.h>
 #include <memory>
+#include <util/Camera.h>
 
 #include "Layers.h"
 #include "ShaderToggles.h"
@@ -33,6 +34,8 @@ class Landscape : public Scene {
 
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
+
+    Camera camera = Camera();
 
     Sky sky = {};
     Trees trees = {};
