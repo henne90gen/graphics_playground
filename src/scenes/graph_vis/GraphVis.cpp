@@ -93,10 +93,11 @@ void GraphVis::tick() {
 }
 void GraphVis::doNodeDragging(const glm::vec2 &mousePos) {
     static int draggedNode = -1;
-    if (!getInput()->mouse.left && draggedNode != -1) {
+    const InputData &input = getInput();
+    if (!input.mouse.left && draggedNode != -1) {
         draggedNode = -1;
     }
-    if (getInput()->mouse.left && !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive()) {
+    if (input.mouse.left && !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive()) {
         if (draggedNode == -1) {
             for (unsigned int i = 0; i < nodes.size(); i++) {
                 const auto &node = nodes[i];
@@ -224,7 +225,7 @@ void GraphVis::initEdgeMesh() {
 
 glm::vec2 GraphVis::getMousePos(float zoom, const glm::vec2 &pan) const {
     float aspectRatio = getAspectRatio();
-    auto mousePos = getInput()->mouse.pos;
+    auto mousePos = getInput().mouse.pos;
     auto mousePosScene = mousePos;
     mousePosScene.y = getHeight() - mousePosScene.y;
     mousePosScene /= glm::vec2(getWidth(), getHeight());
