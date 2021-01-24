@@ -104,13 +104,13 @@ void SpotLight::tick() {
 
 void SpotLight::moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float walkSpeed, float rotationSpeed) {
     double timeDelta = getLastFrameTime();
-    InputData *data = getInput();
+    const InputData &data = getInput();
     float forward = 0.0F;
 
-    if (data->keyboard.isKeyDown('W')) {
+    if (data.keyboard.isKeyDown('W')) {
         forward = 1.0F;
     }
-    if (data->keyboard.isKeyDown('S')) {
+    if (data.keyboard.isKeyDown('S')) {
         forward = -1.0F;
     }
 
@@ -122,10 +122,10 @@ void SpotLight::moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float
     }
 
     float around = 0.0F;
-    if (data->keyboard.isKeyDown('A')) {
+    if (data.keyboard.isKeyDown('A')) {
         around = -1.0F;
     }
-    if (data->keyboard.isKeyDown('D')) {
+    if (data.keyboard.isKeyDown('D')) {
         around = 1.0F;
     }
     rotation.y += around * timeDelta * rotationSpeed;

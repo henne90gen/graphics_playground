@@ -186,12 +186,12 @@ void AStar::renderCanvas(const glm::mat4 &viewMatrix) {
 
 void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned int canvasHeight,
                                const glm::mat4 &viewMatrix) {
-    InputData *input = getInput();
-    if (!input->mouse.left) {
+    const InputData &input = getInput();
+    if (!input.mouse.left) {
         return;
     }
 
-    auto &mousePos = input->mouse.pos;
+    auto &mousePos = input.mouse.pos;
     auto mappedMousePos = mapMouseOntoCanvas(mousePos, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
     auto canvasPos = mappedMousePos.canvasPos;
 

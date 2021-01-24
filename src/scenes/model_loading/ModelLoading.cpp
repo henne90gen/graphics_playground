@@ -25,8 +25,7 @@ void ModelLoading::destroy() {}
 void ModelLoading::tick() {
     static glm::vec3 translation = {1.7F, -3.5F, -12.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static glm::vec3 modelRotation = {0.0F, 1.0F, 0.0F};
-    static glm::vec3 cameraRotation = {0.25F, 0.0F, 0.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static float scale = 0.5F;                             // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float scale = 0.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool rotate = false;
     static bool rotateWithMouse = false;
     static float mouseRotationSpeed = 5.0F;
@@ -42,8 +41,8 @@ void ModelLoading::tick() {
     }
 
     std::vector<std::string> paths = {};
-    showSettings(rotate, rotateWithMouse, mouseRotationSpeed, translation, modelRotation, cameraRotation, scale,
-                 drawWireframe, currentModel, paths, glModel);
+    showSettings(rotate, rotateWithMouse, mouseRotationSpeed, translation, modelRotation, scale, drawWireframe,
+                 currentModel, paths, glModel);
 
     shader->bind();
 
@@ -54,28 +53,11 @@ void ModelLoading::tick() {
         prevModel = currentModel;
     }
 
-    drawModel(translation, modelRotation, cameraRotation, scale, drawWireframe);
-
-    if (rotateWithMouse) {
-        if (getInput()->mouse.left) {
-            auto mousePos = getInput()->mouse.pos;
-            glm::vec2 adjustedPos = {mousePos.x / static_cast<float>(getWidth()),
-                                     1.0F - (mousePos.y / static_cast<float>(getHeight()))};
-            glm::vec2 diff = lastMousePos - adjustedPos;
-
-            modelRotation.x += diff.y * mouseRotationSpeed;
-            modelRotation.y += diff.x * -1.0F * mouseRotationSpeed;
-        }
-
-        auto mousePos = getInput()->mouse.pos;
-        glm::vec2 adjustedPos = {mousePos.x / static_cast<float>(getWidth()),
-                                 1.0F - (mousePos.y / static_cast<float>(getHeight()))};
-        lastMousePos = adjustedPos;
-    }
+    drawModel(translation, modelRotation, scale, drawWireframe);
 }
 
-void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation,
-                             const glm::vec3 &cameraRotation, float scale, bool drawWireframe) {
+void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation, float scale,
+                             bool drawWireframe) {
     if (!glModel) {
         return;
     }
@@ -87,10 +69,9 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
     shader->setUniform("u_Model", modelMatrix);
-    shader->setUniform("u_View", viewMatrix);
-    shader->setUniform("u_Projection", projectionMatrix);
+    shader->setUniform("u_View", getCamera().viewMatrix);
+    shader->setUniform("u_Projection", getCamera().projectionMatrix);
 
     shader->setUniform("u_TextureSampler", 0);
 
@@ -117,27 +98,17 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
     }
 }
 
-void ModelLoading::onAspectRatioChange() {
-    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-}
-
 void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation,
-                                glm::vec3 &modelRotation, glm::vec3 &cameraRotation, float &scale, bool &drawWireframe,
-                                unsigned int &currentModel, std::vector<std::string> &paths,
-                                std::shared_ptr<Model> &renderModel) {
+                                glm::vec3 &modelRotation, float &scale, bool &drawWireframe, unsigned int &currentModel,
+                                std::vector<std::string> &paths, std::shared_ptr<Model> &renderModel) {
     ImGui::Begin("Settings");
     ImGui::FileSelector("Models", "model_loading_resources/models/", currentModel, paths);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Rotate With Mouse", &rotateWithMouse);
     ImGui::DragFloat("Mouse Rotation Speed", &mouseRotationSpeed, 0.01F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
     const auto &model = renderModel->getOriginalModel();
