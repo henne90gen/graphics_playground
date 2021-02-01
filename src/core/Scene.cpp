@@ -50,9 +50,11 @@ void Scene::onWindowResize(const int w, const int h) {
     height = h;
     glViewport(0, 0, width, height);
 
-    camera.setViewportSize(width, height);
+    auto widthF = static_cast<float>(width);
+    auto heightF = static_cast<float>(height);
+    camera.setViewportSize(widthF, heightF);
 
-    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    aspectRatio = widthF / heightF;
     onAspectRatioChange();
 }
 

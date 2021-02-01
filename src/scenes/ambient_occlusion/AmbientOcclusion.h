@@ -15,16 +15,19 @@ class AmbientOcclusion : public Scene {
     void setup() override;
     void tick() override;
     void destroy() override;
+    void onAspectRatioChange() override;
 
   private:
     std::shared_ptr<Shader> shader;
 
-    std::shared_ptr<VertexArray> cube1;
-    std::shared_ptr<VertexArray> cube2;
+    std::shared_ptr<VertexArray> cube;
     std::shared_ptr<VertexArray> quadVA;
 
     GLuint fbo = 0;
     GLuint textureId = 0;
+    GLuint rbo = 0;
 
+    void renderSceneToFramebuffer(const glm::vec3 &position1, const glm::vec3 &position2,
+                                  const glm::vec3 &lightPosition);
     void initFramebuffer();
 };
