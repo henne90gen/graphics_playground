@@ -1,12 +1,14 @@
 #include "Landscape.h"
 
-#include "ImageOps.h"
 #include "Main.h"
 #include "util/RenderUtils.h"
 
 #include <array>
 #include <cmath>
 #include <memory>
+#include <random>
+
+#define USE_G_BUFFER 0
 
 constexpr unsigned int WIDTH = 10;
 constexpr unsigned int HEIGHT = 10;
@@ -15,31 +17,35 @@ constexpr int INITIAL_POINT_DENSITY = 15;
 DEFINE_SCENE_MAIN(Landscape)
 
 DEFINE_SHADER(landscape_NoiseLib)
-DEFINE_SHADER(landscape_ScatterLib)
-
-DEFINE_DEFAULT_SHADERS(landscape_Landscape)
-DEFINE_TESS_CONTROL_SHADER(landscape_Landscape)
-DEFINE_TESS_EVALUATION_SHADER(landscape_Landscape)
 
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
+DEFINE_DEFAULT_SHADERS(landscape_Lighting)
+
+float lerp(float a, float b, float f) { return a + f * (b - a); }
 
 void Landscape::setup() {
     getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
     playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
 
     textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
-    textureShader->bind();
-    textureVA = createQuadVA(textureShader);
 
     flatShader = CREATE_DEFAULT_SHADER(landscape_FlatColor);
     flatShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
-    flatShader->bind();
+
+    lightingShader = CREATE_DEFAULT_SHADER(landscape_Lighting);
+
+    quadVA = createQuadVA(textureShader);
     cubeVA = createCubeVA(flatShader);
 
     sky.init();
     trees.init();
     terrain.init();
+
+    initGBuffer();
+    initSSAOBuffer();
+    initSSAOBlurBuffer();
+    initKernelAndNoiseTexture();
 }
 
 void Landscape::destroy() {}
@@ -61,7 +67,7 @@ void Landscape::tick() {
     if (thingToRender == 0) {
         renderTerrain();
     } else if (thingToRender == 1) {
-renderTextureViewer();
+        renderTextureViewer();
     }
 }
 
@@ -73,7 +79,7 @@ void Landscape::renderTerrain() {
     static auto lightPower = 1.0F;
     static auto lightColor = glm::vec3(1.0F);
     static auto lightPosition = glm::vec3(0.0F, 150.0F, 0.0F);
-    static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
+    static auto sunDirection = glm::vec3(0.0F, 150.0F, 0.0F);
 
     ImGui::Begin("Settings");
     sky.showGui();
@@ -81,7 +87,7 @@ void Landscape::renderTerrain() {
     trees.showGui();
     ImGui::Separator();
     if (ImGui::TreeNode("Light Properties")) {
-        ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
+        ImGui::DragFloat3("Sun Direction", reinterpret_cast<float *>(&sunDirection));
         ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
         ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
         ImGui::DragFloat("Light Power", &lightPower, 0.1F);
@@ -93,6 +99,7 @@ void Landscape::renderTerrain() {
     ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
     ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
     ImGui::Checkbox("Use Atmospheric Scattering", &shaderToggles.useAtmosphericScattering);
+    ImGui::Checkbox("Use ACESFilm", &shaderToggles.useACESFilm);
     ImGui::Checkbox("Show Player View", &usePlayerPosition);
     ImGui::Separator();
     terrain.showGui();
@@ -100,23 +107,74 @@ void Landscape::renderTerrain() {
 
     terrain.showLayersGui();
 
-    Camera camera;
-    if (usePlayerPosition) {
-        playerCamera.update(getInput());
-        camera = playerCamera;
-    } else {
-        camera = getCamera();
+    {
+#if USE_G_BUFFER
+        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
+        GL_Call(glClearColor(0.25, 0.25, 0.25, 1.0));
+        GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+#else
+        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+#endif
+
+        Camera camera;
+        if (usePlayerPosition) {
+            playerCamera.update(getInput());
+            camera = playerCamera;
+        } else {
+            camera = getCamera();
+        }
+        terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, sunDirection, lightColor,
+                       lightPower, shaderToggles);
+
+        renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
+
+        trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
+
+        static float animationTime = 0.0F;
+        animationTime += static_cast<float>(getLastFrameTime());
+        sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
+
+        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
-    terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightDirection, lightColor,
-                   lightPower, shaderToggles);
 
-    renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
+    renderGBufferToQuad(lightPosition, lightColor, true);
+}
 
-    trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
+void Landscape::renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
+                                    bool useAmbientOcclusion) {
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
-    static float animationTime = 0.0F;
-    animationTime += static_cast<float>(getLastFrameTime());
-    sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
+    lightingShader->bind();
+    const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
+    auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
+    lightingShader->setUniform("modelMatrix", modelMatrix);
+    lightingShader->setUniform("gPosition", 0);
+    lightingShader->setUniform("gNormal", 1);
+    lightingShader->setUniform("gAlbedo", 2);
+    lightingShader->setUniform("ssao", 3);
+    lightingShader->setUniform("useAmbientOcclusion", useAmbientOcclusion);
+
+    const float linear = 0.09F;
+    const float quadratic = 0.032F;
+
+    glm::vec3 lightPositionView = glm::vec3(getCamera().getViewMatrix() * glm::vec4(lightPosition, 1.0F));
+    lightingShader->setUniform("light.Position", lightPositionView);
+    lightingShader->setUniform("light.Color", lightColor);
+    lightingShader->setUniform("light.Linear", linear);
+    lightingShader->setUniform("light.Quadratic", quadratic);
+
+    //    GL_Call(glActiveTexture(GL_TEXTURE0));
+    //    GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
+    //    GL_Call(glActiveTexture(GL_TEXTURE1));
+    //    GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
+    //    GL_Call(glActiveTexture(GL_TEXTURE2));
+    //    GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
+    //    GL_Call(glActiveTexture(GL_TEXTURE3));
+    //    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+
+    quadVA->bind();
+    quadVA->setShader(lightingShader);
+    //    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
 void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
@@ -158,7 +216,8 @@ void Landscape::renderTextureViewer() {
 void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom,
                               const std::shared_ptr<Texture> &texture) {
     textureShader->bind();
-    textureVA->bind();
+    quadVA->bind();
+    quadVA->setShader(textureShader);
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
     texture->bind();
@@ -170,8 +229,118 @@ void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom
     textureShader->setUniform("modelMatrix", modelMatrix);
     textureShader->setUniform("textureSampler", 0);
 
-    GL_Call(glDrawElements(GL_TRIANGLES, textureVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
 
-    textureVA->unbind();
-    textureShader->unbind();
+void Landscape::initGBuffer() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+
+    // Create framebuffer object
+    GL_Call(glGenFramebuffers(1, &gBuffer));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
+
+    // Create position buffer
+    GL_Call(glGenTextures(1, &gPosition));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0));
+
+    // Create normal buffer
+    GL_Call(glGenTextures(1, &gNormal));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0));
+
+    // create color buffer
+    GL_Call(glGenTextures(1, &gAlbedo));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0));
+
+    std::array<unsigned int, 3> attachments = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+    glDrawBuffers(3, reinterpret_cast<unsigned int *>(&attachments[0]));
+
+    // Create depth buffer
+    GL_Call(glGenRenderbuffers(1, &depthBuffer));
+    GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
+    GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+    GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer));
+
+    checkFramebufferStatus();
+}
+
+void Landscape::initSSAOBuffer() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+
+    GL_Call(glGenFramebuffers(1, &ssaoFbo));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo));
+
+    // SSAO color buffer
+    GL_Call(glGenTextures(1, &ssaoColorBuffer));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0));
+
+    checkFramebufferStatus();
+}
+
+void Landscape::initSSAOBlurBuffer() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+
+    GL_Call(glGenFramebuffers(1, &ssaoBlurFbo));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFbo));
+
+    // SSAO color blur buffer
+    GL_Call(glGenTextures(1, &ssaoColorBlurBuffer));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBlurBuffer, 0));
+
+    checkFramebufferStatus();
+}
+
+void Landscape::initKernelAndNoiseTexture() {
+    std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+    std::default_random_engine generator;
+    for (unsigned int i = 0; i < 64; ++i) {
+        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
+                         randomFloats(generator));
+        sample = glm::normalize(sample);
+        sample *= randomFloats(generator);
+        float scale = float(i) / 64.0F;
+
+        // scale samples so that they're more aligned to center of kernel
+        scale = lerp(0.1F, 1.0F, scale * scale);
+        sample *= scale;
+        ssaoKernel.push_back(sample);
+    }
+
+    std::vector<glm::vec3> ssaoNoise;
+    for (unsigned int i = 0; i < 16; i++) {
+        glm::vec3 noise(randomFloats(generator) * 2.0F - 1.0F, randomFloats(generator) * 2.0F - 1.0F,
+                        0.0F); // rotate around z-axis (in tangent space)
+        ssaoNoise.push_back(noise);
+    }
+    glGenTextures(1, &ssaoNoiseTexture);
+    glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
