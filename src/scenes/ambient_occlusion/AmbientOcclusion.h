@@ -20,20 +20,33 @@ class AmbientOcclusion : public Scene {
   private:
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> geometryShader;
+    std::shared_ptr<Shader> ssaoShader;
+    std::shared_ptr<Shader> ssaoBlurShader;
     std::shared_ptr<Shader> lightingShader;
 
     std::shared_ptr<VertexArray> cube;
     std::shared_ptr<VertexArray> quadVA;
 
-    GLuint fbo = 0;
+    GLuint gBuffer = 0;
     GLuint gPosition = 0;
     GLuint gNormal = 0;
     GLuint gAlbedo = 0;
     GLuint depthBuffer = 0;
 
+    GLuint ssaoFbo = 0;
+    GLuint ssaoColorBuffer = 0;
+
+    GLuint ssaoBlurFbo = 0;
+    GLuint ssaoColorBlurBuffer = 0;
+
     void renderSceneToFramebuffer(const glm::vec3 &position1, const glm::vec3 &position2,
                                   const glm::vec3 &lightPosition);
-    void renderScreenQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor);
+    void renderSSAO();
+    void renderSSAOBlur();
+    void renderScreenQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, bool useAmbientOcclusion);
     void renderTexture(unsigned int textureId);
-    void initFramebuffer();
+
+    void initGBuffer();
+    void initSSAOBuffer();
+    void initSSAOBlurBuffer();
 };

@@ -5,7 +5,9 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
-//uniform sampler2D ssao;
+uniform sampler2D ssao;
+
+uniform bool useAmbientOcclusion;
 
 struct Light {
     vec3 Position;
@@ -23,12 +25,10 @@ void main() {
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedo, TexCoords).rgb;
-
-    #if 0
-    float AmbientOcclusion = texture(ssao, TexCoords).r;
-    #else
     float AmbientOcclusion = 1.0F;
-    #endif
+    if (useAmbientOcclusion) {
+        AmbientOcclusion = texture(ssao, TexCoords).r;
+    }
 
     // then calculate lighting as usual
     vec3 ambient = vec3(0.3 * Diffuse * AmbientOcclusion);

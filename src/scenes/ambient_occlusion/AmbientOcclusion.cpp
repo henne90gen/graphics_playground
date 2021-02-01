@@ -4,22 +4,31 @@
 #include <util/RenderUtils.h>
 
 #include <array>
+#include <random>
 
 DEFINE_SCENE_MAIN(AmbientOcclusion)
 
 DEFINE_DEFAULT_SHADERS(ambient_occlusion_Texture)
 DEFINE_DEFAULT_SHADERS(ambient_occlusion_Geometry)
+DEFINE_DEFAULT_SHADERS(ambient_occlusion_SSAO)
+DEFINE_DEFAULT_SHADERS(ambient_occlusion_SSAOBlur)
 DEFINE_DEFAULT_SHADERS(ambient_occlusion_Lighting)
+
+float lerp(float a, float b, float f) { return a + f * (b - a); }
 
 void AmbientOcclusion::setup() {
     textureShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Texture);
     geometryShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Geometry);
+    ssaoShader = CREATE_DEFAULT_SHADER(ambient_occlusion_SSAO);
+    ssaoBlurShader = CREATE_DEFAULT_SHADER(ambient_occlusion_SSAOBlur);
     lightingShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Lighting);
 
     cube = createCubeVA(geometryShader);
     quadVA = createQuadVA(lightingShader);
 
-    initFramebuffer();
+    initGBuffer();
+    initSSAOBuffer();
+    initSSAOBlurBuffer();
 }
 
 void AmbientOcclusion::destroy() {}
@@ -29,10 +38,11 @@ void AmbientOcclusion::tick() {
     static auto position2 = glm::vec3(0.0F, 0.0F, 0.5F);
     static auto lightPosition = glm::vec3(1.0F, 1.5F, 1.0F);
     static auto lightColor = glm::vec3(1.0F, 1.0F, 1.0F);
-    static auto shouldRenderTexture = true;
+    static auto shouldRenderTexture = false;
     static auto currentTextureIdIndex = 0;
-    unsigned int textureIds[3] = {gPosition, gNormal, gAlbedo};
-    const char *textureIdLabels[3] = {"Position", "Normal", "Albedo"};
+    static auto useAmbientOcclusion = false;
+    unsigned int textureIds[5] = {gPosition, gNormal, gAlbedo, ssaoColorBuffer, ssaoColorBlurBuffer};
+    const char *textureIdLabels[5] = {"Position", "Normal", "Albedo", "SSAO", "SSAO Blur"};
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Cube 1 Position", reinterpret_cast<float *>(&position1), 0.001F);
@@ -41,22 +51,26 @@ void AmbientOcclusion::tick() {
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
     ImGui::Checkbox("Render Texture", &shouldRenderTexture);
     if (shouldRenderTexture) {
-        ImGui::Combo("", &currentTextureIdIndex, textureIdLabels, 3);
+        ImGui::Combo("", &currentTextureIdIndex, textureIdLabels, 5);
     }
+    ImGui::Checkbox("Use Ambient Occlusion", &useAmbientOcclusion);
     ImGui::End();
 
     renderSceneToFramebuffer(position1, position2, lightPosition);
 
+    renderSSAO();
+    renderSSAOBlur();
+
     if (shouldRenderTexture) {
         renderTexture(textureIds[currentTextureIdIndex]);
     } else {
-        renderScreenQuad(lightPosition, lightColor);
+        renderScreenQuad(lightPosition, lightColor, useAmbientOcclusion);
     }
 }
 
 void AmbientOcclusion::renderSceneToFramebuffer(const glm::vec3 &position1, const glm::vec3 &position2,
                                                 const glm::vec3 &lightPosition) {
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
     GL_Call(glClearColor(0.25, 0.25, 0.25, 1.0));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
@@ -80,7 +94,93 @@ void AmbientOcclusion::renderSceneToFramebuffer(const glm::vec3 &position1, cons
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void AmbientOcclusion::renderScreenQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor) {
+void AmbientOcclusion::renderSSAO() {
+    std::vector<glm::vec3> ssaoKernel = {};
+    unsigned int noiseTexture = 0;
+    {
+        // TODO move this into a setup method
+        std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+        std::default_random_engine generator;
+        for (unsigned int i = 0; i < 64; ++i) {
+            glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
+                             randomFloats(generator));
+            sample = glm::normalize(sample);
+            sample *= randomFloats(generator);
+            float scale = float(i) / 64.0;
+
+            // scale samples s.t. they're more aligned to center of kernel
+            scale = lerp(0.1f, 1.0f, scale * scale);
+            sample *= scale;
+            ssaoKernel.push_back(sample);
+        }
+
+        std::vector<glm::vec3> ssaoNoise;
+        for (unsigned int i = 0; i < 16; i++) {
+            glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
+                            0.0f); // rotate around z-axis (in tangent space)
+            ssaoNoise.push_back(noise);
+        }
+        glGenTextures(1, &noiseTexture);
+        glBindTexture(GL_TEXTURE_2D, noiseTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    }
+
+    ssaoShader->bind();
+    const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
+    auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
+    ssaoShader->setUniform("modelMatrix", modelMatrix);
+    ssaoShader->setUniform("gPosition", 0);
+    ssaoShader->setUniform("gNormal", 1);
+    ssaoShader->setUniform("texNoise", 2);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Send kernel + rotation
+    for (unsigned int i = 0; i < 64; ++i) {
+        ssaoShader->setUniform("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+    }
+    ssaoShader->setUniform("projectionMatrix", getCamera().getProjectionMatrix());
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+
+    quadVA->bind();
+    quadVA->setShader(ssaoShader);
+    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void AmbientOcclusion::renderSSAOBlur() {
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFbo);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    ssaoBlurShader->bind();
+    const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
+    auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
+    ssaoBlurShader->setUniform("modelMatrix", modelMatrix);
+    ssaoBlurShader->setUniform("ssaoInput", 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+
+    quadVA->bind();
+    quadVA->setShader(ssaoBlurShader);
+    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void AmbientOcclusion::renderScreenQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
+                                        const bool useAmbientOcclusion) {
     lightingShader->bind();
     const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
     auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
@@ -88,6 +188,8 @@ void AmbientOcclusion::renderScreenQuad(const glm::vec3 &lightPosition, const gl
     lightingShader->setUniform("gPosition", 0);
     lightingShader->setUniform("gNormal", 1);
     lightingShader->setUniform("gAlbedo", 2);
+    lightingShader->setUniform("ssao", 3);
+    lightingShader->setUniform("useAmbientOcclusion", useAmbientOcclusion);
 
     const float linear = 0.09F;
     const float quadratic = 0.032F;
@@ -104,6 +206,8 @@ void AmbientOcclusion::renderScreenQuad(const glm::vec3 &lightPosition, const gl
     GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
     GL_Call(glActiveTexture(GL_TEXTURE2));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
+    GL_Call(glActiveTexture(GL_TEXTURE3));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
 
     quadVA->bind();
     quadVA->setShader(lightingShader);
@@ -141,17 +245,26 @@ void AmbientOcclusion::onAspectRatioChange() {
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
 
+    // update depth buffer
     GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
     GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+
+    // SSAO color buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+
+    // SSAO color blur buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
 }
 
-void AmbientOcclusion::initFramebuffer() {
+void AmbientOcclusion::initGBuffer() {
     unsigned int width = getWidth();
     unsigned int height = getHeight();
 
-    // Create a framebuffer object
-    GL_Call(glGenFramebuffers(1, &fbo));
-    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
+    // Create framebuffer object
+    GL_Call(glGenFramebuffers(1, &gBuffer));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
 
     // Create position buffer
     GL_Call(glGenTextures(1, &gPosition));
@@ -187,6 +300,42 @@ void AmbientOcclusion::initFramebuffer() {
     GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
     GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
     GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer));
+
+    checkFramebufferStatus();
+}
+
+void AmbientOcclusion::initSSAOBuffer() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+
+    GL_Call(glGenFramebuffers(1, &ssaoFbo));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo));
+
+    // SSAO color buffer
+    GL_Call(glGenTextures(1, &ssaoColorBuffer));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0));
+
+    checkFramebufferStatus();
+}
+
+void AmbientOcclusion::initSSAOBlurBuffer() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+
+    GL_Call(glGenFramebuffers(1, &ssaoBlurFbo));
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFbo));
+
+    // SSAO color blur buffer
+    GL_Call(glGenTextures(1, &ssaoColorBlurBuffer));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBlurBuffer, 0));
 
     checkFramebufferStatus();
 }
