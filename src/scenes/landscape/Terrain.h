@@ -39,6 +39,10 @@ class Terrain {
   public:
     TerrainParams terrainParams = {};
 
+    const std::shared_ptr<Texture> &getGrassTexture() const { return grassTexture; }
+    const std::shared_ptr<Texture> &getDirtTexture() const { return dirtTexture; }
+    const std::shared_ptr<Texture> &getRockTexture() const { return rockTexture; }
+
     void init();
     void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                 const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,

@@ -46,16 +46,7 @@ void Landscape::destroy() {}
 
 void Landscape::tick() {
     static auto thingToRender = 0;
-    static auto movement = glm::vec3(0.0F);
-    static auto shaderToggles = ShaderToggles();
-    static auto usePlayerPosition = false;
 
-    static auto lightPower = 1.0F;
-    static auto lightColor = glm::vec3(1.0F);
-    static auto lightPosition = glm::vec3(0.0F, 150.0F, 0.0F);
-    static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
-
-    const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     if (ImGui::Button("Show Terrain")) {
         thingToRender = 0;
@@ -68,72 +59,64 @@ void Landscape::tick() {
     ImGui::End();
 
     if (thingToRender == 0) {
-        ImGui::Begin("Settings");
-        sky.showGui();
-        ImGui::Separator();
-        trees.showGui();
-        ImGui::Separator();
-        ImGui::Separator();
-        if (ImGui::TreeNode("Light Properties")) {
-            ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
-            ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
-            ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
-            ImGui::DragFloat("Light Power", &lightPower, 0.1F);
-            ImGui::TreePop();
-        }
-        ImGui::Separator();
-        ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
-        ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
-        ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
-        ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
-        ImGui::Checkbox("Use Atmospheric Scattering", &shaderToggles.useAtmosphericScattering);
-        ImGui::Checkbox("Show Player View", &usePlayerPosition);
-        ImGui::Separator();
-        terrain.showGui();
-        ImGui::End();
-
-        terrain.showLayersGui();
-
-        Camera camera;
-        if (usePlayerPosition) {
-            playerCamera.update(getInput());
-            camera = playerCamera;
-        } else {
-            camera = getCamera();
-        }
-        terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightDirection, lightColor,
-                       lightPower, shaderToggles);
-
-        renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
-
-        trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
-
-        static float animationTime = 0.0F;
-        animationTime += static_cast<float>(getLastFrameTime());
-        sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
+        renderTerrain();
     } else if (thingToRender == 1) {
-#if 0
-        static auto textureType = 0;
-        static auto texturePosition = glm::vec3(0.0F);
-        static auto textureZoom = 1.0F;
-
-        ImGui::Begin("Settings");
-        static const std::array<const char *, 3> items = {"Grass", "Dirt", "Rock"};
-        ImGui::Combo("", &textureType, items.data(), items.size());
-        ImGui::Separator();
-        ImGui::DragFloat("Zoom", &textureZoom, dragSpeed);
-        ImGui::DragFloat3("Position", reinterpret_cast<float *>(&texturePosition), dragSpeed);
-        ImGui::End();
-
-        if (textureType == 0) {
-            renderTexture(texturePosition, textureZoom, grassTexture);
-        } else if (textureType == 1) {
-            renderTexture(texturePosition, textureZoom, dirtTexture);
-        } else if (textureType == 2) {
-            renderTexture(texturePosition, textureZoom, rockTexture);
-        }
-#endif
+renderTextureViewer();
     }
+}
+
+void Landscape::renderTerrain() {
+    static auto movement = glm::vec3(0.0F);
+    static auto shaderToggles = ShaderToggles();
+    static auto usePlayerPosition = false;
+
+    static auto lightPower = 1.0F;
+    static auto lightColor = glm::vec3(1.0F);
+    static auto lightPosition = glm::vec3(0.0F, 150.0F, 0.0F);
+    static auto lightDirection = glm::vec3(0.0F, 150.0F, 0.0F);
+
+    ImGui::Begin("Settings");
+    sky.showGui();
+    ImGui::Separator();
+    trees.showGui();
+    ImGui::Separator();
+    if (ImGui::TreeNode("Light Properties")) {
+        ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&lightDirection));
+        ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition));
+        ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
+        ImGui::DragFloat("Light Power", &lightPower, 0.1F);
+        ImGui::TreePop();
+    }
+    ImGui::Separator();
+    ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
+    ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
+    ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
+    ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
+    ImGui::Checkbox("Use Atmospheric Scattering", &shaderToggles.useAtmosphericScattering);
+    ImGui::Checkbox("Show Player View", &usePlayerPosition);
+    ImGui::Separator();
+    terrain.showGui();
+    ImGui::End();
+
+    terrain.showLayersGui();
+
+    Camera camera;
+    if (usePlayerPosition) {
+        playerCamera.update(getInput());
+        camera = playerCamera;
+    } else {
+        camera = getCamera();
+    }
+    terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightDirection, lightColor,
+                   lightPower, shaderToggles);
+
+    renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
+
+    trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
+
+    static float animationTime = 0.0F;
+    animationTime += static_cast<float>(getLastFrameTime());
+    sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
 }
 
 void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
@@ -148,6 +131,28 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     flatShader->setUniform("projectionMatrix", projectionMatrix);
     flatShader->setUniform("flatColor", lightColor);
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void Landscape::renderTextureViewer() {
+    static auto textureType = 0;
+    static auto texturePosition = glm::vec3(0.0F);
+    static auto textureZoom = 1.0F;
+
+    ImGui::Begin("Settings");
+    static const std::array<const char *, 3> items = {"Grass", "Dirt", "Rock"};
+    ImGui::Combo("", &textureType, items.data(), items.size());
+    ImGui::Separator();
+    ImGui::DragFloat("Zoom", &textureZoom, 0.01F);
+    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&texturePosition), 0.01F);
+    ImGui::End();
+
+    if (textureType == 0) {
+        renderTexture(texturePosition, textureZoom, terrain.getGrassTexture());
+    } else if (textureType == 1) {
+        renderTexture(texturePosition, textureZoom, terrain.getDirtTexture());
+    } else if (textureType == 2) {
+        renderTexture(texturePosition, textureZoom, terrain.getRockTexture());
+    }
 }
 
 void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom,
