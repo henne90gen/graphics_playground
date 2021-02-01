@@ -35,30 +35,30 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
           // left
           // 8
           {-0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {1.0, 0, 0},
+          {-1.0, 0, 0},
           // 9
           {-0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {1.0, 0, 0},
+          {-1.0, 0, 0},
           // 10
           {-0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {1.0, 0, 0},
+          {-1.0, 0, 0},
           // 11
           {-0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {1.0, 0, 0},
+          {-1.0, 0, 0},
 
           // right
           // 12
           {0.5F, -0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {-1.0, 0, 0},
+          {1.0, 0, 0},
           // 13
           {0.5F, -0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {-1.0, 0, 0},
+          {1.0, 0, 0},
           // 14
           {0.5F, 0.5F, -0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {-1.0, 0, 0},
+          {1.0, 0, 0},
           // 15
           {0.5F, 0.5F, 0.5F}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {-1.0, 0, 0},
+          {1.0, 0, 0},
 
           // top
           // 16
