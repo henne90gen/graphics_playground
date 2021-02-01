@@ -51,18 +51,18 @@ void VertexArray::setupVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexB
     const auto &layout = vertexBuffer->getLayout();
     const auto &elements = layout.getElements();
     unsigned int offset = 0;
-    for (auto &element : elements) {
+    for (const auto &element : elements) {
         int location = getLocation(shader, element.getName());
         if (location != -1) {
             GL_Call(glEnableVertexAttribArray(location));
-            GL_Call(glVertexAttribPointer(
+            GL_Call(glVertexAttribPointer(           //
                   location,                          //
                   element.getCount(),                //
                   element.getDataType(),             //
                   element.getNormalized(),           //
                   layout.getStride(),                //
-                  reinterpret_cast<GLvoid *>(offset) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-            ));
+                  reinterpret_cast<GLvoid *>(offset) //
+                  ));
         }
         offset += element.getSize();
     }
