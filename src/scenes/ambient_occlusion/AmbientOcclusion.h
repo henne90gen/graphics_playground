@@ -42,11 +42,11 @@ class AmbientOcclusion : public Scene {
     std::vector<glm::vec3> ssaoKernel = {};
     unsigned int ssaoNoiseTexture = 0;
 
-    void renderSceneToFramebuffer(const glm::vec3 &position1, const glm::vec3 &position2,
+    void renderSceneToGBuffer(const glm::vec3 &position1, const glm::vec3 &position2,
                                   const glm::vec3 &lightPosition);
     void renderSSAO();
     void renderSSAOBlur();
-    void renderScreenQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, bool useAmbientOcclusion);
+    void renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, bool useAmbientOcclusion);
     void renderTexture(unsigned int textureId);
 
     void initGBuffer();
