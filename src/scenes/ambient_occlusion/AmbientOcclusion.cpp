@@ -29,6 +29,7 @@ void AmbientOcclusion::setup() {
     initGBuffer();
     initSSAOBuffer();
     initSSAOBlurBuffer();
+    initKernelAndNoiseTexture();
 }
 
 void AmbientOcclusion::destroy() {}
@@ -96,42 +97,6 @@ void AmbientOcclusion::renderSceneToFramebuffer(const glm::vec3 &position1, cons
 }
 
 void AmbientOcclusion::renderSSAO() {
-    std::vector<glm::vec3> ssaoKernel = {};
-    unsigned int noiseTexture = 0;
-    {
-        // TODO move this into a setup method
-        static int count = 0;
-        count++;
-        std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
-        std::default_random_engine generator;
-        for (unsigned int i = 0; i < 64; ++i) {
-            glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
-                             randomFloats(generator));
-            sample = glm::normalize(sample);
-            sample *= randomFloats(generator);
-            float scale = float(i) / 64.0F;
-
-            // scale samples so that they're more aligned to center of kernel
-            scale = lerp(0.1F, 1.0F, scale * scale);
-            sample *= scale;
-            ssaoKernel.push_back(sample);
-        }
-
-        std::vector<glm::vec3> ssaoNoise;
-        for (unsigned int i = 0; i < 16; i++) {
-            glm::vec3 noise(randomFloats(generator) * 2.0F - 1.0F, randomFloats(generator) * 2.0F - 1.0F,
-                            0.0F); // rotate around z-axis (in tangent space)
-            ssaoNoise.push_back(noise);
-        }
-        glGenTextures(1, &noiseTexture);
-        glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    }
-
     ssaoShader->bind();
     const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
     auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
@@ -155,7 +120,7 @@ void AmbientOcclusion::renderSSAO() {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, gNormal);
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+    glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture);
 
     quadVA->bind();
     quadVA->setShader(ssaoShader);
@@ -343,4 +308,35 @@ void AmbientOcclusion::initSSAOBlurBuffer() {
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBlurBuffer, 0));
 
     checkFramebufferStatus();
+}
+
+void AmbientOcclusion::initKernelAndNoiseTexture() {
+    std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+    std::default_random_engine generator;
+    for (unsigned int i = 0; i < 64; ++i) {
+        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
+                         randomFloats(generator));
+        sample = glm::normalize(sample);
+        sample *= randomFloats(generator);
+        float scale = float(i) / 64.0F;
+
+        // scale samples so that they're more aligned to center of kernel
+        scale = lerp(0.1F, 1.0F, scale * scale);
+        sample *= scale;
+        ssaoKernel.push_back(sample);
+    }
+
+    std::vector<glm::vec3> ssaoNoise;
+    for (unsigned int i = 0; i < 16; i++) {
+        glm::vec3 noise(randomFloats(generator) * 2.0F - 1.0F, randomFloats(generator) * 2.0F - 1.0F,
+                        0.0F); // rotate around z-axis (in tangent space)
+        ssaoNoise.push_back(noise);
+    }
+    glGenTextures(1, &ssaoNoiseTexture);
+    glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }

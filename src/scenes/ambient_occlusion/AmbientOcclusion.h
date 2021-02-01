@@ -39,6 +39,9 @@ class AmbientOcclusion : public Scene {
     GLuint ssaoBlurFbo = 0;
     GLuint ssaoColorBlurBuffer = 0;
 
+    std::vector<glm::vec3> ssaoKernel = {};
+    unsigned int ssaoNoiseTexture = 0;
+
     void renderSceneToFramebuffer(const glm::vec3 &position1, const glm::vec3 &position2,
                                   const glm::vec3 &lightPosition);
     void renderSSAO();
@@ -49,4 +52,5 @@ class AmbientOcclusion : public Scene {
     void initGBuffer();
     void initSSAOBuffer();
     void initSSAOBlurBuffer();
+    void initKernelAndNoiseTexture();
 };
