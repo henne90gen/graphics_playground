@@ -48,7 +48,6 @@ float Camera::zoomSpeed() const {
 
 void Camera::update(const InputData &input) {
     if (!input.keyboard.isKeyDown(GLFW_KEY_LEFT_ALT)) {
-        updateView();
         return;
     }
 
