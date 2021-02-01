@@ -58,7 +58,7 @@ void AmbientOcclusion::tick() {
     ImGui::Checkbox("Use Ambient Occlusion", &useAmbientOcclusion);
     ImGui::End();
 
-    renderSceneToFramebuffer(position1, position2, lightPosition);
+    renderSceneToGBuffer(position1, position2, lightPosition);
 
     renderSSAO();
     renderSSAOBlur();
@@ -66,11 +66,11 @@ void AmbientOcclusion::tick() {
     if (shouldRenderTexture) {
         renderTexture(textureIds[currentTextureIdIndex]);
     } else {
-        renderScreenQuad(lightPosition, lightColor, useAmbientOcclusion);
+        renderGBufferToQuad(lightPosition, lightColor, useAmbientOcclusion);
     }
 }
 
-void AmbientOcclusion::renderSceneToFramebuffer(const glm::vec3 &position1, const glm::vec3 &position2,
+void AmbientOcclusion::renderSceneToGBuffer(const glm::vec3 &position1, const glm::vec3 &position2,
                                                 const glm::vec3 &lightPosition) {
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
     GL_Call(glClearColor(0.25, 0.25, 0.25, 1.0));
@@ -149,8 +149,8 @@ void AmbientOcclusion::renderSSAOBlur() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void AmbientOcclusion::renderScreenQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
-                                        const bool useAmbientOcclusion) {
+void AmbientOcclusion::renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
+                                        bool useAmbientOcclusion) {
     lightingShader->bind();
     const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
     auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
