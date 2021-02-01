@@ -33,11 +33,27 @@ class Landscape : public Scene {
     }
 
   private:
-    std::shared_ptr<VertexArray> textureVA;
+    std::shared_ptr<VertexArray> quadVA;
     std::shared_ptr<VertexArray> cubeVA;
 
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
+    std::shared_ptr<Shader> lightingShader;
+
+    GLuint gBuffer = 0;
+    GLuint gPosition = 0;
+    GLuint gNormal = 0;
+    GLuint gAlbedo = 0;
+    GLuint depthBuffer = 0;
+
+    GLuint ssaoFbo = 0;
+    GLuint ssaoColorBuffer = 0;
+
+    GLuint ssaoBlurFbo = 0;
+    GLuint ssaoColorBlurBuffer = 0;
+
+    std::vector<glm::vec3> ssaoKernel = {};
+    unsigned int ssaoNoiseTexture = 0;
 
     Camera playerCamera = {};
     Sky sky = {};
@@ -50,4 +66,11 @@ class Landscape : public Scene {
 
     void renderTextureViewer();
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
+
+    void renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, bool useAmbientOcclusion);
+
+    void initGBuffer();
+    void initSSAOBuffer();
+    void initSSAOBlurBuffer();
+    void initKernelAndNoiseTexture();
 };

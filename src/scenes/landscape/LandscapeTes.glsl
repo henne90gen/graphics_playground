@@ -14,7 +14,7 @@ uniform mat4 projectionMatrix;
 uniform float uvScaleFactor;
 uniform vec3 cameraPosition;
 
-uniform vec3 lightDirection;
+uniform vec3 sunDirection;
 uniform vec3 lightColor;
 uniform vec3 atmosphere;
 
@@ -55,5 +55,5 @@ void main() {
     uv_frag_in = pos / uvScaleFactor;
 
     float lightPower = 200;
-    calcScattering(cameraPosition, model_position, -lightDirection, lightColor, lightPower, atmosphere, extinction, inScatter);
+    calcScattering(cameraPosition, model_position, -sunDirection, lightColor, lightPower, atmosphere, extinction, inScatter);
 }

@@ -45,7 +45,7 @@ class Terrain {
 
     void init();
     void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
-                const glm::vec3 &lightDirection, const glm::vec3 &lightColor, float lightPower,
+                const glm::vec3 &sunDirection, const glm::vec3 &lightColor, float lightPower,
                 const ShaderToggles &shaderToggles);
     void showGui();
     void showLayersGui();

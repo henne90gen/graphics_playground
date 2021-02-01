@@ -33,7 +33,7 @@ void Terrain::showGui() {
 }
 
 void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
-                     const glm::vec3 &lightDirection, const glm::vec3 &lightColor, const float lightPower,
+                     const glm::vec3 &sunDirection, const glm::vec3 &lightColor, const float lightPower,
                      const ShaderToggles &shaderToggles) {
     terrainShader->bind();
     terrainVA->bind();
@@ -57,7 +57,7 @@ void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMat
     terrainShader->setUniform("rockLevel", levels.rockLevel);
     terrainShader->setUniform("blur", levels.blur);
 
-    terrainShader->setUniform("lightDirection", lightDirection);
+    terrainShader->setUniform("sunDirection", sunDirection);
     terrainShader->setUniform("lightPosition", lightPosition);
     terrainShader->setUniform("lightColor", lightColor);
     terrainShader->setUniform("lightPower", lightPower);
@@ -68,6 +68,7 @@ void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMat
     terrainShader->setUniform("showNormals", shaderToggles.showNormals);
     terrainShader->setUniform("showTangents", shaderToggles.showTangents);
     terrainShader->setUniform("useAtmosphericScattering", shaderToggles.useAtmosphericScattering);
+    terrainShader->setUniform("useACESFilm", shaderToggles.useACESFilm);
     terrainShader->setUniform("uvScaleFactor", uvScaleFactor);
 
     terrainShader->setUniform("grassTexture", grassTexture, GL_TEXTURE0);

@@ -1,5 +1,7 @@
 #version 330 core
 
+#define USE_G_BUFFER 0
+
 struct DirLight {
     vec3 direction;
     vec3 color;
@@ -29,7 +31,13 @@ in float normalized_height;
 in vec3 extinction;
 in vec3 inScatter;
 
+#if USE_G_BUFFER
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec3 gAlbedoSpec;
+#else
 out vec4 color;
+#endif
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -39,14 +47,14 @@ uniform bool showNormals;
 uniform bool showTangents;
 uniform bool showUVs;
 uniform bool useAtmosphericScattering;
-uniform bool useACESFilm = true;
+uniform bool useACESFilm;
 
 uniform float grassLevel;
 uniform float rockLevel;
 uniform float blur;
 
 uniform vec3 lightPosition;
-uniform vec3 lightDirection;
+uniform vec3 sunDirection;
 uniform vec3 lightColor;
 uniform float lightPower;
 
@@ -104,13 +112,13 @@ vec2 Noise2(in vec2 x) {
 }
 
 void DoLighting(inout vec3 mat, in vec3 pos, in vec3 normal, in vec3 eyeDir, in float dis, in float ambient, in float specular) {
-    float h = dot(normalize(lightDirection), normal);
+    float h = dot(normalize(sunDirection), normal);
     float c = max(h, 0.0)+ambient;
     mat = mat * lightColor * c;
     // Specular...
     if (h > 0.0)
     {
-        vec3 R = reflect(normalize(lightDirection), normal);
+        vec3 R = reflect(normalize(sunDirection), normal);
         float specAmount = pow(max(dot(R, normalize(eyeDir)), 0.0), 3.0)*specular;
         mat = mix(mat, lightColor, specAmount);
     }
@@ -432,6 +440,11 @@ vec3 ACESFilm(vec3 x) {
 }
 
 void main() {
+    #if USE_G_BUFFER
+    gPosition = FragPos;
+    gNormal = normalize(Normal);
+    gAlbedoSpec.rgb = vec3(0.95);
+    #else
     vec3 normal = normalize(normalMatrix * normal_frag_in);
     vec3 tangent = normalize(normalMatrix * tangent_frag_in);
     vec3 bitangent = normalize(normalMatrix * bitangent_frag_in);
@@ -447,7 +460,7 @@ void main() {
     vec3 materialSpecularColor = vec3(0.3, 0.3, 0.3);
     Material material = Material(materialAmbientColor, materialDiffuseColor, materialSpecularColor, 2);
     PointLight light = PointLight(lightPosition, lightColor, lightPower);
-    DirLight dirLight = DirLight(lightDirection, lightColor, lightPower);
+    DirLight dirLight = DirLight(sunDirection, lightColor, lightPower);
 
     color = vec4(0.0F);
     //    color += calcPointLightSimple(light, material, normal, viewDir);
@@ -461,14 +474,5 @@ void main() {
     if (useACESFilm) {
         color = vec4(ACESFilm(color.xyz), 1.0F);
     }
-
-    //    color = vec4(getTerrainColor(model_position, normal, normalized_height, length(viewDir)), 1.0F);
-    //    vec2 uv = uv_frag_in;
-    //    vec3 sight_dir = viewDir;
-    //    vec3 light_dir = lightDirection;
-    //    vec3 light_color = lightColor;
-    //    vec3 ambient_color = vec3(1.9);
-    //    color = vec4(render_grass(normal, uv, sight_dir, light_dir, light_color, ambient_color), 1.0F);
-    //    color = vec4(gold_noise(uv, 1.0F), gold_noise(uv, 2.0F), gold_noise(uv, 3.0F), 1.0F);
-    //    color = vec4(rand(uv), rand(uv), rand(uv), 1.0F);
+        #endif
 }
