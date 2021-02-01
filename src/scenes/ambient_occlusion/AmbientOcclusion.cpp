@@ -39,10 +39,10 @@ void AmbientOcclusion::tick() {
     static auto lightPosition = glm::vec3(1.0F, 1.5F, 1.0F);
     static auto lightColor = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto shouldRenderTexture = false;
-    static auto currentTextureIdIndex = 0;
-    static auto useAmbientOcclusion = false;
-    unsigned int textureIds[5] = {gPosition, gNormal, gAlbedo, ssaoColorBuffer, ssaoColorBlurBuffer};
-    const char *textureIdLabels[5] = {"Position", "Normal", "Albedo", "SSAO", "SSAO Blur"};
+    static auto currentTextureIdIndex = 4;
+    static auto useAmbientOcclusion = true;
+    std::array<unsigned int, 5> textureIds = {gPosition, gNormal, gAlbedo, ssaoColorBuffer, ssaoColorBlurBuffer};
+    std::array<const char *, 5> textureIdLabels = {"Position", "Normal", "Albedo", "SSAO", "SSAO Blur"};
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Cube 1 Position", reinterpret_cast<float *>(&position1), 0.001F);
@@ -51,7 +51,8 @@ void AmbientOcclusion::tick() {
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
     ImGui::Checkbox("Render Texture", &shouldRenderTexture);
     if (shouldRenderTexture) {
-        ImGui::Combo("", &currentTextureIdIndex, textureIdLabels, 5);
+        ImGui::Combo("", &currentTextureIdIndex, reinterpret_cast<const char *const *>(&textureIdLabels[0]),
+                     textureIdLabels.size());
     }
     ImGui::Checkbox("Use Ambient Occlusion", &useAmbientOcclusion);
     ImGui::End();
@@ -99,6 +100,8 @@ void AmbientOcclusion::renderSSAO() {
     unsigned int noiseTexture = 0;
     {
         // TODO move this into a setup method
+        static int count = 0;
+        count++;
         std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
         std::default_random_engine generator;
         for (unsigned int i = 0; i < 64; ++i) {
@@ -106,18 +109,18 @@ void AmbientOcclusion::renderSSAO() {
                              randomFloats(generator));
             sample = glm::normalize(sample);
             sample *= randomFloats(generator);
-            float scale = float(i) / 64.0;
+            float scale = float(i) / 64.0F;
 
-            // scale samples s.t. they're more aligned to center of kernel
-            scale = lerp(0.1f, 1.0f, scale * scale);
+            // scale samples so that they're more aligned to center of kernel
+            scale = lerp(0.1F, 1.0F, scale * scale);
             sample *= scale;
             ssaoKernel.push_back(sample);
         }
 
         std::vector<glm::vec3> ssaoNoise;
         for (unsigned int i = 0; i < 16; i++) {
-            glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
-                            0.0f); // rotate around z-axis (in tangent space)
+            glm::vec3 noise(randomFloats(generator) * 2.0F - 1.0F, randomFloats(generator) * 2.0F - 1.0F,
+                            0.0F); // rotate around z-axis (in tangent space)
             ssaoNoise.push_back(noise);
         }
         glGenTextures(1, &noiseTexture);
@@ -133,6 +136,8 @@ void AmbientOcclusion::renderSSAO() {
     const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
     auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
     ssaoShader->setUniform("modelMatrix", modelMatrix);
+    ssaoShader->setUniform("screenWidth", static_cast<float>(getWidth()));
+    ssaoShader->setUniform("screenHeight", static_cast<float>(getHeight()));
     ssaoShader->setUniform("gPosition", 0);
     ssaoShader->setUniform("gNormal", 1);
     ssaoShader->setUniform("texNoise", 2);
