@@ -5,21 +5,44 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
+uniform sampler2D gExtinction;
+uniform sampler2D gInScatter;
 uniform sampler2D ssao;
 
 uniform bool useAmbientOcclusion;
+uniform bool useAtmosphericScattering;
+uniform bool useACESFilm;
 
 struct Light {
-    vec3 Position;
+    vec3 FragmentToLightDir;
     vec3 Color;
 
-    float Linear;
-    float Quadratic;
+    float Ambient;
+    float Diffuse;
+    float Specular;
 };
 uniform Light light;
-uniform vec3 sunDirection;
 
 out vec4 color;
+
+// https://www.shadertoy.com/view/WlSSzK
+vec3 ACESFilm(vec3 x) {
+    #if 0
+    // original values
+    float tA = 2.51;
+    float tB = 0.03;
+    float tC = 2.43;
+    float tD = 0.59;
+    float tE = 0.14;
+    #else
+    float tA = 3.01;
+    float tB = 0.03;
+    float tC = 2.43;
+    float tD = 0.2;
+    float tE = 0.8;
+    #endif
+    return clamp((x*(tA*x+tB))/(x*(tC*x+tD)+tE), 0.0, 1.0);
+}
 
 void main() {
     // retrieve data from gbuffer
@@ -31,50 +54,28 @@ void main() {
         AmbientOcclusion = texture(ssao, TexCoords).r;
     }
 
-        #if 0
-    // Point Light
-    vec3 ambient = vec3(0.3 * Diffuse * AmbientOcclusion);
+    vec3 ambient = vec3(light.Ambient * light.Color * Diffuse * AmbientOcclusion);
     vec3 viewDir = normalize(-FragPos);// viewpos is (0.0.0)
+    vec3 fragmentToLightDir = normalize(light.FragmentToLightDir);
+
     // diffuse
-    vec3 lightDir = normalize(light.Position - FragPos);
-    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * light.Color;
+    vec3 diffuse = max(dot(Normal, fragmentToLightDir), 0.0) * Diffuse * light.Diffuse * light.Color;
+
     // specular
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(Normal, halfwayDir), 0.0), 8.0);
-    vec3 specular = light.Color * spec;
-    // attenuation
-    float distance = length(light.Position - FragPos);
-    float attenuation = 1.0 / (1.0 + light.Linear * distance + light.Quadratic * distance * distance);
-    diffuse *= attenuation;
-    specular *= attenuation;
-    vec3 lighting = ambient;
-    lighting += diffuse + specular;
-    #else
-    // Directional Light
-    vec3 viewDir = normalize(-FragPos);// viewpos is vec3(0,0,0)
-    vec3 lightDir = -sunDirection;
-    // diffuse shading
-    float diff = max(dot(Normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(lightDir, Normal);
-    float shininess = 2.0F;
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 halfwayDir = normalize(fragmentToLightDir + viewDir);
+    float spec = pow(max(dot(Normal, halfwayDir), 0.0), 2.0);
+    vec3 specular = light.Specular * light.Color * spec;
 
-    float lightPower = 1.0F;
-    vec3 lightColor = light.Color * lightPower;
-    vec3 ambient = lightColor * 0.1F;
-    vec3 diffuse = lightColor;
-    vec3 specular = lightColor * 0.15F;
+    vec3 lighting = ambient + diffuse + specular;
 
-    ambient  *= vec3(0.3 * Diffuse * AmbientOcclusion);
-    diffuse  *= diff * Diffuse;
-    specular *= spec;
+    if (useAtmosphericScattering) {
+        lighting *= texture(gExtinction, TexCoords).rgb;
+        lighting += texture(gInScatter, TexCoords).rgb;
+    }
 
-    vec3 lighting = vec3(0.0F);
-    lighting += ambient;
-    lighting += diffuse;
-    lighting += specular;
-    #endif
+    if (useACESFilm) {
+        lighting = ACESFilm(lighting);
+    }
 
     color = vec4(lighting, 1.0);
 }

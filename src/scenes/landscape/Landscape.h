@@ -16,6 +16,15 @@
 #include "Terrain.h"
 #include "Trees.h"
 
+struct Light {
+    glm::vec3 fragmentToLightDir = glm::vec3(150.0F);
+    glm::vec3 color = glm::vec3(1.0F);
+
+    float ambient = 0.1F;
+    float diffuse = 1.0F;
+    float specular = 0.3F;
+};
+
 class Landscape : public Scene {
   public:
     explicit Landscape() : Scene("Landscape"){};
@@ -37,11 +46,15 @@ class Landscape : public Scene {
     std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
     std::shared_ptr<Shader> lightingShader;
+    std::shared_ptr<Shader> ssaoShader;
+    std::shared_ptr<Shader> ssaoBlurShader;
 
     GLuint gBuffer = 0;
     GLuint gPosition = 0;
     GLuint gNormal = 0;
     GLuint gAlbedo = 0;
+    GLuint gExtinction = 0;
+    GLuint gInScatter = 0;
     GLuint depthBuffer = 0;
 
     GLuint ssaoFbo = 0;
@@ -65,8 +78,7 @@ class Landscape : public Scene {
     void renderTextureViewer();
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
 
-    void renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, const glm::vec3 &sunDirection,
-                             bool useAmbientOcclusion);
+    void renderGBufferToQuad(const Light &light, const ShaderToggles &shaderToggles);
     void renderGBufferViewer();
 
     void initGBuffer();

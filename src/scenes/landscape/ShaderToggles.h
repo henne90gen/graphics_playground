@@ -5,6 +5,7 @@ struct ShaderToggles {
     bool showTangents = false;
     bool showUVs = false;
     bool drawWireframe = false;
-    bool useAtmosphericScattering = true;
-    bool useACESFilm = true;
+    bool useAtmosphericScattering = false;
+    bool useACESFilm = false;
+    bool useAmbientOcclusion = false;
 };

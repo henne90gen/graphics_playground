@@ -32,6 +32,8 @@ in vec3 inScatter;
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec3 gAlbedoSpec;
+layout (location = 3) out vec3 gExtinction;
+layout (location = 4) out vec3 gInScatter;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -437,7 +439,9 @@ void main() {
     #if 1
     gPosition = model_position;
     gNormal = normalize(normalMatrix * normal_frag_in);
-    gAlbedoSpec.rgb = getSurfaceColor(normalized_height);
+    gAlbedoSpec = getSurfaceColor(normalized_height);
+    gExtinction = extinction;
+    gInScatter = inScatter;
     #else
     vec3 normal = normalize(normalMatrix * normal_frag_in);
     vec3 tangent = normalize(normalMatrix * tangent_frag_in);
