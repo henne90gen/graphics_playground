@@ -8,20 +8,22 @@
 
 DEFINE_SCENE_MAIN(AmbientOcclusion)
 
-DEFINE_DEFAULT_SHADERS(ambient_occlusion_Texture)
 DEFINE_DEFAULT_SHADERS(ambient_occlusion_Geometry)
-DEFINE_DEFAULT_SHADERS(ambient_occlusion_SSAO)
-DEFINE_DEFAULT_SHADERS(ambient_occlusion_SSAOBlur)
-DEFINE_DEFAULT_SHADERS(ambient_occlusion_Lighting)
+
+DEFINE_VERTEX_SHADER(ambient_occlusion_ScreenQuad)
+DEFINE_FRAGMENT_SHADER(ambient_occlusion_Texture)
+DEFINE_FRAGMENT_SHADER(ambient_occlusion_Lighting)
+DEFINE_FRAGMENT_SHADER(ambient_occlusion_SSAO)
+DEFINE_FRAGMENT_SHADER(ambient_occlusion_SSAOBlur)
 
 float lerp(float a, float b, float f) { return a + f * (b - a); }
 
 void AmbientOcclusion::setup() {
-    textureShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Texture);
     geometryShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Geometry);
-    ssaoShader = CREATE_DEFAULT_SHADER(ambient_occlusion_SSAO);
-    ssaoBlurShader = CREATE_DEFAULT_SHADER(ambient_occlusion_SSAOBlur);
-    lightingShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Lighting);
+    textureShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_TextureFrag));
+    lightingShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_LightingFrag));
+    ssaoShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_SSAOFrag));
+    ssaoBlurShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_SSAOBlurFrag));
 
     cube = createCubeVA(geometryShader);
     quadVA = createQuadVA(lightingShader);
@@ -40,6 +42,7 @@ void AmbientOcclusion::tick() {
     static auto lightPosition = glm::vec3(1.0F, 1.5F, 1.0F);
     static auto lightColor = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto useAmbientOcclusion = true;
+    static auto usePointLight = true;
     static auto currentTextureIdIndex = 4;
     static auto shouldRenderTexture = false;
     std::array<unsigned int, 5> textureIds = {gPosition, gNormal, gAlbedo, ssaoColorBuffer, ssaoColorBlurBuffer};
@@ -50,12 +53,13 @@ void AmbientOcclusion::tick() {
     ImGui::DragFloat3("Cube 2 Position", reinterpret_cast<float *>(&position2), 0.001F);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), 0.001F);
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
+    ImGui::Checkbox("Use Ambient Occlusion", &useAmbientOcclusion);
+    ImGui::Checkbox("Use Point Light", &usePointLight);
     ImGui::Checkbox("Render Texture", &shouldRenderTexture);
     if (shouldRenderTexture) {
         ImGui::Combo("", &currentTextureIdIndex, reinterpret_cast<const char *const *>(&textureIdLabels[0]),
                      textureIdLabels.size());
     }
-    ImGui::Checkbox("Use Ambient Occlusion", &useAmbientOcclusion);
     ImGui::End();
 
     renderSceneToGBuffer(position1, position2, lightPosition);
@@ -66,12 +70,12 @@ void AmbientOcclusion::tick() {
     if (shouldRenderTexture) {
         renderTexture(textureIds[currentTextureIdIndex]);
     } else {
-        renderGBufferToQuad(lightPosition, lightColor, useAmbientOcclusion);
+        renderGBufferToQuad(lightPosition, lightColor, useAmbientOcclusion, usePointLight);
     }
 }
 
 void AmbientOcclusion::renderSceneToGBuffer(const glm::vec3 &position1, const glm::vec3 &position2,
-                                                const glm::vec3 &lightPosition) {
+                                            const glm::vec3 &lightPosition) {
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
     GL_Call(glClearColor(0.25, 0.25, 0.25, 1.0));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -150,7 +154,7 @@ void AmbientOcclusion::renderSSAOBlur() {
 }
 
 void AmbientOcclusion::renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
-                                        bool useAmbientOcclusion) {
+                                           bool useAmbientOcclusion, bool usePointLight) {
     lightingShader->bind();
     const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
     auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
@@ -160,11 +164,12 @@ void AmbientOcclusion::renderGBufferToQuad(const glm::vec3 &lightPosition, const
     lightingShader->setUniform("gAlbedo", 2);
     lightingShader->setUniform("ssao", 3);
     lightingShader->setUniform("useAmbientOcclusion", useAmbientOcclusion);
+    lightingShader->setUniform("usePointLight", usePointLight);
 
     const float linear = 0.09F;
     const float quadratic = 0.032F;
 
-    glm::vec3 lightPositionView = glm::vec3(getCamera().getViewMatrix() * glm::vec4(lightPosition, 1.0F));
+    glm::vec4 lightPositionView = getCamera().getViewMatrix() * glm::vec4(lightPosition, usePointLight ? 1.0F : 0.0F);
     lightingShader->setUniform("light.Position", lightPositionView);
     lightingShader->setUniform("light.Color", lightColor);
     lightingShader->setUniform("light.Linear", linear);
