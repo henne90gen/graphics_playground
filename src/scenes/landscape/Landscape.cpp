@@ -88,13 +88,18 @@ void Landscape::tick() {
             ImGui::TreePop();
         }
         ImGui::Separator();
-        ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
-        ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
-        ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
-        ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
-        ImGui::Checkbox("Use Ambient Occlusion", &shaderToggles.useAmbientOcclusion);
-        ImGui::Checkbox("Use Atmospheric Scattering", &shaderToggles.useAtmosphericScattering);
-        ImGui::Checkbox("Use ACESFilm", &shaderToggles.useACESFilm);
+        if (ImGui::TreeNode("Shader Toggles")) {
+            ImGui::Checkbox("Wireframe", &shaderToggles.drawWireframe);
+            ImGui::Checkbox("Show UVs", &shaderToggles.showUVs);
+            ImGui::Checkbox("Show Normals", &shaderToggles.showNormals);
+            ImGui::Checkbox("Show Tangents", &shaderToggles.showTangents);
+            ImGui::Checkbox("Use Ambient Occlusion", &shaderToggles.useAmbientOcclusion);
+            ImGui::Checkbox("Use Atmospheric Scattering", &shaderToggles.useAtmosphericScattering);
+            ImGui::Checkbox("Use ACESFilm", &shaderToggles.useACESFilm);
+            ImGui::DragFloat("Exposure", &shaderToggles.exposure, 0.01F);
+            ImGui::DragFloat("Gamma", &shaderToggles.gamma, 0.01F);
+            ImGui::TreePop();
+        }
         ImGui::Checkbox("Show Player View", &usePlayerPosition);
         ImGui::Separator();
         terrain.showGui();
@@ -220,6 +225,8 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
     lightingShader->setUniform("useAmbientOcclusion", shaderToggles.useAmbientOcclusion);
     lightingShader->setUniform("useAtmosphericScattering", shaderToggles.useAtmosphericScattering);
     lightingShader->setUniform("useACESFilm", shaderToggles.useACESFilm);
+    lightingShader->setUniform("exposure", shaderToggles.exposure);
+    lightingShader->setUniform("gamma", shaderToggles.gamma);
 
     glm::vec3 lightDirView = glm::vec3(camera.getViewMatrix() * glm::vec4(light.fragmentToLightDir, 0.0F));
     lightingShader->setUniform("light.FragmentToLightDir", lightDirView);
@@ -357,7 +364,7 @@ void Landscape::initGBuffer() {
     // create color buffer
     GL_Call(glGenTextures(1, &gAlbedo));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0));
@@ -479,7 +486,7 @@ void Landscape::onAspectRatioChange() {
 
     // update color buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
 
     // update extinction buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gExtinction));

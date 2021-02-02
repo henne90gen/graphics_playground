@@ -23,6 +23,9 @@ struct Light {
 };
 uniform Light light;
 
+uniform float exposure = 1.0F;
+uniform float gamma = 1.0F;
+
 out vec4 color;
 
 // https://www.shadertoy.com/view/WlSSzK
@@ -82,6 +85,12 @@ void main() {
     if (useACESFilm) {
         lighting = ACESFilm(lighting);
     }
+
+    // Exposure tone mapping
+    vec3 mapped = vec3(1.0) - exp(-lighting * exposure);
+
+    // gamma correction
+    lighting = pow(mapped, vec3(1.0 / gamma));
 
     color = vec4(lighting, 1.0);
 }
