@@ -23,7 +23,9 @@ void Sky::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
     shader->bind();
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, skyScale);
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
     shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("normalMatrix", normalMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("flatColor", skyColor);

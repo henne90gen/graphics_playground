@@ -48,18 +48,24 @@ void main() {
     // retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
-    vec3 Diffuse = texture(gAlbedo, TexCoords).rgb;
+    vec4 Diffuse = texture(gAlbedo, TexCoords);
+
+    if (Diffuse.a == 0.0F) {
+        color = vec4(Diffuse.xyz, 1.0F);
+        return;
+    }
+
     float AmbientOcclusion = 1.0F;
     if (useAmbientOcclusion) {
         AmbientOcclusion = texture(ssao, TexCoords).r;
     }
 
-    vec3 ambient = vec3(light.Ambient * light.Color * Diffuse * AmbientOcclusion);
+    vec3 ambient = vec3(light.Ambient * light.Color * Diffuse.rgb * AmbientOcclusion);
     vec3 viewDir = normalize(-FragPos);// viewpos is (0.0.0)
     vec3 fragmentToLightDir = normalize(light.FragmentToLightDir);
 
     // diffuse
-    vec3 diffuse = max(dot(Normal, fragmentToLightDir), 0.0) * Diffuse * light.Diffuse * light.Color;
+    vec3 diffuse = max(dot(Normal, fragmentToLightDir), 0.0) * Diffuse.rgb * light.Diffuse * light.Color;
 
     // specular
     vec3 halfwayDir = normalize(fragmentToLightDir + viewDir);
