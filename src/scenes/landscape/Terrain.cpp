@@ -27,7 +27,7 @@ void Terrain::init() {
 
 void Terrain::showGui() {
     ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
-    ImGui::DragFloat3("Atmosphere", reinterpret_cast<float*>(&atmosphere), 0.01F);
+    ImGui::DragFloat3("Atmosphere", reinterpret_cast<float *>(&atmosphere), 0.01F);
     ImGui::DragFloat("Tesselation", &tessellation);
     ImGui::DragFloat("UV scale", &uvScaleFactor, 0.1F);
 }
@@ -39,7 +39,7 @@ void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMat
     terrainVA->bind();
 
     glm::mat4 modelMatrix = createModelMatrix(modelPosition, modelRotation, modelScale);
-    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
     terrainShader->setUniform("modelMatrix", modelMatrix);
     terrainShader->setUniform("viewMatrix", viewMatrix);
     terrainShader->setUniform("projectionMatrix", projectionMatrix);

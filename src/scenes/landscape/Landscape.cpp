@@ -8,8 +8,6 @@
 #include <memory>
 #include <random>
 
-#define USE_G_BUFFER 0
-
 constexpr unsigned int WIDTH = 10;
 constexpr unsigned int HEIGHT = 10;
 constexpr int INITIAL_POINT_DENSITY = 15;
@@ -61,17 +59,24 @@ void Landscape::tick() {
     if (ImGui::Button("Show Texture")) {
         thingToRender = 1;
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Show G-Buffer")) {
+        thingToRender = 2;
+    }
     ImGui::Separator();
     ImGui::End();
 
     if (thingToRender == 0) {
-        renderTerrain();
+        renderTerrain(true);
     } else if (thingToRender == 1) {
         renderTextureViewer();
+    } else if (thingToRender == 2) {
+        renderTerrain(false);
+        renderGBufferViewer();
     }
 }
 
-void Landscape::renderTerrain() {
+void Landscape::renderTerrain(const bool renderQuad) {
     static auto movement = glm::vec3(0.0F);
     static auto shaderToggles = ShaderToggles();
     static auto usePlayerPosition = false;
@@ -107,41 +112,35 @@ void Landscape::renderTerrain() {
 
     terrain.showLayersGui();
 
-    {
-#if USE_G_BUFFER
-        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
-        GL_Call(glClearColor(0.25, 0.25, 0.25, 1.0));
-        GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-#else
-        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-#endif
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
+    GL_Call(glClearColor(0.25, 0.25, 0.25, 1.0));
+    GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        Camera camera;
-        if (usePlayerPosition) {
-            playerCamera.update(getInput());
-            camera = playerCamera;
-        } else {
-            camera = getCamera();
-        }
-        terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, sunDirection, lightColor,
-                       lightPower, shaderToggles);
-
-        renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
-
-        trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
-
-        static float animationTime = 0.0F;
-        animationTime += static_cast<float>(getLastFrameTime());
-        sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
-
-        GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    Camera camera;
+    if (usePlayerPosition) {
+        playerCamera.update(getInput());
+        camera = playerCamera;
+    } else {
+        camera = getCamera();
     }
+    terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, sunDirection, lightColor,
+                   lightPower, shaderToggles);
 
-    renderGBufferToQuad(lightPosition, lightColor, true);
+    renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), lightPosition, lightColor);
+
+    trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
+
+    static float animationTime = 0.0F;
+    animationTime += static_cast<float>(getLastFrameTime());
+    sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
+
+    if (renderQuad) {
+        renderGBufferToQuad(lightPosition, lightColor, sunDirection, false);
+    }
 }
 
 void Landscape::renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor,
-                                    bool useAmbientOcclusion) {
+                                    const glm::vec3 &sunDirection, bool useAmbientOcclusion) {
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
     lightingShader->bind();
@@ -162,19 +161,46 @@ void Landscape::renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::v
     lightingShader->setUniform("light.Color", lightColor);
     lightingShader->setUniform("light.Linear", linear);
     lightingShader->setUniform("light.Quadratic", quadratic);
+    glm::vec3 sunDirectionView = glm::normalize(glm::vec3(getCamera().getViewMatrix() * glm::vec4(sunDirection, 1.0F)));
+    lightingShader->setUniform("sunDirection", sunDirectionView);
 
-    //    GL_Call(glActiveTexture(GL_TEXTURE0));
-    //    GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
-    //    GL_Call(glActiveTexture(GL_TEXTURE1));
-    //    GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
-    //    GL_Call(glActiveTexture(GL_TEXTURE2));
-    //    GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
-    //    GL_Call(glActiveTexture(GL_TEXTURE3));
-    //    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
+    GL_Call(glActiveTexture(GL_TEXTURE1));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
+    GL_Call(glActiveTexture(GL_TEXTURE2));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
+    GL_Call(glActiveTexture(GL_TEXTURE3));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
 
     quadVA->bind();
     quadVA->setShader(lightingShader);
-    //    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void Landscape::renderGBufferViewer() {
+    static auto currentTextureIdIndex = 0;
+    std::array<unsigned int, 5> textureIds = {gPosition, gNormal, gAlbedo, ssaoColorBuffer, ssaoColorBlurBuffer};
+    std::array<const char *, 5> textureIdLabels = {"Position", "Normal", "Albedo", "SSAO", "SSAO Blur"};
+    ImGui::Begin("Settings");
+    ImGui::Combo("", &currentTextureIdIndex, reinterpret_cast<const char *const *>(&textureIdLabels[0]),
+                 textureIdLabels.size());
+    ImGui::End();
+
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+
+    textureShader->bind();
+    const glm::vec3 scale = glm::vec3(2.0F, 2.0F, 1.0F);
+    auto modelMatrix = createModelMatrix(glm::vec3(), glm::vec3(), scale);
+    textureShader->setUniform("modelMatrix", modelMatrix);
+    textureShader->setUniform("textureSampler", 0);
+
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, textureIds[currentTextureIdIndex]));
+
+    quadVA->bind();
+    quadVA->setShader(textureShader);
+    GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
 void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
@@ -343,4 +369,35 @@ void Landscape::initKernelAndNoiseTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void Landscape::onAspectRatioChange() {
+    unsigned int width = getWidth();
+    unsigned int height = getHeight();
+
+    playerCamera.setViewportSize(static_cast<float>(width), static_cast<float>(height));
+
+    // update position buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+
+    // update normal buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+
+    // update color buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+
+    // update depth buffer
+    GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
+    GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+
+    // SSAO color buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+
+    // SSAO color blur buffer
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
 }

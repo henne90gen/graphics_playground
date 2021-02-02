@@ -28,9 +28,7 @@ class Landscape : public Scene {
 
     void destroy() override;
 
-    void onAspectRatioChange() override {
-        playerCamera.setViewportSize(static_cast<float>(getWidth()), static_cast<float>(getHeight()));
-    }
+    void onAspectRatioChange() override;
 
   private:
     std::shared_ptr<VertexArray> quadVA;
@@ -60,14 +58,16 @@ class Landscape : public Scene {
     Trees trees = {};
     Terrain terrain = {};
 
-    void renderTerrain();
+    void renderTerrain(bool renderQuad);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
 
     void renderTextureViewer();
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
 
-    void renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, bool useAmbientOcclusion);
+    void renderGBufferToQuad(const glm::vec3 &lightPosition, const glm::vec3 &lightColor, const glm::vec3 &sunDirection,
+                             bool useAmbientOcclusion);
+    void renderGBufferViewer();
 
     void initGBuffer();
     void initSSAOBuffer();

@@ -39,9 +39,9 @@ void AmbientOcclusion::tick() {
     static auto position2 = glm::vec3(0.0F, 0.0F, 0.5F);
     static auto lightPosition = glm::vec3(1.0F, 1.5F, 1.0F);
     static auto lightColor = glm::vec3(1.0F, 1.0F, 1.0F);
-    static auto shouldRenderTexture = false;
-    static auto currentTextureIdIndex = 4;
     static auto useAmbientOcclusion = true;
+    static auto currentTextureIdIndex = 4;
+    static auto shouldRenderTexture = false;
     std::array<unsigned int, 5> textureIds = {gPosition, gNormal, gAlbedo, ssaoColorBuffer, ssaoColorBlurBuffer};
     std::array<const char *, 5> textureIdLabels = {"Position", "Normal", "Albedo", "SSAO", "SSAO Blur"};
 
