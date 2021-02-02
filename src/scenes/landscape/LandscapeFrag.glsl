@@ -31,7 +31,7 @@ in vec3 inScatter;
 
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
-layout (location = 2) out vec3 gAlbedoSpec;
+layout (location = 2) out vec4 gAlbedoSpec;
 layout (location = 3) out vec3 gExtinction;
 layout (location = 4) out vec3 gInScatter;
 
@@ -439,7 +439,7 @@ void main() {
     #if 1
     gPosition = model_position;
     gNormal = normalize(normalMatrix * normal_frag_in);
-    gAlbedoSpec = getSurfaceColor(normalized_height);
+    gAlbedoSpec = vec4(getSurfaceColor(normalized_height), 1.0F);
     gExtinction = extinction;
     gInScatter = inScatter;
     #else

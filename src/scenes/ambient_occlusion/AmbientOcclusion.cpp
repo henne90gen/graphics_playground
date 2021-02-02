@@ -182,7 +182,7 @@ void AmbientOcclusion::renderGBufferToQuad(const glm::vec3 &lightPosition, const
     GL_Call(glActiveTexture(GL_TEXTURE2));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
     GL_Call(glActiveTexture(GL_TEXTURE3));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
 
     quadVA->bind();
     quadVA->setShader(lightingShader);

@@ -17,7 +17,7 @@
 #include "Trees.h"
 
 struct Light {
-    glm::vec3 fragmentToLightDir = glm::vec3(150.0F);
+    glm::vec3 fragmentToLightDir = glm::vec3(0.0F, 150.0F, 0.0F);
     glm::vec3 color = glm::vec3(1.0F);
 
     float ambient = 0.1F;
@@ -71,15 +71,16 @@ class Landscape : public Scene {
     Trees trees = {};
     Terrain terrain = {};
 
-    void renderTerrain(bool renderQuad);
+    void renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
                      const glm::vec3 &lightColor);
+    void renderSSAO();
+    void renderSSAOBlur();
+    void renderGBufferToQuad(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
+    void renderGBufferViewer();
 
     void renderTextureViewer();
     void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
-
-    void renderGBufferToQuad(const Light &light, const ShaderToggles &shaderToggles);
-    void renderGBufferViewer();
 
     void initGBuffer();
     void initSSAOBuffer();
