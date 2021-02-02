@@ -1,7 +1,5 @@
 #version 330 core
 
-#define USE_G_BUFFER 0
-
 struct DirLight {
     vec3 direction;
     vec3 color;
@@ -31,13 +29,9 @@ in float normalized_height;
 in vec3 extinction;
 in vec3 inScatter;
 
-#if USE_G_BUFFER
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec3 gAlbedoSpec;
-#else
-out vec4 color;
-#endif
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -440,10 +434,10 @@ vec3 ACESFilm(vec3 x) {
 }
 
 void main() {
-    #if USE_G_BUFFER
-    gPosition = FragPos;
-    gNormal = normalize(Normal);
-    gAlbedoSpec.rgb = vec3(0.95);
+    #if 1
+    gPosition = model_position;
+    gNormal = normalize(normalMatrix * normal_frag_in);
+    gAlbedoSpec.rgb = getSurfaceColor(normalized_height);
     #else
     vec3 normal = normalize(normalMatrix * normal_frag_in);
     vec3 tangent = normalize(normalMatrix * tangent_frag_in);

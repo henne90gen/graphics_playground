@@ -48,9 +48,9 @@ void main() {
     bitangent_frag_in = vec3(0.0F, noise.z, 1.0F);
     normal_frag_in = -normalize(cross(tangent_frag_in, bitangent_frag_in));
 
-    vec4 position = modelMatrix * vec4(pos.x, noise.x, pos.y, 1.0F);
+    vec4 position = viewMatrix * modelMatrix * vec4(pos.x, noise.x, pos.y, 1.0F);
     model_position = position.xyz;
-    gl_Position = projectionMatrix * viewMatrix * position;
+    gl_Position = projectionMatrix * position;
 
     uv_frag_in = pos / uvScaleFactor;
 
