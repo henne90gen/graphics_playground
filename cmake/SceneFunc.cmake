@@ -41,7 +41,6 @@ function(create_scene_test)
 
     target_include_directories(${SCENE_NAME}_test PRIVATE
             ${CATCH_INCLUDE_DIR}
-            ${CMAKE_SOURCE_DIR}/src/core
             ${GLM_DIR}
             ${FFMPEG_INCLUDE_DIR})
     target_link_libraries(${SCENE_NAME}_test core)
@@ -58,7 +57,6 @@ function(create_scene_benchmark)
             benchmark::benchmark
             OpenMP::OpenMP_CXX)
     target_include_directories(${SCENE_NAME}_bench PRIVATE
-            ${CMAKE_SOURCE_DIR}/src/core
             ${GLM_DIR})
     set_target_properties(
             ${SCENE_NAME}_bench PROPERTIES
