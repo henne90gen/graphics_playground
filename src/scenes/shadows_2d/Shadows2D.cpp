@@ -217,7 +217,7 @@ void Shadows2D::createLightSourceVA() {
           {0.01, 0.01},   // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {-0.01, 0.01},  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     };
-    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}};
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     lightSourceVA->addVertexBuffer(vertexBuffer);
 
@@ -246,7 +246,7 @@ void Shadows2D::createWallVA() {
         currentIndex += wall.vertices.size();
     }
 
-    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}};
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     wallsVA->addVertexBuffer(vertexBuffer);
 
@@ -362,7 +362,7 @@ void Shadows2D::addIntersection(const glm::vec2 &intersection, std::vector<glm::
 std::shared_ptr<VertexArray> Shadows2D::createVertexArray(const std::vector<glm::vec2> &vertices,
                                                           const std::vector<unsigned int> &indices) {
     std::shared_ptr<VertexArray> va = std::make_shared<VertexArray>(shader);
-    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}};
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(vertices, layout);
     va->addVertexBuffer(vertexBuffer);
 
@@ -418,7 +418,7 @@ void Shadows2D::createShadowPolygonVA(std::vector<glm::vec2> &vertices, const gl
     indices.push_back(0);
 
     shadowPolygonVA = std::make_shared<VertexArray>(shader);
-    BufferLayout layout = {{ShaderDataType::Vec2, "a_Position"}};
+    BufferLayout layout = {{ShaderDataType::Float2, "a_Position"}};
     std::shared_ptr<VertexBuffer> buffer = std::make_shared<VertexBuffer>(vertices, layout);
     shadowPolygonVA->addVertexBuffer(buffer);
 

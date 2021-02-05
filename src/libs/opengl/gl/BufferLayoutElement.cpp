@@ -3,7 +3,7 @@
 unsigned int BufferLayoutElement::getSize() const {
     switch (dataType) {
         case Float:
-        case Vec2:
+        case Float2:
         case Float3:
         case Float4:
         case Int:
@@ -21,7 +21,7 @@ unsigned int BufferLayoutElement::getSize() const {
 GLenum BufferLayoutElement::getDataType() const {
     switch (dataType) {
         case Float:
-        case Vec2:
+        case Float2:
         case Float3:
         case Float4:
             return GL_FLOAT;
@@ -41,7 +41,7 @@ unsigned int BufferLayoutElement::getCount() const {
     switch (dataType) {
         case Float:
             return 1;
-        case Vec2:
+        case Float2:
             return 2;
         case Float3:
             return 3;

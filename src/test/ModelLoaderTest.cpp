@@ -68,7 +68,7 @@ TEST_CASE("Simple cube model is loaded correctly") {
     };
     assertListEquals("Indices", indices, model->meshes[0].indices);
 
-    REQUIRE(model->meshes[0].textureCoordinates.empty());
+    REQUIRE(model->meshes[0].uvs.empty());
 }
 
 #include <iostream>

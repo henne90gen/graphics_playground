@@ -70,8 +70,8 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     shader->setUniform("u_Model", modelMatrix);
-    shader->setUniform("u_View", getCamera().viewMatrix);
-    shader->setUniform("u_Projection", getCamera().projectionMatrix);
+    shader->setUniform("u_View", getCamera().getViewMatrix());
+    shader->setUniform("u_Projection", getCamera().getProjectionMatrix());
 
     shader->setUniform("u_TextureSampler", 0);
 
@@ -111,7 +111,7 @@ void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mous
     ImGui::DragFloat("Mouse Rotation Speed", &mouseRotationSpeed, 0.01F);
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
-    const auto &model = renderModel->getOriginalModel();
+    const auto &model = renderModel->getRawModel();
     if (model) {
         ImGui::Text("Number of meshes: %ld", model->meshes.size());
         for (unsigned long i = 0; i < model->meshes.size(); i++) {
@@ -120,7 +120,7 @@ void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mous
             ImGui::Checkbox(("\tName: " + mesh.name).c_str(), &renderMesh->visible);
             ImGui::Text("\t\tNumber of vertices: %ld", mesh.vertices.size());
             ImGui::Text("\t\tNumber of normals: %ld", mesh.normals.size());
-            ImGui::Text("\t\tNumber of texture coordinates: %ld", mesh.textureCoordinates.size());
+            ImGui::Text("\t\tNumber of texture coordinates: %ld", mesh.uvs.size());
             ImGui::Text("\t\tNumber of indices: %ld", mesh.indices.size());
         }
         ImGui::Text("Number of materials: %ld", model->materials.size());

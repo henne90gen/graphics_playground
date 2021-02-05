@@ -24,8 +24,8 @@ void NormalMapping::setup() {
 
     std::vector<glm::vec3> tangents = {};
     std::vector<glm::vec3> biTangents = {};
-    ModelLoader::RawMesh &rawMesh = model->getOriginalModel()->meshes[0];
-    calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.textureCoordinates, tangents, biTangents);
+    ModelLoader::RawMesh &rawMesh = model->getRawModel()->meshes[0];
+    calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.uvs, tangents, biTangents);
 
     std::vector<float> vertexData;
     interleaveVertexData(tangents, biTangents, vertexData);

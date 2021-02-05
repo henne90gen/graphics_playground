@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <util/RenderUtils.h>
 
-#define USE_TREE_MODELS 0
+#define USE_TREE_MODELS 1
 
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
 
@@ -16,7 +16,10 @@ void Trees::init() {
 
 #if USE_TREE_MODELS
     treeModel = std::make_shared<Model>();
-    treeModel->loadFromFile("landscape_resources/assets/models/treepack1/treepack1_1.obj", shader);
+    treeModel->loadFromFile("landscape_resources/assets/models/low_poly_tree/low_poly_tree.obj", shader);
+    for (const auto &mesh : treeModel->getRawModel()->meshes) {
+        vertexCount += mesh.vertices.size();
+    }
 #endif
 }
 
@@ -24,6 +27,7 @@ void Trees::showGui() {
     ImGui::DragInt("Tree Count", &treeCount);
 #if USE_TREE_MODELS
     ImGui::Text("Mesh count: %d", treeModel->getMeshes().size());
+    ImGui::Text("Vertex count: %d", vertexCount);
 #endif
 }
 

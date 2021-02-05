@@ -8,6 +8,6 @@ struct ShaderToggles {
     bool useAtmosphericScattering = false;
     bool useACESFilm = false;
     bool useAmbientOcclusion = false;
-    float exposure = 1.0F;
-    float gamma = 1.0F;
+    float exposure = 1.6F;
+    float gamma = 0.6F;
 };

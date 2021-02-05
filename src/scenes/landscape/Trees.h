@@ -16,6 +16,8 @@ class Trees {
 
     int treeCount = 1000;
 
+    int vertexCount = 0;
+
   public:
     void init();
 

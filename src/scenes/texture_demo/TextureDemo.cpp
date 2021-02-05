@@ -28,8 +28,8 @@ void TextureDemo::setup() {
             1.0, 1.0, 1.0, 1.0  //
     };
     BufferLayout bufferLayout = {
-                    {ShaderDataType::Vec2, "position"},
-                    {ShaderDataType::Vec2, "vertexUV"}
+                    {ShaderDataType::Float2, "position"},
+                    {ShaderDataType::Float2, "vertexUV"}
             };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     vertexArray->addVertexBuffer(buffer);

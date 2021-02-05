@@ -367,7 +367,7 @@ void TerrainErosion::initTerrainMesh(TerrainData &terrainData, const std::vector
     terrainData.va = std::make_shared<VertexArray>(shader);
     terrainData.va->bind();
 
-    BufferLayout positionLayout = {{ShaderDataType::Vec2, "position"}};
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     terrainData.va->addVertexBuffer(positionBuffer);
 

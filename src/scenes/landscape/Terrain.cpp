@@ -171,7 +171,7 @@ std::shared_ptr<VertexArray> Terrain::generatePoints(const std::shared_ptr<Shade
     }
 
     BufferLayout bufferLayout = {
-          {ShaderDataType::Vec2, "position_in"},
+          {ShaderDataType::Float2, "position_in"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     result->addVertexBuffer(buffer);
