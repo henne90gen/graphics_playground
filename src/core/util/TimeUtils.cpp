@@ -22,7 +22,7 @@ Timer::~Timer() {
         long long duration = endNs - startNs;
         const double conversionFactor = 0.000001;
         double ms = static_cast<double>(duration) * conversionFactor;
-        std::cout << name.c_str() << ": " << ms << "ms" << std::endl;
+        std::cout << name.c_str() << ": " << ms << "ms\n";
     }
 }
 
