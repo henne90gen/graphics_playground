@@ -279,7 +279,7 @@ void RayTracing::setupRayTracedTexture() {
     };
     BufferLayout bufferLayout = {
           {Float3, "a_Position"},
-          {Vec2, "a_UV"},
+          {Float2, "a_UV"},
     };
     auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
     rayTracedTextureArray->addVertexBuffer(buffer);

@@ -86,15 +86,18 @@ unsigned int fromFile(const std::string &fileName, std::shared_ptr<RawModel> &mo
         return 1;
     }
 
-    std::string str;
-    while (std::getline(modelStream, str)) {
-        lines.push_back(str);
+    {
+        TIME_SCOPE_NAME("readFile");
+        std::string str;
+        while (std::getline(modelStream, str)) {
+            lines.push_back(str);
+        }
     }
 
     return fromFileContent(fileName, lines, model);
 }
 
-unsigned int fromFileContent(const std::string &fileName, const std::vector<std::string> &lines,
+unsigned int fromFileContent(const std::string &fileName, std::vector<std::string> &lines,
                              std::shared_ptr<RawModel> &model) {
     TIME_SCOPE_NAME("fromFileContent");
 
@@ -108,40 +111,44 @@ unsigned int fromFileContent(const std::string &fileName, const std::vector<std:
     RawMesh globalMesh = {};
     std::vector<Face> faces = {};
 
-    for (unsigned long lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
-        std::string l = trim_copy(lines[lineNumber - 1]);
-        if (l.empty()) {
-            continue;
-        }
-
-        if (l[0] == '#') {
-            continue;
-        }
-
-        if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
-            parseMaterialLib(fileName, lineNumber, l, model->materials);
-        } else if (l[0] == 'o') {
-            if (!globalMesh.name.empty()) {
-                auto mesh = createIndicesFromFaces(globalMesh, faces);
-                model->meshes.push_back(mesh);
-                faces.clear();
+    {
+        TIME_SCOPE_NAME("processLines");
+        for (unsigned long lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
+            std::string &l = lines[lineNumber - 1];
+            trim(l);
+            if (l.empty()) {
+                continue;
             }
-            globalMesh.name = l.substr(2);
-        } else if (l[0] == 'v' && l[1] == 'n') {
-            parseNormal(fileName, lineNumber, l, globalMesh.normals);
-        } else if (l[0] == 'v' && l[1] == 't') {
-            parseTextureCoordinates(fileName, lineNumber, l, globalMesh.textureCoordinates);
-        } else if (l[0] == 'v') {
-            parseVertex(fileName, lineNumber, l, globalMesh.vertices);
-        } else if (l[0] == 'f') {
-            parseFace(fileName, lineNumber, l, faces);
-        } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
-            const int materialNameOffset = 7;
-            globalMesh.material = model->materials[l.substr(materialNameOffset)];
-        } else if (l[0] == 's') {
-            // ignore this for now
-        } else {
-            std::cout << "Could not parse line in " << fileName << ": " << l << std::endl;
+
+            if (l[0] == '#') {
+                continue;
+            }
+
+            if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
+                parseMaterialLib(fileName, lineNumber, l, model->materials);
+            } else if (l[0] == 'o') {
+                if (!globalMesh.name.empty()) {
+                    auto mesh = createIndicesFromFaces(globalMesh, faces);
+                    model->meshes.push_back(mesh);
+                    faces.clear();
+                }
+                globalMesh.name = l.substr(2);
+            } else if (l[0] == 'v' && l[1] == 'n') {
+                parseNormal(fileName, lineNumber, l, globalMesh.normals);
+            } else if (l[0] == 'v' && l[1] == 't') {
+                parseTextureCoordinates(fileName, lineNumber, l, globalMesh.uvs);
+            } else if (l[0] == 'v') {
+                parseVertex(fileName, lineNumber, l, globalMesh.vertices);
+            } else if (l[0] == 'f') {
+                parseFace(fileName, lineNumber, l, faces);
+            } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
+                const int materialNameOffset = 7;
+                globalMesh.material = model->materials[l.substr(materialNameOffset)];
+            } else if (l[0] == 's') {
+                // ignore this for now
+            } else {
+                std::cout << "Could not parse line " << lineNumber << " in " << fileName << ": " << l << std::endl;
+            }
         }
     }
 
@@ -177,7 +184,7 @@ RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &fac
             const auto &vertex = face.vertices[vertexIndex];
             vertices.push_back(mesh.vertices[vertex.vertexIndex - 1]);
             if (vertex.textureCoordinateIndex != 0U) {
-                textureCoordinates.push_back(mesh.textureCoordinates[vertex.textureCoordinateIndex - 1]);
+                textureCoordinates.push_back(mesh.uvs[vertex.textureCoordinateIndex - 1]);
             }
             if (vertex.normalIndex != 0U) {
                 normals.push_back(mesh.normals[vertex.normalIndex - 1]);

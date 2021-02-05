@@ -6,7 +6,7 @@
 
 #include "ModelLoader.h"
 
-#include "Image.h"
+#include <Image.h>
 #include <ImageOps.h>
 #include <gl/Texture.h>
 #include <gl/VertexArray.h>
@@ -15,9 +15,10 @@
 class OpenGLMesh {
   public:
     OpenGLMesh(std::shared_ptr<VertexArray> vertexArray, std::shared_ptr<VertexBuffer> vertexBuffer,
+               std::shared_ptr<VertexBuffer> normalBuffer, std::shared_ptr<VertexBuffer> uvBuffer,
                std::shared_ptr<IndexBuffer> indexBuffer, std::shared_ptr<Texture> texture, bool visible = true)
-        : vertexArray(std::move(vertexArray)), vertexBuffer(std::move(vertexBuffer)),
-          indexBuffer(std::move(indexBuffer)), texture(std::move(texture)), visible(visible) {}
+        : vertexArray(std::move(vertexArray)), vertexBuffer(std::move(vertexBuffer)), normalBuffer(std::move(normalBuffer)),
+          uvBuffer(std::move(uvBuffer)), indexBuffer(std::move(indexBuffer)), texture(std::move(texture)), visible(visible) {}
 
     void updateMeshVertices(const ModelLoader::RawMesh &mesh, const std::shared_ptr<Shader> &shader) const;
 
@@ -25,6 +26,8 @@ class OpenGLMesh {
 
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexBuffer> vertexBuffer;
+    std::shared_ptr<VertexBuffer> normalBuffer;
+    std::shared_ptr<VertexBuffer> uvBuffer;
     std::shared_ptr<IndexBuffer> indexBuffer;
     std::shared_ptr<Texture> texture;
     bool visible = true;
@@ -38,9 +41,9 @@ class Model {
 
     const std::vector<std::shared_ptr<OpenGLMesh>> getMeshes() const { return meshes; }
 
-    const std::shared_ptr<ModelLoader::RawModel> getOriginalModel() const { return model; }
+    const std::shared_ptr<ModelLoader::RawModel> getRawModel() const { return rawModel; }
 
   private:
     std::vector<std::shared_ptr<OpenGLMesh>> meshes;
-    std::shared_ptr<ModelLoader::RawModel> model;
+    std::shared_ptr<ModelLoader::RawModel> rawModel;
 };

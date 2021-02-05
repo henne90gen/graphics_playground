@@ -31,7 +31,7 @@
 
 #define CREATE_DEFAULT_SHADER(name) createDefaultShader(SHADER_CODE(name##Vert), SHADER_CODE(name##Frag))
 
-enum ShaderDataType { Float = 0, Vec2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
+enum ShaderDataType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 
 struct ShaderCode {
     unsigned int lineCount = 0;

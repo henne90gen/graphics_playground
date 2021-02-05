@@ -343,7 +343,7 @@ void BloomEffect::initLightCubeData() {
         uvs.emplace_back(0, 1);
     }
     BufferLayout layout = {
-          {Vec2, "a_UV"},
+          {Float2, "a_UV"},
     };
     std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(uvs, layout);
     cubeVA->addVertexBuffer(vb);

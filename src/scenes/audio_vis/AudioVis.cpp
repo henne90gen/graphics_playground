@@ -231,7 +231,7 @@ void AudioVis::initMesh() {
     }
 
     const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    BufferLayout positionLayout = {{ShaderDataType::Vec2, "position"}};
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
     va->addVertexBuffer(positionBuffer);
 

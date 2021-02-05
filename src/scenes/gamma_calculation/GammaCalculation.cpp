@@ -28,7 +28,7 @@ void GammaCalculation::setup() {
           0.0,  -1.0, //
           0.0,  1.0   //
     };
-    BufferLayout positionLayout = {{ShaderDataType::Vec2, "position"}};
+    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, positionLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
@@ -40,7 +40,7 @@ void GammaCalculation::setup() {
           1.0, 0.0, //
           1.0, 1.0  //
     };
-    BufferLayout uvLayout = {{ShaderDataType::Vec2, "vertexUV"}};
+    BufferLayout uvLayout = {{ShaderDataType::Float2, "vertexUV"}};
     auto uvBuffer = std::make_shared<VertexBuffer>(uvCoords, uvLayout);
     vertexArray->addVertexBuffer(uvBuffer);
 
