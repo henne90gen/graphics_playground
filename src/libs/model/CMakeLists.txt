@@ -1,6 +1,6 @@
 add_library(model
         Model.cpp
-        ModelLoader.cpp)
+        )
 
 set_target_properties(model PROPERTIES
         CXX_STANDARD 17
