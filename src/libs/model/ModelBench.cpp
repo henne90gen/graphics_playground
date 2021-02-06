@@ -6,8 +6,8 @@
 
 static void BM_LoadMonkey(benchmark::State &state) {
     for (auto _ : state) {
-        auto rawModel = std::make_shared<ModelLoader::RawModel>();
-        unsigned int error = ModelLoader::fromFile("../../src/libs/model/models/monkey.obj", rawModel);
+        auto rawModel = RawModel();
+        unsigned int error = Model::loadRawModelFromFile("../../src/libs/model/models/monkey.obj", rawModel);
         benchmark::DoNotOptimize(rawModel);
         benchmark::DoNotOptimize(error);
     }
