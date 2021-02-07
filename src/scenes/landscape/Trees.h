@@ -12,7 +12,7 @@
 class Trees {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> cubeVA;
-    std::shared_ptr<Model> treeModel;
+    Model treeModel;
 
     int treeCount = 1000;
 

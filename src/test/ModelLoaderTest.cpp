@@ -1,22 +1,22 @@
 #include <catch.hpp>
 
-#include "ModelLoader.h"
+#include "Model.h"
 #include "util/TestUtils.h"
 
 TEST_CASE("Not existing file is handled correctly") {
-    std::shared_ptr<ModelLoader::RawModel> model = std::make_shared<ModelLoader::RawModel>();
-    auto result = ModelLoader::fromFile("not-existing.obj", model);
+    RawModel model;
+    auto result = Model::loadRawModelFromFile("not-existing.obj", model);
     REQUIRE(result == 1);
-    REQUIRE(model->meshes.empty());
-    REQUIRE(model->materials.empty());
+    REQUIRE(model.meshes.empty());
+    REQUIRE(model.materials.empty());
 }
 
 TEST_CASE("Empty file is handled correctly") {
-    std::shared_ptr<ModelLoader::RawModel> model = std::make_shared<ModelLoader::RawModel>();
-    auto result = ModelLoader::fromFile("../../src/test/empty.obj", model);
+    RawModel model;
+    auto result = Model::loadRawModelFromFile("../../src/test/empty.obj", model);
     REQUIRE(result == 1);
-    REQUIRE(model->meshes.empty());
-    REQUIRE(model->materials.empty());
+    REQUIRE(model.meshes.empty());
+    REQUIRE(model.materials.empty());
 }
 
 static void assertListEquals(const std::string &message, std::vector<glm::vec3> &expected,
@@ -26,10 +26,10 @@ static void assertListEquals(const std::string &message, std::vector<glm::ivec3>
                              std::vector<glm::ivec3> &actual);
 
 TEST_CASE("Simple cube model is loaded correctly") {
-    std::shared_ptr<ModelLoader::RawModel> model = std::make_shared<ModelLoader::RawModel>();
-    auto error = ModelLoader::fromFile("../../src/test/cube.obj", model);
+    RawModel model;
+    auto error = Model::loadRawModelFromFile("../../src/test/cube.obj", model);
     REQUIRE(error == 0);
-    REQUIRE(model->meshes.size() == 1);
+    REQUIRE(model.meshes.size() == 1);
     std::vector<glm::vec3> vertices = {
           {1.000000, -1.000000, 1.000000},  {-1.000000, -1.000000, -1.000000}, {1.000000, -1.000000, -1.000000},
           {-1.000000, 1.000000, -1.000000}, {1.000000, 1.000000, 1.000000},    {1.000000, 1.000000, -1.000000},
@@ -44,7 +44,7 @@ TEST_CASE("Simple cube model is loaded correctly") {
           {-1.000000, -1.000000, 1.000000}, {-1.000000, 1.000000, 1.000000},   {-1.000000, 1.000000, -1.000000},
           {1.000000, -1.000000, -1.000000}, {-1.000000, -1.000000, -1.000000}, {-1.000000, 1.000000, -1.000000},
     };
-    assertListEquals("Vertices", vertices, model->meshes[0].vertices);
+    assertListEquals("Vertices", vertices, model.meshes[0].vertices);
 
     std::vector<glm::vec3> normals = {
           {0.0000, -1.0000, 0.0000},   {0.0000, -1.0000, 0.0000},   {0.0000, -1.0000, 0.0000},
@@ -60,15 +60,15 @@ TEST_CASE("Simple cube model is loaded correctly") {
           {-1.0000, -0.0000, -0.0000}, {-1.0000, -0.0000, -0.0000}, {-1.0000, -0.0000, -0.0000},
           {0.0000, 0.0000, -1.0000},   {0.0000, 0.0000, -1.0000},   {0.0000, 0.0000, -1.0000},
     };
-    assertListEquals("Normals", normals, model->meshes[0].normals);
+    assertListEquals("Normals", normals, model.meshes[0].normals);
 
     std::vector<glm::ivec3> indices = {
           {0, 1, 2},    {3, 4, 5},    {6, 7, 8},    {9, 10, 11},  {12, 13, 14}, {15, 16, 17},
           {18, 19, 20}, {21, 22, 23}, {24, 25, 26}, {27, 28, 29}, {30, 31, 32}, {33, 34, 35},
     };
-    assertListEquals("Indices", indices, model->meshes[0].indices);
+    assertListEquals("Indices", indices, model.meshes[0].indices);
 
-    REQUIRE(model->meshes[0].uvs.empty());
+    REQUIRE(model.meshes[0].uvs.empty());
 }
 
 #include <iostream>
