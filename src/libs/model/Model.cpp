@@ -43,6 +43,9 @@ unsigned int Model::loadFromFile(const std::string &fileName, const std::shared_
 
         model.meshes.push_back(glMesh);
     }
+
+    model.loaded = true;
+
     return 0;
 }
 
@@ -112,9 +115,9 @@ static inline std::string trim_copy(std::string s) {
 }
 
 struct FaceVertex {
-    unsigned int vertexIndex;
-    unsigned int textureCoordinateIndex;
-    unsigned int normalIndex;
+    unsigned int vertexIndex = 0;
+    unsigned int textureCoordinateIndex = 0;
+    unsigned int normalIndex = 0;
 };
 
 struct Face {
@@ -230,125 +233,133 @@ void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, con
     materials[currentMaterial->name] = currentMaterial;
 }
 
-void parseTextureCoordinates(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                             std::vector<glm::vec2> &textureCoordinates) {
-    std::string l = line.substr(3);
-
-    std::istringstream iss(l);
-    std::vector<std::string> tokens = {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-
-    if (tokens.size() != 2) {
-        std::cout << "Malformed texture coordinate definition in " << fileName << " on line " << lineNumber
-                  << std::endl;
-        return;
+void parseVec2(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+                             std::vector<glm::vec2> &list) {
+    glm::vec2 v;
+    int vIndex = 0;
+    char *currentNum = reinterpret_cast<char *>(std::malloc(32));
+    int currentNumIndex = 0;
+    for (const auto &c : line) {
+        if (c == ' ') {
+            currentNum[currentNumIndex] = '\0';
+            v[vIndex] = std::strtof(currentNum, nullptr);
+            currentNumIndex = 0;
+            vIndex++;
+            continue;
+        }
+        currentNum[currentNumIndex++] = c;
     }
-
-    glm::vec2 textureCoordinate;
-    textureCoordinate.x = std::strtof(tokens[0].c_str(), nullptr);
-    textureCoordinate.y = std::strtof(tokens[1].c_str(), nullptr);
-    textureCoordinates.push_back(textureCoordinate);
+    currentNum[currentNumIndex] = '\0';
+    v[vIndex] = std::strtof(currentNum, nullptr);
+    list.push_back(v);
 }
 
-void parseVertex(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                 std::vector<glm::vec3> &vertices) {
+void parseVec3(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+               std::vector<glm::vec3> &list) {
+    glm::vec3 v;
+    int vIndex = 0;
+    char *currentNum = reinterpret_cast<char *>(std::malloc(32));
+    int currentNumIndex = 0;
+    for (const auto &c : line) {
+        if (c == ' ') {
+            currentNum[currentNumIndex] = '\0';
+            v[vIndex] = std::strtof(currentNum, nullptr);
+            currentNumIndex = 0;
+            vIndex++;
+            continue;
+        }
+        currentNum[currentNumIndex++] = c;
+    }
+    currentNum[currentNumIndex] = '\0';
+    v[vIndex] = std::strtof(currentNum, nullptr);
+    list.push_back(v);
+}
+
+void parseFace(const std::string &fileName, unsigned long lineNumber, const std::string &line, std::vector<Face> &faces,
+               PerformanceCounter *pc) {
     std::string l = line.substr(2);
-
-    std::istringstream iss(l);
-    std::vector<std::string> tokens = {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-
-    if (tokens.size() != 3) {
-        std::cout << "Malformed vertex definition in " << fileName << " on line " << lineNumber << std::endl;
-        return;
-    }
-
-    glm::vec3 vertex;
-    vertex.x = std::strtof(tokens[0].c_str(), nullptr);
-    vertex.y = std::strtof(tokens[1].c_str(), nullptr);
-    vertex.z = std::strtof(tokens[2].c_str(), nullptr);
-    vertices.push_back(vertex);
-}
-
-void parseNormal(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                 std::vector<glm::vec3> &normals) {
-    std::string l = line.substr(3);
-
-    std::istringstream iss(l);
-    std::vector<std::string> tokens = {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-
-    if (tokens.size() != 3) {
-        std::cout << "Malformed normal definition in " << fileName << " on line " << lineNumber << std::endl;
-        return;
-    }
-
-    glm::vec3 normal;
-    normal.x = std::strtof(tokens[0].c_str(), nullptr);
-    normal.y = std::strtof(tokens[1].c_str(), nullptr);
-    normal.z = std::strtof(tokens[2].c_str(), nullptr);
-    normals.push_back(normal);
-}
-
-void parseFace(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-               std::vector<Face> &faces) {
-    std::string l = line.substr(2);
-
-    std::istringstream iss(l);
-    std::vector<std::string> tokens = {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-    if (tokens.size() != 3 && tokens.size() != 4) {
-        std::cout << "Malformed face definition in " << fileName << " on line " << lineNumber << std::endl;
-        return;
-    }
 
     std::vector<FaceVertex> faceVertices = {};
-    std::regex slashRegex("/");
-    for (auto &s : tokens) {
-        std::vector<std::string> parts = {std::sregex_token_iterator(s.begin(), s.end(), slashRegex, -1), {}};
-        if (parts.empty() || parts.size() > 3) {
-            std::cout << "Could not parse face vertex in " << fileName << " on line " << lineNumber << std::endl;
-            return;
+    char *currentNum = reinterpret_cast<char *>(std::malloc(32));
+    int currentNumIndex = 0;
+    int currentCoordinate = 0;
+    FaceVertex currentVertex = {};
+    for (auto &c : l) {
+        if (c == ' ') {
+            currentNum[currentNumIndex] = '\0';
+            switch (currentCoordinate) {
+            case 0:
+                currentVertex.vertexIndex = std::strtoul(currentNum, nullptr, 10);
+                break;
+            case 1:
+                currentVertex.textureCoordinateIndex = std::strtoul(currentNum, nullptr, 10);
+                break;
+            case 2:
+                currentVertex.normalIndex = std::strtoul(currentNum, nullptr, 10);
+                break;
+            }
+            faceVertices.push_back(currentVertex);
+            currentVertex.vertexIndex = 0;
+            currentVertex.textureCoordinateIndex = 0;
+            currentVertex.normalIndex = 0;
+            currentCoordinate = 0;
+            currentNumIndex = 0;
+            continue;
         }
 
-        FaceVertex faceVertex = {};
-        const int base = 10;
-        faceVertex.vertexIndex = std::strtoul(parts[0].c_str(), nullptr, base);
-        if (parts.size() > 1) {
-            faceVertex.textureCoordinateIndex = std::strtoul(parts[1].c_str(), nullptr, base);
+        if (c == '/') {
+            currentNum[currentNumIndex] = '\0';
+            switch (currentCoordinate) {
+            case 0:
+                currentVertex.vertexIndex = std::strtoul(currentNum, nullptr, 10);
+                break;
+            case 1:
+                currentVertex.textureCoordinateIndex = std::strtoul(currentNum, nullptr, 10);
+                break;
+            case 2:
+                currentVertex.normalIndex = std::strtoul(currentNum, nullptr, 10);
+                break;
+            }
+            currentCoordinate++;
+            currentNumIndex = 0;
+            continue;
         }
-        if (parts.size() > 2) {
-            faceVertex.normalIndex = std::strtoul(parts[2].c_str(), nullptr, base);
-        }
-        faceVertices.push_back(faceVertex);
+
+        currentNum[currentNumIndex++] = c;
     }
+
+    currentNum[currentNumIndex] = '\0';
+    switch (currentCoordinate) {
+    case 0:
+        currentVertex.vertexIndex = std::strtoul(currentNum, nullptr, 10);
+        break;
+    case 1:
+        currentVertex.textureCoordinateIndex = std::strtoul(currentNum, nullptr, 10);
+        break;
+    case 2:
+        currentVertex.normalIndex = std::strtoul(currentNum, nullptr, 10);
+        break;
+    }
+    faceVertices.push_back(currentVertex);
+
     Face face = {faceVertices};
     faces.push_back(face);
+
+    std::free(currentNum);
 }
 
 unsigned int Model::loadRawModelFromFile(const std::string &fileName, RawModel &model) {
     TIME_SCOPE_NAME("fromFile");
-
-    
 
     if (fileName.find(".obj") == std::string::npos) {
         std::cerr << fileName << " is not an obj file" << std::endl;
         return 1;
     }
 
-    std::vector<std::string> lines;
     std::ifstream modelStream(fileName, std::ios::in);
 
     if (!modelStream.is_open()) {
         std::cerr << "Could not open " << fileName << std::endl;
-        return 1;
-    }
-
-    {
-        TIME_SCOPE_NAME("readFile");
-        std::string str;
-        while (std::getline(modelStream, str)) {
-            lines.push_back(str);
-        }
-    }
-
-    if (lines.empty()) {
         return 1;
     }
 
@@ -359,9 +370,12 @@ unsigned int Model::loadRawModelFromFile(const std::string &fileName, RawModel &
     std::vector<Face> faces = {};
 
     {
-        TIME_SCOPE_NAME("processLines");
-        for (unsigned long lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
-            std::string &l = lines[lineNumber - 1];
+        auto pc = PerformanceCounter();
+        TIME_SCOPE_NAME("readLines");
+        std::string l;
+        int lineNumber = 0;
+        while (std::getline(modelStream, l)) {
+            lineNumber++;
             trim(l);
             if (l.empty()) {
                 continue;
@@ -372,8 +386,10 @@ unsigned int Model::loadRawModelFromFile(const std::string &fileName, RawModel &
             }
 
             if (l[0] == 'm' && l[1] == 't' && l[2] == 'l') {
+                auto t = Timer(&pc, "materialLib");
                 parseMaterialLib(fileName, lineNumber, l, model.materials);
             } else if (l[0] == 'o') {
+                auto t = Timer(&pc, "object");
                 if (!globalMesh.name.empty()) {
                     auto mesh = createIndicesFromFaces(globalMesh, faces);
                     model.meshes.push_back(mesh);
@@ -381,14 +397,19 @@ unsigned int Model::loadRawModelFromFile(const std::string &fileName, RawModel &
                 }
                 globalMesh.name = l.substr(2);
             } else if (l[0] == 'v' && l[1] == 'n') {
-                parseNormal(fileName, lineNumber, l, globalMesh.normals);
+                auto t = Timer(&pc, "normal");
+                parseVec3(fileName, lineNumber, l.substr(3), globalMesh.normals);
             } else if (l[0] == 'v' && l[1] == 't') {
-                parseTextureCoordinates(fileName, lineNumber, l, globalMesh.uvs);
+                auto t = Timer(&pc, "textureCoordinate");
+                parseVec2(fileName, lineNumber, l.substr(3), globalMesh.uvs);
             } else if (l[0] == 'v') {
-                parseVertex(fileName, lineNumber, l, globalMesh.vertices);
+                auto t = Timer(&pc, "vertex");
+                parseVec3(fileName, lineNumber, l.substr(2), globalMesh.vertices);
             } else if (l[0] == 'f') {
-                parseFace(fileName, lineNumber, l, faces);
+                auto t = Timer(&pc, "face");
+                parseFace(fileName, lineNumber, l, faces, &pc);
             } else if (l[0] == 'u' && l[1] == 's' && l[2] == 'e') {
+                auto t = Timer(&pc, "materialLibUsage");
                 const int materialNameOffset = 7;
                 globalMesh.material = model.materials[l.substr(materialNameOffset)];
             } else if (l[0] == 's') {
@@ -397,6 +418,13 @@ unsigned int Model::loadRawModelFromFile(const std::string &fileName, RawModel &
                 std::cout << "Could not parse line " << lineNumber << " in " << fileName << ": " << l << std::endl;
             }
         }
+        for (auto &dp : pc.dataPoints) {
+            std::cout << dp.first << ": " << dp.second._sum << "ms\n";
+        }
+    }
+
+    if (faces.empty()) {
+        return 1;
     }
 
     auto mesh = createIndicesFromFaces(globalMesh, faces);

@@ -57,13 +57,15 @@ class Model {
   public:
     Model() = default;
 
+    bool isLoaded() const { return loaded; }
     const std::vector<OpenGLMesh> getMeshes() const { return meshes; }
-
     const RawModel getRawModel() const { return rawModel; }
 
     static unsigned int loadFromFile(const std::string &fileName, const std::shared_ptr<Shader> &shader, Model &model);
     static unsigned int loadRawModelFromFile(const std::string &fileName, RawModel &model);
+
   private:
     std::vector<OpenGLMesh> meshes;
     RawModel rawModel;
+    bool loaded;
 };

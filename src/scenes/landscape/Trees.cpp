@@ -15,9 +15,14 @@ void Trees::init() {
     cubeVA = createCubeVA(shader);
 
 #if USE_TREE_MODELS
-    treeModel = std::make_shared<Model>();
-    treeModel->loadFromFile("landscape_resources/assets/models/low_poly_tree/low_poly_tree.obj", shader);
-    for (const auto &mesh : treeModel->getRawModel()->meshes) {
+    unsigned int error =
+          Model::loadFromFile("landscape_resources/assets/models/low_poly_tree/low_poly_tree.obj", shader, treeModel);
+    if (error != 0) {
+        std::cout << "Failed to load tree model" << std::endl;
+        return;
+    }
+
+    for (const auto &mesh : treeModel.getRawModel().meshes) {
         vertexCount += mesh.vertices.size();
     }
 #endif
@@ -26,7 +31,7 @@ void Trees::init() {
 void Trees::showGui() {
     ImGui::DragInt("Tree Count", &treeCount);
 #if USE_TREE_MODELS
-    ImGui::Text("Mesh count: %d", treeModel->getMeshes().size());
+    ImGui::Text("Mesh count: %d", treeModel.getMeshes().size());
     ImGui::Text("Vertex count: %d", vertexCount);
 #endif
 }
@@ -34,7 +39,7 @@ void Trees::showGui() {
 void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                    const TerrainParams &terrainParams) {
 #if USE_TREE_MODELS
-    if (!treeModel) {
+    if (!treeModel.isLoaded()) {
         return;
     }
 
@@ -48,20 +53,20 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
 
     shader->setUniform("treeCount", treeCount);
 
-    for (const auto &mesh : treeModel->getMeshes()) {
-        if (!mesh->visible) {
+    for (const auto &mesh : treeModel.getMeshes()) {
+        if (!mesh.visible) {
             continue;
         }
 
-        mesh->vertexArray->bind();
+        mesh.vertexArray->bind();
 
-        mesh->texture->bind();
+        mesh.texture->bind();
 
         if (shaderToggles.drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
         }
 
-        GL_Call(glDrawElementsInstanced(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr,
+        GL_Call(glDrawElementsInstanced(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr,
                                         treeCount));
         //        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 
@@ -69,7 +74,7 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
         }
 
-        mesh->vertexArray->unbind();
+        mesh.vertexArray->unbind();
     }
 #else
     cubeVA->bind();
