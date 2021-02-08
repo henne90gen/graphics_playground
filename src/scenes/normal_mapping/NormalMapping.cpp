@@ -16,15 +16,18 @@ void NormalMapping::setup() {
     shader->bind();
     onAspectRatioChange();
 
-    model = std::make_unique<Model>();
-    model->loadFromFile("normal_mapping_resources/models/monkey.obj", shader);
+    auto error = Model::loadFromFile("normal_mapping_resources/models/monkey.obj", shader, model);
+    if (error != 0) {
+        std::cout << "Failed to load model" << std::endl;
+        return;
+    }
 
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
 
     std::vector<glm::vec3> tangents = {};
     std::vector<glm::vec3> biTangents = {};
-    ModelLoader::RawMesh &rawMesh = model->getRawModel()->meshes[0];
+    const RawMesh rawMesh = model.getRawModel().meshes[0];
     calculateTangentsAndBiTangents(rawMesh.indices, rawMesh.vertices, rawMesh.uvs, tangents, biTangents);
 
     std::vector<float> vertexData;
@@ -34,8 +37,8 @@ void NormalMapping::setup() {
           {ShaderDataType::Float3, "a_BiTangent"},
     };
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertexData, layout);
-    std::shared_ptr<OpenGLMesh> mesh = model->getMeshes()[0];
-    mesh->vertexArray->addVertexBuffer(vertexBuffer);
+    const OpenGLMesh mesh = model.getMeshes()[0];
+    mesh.vertexArray->addVertexBuffer(vertexBuffer);
 
     TextureSettings textureSettings = {};
     textureSettings.dataType = GL_RGBA;
@@ -93,19 +96,19 @@ void NormalMapping::tick() {
 
     {
         RECORD_SCOPE_NAME("Render");
-        for (auto &mesh : model->getMeshes()) {
+        for (const auto &mesh : model.getMeshes()) {
             renderMesh(mesh, position, rotation, scale);
         }
     }
 }
 
-void NormalMapping::renderMesh(const std::shared_ptr<OpenGLMesh> &mesh, const glm::vec3 &position,
-                               const glm::vec3 &rotation, const float scale) {
-    if (!mesh->visible) {
+void NormalMapping::renderMesh(const OpenGLMesh &mesh, const glm::vec3 &position, const glm::vec3 &rotation,
+                               const float scale) {
+    if (!mesh.visible) {
         return;
     }
 
-    mesh->vertexArray->bind();
+    mesh.vertexArray->bind();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
@@ -120,13 +123,13 @@ void NormalMapping::renderMesh(const std::shared_ptr<OpenGLMesh> &mesh, const gl
 
     glActiveTexture(GL_TEXTURE0);
     shader->setUniform("u_TextureSampler", 0);
-    mesh->texture->bind();
+    mesh.texture->bind();
 
     glActiveTexture(GL_TEXTURE1);
     shader->setUniform("u_NormalSampler", 1);
     normalMap->bind();
 
-    GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+    GL_Call(glDrawElements(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
 void NormalMapping::interleaveVertexData(const std::vector<glm::vec3> &tangents,

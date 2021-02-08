@@ -30,7 +30,7 @@ class BloomEffect : public Scene {
     std::shared_ptr<VertexArray> quadVA;
     std::shared_ptr<VertexArray> cubeVA;
     std::shared_ptr<Texture> staticRedTexture;
-    std::unique_ptr<Model> model = {};
+    Model model = {};
 
     glm::mat4 projectionMatrix;
 
