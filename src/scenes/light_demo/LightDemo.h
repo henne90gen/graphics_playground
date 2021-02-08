@@ -25,7 +25,7 @@ class LightDemo : public Scene {
 
   private:
     std::shared_ptr<Shader> shader;
-    std::unique_ptr<Model> model = {};
+    Model model = {};
 
     bool drawWireframe = false;
     glm::mat4 projectionMatrix;

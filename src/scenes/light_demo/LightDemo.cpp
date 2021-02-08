@@ -15,8 +15,10 @@ void LightDemo::setup() {
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
-    model = std::make_unique<Model>();
-    model->loadFromFile("light_demo_resources/models/monkey.obj", shader);
+    auto error = Model::loadFromFile("light_demo_resources/models/monkey.obj", shader, model);
+    if (error != 0) {
+        std::cout << "Failed to load model" << std::endl;
+    }
 }
 
 void LightDemo::onAspectRatioChange() {
@@ -32,8 +34,8 @@ void LightDemo::tick() {
     static auto modelRotation = glm::vec3();
     static float scale = 1.0F;
     static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);   // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto lightColor = glm::vec3(1.0F);
     static bool rotate = true;
     static bool useAmbient = true;
@@ -48,8 +50,7 @@ void LightDemo::tick() {
     }
 
     showSettings(cameraTranslation, cameraRotation, modelTranslation, modelRotation, scale, ambientColor, specularColor,
-                 lightPosition,
-                 lightColor, rotate, useAmbient, useDiffuse, useSpecular);
+                 lightPosition, lightColor, rotate, useAmbient, useDiffuse, useSpecular);
 
     shader->bind();
     shader->setUniform("u_AmbientColor", ambientColor);
@@ -94,13 +95,17 @@ void LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRota
 
 void LightDemo::drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
                           const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation) const {
+    if (!model.isLoaded()) {
+        return;
+    }
+
     shader->bind();
-    for (auto &mesh : model->getMeshes()) {
-        if (!mesh->visible) {
+    for (auto &mesh : model.getMeshes()) {
+        if (!mesh.visible) {
             continue;
         }
 
-        mesh->vertexArray->bind();
+        mesh.vertexArray->bind();
 
         glm::mat4 modelMatrix = glm::mat4(1.0F);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
@@ -116,19 +121,19 @@ void LightDemo::drawModel(float scale, const glm::vec3 &modelTranslation, const 
         shader->setUniform("u_Projection", projectionMatrix);
 
         shader->setUniform("u_TextureSampler", 0);
-        mesh->texture->bind();
+        mesh.texture->bind();
 
         if (drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
         }
 
-        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 
         if (drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
         }
 
-        mesh->vertexArray->unbind();
+        mesh.vertexArray->unbind();
     }
     shader->unbind();
 }

@@ -3,7 +3,6 @@
 #include "Scene.h"
 
 #include "Model.h"
-#include "ModelLoader.h"
 #include "gl/IndexBuffer.h"
 #include "gl/Shader.h"
 #include "gl/Texture.h"
@@ -27,11 +26,11 @@ class ModelLoading : public Scene {
 
   private:
     std::shared_ptr<Shader> shader;
-    std::shared_ptr<Model> glModel;
+    Model model;
 
     void drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation, float scale, bool drawWireframe);
 
-    static void showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation,
-                             glm::vec3 &modelRotation, float &scale, bool &drawWireframe, unsigned int &currentModel,
-                             std::vector<std::string> &paths, std::shared_ptr<Model> &renderModel);
+    void showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation,
+                      glm::vec3 &modelRotation, float &scale, bool &drawWireframe, unsigned int &currentModel,
+                      std::vector<std::string> &paths);
 };

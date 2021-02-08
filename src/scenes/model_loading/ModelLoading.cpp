@@ -2,7 +2,6 @@
 
 #include "Image.h"
 #include "Main.h"
-#include "ModelLoader.h"
 #include "util/ImGuiUtils.h"
 
 const float FIELD_OF_VIEW = 45.0F;
@@ -16,8 +15,6 @@ void ModelLoading::setup() {
     shader = CREATE_DEFAULT_SHADER(model_loading_ModelLoading);
     shader->bind();
     onAspectRatioChange();
-
-    glModel = std::make_unique<Model>();
 }
 
 void ModelLoading::destroy() {}
@@ -42,14 +39,14 @@ void ModelLoading::tick() {
 
     std::vector<std::string> paths = {};
     showSettings(rotate, rotateWithMouse, mouseRotationSpeed, translation, modelRotation, scale, drawWireframe,
-                 currentModel, paths, glModel);
+                 currentModel, paths);
 
     shader->bind();
 
     if (prevModel != currentModel) {
         RECORD_SCOPE_NAME("LoadingModel");
         std::string modelFileName = paths[currentModel];
-        glModel->loadFromFile(modelFileName, shader);
+        Model::loadFromFile(modelFileName, shader, model);
         prevModel = currentModel;
     }
 
@@ -58,7 +55,7 @@ void ModelLoading::tick() {
 
 void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation, float scale,
                              bool drawWireframe) {
-    if (!glModel) {
+    if (!model.isLoaded()) {
         return;
     }
 
@@ -75,32 +72,32 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
 
     shader->setUniform("u_TextureSampler", 0);
 
-    for (const auto &mesh : glModel->getMeshes()) {
-        if (!mesh->visible) {
+    for (const auto &mesh : model.getMeshes()) {
+        if (!mesh.visible) {
             continue;
         }
 
-        mesh->vertexArray->bind();
+        mesh.vertexArray->bind();
 
-        mesh->texture->bind();
+        mesh.texture->bind();
 
         if (drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
         }
 
-        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
+        GL_Call(glDrawElements(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 
         if (drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
         }
 
-        mesh->vertexArray->unbind();
+        mesh.vertexArray->unbind();
     }
 }
 
 void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation,
                                 glm::vec3 &modelRotation, float &scale, bool &drawWireframe, unsigned int &currentModel,
-                                std::vector<std::string> &paths, std::shared_ptr<Model> &renderModel) {
+                                std::vector<std::string> &paths) {
     ImGui::Begin("Settings");
     ImGui::FileSelector("Models", "model_loading_resources/models/", currentModel, paths);
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
@@ -111,20 +108,20 @@ void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mous
     ImGui::DragFloat("Mouse Rotation Speed", &mouseRotationSpeed, 0.01F);
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
-    const auto &model = renderModel->getRawModel();
-    if (model) {
-        ImGui::Text("Number of meshes: %ld", model->meshes.size());
-        for (unsigned long i = 0; i < model->meshes.size(); i++) {
-            auto &mesh = model->meshes[i];
-            auto renderMesh = renderModel->getMeshes()[i];
-            ImGui::Checkbox(("\tName: " + mesh.name).c_str(), &renderMesh->visible);
+    if (model.isLoaded()) {
+        const auto &rawModel = model.getRawModel();
+        ImGui::Text("Number of meshes: %ld", rawModel.meshes.size());
+        for (unsigned long i = 0; i < rawModel.meshes.size(); i++) {
+            const auto &mesh = rawModel.meshes[i];
+            auto renderMesh = model.getMeshes()[i];
+            ImGui::Checkbox(("\tName: " + mesh.name).c_str(), &renderMesh.visible);
             ImGui::Text("\t\tNumber of vertices: %ld", mesh.vertices.size());
             ImGui::Text("\t\tNumber of normals: %ld", mesh.normals.size());
             ImGui::Text("\t\tNumber of texture coordinates: %ld", mesh.uvs.size());
             ImGui::Text("\t\tNumber of indices: %ld", mesh.indices.size());
         }
-        ImGui::Text("Number of materials: %ld", model->materials.size());
-        for (auto &entry : model->materials) {
+        ImGui::Text("Number of materials: %ld", rawModel.materials.size());
+        for (auto &entry : rawModel.materials) {
             auto &material = entry.second;
             ImGui::Text("\tName: %s", material->name.c_str());
             ImGui::Text("\t\tDiffuse Texture Map: %s", material->diffuseTextureMap.c_str());
