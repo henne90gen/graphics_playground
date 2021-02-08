@@ -100,7 +100,7 @@ void LightDemo::drawModel(float scale, const glm::vec3 &modelTranslation, const 
     }
 
     shader->bind();
-    for (auto &mesh : model.getMeshes()) {
+    for (const auto &mesh : model.getMeshes()) {
         if (!mesh.visible) {
             continue;
         }
