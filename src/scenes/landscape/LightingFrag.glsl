@@ -7,6 +7,7 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gExtinction;
 uniform sampler2D gInScatter;
+uniform sampler2D gDoLighting;
 uniform sampler2D ssao;
 
 uniform bool useAmbientOcclusion;
@@ -29,7 +30,7 @@ uniform float gamma = 1.0F;
 out vec4 color;
 
 // https://www.shadertoy.com/view/WlSSzK
-vec3 ACESFilm(vec3 x) {
+vec4 ACESFilm(vec4 x) {
     #if 0
     // original values
     float tA = 2.51;
@@ -53,7 +54,7 @@ void main() {
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec4 Diffuse = texture(gAlbedo, TexCoords);
 
-    if (Diffuse.a == 0.0F) {
+    if (texture(gDoLighting, TexCoords).r == 0.0F) {
         color = vec4(Diffuse.xyz, 1.0F);
         return;
     }
@@ -63,23 +64,23 @@ void main() {
         AmbientOcclusion = texture(ssao, TexCoords).r;
     }
 
-    vec3 ambient = vec3(light.Ambient * light.Color * Diffuse.rgb * AmbientOcclusion);
+    vec4 ambient = vec4(vec4(light.Ambient * light.Color, 1.0F) * Diffuse * AmbientOcclusion);
     vec3 viewDir = normalize(-FragPos);// viewpos is (0.0.0)
     vec3 fragmentToLightDir = normalize(light.FragmentToLightDir);
 
     // diffuse
-    vec3 diffuse = max(dot(Normal, fragmentToLightDir), 0.0) * Diffuse.rgb * light.Diffuse * light.Color;
+    vec4 diffuse = max(dot(Normal, fragmentToLightDir), 0.0) * Diffuse * vec4(light.Diffuse * light.Color, 1.0F);
 
     // specular
     vec3 halfwayDir = normalize(fragmentToLightDir + viewDir);
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 2.0);
     vec3 specular = light.Specular * light.Color * spec;
 
-    vec3 lighting = ambient + diffuse + specular;
+    vec4 lighting = ambient + diffuse + vec4(specular, 1.0F);
 
     if (useAtmosphericScattering) {
-        lighting *= texture(gExtinction, TexCoords).rgb;
-        lighting += texture(gInScatter, TexCoords).rgb;
+        lighting *= texture(gExtinction, TexCoords);
+        lighting += texture(gInScatter, TexCoords);
     }
 
     if (useACESFilm) {
@@ -87,10 +88,10 @@ void main() {
     }
 
     // Exposure tone mapping
-    vec3 mapped = vec3(1.0) - exp(-lighting * exposure);
+    vec4 mapped = vec4(1.0) - exp(-lighting * exposure);
 
     // gamma correction
-    lighting = pow(mapped, vec3(1.0 / gamma));
+    lighting = pow(mapped, vec4(1.0 / gamma));
 
-    color = vec4(lighting, 1.0);
+    color = lighting;
 }
