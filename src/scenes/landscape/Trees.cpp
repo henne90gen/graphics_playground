@@ -44,15 +44,19 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
     }
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
     shader->bind();
     shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("normalMatrix", normalMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
     terrainParams.setShaderUniforms(shader);
 
     shader->setUniform("treeCount", treeCount);
+    shader->setUniform("textureSampler", 0);
 
+    GL_Call(glActiveTexture(GL_TEXTURE0));
     for (const auto &mesh : treeModel.getMeshes()) {
         if (!mesh.visible) {
             continue;
@@ -68,7 +72,6 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
 
         GL_Call(glDrawElementsInstanced(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr,
                                         treeCount));
-        //        GL_Call(glDrawElements(GL_TRIANGLES, mesh->indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr));
 
         if (shaderToggles.drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));

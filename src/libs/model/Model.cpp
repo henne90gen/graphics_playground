@@ -23,6 +23,7 @@ unsigned int Model::loadFromFile(const std::string &fileName, const std::shared_
         return 1;
     }
 
+    std::unordered_map<std::string, std::shared_ptr<Texture>> textures = {};
     for (auto &rawMesh : model.rawModel.meshes) {
         TextureSettings textureSettings = {};
         textureSettings.dataType = GL_RGBA;
@@ -35,11 +36,7 @@ unsigned int Model::loadFromFile(const std::string &fileName, const std::shared_
         glMesh.indexBuffer->bind();
         glMesh.indexBuffer->update(rawMesh.indices);
 
-        glMesh.texture->bind();
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
-        glMesh.updateTexture(rawMesh);
+        glMesh.updateTexture(rawMesh, textures);
 
         model.meshes.push_back(glMesh);
     }
@@ -76,12 +73,27 @@ void OpenGLMesh::updateMeshVertices(const RawMesh &mesh, const std::shared_ptr<S
     }
 }
 
-void OpenGLMesh::updateTexture(RawMesh &mesh) const {
+void OpenGLMesh::updateTexture(RawMesh &rawMesh, std::unordered_map<std::string, std::shared_ptr<Texture>> &textures) {
+    if (rawMesh.material != nullptr) {
+        auto itr = textures.find(rawMesh.material->diffuseTextureMap);
+        if (itr != textures.end()) {
+            texture = itr->second;
+            return;
+        }
+    }
+
+    texture->bind();
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
     Image image = {};
-    //    if (!mesh.material || !ImageOps::load(mesh.material->diffuseTextureMap, image)) {
-    ImageOps::createCheckerBoard(image);
-    //    }
+    if (rawMesh.material == nullptr || !ImageOps::load(rawMesh.material->diffuseTextureMap, image)) {
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        ImageOps::createCheckerBoard(image);
+    }
     texture->update(image.pixels.data(), image.width, image.height);
+    textures[rawMesh.material->diffuseTextureMap] = texture;
 }
 
 /**
@@ -125,8 +137,6 @@ struct Face {
 };
 
 RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &faces) {
-    TIME_SCOPE_NAME("createIndicesFromFaces");
-
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::vec3> normals = {};
     std::vector<glm::vec2> textureCoordinates = {};
@@ -234,7 +244,7 @@ void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, con
 }
 
 void parseVec2(const std::string &fileName, unsigned long lineNumber, const std::string &line,
-                             std::vector<glm::vec2> &list) {
+               std::vector<glm::vec2> &list) {
     glm::vec2 v;
     int vIndex = 0;
     char *currentNum = reinterpret_cast<char *>(std::malloc(32));

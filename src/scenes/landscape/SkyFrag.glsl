@@ -9,11 +9,12 @@ uniform float animationTime;
 uniform float animationSpeed;
 uniform float cloudBlend;
 
-layout (location = 0) out vec3 gPosition;
-layout (location = 1) out vec3 gNormal;
+layout (location = 0) out vec4 gPosition;
+layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 3) out vec3 gExtinction;
-layout (location = 4) out vec3 gInScatter;
+layout (location = 3) out vec4 gExtinction;
+layout (location = 4) out vec4 gInScatter;
+layout (location = 5) out vec4 gDoLighting;
 
 const float cloudscale = 1.1;
 const float clouddark = 0.5;
@@ -140,9 +141,10 @@ void main() {
         color = cloudColor(color, animationTime);
     }
 
-    gPosition = position_frag_in;
-    gNormal = normalize(-normal_frag_in);
-    gAlbedoSpec = vec4(color, 0.0F);
+    gPosition = vec4(position_frag_in, 1.0F);
+    gNormal = vec4(normalize(-normal_frag_in), 1.0F);
+    gAlbedoSpec = vec4(color, 1.0F);
+    gDoLighting = vec4(0.0F, 0.0F, 0.0F, 1.0F);
     //    gExtinction = extinction;
     //    gInScatter = inScatter;
 }

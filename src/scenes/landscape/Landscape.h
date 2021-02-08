@@ -55,6 +55,7 @@ class Landscape : public Scene {
     GLuint gAlbedo = 0;
     GLuint gExtinction = 0;
     GLuint gInScatter = 0;
+    GLuint gDoLighting = 0;
     GLuint depthBuffer = 0;
 
     GLuint ssaoFbo = 0;

@@ -42,7 +42,7 @@ class OpenGLMesh {
 
     void updateMeshVertices(const RawMesh &mesh, const std::shared_ptr<Shader> &shader) const;
 
-    void updateTexture(RawMesh &mesh) const;
+    void updateTexture(RawMesh &rawMesh, std::unordered_map<std::string, std::shared_ptr<Texture>> &textures);
 
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<VertexBuffer> vertexBuffer;

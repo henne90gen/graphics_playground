@@ -29,11 +29,12 @@ in float normalized_height;
 in vec3 extinction;
 in vec3 inScatter;
 
-layout (location = 0) out vec3 gPosition;
-layout (location = 1) out vec3 gNormal;
+layout (location = 0) out vec4 gPosition;
+layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 3) out vec3 gExtinction;
-layout (location = 4) out vec3 gInScatter;
+layout (location = 3) out vec4 gExtinction;
+layout (location = 4) out vec4 gInScatter;
+layout (location = 5) out vec4 gDoLighting;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -57,11 +58,6 @@ uniform float lightPower;
 uniform sampler2D grassTexture;
 uniform sampler2D dirtTexture;
 uniform sampler2D rockTexture;
-
-//vec3 grassColor = vec3(19.0F/255.0F, 133.0F/255.0F, 16.0F/255.0F);
-//vec3 rockColor = vec3(73.0F/255.0F, 60.0F/255.0F, 60.0F/255.0F);
-//vec3 snowColor = vec3(255.0F/255.0F, 250.0F/255.0F, 250.0F/255.0F);
-
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
 const float PHI = 1.61803398874989484820459;// = Golden Ratio
@@ -354,123 +350,11 @@ vec4 debugColors(vec3 normal, vec3 tangent, vec3 bitangent) {
     return vec4(1.0F, 1.0F, 1.0F, 1.0F);
 }
 
-vec4 calcDirLight(DirLight light, Material material, vec3 normal, vec3 viewDir) {
-    vec3 lightDir = normalize(light.direction);
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-
-    vec3 color = light.color * light.power;
-    vec3 ambient = color * 0.1F;
-    vec3 diffuse = color;
-    vec3 specular = color * 0.15F;
-
-    ambient  *= material.ambient;
-    diffuse  *= diff * material.diffuse;
-    specular *= spec * material.specular;
-
-    vec3 result = vec3(0.0F);
-    result += ambient;
-    result += diffuse;
-    result += specular;
-    return vec4(result, 1.0F);
-}
-
-vec3 calcPointLightComplex(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
-    return vec3(1.0F);
-    /*
-        vec3 lightDir = normalize(light.position - fragPos);
-        // diffuse shading
-        float diff = max(dot(normal, lightDir), 0.0);
-        // specular shading
-        vec3 reflectDir = reflect(-lightDir, normal);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-        // attenuation
-        float distance = length(light.position - fragPos);
-        float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-        // combine results
-        vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-        vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-        vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
-        ambient *= attenuation;
-        diffuse *= attenuation;
-        specular *= attenuation;
-        return (ambient + diffuse + specular);
-    */
-}
-
-vec4 calcPointLightSimple(PointLight light, Material material, vec3 normal, vec3 viewDir) {
-    vec3 lightDir = light.position - model_position;
-    float distance = length(lightDir);
-
-    lightDir = normalize(lightDir);
-    float cosTheta = clamp(dot(normal, lightDir), 0, 1);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float cosAlpha = clamp(dot(viewDir, reflectDir), 0, 1);
-
-    vec3 color = material.ambient;
-    color += lightColor * lightPower * material.diffuse * cosTheta / (distance*distance);
-    color += lightColor * lightPower * material.specular * pow(cosAlpha, material.shininess) / (distance*distance);
-    return vec4(color, 1.0F);
-}
-
-// https://www.shadertoy.com/view/WlSSzK
-vec3 ACESFilm(vec3 x) {
-    #if 0
-    // original values
-    float tA = 2.51;
-    float tB = 0.03;
-    float tC = 2.43;
-    float tD = 0.59;
-    float tE = 0.14;
-    #else
-    float tA = 3.01;
-    float tB = 0.03;
-    float tC = 2.43;
-    float tD = 0.2;
-    float tE = 0.8;
-    #endif
-    return clamp((x*(tA*x+tB))/(x*(tC*x+tD)+tE), 0.0, 1.0);
-}
-
 void main() {
-    #if 1
-    gPosition = model_position;
-    gNormal = normalize(normalMatrix * normal_frag_in);
+    gPosition = vec4(model_position, 1.0F);
+    gNormal = vec4(normalize(normalMatrix * normal_frag_in), 1.0F);
     gAlbedoSpec = vec4(getSurfaceColor(normalized_height), 1.0F);
-    gExtinction = extinction;
-    gInScatter = inScatter;
-    #else
-    vec3 normal = normalize(normalMatrix * normal_frag_in);
-    vec3 tangent = normalize(normalMatrix * tangent_frag_in);
-    vec3 bitangent = normalize(normalMatrix * bitangent_frag_in);
-    vec3 viewDir = normalize(model_position - cameraPosition);
-
-    if (showNormals || showTangents || showUVs) {
-        color = debugColors(normal, tangent, bitangent);
-        return;
-    }
-
-    vec3 materialDiffuseColor = getSurfaceColor(normalized_height);
-    vec3 materialAmbientColor = vec3(0.1, 0.1, 0.1) * materialDiffuseColor;
-    vec3 materialSpecularColor = vec3(0.3, 0.3, 0.3);
-    Material material = Material(materialAmbientColor, materialDiffuseColor, materialSpecularColor, 2);
-    PointLight light = PointLight(lightPosition, lightColor, lightPower);
-    DirLight dirLight = DirLight(sunDirection, lightColor, lightPower);
-
-    color = vec4(0.0F);
-    //    color += calcPointLightSimple(light, material, normal, viewDir);
-    color += calcDirLight(dirLight, material, normal, viewDir);
-
-    if (useAtmosphericScattering) {
-        color *= vec4(extinction, 1.0F);
-        color += vec4(inScatter, 1.0F);
-    }
-
-    if (useACESFilm) {
-        color = vec4(ACESFilm(color.xyz), 1.0F);
-    }
-        #endif
+    gExtinction = vec4(extinction, 1.0F);
+    gInScatter = vec4(inScatter, 1.0F);
+    gDoLighting = vec4(1.0F);
 }

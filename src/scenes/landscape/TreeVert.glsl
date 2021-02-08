@@ -3,13 +3,19 @@
 #include "NoiseLib.glsl"
 
 in vec3 a_Position;
+in vec3 a_Normal;
+in vec2 a_UV;
 
+out vec3 position_frag_in;
+out vec3 normal_frag_in;
+out vec2 uv_frag_in;
 out float height;
 out float normalized_height;
 flat out int instanceId;
 flat out float colorFactor;
 
 uniform mat4 modelMatrix;
+uniform mat3 normalMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform int treeCount;
@@ -89,5 +95,8 @@ void main() {
     colorFactor = 1.0F;
 
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0F);
+    position_frag_in = (viewMatrix * modelMatrix * vec4(position, 1.0F)).xyz;
+    normal_frag_in = normalMatrix * a_Normal;
+    uv_frag_in = a_UV;
     instanceId = gl_InstanceID;
 }
