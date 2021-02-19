@@ -19,7 +19,6 @@ function(create_scene)
     target_include_directories(${SCENE_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
             ${GLFW_DIR}/include
-            ${GLAD_DIR}/include
             ${GLM_DIR}
             ${IMGUI_DIR})
     target_link_libraries(${SCENE_NAME} core opengl)

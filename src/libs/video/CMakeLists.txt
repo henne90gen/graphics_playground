@@ -10,6 +10,5 @@ target_link_libraries(video
 
 target_include_directories(video PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GLAD_DIR}/include
         ${GIF_H_DIR}
         ${FFMPEG_INCLUDE_DIR})
