@@ -33,6 +33,8 @@ class Texture {
     void setDataType(unsigned int dataType) { this->settings.dataType = dataType; }
     void setOpenGlDataType(unsigned int openGlDataType) { this->settings.openGlDataType = openGlDataType; }
 
+    unsigned int getInternalId() { return id; }
+
   private:
     unsigned int id = 0;
     TextureSettings settings = {};

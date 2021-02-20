@@ -3,13 +3,8 @@
 in vec3 position_frag_in;
 in vec3 normal_frag_in;
 in vec2 uv_frag_in;
-in float height;
-in float normalized_height;
-flat in int instanceId;
-flat in float colorFactor;
 
-uniform int treeCount;
-uniform sampler2D textureSamper;
+uniform sampler2D textureSampler;
 
 layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec4 gNormal;
@@ -20,10 +15,9 @@ layout (location = 5) out vec4 gDoLighting;
 
 void main() {
     vec4 color = vec4(1.0F, 0.0F, 0.0F, 1.0F);
-    // color = vec4(float(instanceId) / float(treeCount), 0.0F, 0.0F, 1.0F);
-    color *= colorFactor;
 
-    color = texture(textureSamper, uv_frag_in);
+    color = texture(textureSampler, uv_frag_in);
+    color = vec4(10.0F, 0.0F, 0.0F, 1.0F);
 
     gPosition = vec4(position_frag_in, 1.0F);
     gNormal = vec4(normalize(-normal_frag_in), 1.0F);

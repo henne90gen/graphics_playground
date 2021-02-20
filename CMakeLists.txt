@@ -37,15 +37,24 @@ add_subdirectory("${GLFW_DIR}")
 # GLAD
 set(GLAD_DIR ${VENDOR_DIR}/glad)
 add_library(glad "${GLAD_DIR}/src/glad.c")
-target_include_directories(glad PRIVATE "${GLAD_DIR}/include")
+target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
 
 # GLM
 set(GLM_DIR ${VENDOR_DIR}/glm)
 
 # ImGui
 set(IMGUI_DIR ${VENDOR_DIR}/imgui)
-add_library(imgui "${IMGUI_DIR}/imgui.cpp" "${IMGUI_DIR}/imgui_draw.cpp" "${IMGUI_DIR}/imgui_widgets.cpp")
-target_include_directories(imgui PRIVATE "${IMGUI_DIR}")
+add_library(imgui
+        "${IMGUI_DIR}/imgui.cpp"
+        "${IMGUI_DIR}/imgui_draw.cpp"
+        "${IMGUI_DIR}/imgui_widgets.cpp"
+        "${IMGUI_DIR}/imgui_tables.cpp"
+        "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+        "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+        )
+target_include_directories(imgui PUBLIC "${IMGUI_DIR}")
+target_link_libraries(imgui PUBLIC glad)
+target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # FastNoise
 set(FAST_NOISE_DIR ${VENDOR_DIR}/FastNoise)
