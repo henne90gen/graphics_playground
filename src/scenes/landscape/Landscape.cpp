@@ -141,7 +141,7 @@ void Landscape::tick() {
 }
 
 void Landscape::renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles) {
-        glEnable(GL_BLEND);
+    glEnable(GL_BLEND);
 
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
     GL_Call(glClearColor(1.0, 0.0, 1.0, 1.0));
@@ -310,30 +310,34 @@ void Landscape::renderTextureViewer() {
     static auto textureZoom = 1.0F;
 
     ImGui::Begin("Settings");
-    static const std::array<const char *, 3> items = {"Grass", "Dirt", "Rock"};
+    const std::array<const char *, 4> items = {
+          "Tree Positions",
+          "Grass",
+          "Dirt",
+          "Rock",
+    };
+    const std::array<unsigned int, 4> textures = {
+          trees.getTreePositionTextureId(),
+          terrain.getGrassTexture()->getInternalId(),
+          terrain.getDirtTexture()->getInternalId(),
+          terrain.getRockTexture()->getInternalId(),
+    };
     ImGui::Combo("", &textureType, items.data(), items.size());
     ImGui::Separator();
     ImGui::DragFloat("Zoom", &textureZoom, 0.01F);
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&texturePosition), 0.01F);
     ImGui::End();
 
-    if (textureType == 0) {
-        renderTexture(texturePosition, textureZoom, terrain.getGrassTexture());
-    } else if (textureType == 1) {
-        renderTexture(texturePosition, textureZoom, terrain.getDirtTexture());
-    } else if (textureType == 2) {
-        renderTexture(texturePosition, textureZoom, terrain.getRockTexture());
-    }
+    renderTexture(texturePosition, textureZoom, textures[textureType]);
 }
 
-void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom,
-                              const std::shared_ptr<Texture> &texture) {
+void Landscape::renderTexture(const glm::vec3 &texturePosition, const float zoom, const unsigned int texture) {
     textureShader->bind();
     quadVA->bind();
     quadVA->setShader(textureShader);
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
-    texture->bind();
+    GL_Call(glBindTexture(GL_TEXTURE_2D, texture));
 
     auto modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, texturePosition);

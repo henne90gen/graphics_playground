@@ -3,16 +3,18 @@
 #include <imgui.h>
 #include <util/RenderUtils.h>
 
-#define USE_TREE_MODELS 1
-
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
+DEFINE_DEFAULT_SHADERS(landscape_Texture)
 
 DEFINE_SHADER(landscape_NoiseLib)
+DEFINE_SHADER(landscape_TreeComp)
 
 void Trees::init() {
     shader = CREATE_DEFAULT_SHADER(landscape_Tree);
     shader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
     cubeVA = createCubeVA(shader);
+
+    initComputeShaderStuff();
 
 #if USE_TREE_MODELS
     unsigned int error =
@@ -31,13 +33,22 @@ void Trees::init() {
 void Trees::showGui() {
     ImGui::DragInt("Tree Count", &treeCount);
 #if USE_TREE_MODELS
-    ImGui::Text("Mesh count: %d", treeModel.getMeshes().size());
+    ImGui::Text("Mesh count: %zul", treeModel.getMeshes().size());
     ImGui::Text("Vertex count: %d", vertexCount);
 #endif
 }
 
 void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                    const TerrainParams &terrainParams) {
+    {
+        // TODO(henne): compute shader execution can be moved into init
+        compShader->bind();
+        compShader->setUniform("pixelColor", glm::vec3(1.0F, 0.0F, 0.0F));
+        GL_Call(glBindImageTexture(0, treePositionTextureId, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F));
+        GL_Call(glDispatchCompute(treePositionTextureWidth, treePositionTextureHeight, 1));
+        GL_Call(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+    }
+
 #if USE_TREE_MODELS
     if (!treeModel.isLoaded()) {
         return;
@@ -70,8 +81,8 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
         }
 
-        GL_Call(glDrawElementsInstanced(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr,
-                                        treeCount));
+        GL_Call(
+              glDrawElementsInstanced(GL_TRIANGLES, mesh.indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr, treeCount));
 
         if (shaderToggles.drawWireframe) {
             GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
@@ -83,7 +94,7 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
     cubeVA->bind();
     shader->bind();
     cubeVA->setShader(shader);
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    auto modelMatrix = glm::identity<glm::mat4>();
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
@@ -103,4 +114,39 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 #endif
+}
+
+void Trees::initComputeShaderStuff() {
+    compShader = std::make_shared<Shader>();
+    compShader->attachComputeShader(SHADER_CODE(landscape_TreeComp));
+    compShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
+
+    GL_Call(glGenTextures(1, &treePositionTextureId));
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, treePositionTextureId));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, treePositionTextureWidth, treePositionTextureHeight, 0, GL_RGBA,
+                         GL_FLOAT, nullptr));
+    GL_Call(glBindImageTexture(0, treePositionTextureId, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F));
+
+    int work_grp_cnt[3];
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
+    std::cout << "max global (total) work group counts x: " << work_grp_cnt[0] << " y: " << work_grp_cnt[1]
+              << " z: " << work_grp_cnt[2] << std::endl;
+
+    int work_grp_size[3];
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
+    std::cout << "max local (in one shader) work group sizes x: " << work_grp_size[0] << " y: " << work_grp_size[1]
+              << " z: " << work_grp_size[2] << std::endl;
+
+    int work_grp_inv = 0;
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
+    std::cout << "max local work group invocations " << work_grp_inv << std::endl;
 }
