@@ -144,39 +144,27 @@ RawMesh createIndicesFromFaces(const RawMesh &mesh, const std::vector<Face> &fac
 
     unsigned int index = 0;
     for (const auto &face : faces) {
+        for (const auto faceVertex : face.vertices) {
+            vertices.push_back(mesh.vertices[faceVertex.vertexIndex - 1]);
+            if (faceVertex.textureCoordinateIndex != 0U) {
+                textureCoordinates.push_back(mesh.uvs[faceVertex.textureCoordinateIndex - 1]);
+            }
+            if (faceVertex.normalIndex != 0U) {
+                normals.push_back(mesh.normals[faceVertex.normalIndex - 1]);
+            }
+        }
+
         std::vector<int> triangleArrangement = {0, 1, 2};
         if (face.vertices.size() == 3) {
-            // do nothing
+            indices.emplace_back(index + 0, index + 1, index + 2);
         } else if (face.vertices.size() == 4) {
-            triangleArrangement.push_back(0);
-            triangleArrangement.push_back(2);
-            triangleArrangement.push_back(3);
+            indices.emplace_back(index + 0, index + 1, index + 2);
+            indices.emplace_back(index + 0, index + 2, index + 3);
         } else {
             std::cerr << "Can only parse faces with 3 or 4 vertices" << std::endl;
             return {};
         }
-
-        glm::ivec3 triangle = {};
-        for (const auto vertexIndex : triangleArrangement) {
-            const auto &vertex = face.vertices[vertexIndex];
-            vertices.push_back(mesh.vertices[vertex.vertexIndex - 1]);
-            if (vertex.textureCoordinateIndex != 0U) {
-                textureCoordinates.push_back(mesh.uvs[vertex.textureCoordinateIndex - 1]);
-            }
-            if (vertex.normalIndex != 0U) {
-                normals.push_back(mesh.normals[vertex.normalIndex - 1]);
-            }
-
-            if (vertexIndex == 0) {
-                triangle.x = index;
-            } else if (vertexIndex == 1) {
-                triangle.y = index;
-            } else if (vertexIndex == 2) {
-                triangle.z = index;
-                indices.push_back(triangle);
-            }
-            index++;
-        }
+        index += face.vertices.size();
     }
 
     return {mesh.name, vertices, normals, textureCoordinates, indices, mesh.material};
@@ -249,8 +237,9 @@ void parseVec2(const std::string &fileName, unsigned long lineNumber, const std:
     int vIndex = 0;
     char *currentNum = reinterpret_cast<char *>(std::malloc(32));
     int currentNumIndex = 0;
+    char previousChar = ' ';
     for (const auto &c : line) {
-        if (c == ' ') {
+        if (c == ' ' && previousChar != ' ') {
             currentNum[currentNumIndex] = '\0';
             v[vIndex] = std::strtof(currentNum, nullptr);
             currentNumIndex = 0;
@@ -258,9 +247,12 @@ void parseVec2(const std::string &fileName, unsigned long lineNumber, const std:
             continue;
         }
         currentNum[currentNumIndex++] = c;
+        previousChar = c;
     }
     currentNum[currentNumIndex] = '\0';
-    v[vIndex] = std::strtof(currentNum, nullptr);
+    if (vIndex < 2) {
+        v[vIndex] = std::strtof(currentNum, nullptr);
+    }
     list.push_back(v);
 }
 
@@ -270,8 +262,9 @@ void parseVec3(const std::string &fileName, unsigned long lineNumber, const std:
     int vIndex = 0;
     char *currentNum = reinterpret_cast<char *>(std::malloc(32));
     int currentNumIndex = 0;
+    char previousChar = ' ';
     for (const auto &c : line) {
-        if (c == ' ') {
+        if (c == ' ' && previousChar != ' ') {
             currentNum[currentNumIndex] = '\0';
             v[vIndex] = std::strtof(currentNum, nullptr);
             currentNumIndex = 0;
@@ -279,9 +272,12 @@ void parseVec3(const std::string &fileName, unsigned long lineNumber, const std:
             continue;
         }
         currentNum[currentNumIndex++] = c;
+        previousChar = c;
     }
     currentNum[currentNumIndex] = '\0';
-    v[vIndex] = std::strtof(currentNum, nullptr);
+    if (vIndex < 3) {
+        v[vIndex] = std::strtof(currentNum, nullptr);
+    }
     list.push_back(v);
 }
 
