@@ -15,8 +15,8 @@ class Trees {
     std::shared_ptr<Shader> shader;
 
     std::shared_ptr<Shader> compShader;
-    unsigned int treePositionTextureWidth = 512;
-    unsigned int treePositionTextureHeight = 512;
+    unsigned int treePositionTextureWidth = 64;
+    unsigned int treePositionTextureHeight = 64;
     unsigned int treePositionTextureId = 0;
 
 #if USE_TREE_MODELS

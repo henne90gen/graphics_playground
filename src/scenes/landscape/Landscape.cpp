@@ -171,20 +171,20 @@ void Landscape::renderSSAO() {
     ssaoShader->setUniform("gNormal", 1);
     ssaoShader->setUniform("texNoise", 2);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo);
-    glClear(GL_COLOR_BUFFER_BIT);
+    GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo));
+    GL_Call(glClear(GL_COLOR_BUFFER_BIT));
 
     // Send kernel + rotation
     for (unsigned int i = 0; i < 64; ++i) {
         ssaoShader->setUniform("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
     }
     ssaoShader->setUniform("projectionMatrix", getCamera().getProjectionMatrix());
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gPosition);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, gNormal);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture);
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
+    GL_Call(glActiveTexture(GL_TEXTURE1));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
+    GL_Call(glActiveTexture(GL_TEXTURE2));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture));
 
     quadVA->bind();
     quadVA->setShader(ssaoShader);
@@ -292,6 +292,7 @@ void Landscape::renderGBufferViewer() {
 
 void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                             const glm::vec3 &lightPosition, const glm::vec3 &lightColor) {
+#if 0
     cubeVA->bind();
     flatShader->bind();
     cubeVA->setShader(flatShader);
@@ -302,6 +303,7 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     flatShader->setUniform("projectionMatrix", projectionMatrix);
     flatShader->setUniform("flatColor", lightColor);
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+#endif
 }
 
 void Landscape::renderTextureViewer() {
