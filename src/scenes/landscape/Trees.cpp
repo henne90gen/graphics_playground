@@ -43,7 +43,7 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
     {
         // TODO(henne): compute shader execution can be moved into init
         compShader->bind();
-        compShader->setUniform("pixelColor", glm::vec3(1.0F, 0.0F, 0.0F));
+        compShader->setUniform("treeCount", treeCount);
         terrainParams.setShaderUniforms(compShader);
         GL_Call(glBindImageTexture(0, treePositionTextureId, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F));
         GL_Call(glDispatchCompute(treePositionTextureWidth, treePositionTextureHeight, 1));
