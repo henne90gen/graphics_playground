@@ -107,6 +107,7 @@ class Shader {
     void attachTessEvaluationShader(const ShaderCode &shaderCode) {
         this->attach(GL_TESS_EVALUATION_SHADER, shaderCode);
     }
+    void attachComputeShader(const ShaderCode &shaderCode) { this->attach(GL_COMPUTE_SHADER, shaderCode); }
     void attachShaderLib(const ShaderCode &shaderCode);
 
   private:

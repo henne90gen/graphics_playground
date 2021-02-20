@@ -19,7 +19,6 @@ target_link_libraries(opengl
 
 target_include_directories(opengl PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GLAD_DIR}/include
         ${GLM_DIR})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

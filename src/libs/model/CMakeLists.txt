@@ -14,8 +14,7 @@ target_link_libraries(model
 
 target_include_directories(model PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GLM_DIR}
-        ${GLAD_DIR}/include)
+        ${GLM_DIR})
 
 create_scene_benchmark(ModelBench.cpp)
 target_link_libraries(model_bench PRIVATE model)

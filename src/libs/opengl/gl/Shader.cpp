@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -16,6 +15,8 @@ std::string shaderTypeToString(GLuint shaderType) {
         return "tesselation control";
     case GL_TESS_EVALUATION_SHADER:
         return "tesselation evaluation";
+    case GL_COMPUTE_SHADER:
+        return "compute";
     default:
         return "unknown";
     }
@@ -108,13 +109,13 @@ void Shader::compile() {
     }
 }
 
-ShaderCode insertShaderCode(const ShaderCode &original, const ShaderCode &import, int line) {
+ShaderCode insertShaderCode(const ShaderCode &original, const ShaderCode &import, unsigned int line) {
     ShaderCode result = {};
     result.filePath = original.filePath;
     result.lineCount = original.lineCount + import.lineCount + 1;
     result.lineLengths = reinterpret_cast<int *>(std::malloc(result.lineCount * sizeof(int)));
     result.shaderSource = reinterpret_cast<char **>(std::malloc(result.lineCount * sizeof(char *)));
-    for (int i = 0; i < result.lineCount; i++) {
+    for (unsigned int i = 0; i < result.lineCount; i++) {
         int lineLength = 0;
         char *shaderSource = nullptr;
         if (i == line) {
@@ -167,7 +168,7 @@ GLuint Shader::load(GLuint shaderType, const ShaderCode &shaderCode) {
 #endif
 
     ShaderCode finalShaderCode = shaderCode;
-    for (int i = 0; i < finalShaderCode.lineCount; i++) {
+    for (unsigned int i = 0; i < finalShaderCode.lineCount; i++) {
         std::string sourceLine = std::basic_string(finalShaderCode.shaderSource[i], finalShaderCode.lineLengths[i]);
         if (sourceLine[0] == '\n') {
             sourceLine = sourceLine.substr(1);

@@ -81,7 +81,7 @@ class Landscape : public Scene {
     void renderGBufferViewer();
 
     void renderTextureViewer();
-    void renderTexture(const glm::vec3 &texturePosition, float zoom, const std::shared_ptr<Texture> &texture);
+    void renderTexture(const glm::vec3 &texturePosition, float zoom, const unsigned int texture);
 
     void initGBuffer();
     void initSSAOBuffer();
