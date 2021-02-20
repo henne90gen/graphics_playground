@@ -15,8 +15,13 @@ void Trees::init() {
     cubeVA = createCubeVA(shader);
 
 #if USE_TREE_MODELS
+#if 1
     unsigned int error =
           Model::loadFromFile("landscape_resources/assets/models/low_poly_tree/low_poly_tree.obj", shader, treeModel);
+#else
+    unsigned int error =
+          Model::loadFromFile("landscape_resources/assets/models/MangoTree/tree_mango_var01.obj", shader, treeModel);
+#endif
     if (error != 0) {
         std::cout << "Failed to load tree model" << std::endl;
         return;

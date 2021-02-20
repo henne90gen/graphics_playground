@@ -1,13 +1,13 @@
 #include "ImageOps.h"
 
-#define PNG_DEBUG 3
-
 #include <cstdio>
-#include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
-#include <jpeglib.h>
-#include <png.h>
+
+#include "jpeg.cpp"
+#include "png.cpp"
+#include "tga.cpp"
 
 bool hasExtension(const std::string &fileName, std::string extension) {
     unsigned long size = fileName.size();
@@ -18,178 +18,6 @@ bool hasExtension(const std::string &fileName, std::string extension) {
         }
     }
     return true;
-}
-
-int loadPng(Image &image) {
-    FILE *fp = fopen(image.fileName.c_str(), "rb");
-    if (fp == nullptr) {
-        std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
-        return 1;
-    }
-
-    char header[8]; // 8 is the maximum size that can be checked
-    fread(header, 1, 8, fp);
-    if (png_sig_cmp(reinterpret_cast<png_bytep>(header), 0, 8) != 0) {
-        std::cout << "File '" << image.fileName << "' is not recognized as a PNG file" << std::endl;
-        return 1;
-    }
-
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-
-    if (png_ptr == nullptr) {
-        std::cout << "png_create_read_struct failed" << std::endl;
-        return 1;
-    }
-
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (info_ptr == nullptr) {
-        std::cout << "png_create_info_struct failed" << std::endl;
-        return 1;
-    }
-
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        std::cout << "Error during init_io" << std::endl;
-        return 1;
-    }
-
-    png_init_io(png_ptr, fp);
-    png_set_sig_bytes(png_ptr, 8);
-
-    png_read_info(png_ptr, info_ptr);
-
-    image.width = png_get_image_width(png_ptr, info_ptr);
-    image.height = png_get_image_height(png_ptr, info_ptr);
-    image.bitDepth = png_get_bit_depth(png_ptr, info_ptr);
-    int colorType = png_get_color_type(png_ptr, info_ptr);
-    if (colorType == 0) {
-        image.channels = 1;
-    } else if (colorType == PNG_COLOR_TYPE_RGB) {
-        image.channels = 3;
-    } else if (colorType == 4) {
-        image.channels = 2;
-    } else if (colorType == PNG_COLOR_TYPE_RGBA) {
-        image.channels = 4;
-    } else {
-        std::cout << "Color type " << colorType << " not supported." << std::endl;
-        return 1;
-    }
-    image.pixels = std::vector<uint8_t>(image.width * image.height * image.channels);
-
-    png_set_interlace_handling(png_ptr);
-    png_read_update_info(png_ptr, info_ptr);
-
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        std::cout << "[read_png_file] Error during read_image" << std::endl;
-        return 1;
-    }
-
-    auto row_pointers = static_cast<png_bytep *>(malloc(sizeof(png_bytep) * image.height));
-    for (unsigned int y = 0; y < image.height; y++) {
-        row_pointers[y] = static_cast<png_byte *>(malloc(png_get_rowbytes(png_ptr, info_ptr)));
-    }
-
-    png_read_image(png_ptr, row_pointers);
-
-    if (image.bitDepth == 8) {
-        for (int y = 0; y < image.height; y++) {
-            png_bytep row = row_pointers[y];
-            for (unsigned int x = 0; x < image.width; x++) {
-                png_bytep px = &(row[x * image.channels]);
-                image.pixels[y * image.width * image.channels + x * image.channels] = px[0];
-                if (image.channels > 1) {
-                    image.pixels[y * image.width * image.channels + x * image.channels + 1] = px[1];
-                }
-                if (image.channels > 2) {
-                    image.pixels[y * image.width * image.channels + x * image.channels + 2] = px[2];
-                }
-                if (image.channels > 3) {
-                    image.pixels[y * image.width * image.channels + x * image.channels + 3] = px[3];
-                }
-            }
-        }
-    } else if (image.bitDepth == 16) {
-        // TODO somehow we don't need to scale the values from uint16 (0-65535) to uint8 (0-255)
-#define SCALE_TO_BYTE(pix) static_cast<uint8_t>((static_cast<float>(pix - min) / (max - min)) * 255.0F)
-// #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 4095.0F) * 255.0F)
-// #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 1023.0F) * 255.0F)
-#define SCALE_TO_BYTE(pix) static_cast<unsigned char>(static_cast<float>(pix))
-#define SCALE_TO_BYTE(pix) pix
-        for (int y = 0; y < image.height; y++) {
-            png_uint_16p row = reinterpret_cast<png_uint_16p>(row_pointers[y]);
-            for (int x = 0; x < image.width; x++) {
-                png_uint_16p px = &(row[x * image.channels]);
-                image.pixels[y * image.width * image.channels + x * image.channels] = SCALE_TO_BYTE(px[0]);
-                if (image.channels > 1) {
-                    image.pixels[y * image.width * image.channels + x * image.channels + 1] = SCALE_TO_BYTE(px[1]);
-                }
-                if (image.channels > 2) {
-                    image.pixels[y * image.width * image.channels + x * image.channels + 2] = SCALE_TO_BYTE(px[2]);
-                }
-                if (image.channels > 3) {
-                    image.pixels[y * image.width * image.channels + x * image.channels + 3] = SCALE_TO_BYTE(px[3]);
-                }
-            }
-        }
-    }
-
-    fclose(fp);
-
-    png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-    png_ptr = nullptr;
-    info_ptr = nullptr;
-    return 0;
-}
-
-int loadJpg(Image &image) {
-    FILE *infile = fopen(image.fileName.c_str(), "rb");
-    if (infile == nullptr) {
-        std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
-        return 1;
-    }
-
-    jpeg_decompress_struct cinfo = {};
-    jpeg_error_mgr err = {};
-
-    cinfo.err = jpeg_std_error(&err);
-    jpeg_create_decompress(&cinfo);
-    jpeg_stdio_src(&cinfo, infile);
-    (void)jpeg_read_header(&cinfo, TRUE);
-    (void)jpeg_start_decompress(&cinfo);
-    image.width = cinfo.output_width;
-    image.height = cinfo.output_height;
-    image.channels = cinfo.actual_number_of_colors;
-
-    int row_stride = image.width * cinfo.output_components; /* physical row width in output buffer */
-    JSAMPARRAY pJpegBuffer = (*cinfo.mem->alloc_sarray)(reinterpret_cast<j_common_ptr>(&cinfo), JPOOL_IMAGE, row_stride,
-                                                        1); /* Output row buffer */
-
-    image.channels = 4;
-    char r = 0;
-    char g = 0;
-    char b = 0;
-    while (cinfo.output_scanline < cinfo.output_height) {
-        (void)jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
-        for (unsigned int x = 0; x < image.width; x++) {
-            r = pJpegBuffer[0][cinfo.output_components * x];
-            if (cinfo.output_components > 2) {
-                g = pJpegBuffer[0][cinfo.output_components * x + 1];
-                b = pJpegBuffer[0][cinfo.output_components * x + 2];
-            } else {
-                g = r;
-                b = r;
-            }
-            image.pixels.push_back(r);
-            image.pixels.push_back(g);
-            image.pixels.push_back(b);
-            image.pixels.push_back(255);
-        }
-    }
-
-    fclose(infile);
-    (void)jpeg_finish_decompress(&cinfo);
-    jpeg_destroy_decompress(&cinfo);
-
-    return 0;
 }
 
 bool ImageOps::load(const std::string &fileName, Image &image) {
@@ -209,6 +37,9 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
     }
     if (hasExtension(image.fileName, "jpeg") || hasExtension(image.fileName, "jpg")) {
         return loadJpg(image) == 0;
+    }
+    if (hasExtension(image.fileName, "tga")) {
+        return loadTga(image) == 0;
     }
 
     std::cerr << "Image: Image file type is not supported (" << fileName << ")" << std::endl;
