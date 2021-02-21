@@ -12,9 +12,10 @@
 #include "TerrainParams.h"
 
 class Trees {
-    std::shared_ptr<Shader> shader;
+    std::shared_ptr<Shader> shader = nullptr;
+    std::shared_ptr<Shader> flatColorShader = nullptr;
 
-    std::shared_ptr<Shader> compShader;
+    std::shared_ptr<Shader> compShader = nullptr;
     unsigned int treePositionTextureWidth = 64;
     unsigned int treePositionTextureHeight = 64;
     unsigned int treePositionTextureId = 0;
@@ -23,19 +24,25 @@ class Trees {
     Model treeModel = {};
     int vertexCount = 0;
 #else
-    std::shared_ptr<VertexArray> cubeVA;
+    std::shared_ptr<VertexArray> cubeVA = nullptr;
 #endif
 
     int treeCount = 1000;
+    glm::vec3 lodSize = {250.0F, 500.0F, 1000.0F};
+
+    std::shared_ptr<VertexArray> gridVA = nullptr;
+    float gridHeight = 120.0F;
 
   public:
     [[nodiscard]] unsigned int getTreePositionTextureId() const { return treePositionTextureId; }
 
     void init();
     void initComputeShaderStuff();
+    void initGrid();
 
     void showGui();
 
     void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                 const TerrainParams &terrainParams);
+    void renderGrid(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
 };
