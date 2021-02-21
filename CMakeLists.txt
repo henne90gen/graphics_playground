@@ -53,7 +53,7 @@ add_library(imgui
         "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
         )
 target_include_directories(imgui PUBLIC "${IMGUI_DIR}")
-target_link_libraries(imgui PUBLIC glad)
+target_link_libraries(imgui PUBLIC glad glfw)
 target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # FastNoise
