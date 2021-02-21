@@ -1,6 +1,6 @@
 #pragma once
 
-#define USE_TREE_MODELS 0
+#define USE_TREE_MODELS 1
 
 #include <Model.h>
 #include <gl/Shader.h>

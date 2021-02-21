@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -23,16 +24,19 @@ std::string shaderTypeToString(GLuint shaderType) {
 }
 
 ShaderCode readShaderCodeFromFile(const std::string &filePath) {
-    std::ifstream shaderStream(filePath, std::ios::in);
-    if (!shaderStream.is_open()) {
-        std::cout << "Could not open " << filePath << std::endl;
-        return ShaderCode();
-    }
+    std::string shaderCode;
+    {
+        std::ifstream shaderStream(filePath, std::ios::in);
+        if (!shaderStream.is_open()) {
+            std::cout << "Could not open " << filePath << std::endl;
+            return ShaderCode();
+        }
 
-    std::stringstream sstr;
-    sstr << shaderStream.rdbuf();
-    std::string shaderCode = sstr.str();
-    shaderStream.close();
+        // this might be slow
+        std::stringstream sstr;
+        sstr << shaderStream.rdbuf();
+        shaderCode = sstr.str();
+    }
 
     std::vector<std::string> lines = {};
     int j = 0;

@@ -12,7 +12,6 @@ DEFINE_SHADER(landscape_TreeComp)
 void Trees::init() {
     shader = CREATE_DEFAULT_SHADER(landscape_Tree);
     shader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
-    cubeVA = createCubeVA(shader);
 
     initComputeShaderStuff();
 
@@ -32,6 +31,8 @@ void Trees::init() {
     for (const auto &mesh : treeModel.getRawModel().meshes) {
         vertexCount += mesh.vertices.size();
     }
+#else
+    cubeVA = createCubeVA(shader);
 #endif
 }
 
@@ -72,6 +73,10 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
 
     shader->setUniform("treeCount", treeCount);
     shader->setUniform("textureSampler", 0);
+    shader->setUniform("positionTexture", 1);
+
+    GL_Call(glActiveTexture(GL_TEXTURE1));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, treePositionTextureId));
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
     for (const auto &mesh : treeModel.getMeshes()) {
