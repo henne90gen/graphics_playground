@@ -118,26 +118,36 @@ void applyBowlEffect(inout vec3 noise, inout float noiseMax, in vec2 pos, in flo
 }
 
 void applyPlatform(inout vec3 noise, in float noiseMax, in vec2 pos, in float platformHeight) {
-    int width = 1000;
-    int height = 1000;
-    float cx = 0.0F;
-    float cy = 0.0F;
-    float platform = float(width) / 15.0F;
-    float smoothing = float(width) / 20.0F;
+    float width = 1000;
+    float centerX = 0.0F;
+    float centerY = 0.0F;
+    float platformHalf = 50.0F;
+    float smoothing = 100.0F;
     float posM = 1.0F / smoothing;
-    float posN = 0.0F - posM * (cx - platform - smoothing);
+    float posN = 0.0F - posM * (centerX - platformHalf - smoothing);
     float negM = -1.0F / smoothing;
-    float negN = 0.0F - negM * (cx + platform + smoothing);
+    float negN = 0.0F - negM * (centerX + platformHalf + smoothing);
     float w = 1.0F;
-    if (pos.x < cx - platform - smoothing || pos.x > cx + platform + smoothing || pos.y < cy - platform - smoothing || pos.y > cy + platform + smoothing) {
+    if (
+    pos.x < centerX - platformHalf - smoothing ||
+    pos.x > centerX + platformHalf + smoothing ||
+    pos.y < centerY - platformHalf - smoothing ||
+    pos.y > centerY + platformHalf + smoothing) {
+        // outside of platform
         w = 0.0F;
-    } else if (pos.x > cx - platform && pos.x < cx + platform && pos.y > cy - platform && pos.y < cy + platform) {
+    } else if (
+    pos.x > centerX - platformHalf &&
+    pos.x < centerX + platformHalf &&
+    pos.y > centerY - platformHalf &&
+    pos.y < centerY + platformHalf) {
+        // inside of platform
         w = 1.0F;
     } else {
-        bool isLeftEdge = pos.x <= cx - platform && pos.x >= cx - platform - smoothing;
-        bool isRightEdge = pos.x >= cx + platform && pos.x <= cx + platform + smoothing;
-        bool isTopEdge = pos.y >= cy + platform && pos.y <= cy + platform + smoothing;
-        bool isBottomEdge = pos.y <= cy - platform && pos.y >= cy - platform - smoothing;
+        // smoothing area
+        bool isLeftEdge = pos.x <= centerX - platformHalf && pos.x >= centerX - platformHalf - smoothing;
+        bool isRightEdge = pos.x >= centerX + platformHalf && pos.x <= centerX + platformHalf + smoothing;
+        bool isTopEdge = pos.y >= centerY + platformHalf && pos.y <= centerY + platformHalf + smoothing;
+        bool isBottomEdge = pos.y <= centerY - platformHalf && pos.y >= centerY - platformHalf - smoothing;
         if (isLeftEdge) {
             w *= posM * pos.x + posN;
         } else if (isRightEdge) {
