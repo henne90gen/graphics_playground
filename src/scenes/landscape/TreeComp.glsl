@@ -5,11 +5,10 @@
 layout (local_size_x = 1, local_size_y = 1) in;
 layout (rgba32f, binding = 0) uniform image2D imgOutput;
 
-uniform float lod0Size;
-uniform float lod0InnerSize = 100.0F;
+uniform float lodSize = 1000.0F;
+uniform float lodInnerSize = 100.0F;
 uniform float lod1Size;
 uniform float lod2Size;
-uniform int gridWidth = 1000;
 uniform int treeCount;
 
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
@@ -21,11 +20,19 @@ uniform float bowlStrength;
 uniform float platformHeight;
 uniform int seed;
 
-void placementRandom(inout vec2 pos, int seed) {
-    pos = vec2(seed, seed);
+const int MAX_NUM_POSITIONS = 40;
+vec3 positions[MAX_NUM_POSITIONS];
+
+vec2 placementRandom(float seed) {
+    vec2 pos = vec2(seed, seed);
     pos = vec2(snoise2(pos*pos).x, snoise2(pos).x);
     pos += 1.0F;
     pos /= 2.0F;
+
+    // TODO 'pos' is not strictly between 0 and 1 at this point, thus correcting it a bit
+    pos -= 0.05F;
+
+    return pos;
 }
 
 vec2 rotate(vec2 v, float a) {
@@ -54,91 +61,54 @@ bool discardTree(vec2 pos, vec4 noise) {
 
 void main() {
     ivec2 imgSize = imageSize(imgOutput);
-    int invocationId = int(gl_GlobalInvocationID.x + imgSize.y * gl_GlobalInvocationID.y);
-    if (invocationId > treeCount) {
-        // don't calculate positions that won't be used
-        ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
-        imageStore(imgOutput, pixelCoords, vec4(0.0F, 0.0F, 0.0F, 1.0F));
-        return;
+    //    if (invocationId > treeCount) {
+    //        // don't calculate positions that won't be used
+    //        ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
+    //        imageStore(imgOutput, pixelCoords, vec4(0.0F, 0.0F, 0.0F, 1.0F));
+    //        return;
+    //    }
+
+    const float lodH = lodSize / 2.0F;
+    const float lodIH = lodInnerSize / 2.0F;
+    const float longEdge = lodH + lodIH;
+    const float shortEdge = lodH - lodIH;
+    const float longEdgeH = longEdge / 2.0F;
+    const float shortEdgeH = shortEdge / 2.0F;
+    const vec2 scales[2] = vec2[2](
+    vec2(longEdgeH, shortEdgeH),
+    vec2(shortEdgeH, longEdgeH)
+    );
+
+    const vec2 offsets[4][4] = vec2[4][4](
+    vec2[4](vec2(-lodH, lodIH+shortEdgeH), vec2(-lodH+longEdgeH, lodIH+shortEdgeH), vec2(-lodH, lodIH), vec2(-lodH+longEdgeH, lodIH)),
+    vec2[4](vec2(lodIH, lodH-longEdgeH), vec2(lodIH+shortEdgeH, lodH-longEdgeH), vec2(lodIH, -lodIH), vec2(lodIH+shortEdgeH, -lodIH)),
+    vec2[4](vec2(-lodH, lodIH-longEdgeH), vec2(-lodIH-shortEdgeH, lodIH-longEdgeH), vec2(-lodH, -lodH), vec2(-lodH+shortEdgeH, -lodH)),
+    vec2[4](vec2(-lodIH, -lodIH-shortEdgeH), vec2(-lodIH + longEdgeH, -lodIH-shortEdgeH), vec2(-lodIH, -lodH), vec2(-lodIH + longEdgeH, -lodH))
+    );
+
+    const int invocationId = int(4*gl_GlobalInvocationID.x + gl_GlobalInvocationID.y);
+    const int numPositions = 64;
+    for (int i = 0; i < numPositions; i++) {
+        float s = float(int(gl_GlobalInvocationID.x)*1000 + int(gl_GlobalInvocationID.y)*100 + i) / 10.0F + float(seed)/10.0F;
+        vec2 pos = placementRandom(s);
+
+        pos *= scales[gl_GlobalInvocationID.x % 2];
+        pos += offsets[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y];
+
+        #define INSPECT_BATCH 0
+        #if INSPECT_BATCH
+        if (gl_GlobalInvocationID.x != 0 || gl_GlobalInvocationID.y != 3) {
+            pos += vec2(lodSize, lodSize);
+        }
+            #endif
+
+        vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight, seed);
+        vec3 position = vec3(pos.x, noise.x, pos.y);
+
+        int positionId = numPositions*invocationId + i;
+        int col = positionId % imgSize.x;
+        int row = positionId / imgSize.x;
+        ivec2 pixelCoords = ivec2(col, row);
+        imageStore(imgOutput, pixelCoords, vec4(position, 1.0F));
     }
-
-    // 0.0F - imageSize(imgOutput)
-    vec2 pos = vec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
-    // 0.0F - 1.0F
-    pos /= vec2(imgSize.x, imgSize.y);
-
-    placementRandom(pos, invocationId);
-
-    if (invocationId < treeCount / 2) {
-        // LOD 0
-        int lodId = int((float(invocationId) / (float(treeCount) / 2.0F)) * 8.0F);
-
-        const float lod0H = lod0Size / 2.0F;
-        const float lod0IH = lod0InnerSize / 2.0F;
-        const float smallSideLength = (lod0Size - lod0InnerSize) / 2.0F;
-        const vec2 scales[8] = vec2[8](
-        vec2(smallSideLength, smallSideLength),
-        vec2(lod0InnerSize, smallSideLength),
-        vec2(smallSideLength, smallSideLength),
-
-        vec2(smallSideLength, lod0InnerSize),
-        vec2(smallSideLength, lod0InnerSize),
-
-        vec2(smallSideLength, smallSideLength),
-        vec2(lod0InnerSize, smallSideLength),
-        vec2(smallSideLength, smallSideLength)
-        );
-
-        const vec2 offsets[8] = vec2[8](
-        vec2(-lod0H, lod0IH),
-        vec2(-lod0IH, lod0IH),
-        vec2(lod0IH, lod0IH),
-
-        vec2(-lod0H, -lod0IH),
-        vec2(lod0IH, -lod0IH),
-
-        vec2(-lod0H, -lod0H),
-        vec2(-lod0IH, -lod0H),
-        vec2(lod0IH, -lod0H)
-        );
-
-        pos *= scales[lodId];
-        pos += offsets[lodId];
-    } else if (invocationId < treeCount / 4 * 3) {
-        // LOD 1
-        int lodId = int(float(invocationId-treeCount/2) / (float(treeCount) / 4.0F) * 8.0F);
-
-        float lodBoxSize = lod1Size / 3.0F;
-        const vec2 offsets[8] = vec2[8](
-        vec2(-1.5F*lodBoxSize, 0.5F*lodBoxSize),
-        vec2(-0.5F*lodBoxSize, 0.5F*lodBoxSize),
-        vec2(0.5F*lodBoxSize, 0.5F*lodBoxSize),
-        vec2(-1.5F*lodBoxSize, -0.5F*lodBoxSize),
-        vec2(0.5F*lodBoxSize, -0.5F*lodBoxSize),
-        vec2(-1.5F*lodBoxSize, -1.5F*lodBoxSize),
-        vec2(-0.5F*lodBoxSize, -1.5F*lodBoxSize),
-        vec2(0.5F*lodBoxSize, -1.5F*lodBoxSize)
-        );
-
-        pos *= lod1Size / 3.0F;
-        pos += offsets[lodId];
-    } else {
-        // LOD 2
-        int lodId = (invocationId - treeCount / 4 * 3) / 8;
-        // 0.0F - 1000.0F
-        pos *= gridWidth;
-        // -500.0F - 500.0F
-        pos -= gridWidth / 2.0F;
-
-        // TODO remove this eventually
-        ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
-        imageStore(imgOutput, pixelCoords, vec4(0.0F, 0.0F, 0.0F, 1.0F));
-        return;
-    }
-
-    vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight, seed);
-    vec3 position = vec3(pos.x, noise.x, pos.y);
-
-    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
-    imageStore(imgOutput, pixelCoords, vec4(position, 1.0F));
 }
