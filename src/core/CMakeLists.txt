@@ -50,8 +50,4 @@ else ()
     target_link_libraries(core stdc++fs)
 endif ()
 
-target_include_directories(core PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GLFW_DIR}/include
-        ${GLM_DIR}
-        ${IMGUI_DIR})
+target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -4,6 +4,9 @@
 #include <string>
 #include <utility>
 
+#define GIF_FLIP_VERT
+#include <gif.h>
+
 #if FFMPEG_FOUND
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -85,8 +88,6 @@ class Mp4VideoSaver : public VideoSaver {
     void free();
 };
 #endif
-
-struct GifWriter;
 
 class GifVideoSaver : public VideoSaver {
   public:

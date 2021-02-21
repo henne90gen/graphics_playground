@@ -3,9 +3,6 @@
 #include <cmath>
 #include <iostream>
 
-#define GIF_FLIP_VERT
-#include <gif.h>
-
 #include <glad/glad.h>
 
 constexpr const char *VIDEO_TMP_FILE = "tmp.h264";

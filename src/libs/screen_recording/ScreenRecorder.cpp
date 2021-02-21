@@ -3,6 +3,7 @@
 #include <cmath>
 #include <functional>
 #include <iomanip>
+#include <sstream>
 #include <iostream>
 
 #include <Image.h>

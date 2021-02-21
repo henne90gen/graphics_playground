@@ -10,7 +10,7 @@
 #include "util/InputData.h"
 
 #ifdef WITH_SCREEN_RECORDING
-#include "util/ScreenRecorder.h"
+#include <ScreenRecorder.h>
 #endif
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
