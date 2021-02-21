@@ -34,12 +34,6 @@ class Scene {
     virtual void onCharacterTyped(unsigned int i) {}
     virtual void onScroll(double xOffset, double yOffset);
 
-  protected:
-    virtual void setup() = 0;
-    virtual void tick() = 0;
-    virtual void destroy() = 0;
-    virtual void onAspectRatioChange(){};
-
     inline float getAspectRatio() const { return aspectRatio; }
     inline unsigned int getWidth() const { return width; }
     inline unsigned int getHeight() const { return height; }
@@ -47,6 +41,12 @@ class Scene {
     inline const InputData &getInput() const { return input; }
     inline Camera &getCamera() { return camera; }
     inline PerformanceCounter *getPerformanceCounter() { return &this->performanceCounter; }
+
+  protected:
+    virtual void setup() = 0;
+    virtual void tick() = 0;
+    virtual void destroy() = 0;
+    virtual void onAspectRatioChange(){};
 
   private:
     const std::string name;

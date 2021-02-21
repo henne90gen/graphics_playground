@@ -34,6 +34,15 @@ endif ()
 
 target_compile_definitions(core PRIVATE GLFW_INCLUDE_NONE)
 
+set(WITH_SCREEN_RECORDING 0)
+if (WITH_SCREEN_RECORDING)
+    message("-- Screen Recording: enabled")
+    target_compile_definitions(core PRIVATE WITH_SCREEN_RECORDING)
+    target_link_libraries(core screen_recording)
+else ()
+    message("-- Screen Recording: disabled")
+endif ()
+
 target_link_libraries(core
         glfw
         glad
