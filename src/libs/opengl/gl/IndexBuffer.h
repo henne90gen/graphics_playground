@@ -1,23 +1,21 @@
 #pragma once
 
-#include <vector>
 #include <glm/ext.hpp>
+#include <vector>
 
 class IndexBuffer {
-public:
+  public:
     IndexBuffer();
 
-    IndexBuffer(const unsigned int *data, unsigned int count);
-
+    explicit IndexBuffer(const unsigned int *data, unsigned int count);
     explicit IndexBuffer(const std::vector<unsigned int> &data);
-
     explicit IndexBuffer(const std::vector<glm::ivec3> &data);
 
     ~IndexBuffer();
 
     void bind() const;
 
-    static void unbind() ;
+    static void unbind();
 
     [[nodiscard]] unsigned int getCount() const { return count; }
 
@@ -27,7 +25,7 @@ public:
 
     void update(const std::vector<glm::ivec3> &data);
 
-private:
+  private:
     unsigned int id = 0;
     unsigned int count = 0;
 };

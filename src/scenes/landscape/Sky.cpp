@@ -12,6 +12,7 @@ void Sky::init() {
 }
 
 void Sky::showGui() {
+    ImGui::Checkbox("Sky Enabled", &skyEnabled);
     ImGui::DragFloat3("Sky Scale", reinterpret_cast<float *>(&skyScale));
     ImGui::ColorEdit3("Sky Color", reinterpret_cast<float *>(&skyColor));
     ImGui::DragFloat("Animation Speed Clouds", &animationSpeed, 0.001F);
@@ -19,6 +20,9 @@ void Sky::showGui() {
 }
 
 void Sky::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime) {
+    if (!skyEnabled) {
+        return;
+    }
     cubeVA->bind();
     shader->bind();
     glm::mat4 modelMatrix = glm::mat4(1.0F);
