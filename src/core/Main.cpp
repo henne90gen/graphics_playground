@@ -80,7 +80,7 @@ void installCallbacks(GLFWwindow *window) {
     glfwSetFramebufferSizeCallback(window, resizeCallback);
 }
 
-#ifdef WITH_SCREEN_RECORDER
+#ifdef WITH_SCREEN_RECORDING
 void renderCaptureMenu(ScreenRecorder *recorder) {
     ImGui::Begin("Recording Menu");
     ImGui::SetWindowPos(ImVec2(0, 0));
@@ -139,7 +139,7 @@ int runScene(Scene *scene) {
     // to disable vsync uncomment this line
     //    glfwSwapInterval(0);
 
-#ifdef WITH_SCREEN_RECORDER
+#ifdef WITH_SCREEN_RECORDING
     ScreenRecorder recorder = {};
     glfwSetWindowUserPointer(window, &recorder);
 #endif
@@ -166,9 +166,9 @@ int runScene(Scene *scene) {
 
         scene->internalTick();
 
-#ifdef WITH_SCREEN_RECORDER
+#ifdef WITH_SCREEN_RECORDING
         renderCaptureMenu(&recorder);
-        recorder.tick(windowWidth, windowHeight);
+        recorder.tick(scene->getWidth(), scene->getHeight());
 #endif
 
         finishImGuiFrame();

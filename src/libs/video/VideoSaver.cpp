@@ -3,6 +3,9 @@
 #include <cmath>
 #include <iostream>
 
+#define GIF_FLIP_VERT
+#include <gif.h>
+
 #include <glad/glad.h>
 
 constexpr const char *VIDEO_TMP_FILE = "tmp.h264";
@@ -360,7 +363,7 @@ bool GifVideoSaver::doInit() {
         width = SCALED_DOWN_WIDTH;
         height = SCALED_DOWN_HEIGHT;
     }
-    if (!GifBegin(gifWriter, videoFileName.c_str(), width, height, delay)) {
+    if (!GifBegin(reinterpret_cast<GifWriter *>(gifWriter), videoFileName.c_str(), width, height, delay)) {
         std::cerr << "Could not open " << videoFileName << " for writing." << std::endl;
         return false;
     }
@@ -432,7 +435,7 @@ void GifVideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
     if (scaleDown) {
         scaleDownFrame(frame.get(), SCALED_DOWN_WIDTH, SCALED_DOWN_HEIGHT);
     }
-    GifWriteFrame(gifWriter, frame->buffer, frame->width, frame->height, delay);
+    GifWriteFrame(reinterpret_cast<GifWriter *>(gifWriter), frame->buffer, frame->width, frame->height, delay);
 }
 
-bool GifVideoSaver::doSave() { return GifEnd(gifWriter); }
+bool GifVideoSaver::doSave() { return GifEnd(reinterpret_cast<GifWriter *>(gifWriter)); }
