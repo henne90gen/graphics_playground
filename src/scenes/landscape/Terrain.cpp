@@ -27,14 +27,12 @@ void Terrain::init() {
 
 void Terrain::showGui() {
     ImGui::DragFloat3("Terrain Levels", reinterpret_cast<float *>(&levels), 0.001F);
-    ImGui::DragFloat3("Atmosphere", reinterpret_cast<float *>(&atmosphere), 0.01F);
     ImGui::DragFloat("Tesselation", &tessellation);
     ImGui::DragFloat("UV scale", &uvScaleFactor, 0.1F);
 }
 
 void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
-                     const glm::vec3 &sunDirection, const glm::vec3 &lightColor, const float lightPower,
-                     const ShaderToggles &shaderToggles) {
+                     const glm::vec3 &sunDirection, const glm::vec3 &lightColor, const ShaderToggles &shaderToggles) {
     terrainShader->bind();
     terrainVA->bind();
 
@@ -45,10 +43,6 @@ void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMat
     terrainShader->setUniform("projectionMatrix", projectionMatrix);
     terrainShader->setUniform("normalMatrix", normalMatrix);
 
-    glm::mat4 viewModel = inverse(viewMatrix);
-    glm::vec3 cameraPosition(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
-    terrainShader->setUniform("cameraPosition", cameraPosition);
-
     terrainShader->setUniform("tessellation", tessellation);
 
     terrainParams.setShaderUniforms(terrainShader);
@@ -56,13 +50,6 @@ void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMat
     terrainShader->setUniform("grassLevel", levels.grassLevel);
     terrainShader->setUniform("rockLevel", levels.rockLevel);
     terrainShader->setUniform("blur", levels.blur);
-
-    terrainShader->setUniform("sunDirection", sunDirection);
-    terrainShader->setUniform("lightPosition", lightPosition);
-    terrainShader->setUniform("lightColor", lightColor);
-    terrainShader->setUniform("lightPower", lightPower);
-
-    terrainShader->setUniform("atmosphere", atmosphere);
 
     terrainShader->setUniform("showUVs", shaderToggles.showUVs);
     terrainShader->setUniform("showNormals", shaderToggles.showNormals);

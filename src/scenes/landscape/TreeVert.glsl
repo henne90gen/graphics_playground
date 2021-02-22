@@ -23,8 +23,13 @@ void main() {
     uv.x = float(gl_InstanceID % positionTextureSize.x) / float(positionTextureSize.x);
     uv.y = float(gl_InstanceID / positionTextureSize.y) / float(positionTextureSize.y);
     vec3 position = a_Position + texture(positionTexture, uv).xyz;
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0F);
-    position_frag_in = (viewMatrix * modelMatrix * vec4(position, 1.0F)).xyz;
+
+    vec4 viewPosition = viewMatrix * modelMatrix * vec4(position, 1.0F);
+    position_frag_in = viewPosition.xyz;
+    gl_Position = projectionMatrix * viewPosition;
     normal_frag_in = normalMatrix * a_Normal;
     uv_frag_in = a_UV;
+
+//    float lightPower = 200;
+//    calcScattering(cameraPosition, position_frag_in, -sunDirection, lightColor, lightPower, atmosphere, extinction, inScatter);
 }

@@ -31,8 +31,6 @@ class Terrain {
     float tessellation = 60.0F;
     float uvScaleFactor = 20.0F;
 
-    glm::vec3 atmosphere = glm::vec3(0.6F, 0.8F, 1.1F);
-
     void initTextures();
     static std::shared_ptr<VertexArray> generatePoints(const std::shared_ptr<Shader> &shader);
 
@@ -45,8 +43,7 @@ class Terrain {
 
     void init();
     void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
-                const glm::vec3 &sunDirection, const glm::vec3 &lightColor, float lightPower,
-                const ShaderToggles &shaderToggles);
+                const glm::vec3 &sunDirection, const glm::vec3 &lightColor, const ShaderToggles &shaderToggles);
     void showGui();
     void showLayersGui();
 };

@@ -12,9 +12,7 @@ uniform float cloudBlend;
 layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 3) out vec4 gExtinction;
-layout (location = 4) out vec4 gInScatter;
-layout (location = 5) out vec4 gDoLighting;
+layout (location = 3) out vec4 gDoLighting;
 
 const float cloudscale = 1.1;
 const float clouddark = 0.5;
@@ -56,8 +54,7 @@ float fbm(vec2 n) {
 }
 
 // https://www.shadertoy.com/view/4tdSWr
-vec3 cloudColor(vec3 skycolor, float iTime) {
-    vec2 uv_ = model_position_frag_in.xz + 0.5F;
+vec3 cloudColor(vec2 uv_, vec3 skycolor, float iTime) {
     vec2 uv = uv_;
     float time = iTime * animationSpeed;
     float q = fbm(uv * cloudscale * 0.5);
@@ -135,16 +132,11 @@ vec3 cloudColor(vec3 skycolor, float iTime) {
 }
 
 void main() {
-    float height = model_position_frag_in.y;
-    vec3 color = flatColor * (-height + 1.4F);
-    if (height >= 0.4999F) {
-        color = cloudColor(color, animationTime);
-    }
+    vec2 uv = model_position_frag_in.xy + 0.5F;
+    vec3 color = cloudColor(uv, flatColor, animationTime);
 
     gPosition = vec4(position_frag_in, 1.0F);
     gNormal = vec4(normalize(-normal_frag_in), 1.0F);
     gAlbedoSpec = vec4(color, 1.0F);
     gDoLighting = vec4(0.0F, 0.0F, 0.0F, 1.0F);
-    //    gExtinction = extinction;
-    //    gInScatter = inScatter;
 }

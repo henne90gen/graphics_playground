@@ -14,13 +14,13 @@ layout (location = 4) out vec4 gInScatter;
 layout (location = 5) out vec4 gDoLighting;
 
 void main() {
-    vec4 color = vec4(1.0F, 0.0F, 0.0F, 1.0F);
+    vec4 color = texture(textureSampler, uv_frag_in);
 
-    color = texture(textureSampler, uv_frag_in);
-    color = vec4(10.0F, 0.0F, 0.0F, 1.0F);
+    // make trees brighter
+    color.xyz *= 3.0F;
 
     gPosition = vec4(position_frag_in, 1.0F);
-    gNormal = vec4(normalize(-normal_frag_in), 1.0F);
+    gNormal = vec4(normalize(normal_frag_in), 1.0F);
     gAlbedoSpec = color;
     gDoLighting = vec4(1.0F);
 }

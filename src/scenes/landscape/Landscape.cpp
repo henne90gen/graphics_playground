@@ -15,6 +15,7 @@ constexpr int INITIAL_POINT_DENSITY = 15;
 DEFINE_SCENE_MAIN(Landscape)
 
 DEFINE_SHADER(landscape_NoiseLib)
+DEFINE_SHADER(landscape_ScatterLib)
 
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
@@ -38,6 +39,7 @@ void Landscape::setup() {
     flatShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
 
     lightingShader = createDefaultShader(SHADER_CODE(landscape_ScreenQuadVert), SHADER_CODE(landscape_LightingFrag));
+    lightingShader->attachShaderLib(SHADER_CODE(landscape_ScatterLib));
     ssaoShader = createDefaultShader(SHADER_CODE(landscape_ScreenQuadVert), SHADER_CODE(landscape_SSAOFrag));
     ssaoBlurShader = createDefaultShader(SHADER_CODE(landscape_ScreenQuadVert), SHADER_CODE(landscape_SSAOBlurFrag));
 
@@ -87,6 +89,7 @@ void Landscape::tick() {
             ImGui::DragFloat("Light Ambient Power", &light.ambient, 0.01F);
             ImGui::DragFloat("Light Diffuse Power", &light.diffuse, 0.01F);
             ImGui::DragFloat("Light Specular Power", &light.specular, 0.01F);
+            ImGui::DragFloat3("Atmosphere", reinterpret_cast<float *>(&atmosphere), 0.01F);
             ImGui::TreePop();
         }
         ImGui::Separator();
@@ -148,7 +151,7 @@ void Landscape::renderTerrain(const Camera &camera, const Light &light, const Sh
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), light.fragmentToLightDir,
-                   light.fragmentToLightDir, light.color, light.specular, shaderToggles);
+                   light.fragmentToLightDir, light.color, shaderToggles);
 
     renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), light.fragmentToLightDir, light.color);
 
@@ -224,10 +227,8 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
     lightingShader->setUniform("gPosition", 0);
     lightingShader->setUniform("gNormal", 1);
     lightingShader->setUniform("gAlbedo", 2);
-    lightingShader->setUniform("gExtinction", 3);
-    lightingShader->setUniform("gInScatter", 4);
-    lightingShader->setUniform("gDoLighting", 5);
-    lightingShader->setUniform("ssao", 6);
+    lightingShader->setUniform("gDoLighting", 3);
+    lightingShader->setUniform("ssao", 4);
 
     lightingShader->setUniform("useAmbientOcclusion", shaderToggles.useAmbientOcclusion);
     lightingShader->setUniform("useAtmosphericScattering", shaderToggles.useAtmosphericScattering);
@@ -242,6 +243,11 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
     lightingShader->setUniform("light.Diffuse", light.diffuse);
     lightingShader->setUniform("light.Specular", light.specular);
 
+    glm::mat4 viewModel = inverse(camera.getViewMatrix());
+    glm::vec3 cameraPosition(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
+    lightingShader->setUniform("cameraPosition", cameraPosition);
+    lightingShader->setUniform("atmosphere", atmosphere);
+
     GL_Call(glActiveTexture(GL_TEXTURE0));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
     GL_Call(glActiveTexture(GL_TEXTURE1));
@@ -249,12 +255,8 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
     GL_Call(glActiveTexture(GL_TEXTURE2));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
     GL_Call(glActiveTexture(GL_TEXTURE3));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, gExtinction));
-    GL_Call(glActiveTexture(GL_TEXTURE4));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, gInScatter));
-    GL_Call(glActiveTexture(GL_TEXTURE5));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gDoLighting));
-    GL_Call(glActiveTexture(GL_TEXTURE6));
+    GL_Call(glActiveTexture(GL_TEXTURE4));
     GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
 
     quadVA->bind();
@@ -265,10 +267,12 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
 void Landscape::renderGBufferViewer() {
     glDisable(GL_BLEND);
     static auto currentTextureIdIndex = 0;
-    std::array<unsigned int, 8> textureIds = {gPosition,  gNormal,     gAlbedo,         gExtinction,
-                                              gInScatter, gDoLighting, ssaoColorBuffer, ssaoColorBlurBuffer};
-    std::array<const char *, 8> textureIdLabels = {"Position",   "Normal",      "Albedo", "Extinction",
-                                                   "In Scatter", "Do Lighting", "SSAO",   "SSAO Blur"};
+    std::array<unsigned int, 8> textureIds = {
+          gPosition, gNormal, gAlbedo, gDoLighting, ssaoColorBuffer, ssaoColorBlurBuffer,
+    };
+    std::array<const char *, 8> textureIdLabels = {
+          "Position", "Normal", "Albedo", "Do Lighting", "SSAO", "SSAO Blur",
+    };
     ImGui::Begin("Settings");
     ImGui::Combo("Selected Buffer", &currentTextureIdIndex, reinterpret_cast<const char *const *>(&textureIdLabels[0]),
                  textureIdLabels.size());
@@ -385,37 +389,19 @@ void Landscape::initGBuffer() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0));
 
-    // create extinction buffer
-    GL_Call(glGenTextures(1, &gExtinction));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, gExtinction));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gExtinction, 0));
-
-    // create in-scatter buffer
-    GL_Call(glGenTextures(1, &gInScatter));
-    GL_Call(glBindTexture(GL_TEXTURE_2D, gInScatter));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gInScatter, 0));
-
     // create do-lighting buffer
     GL_Call(glGenTextures(1, &gDoLighting));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gDoLighting));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gDoLighting, 0));
+    GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gDoLighting, 0));
 
-    std::array<unsigned int, 6> attachments = {
+    std::array<unsigned int, 4> attachments = {
           GL_COLOR_ATTACHMENT0, //
           GL_COLOR_ATTACHMENT1, //
           GL_COLOR_ATTACHMENT2, //
           GL_COLOR_ATTACHMENT3, //
-          GL_COLOR_ATTACHMENT4, //
-          GL_COLOR_ATTACHMENT5, //
     };
     glDrawBuffers(attachments.size(), reinterpret_cast<unsigned int *>(&attachments[0]));
 
@@ -512,14 +498,6 @@ void Landscape::onAspectRatioChange() {
     // update color buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
-
-    // update extinction buffer
-    GL_Call(glBindTexture(GL_TEXTURE_2D, gExtinction));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
-
-    // update in-scatter buffer
-    GL_Call(glBindTexture(GL_TEXTURE_2D, gInScatter));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
 
     // update do-lighting buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gDoLighting));
