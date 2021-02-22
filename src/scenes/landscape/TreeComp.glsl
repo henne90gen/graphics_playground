@@ -25,7 +25,7 @@ vec3 positions[MAX_NUM_POSITIONS];
 
 vec2 placementRandom(float seed) {
     vec2 pos = vec2(seed, seed);
-    pos = vec2(snoise2(pos*pos).x, snoise2(pos).x);
+    pos = vec2(snoise2(pos*pos+pos).x, snoise2(pos+pos).x);
     pos += 1.0F;
     pos /= 2.0F;
 
@@ -89,21 +89,52 @@ void main() {
     const int invocationId = int(4*gl_GlobalInvocationID.x + gl_GlobalInvocationID.y);
     const int numPositions = 64;
     for (int i = 0; i < numPositions; i++) {
-        float s = float(int(gl_GlobalInvocationID.x)*1000 + int(gl_GlobalInvocationID.y)*100 + i) / 10.0F + float(seed)/10.0F;
-        vec2 pos = placementRandom(s);
+        vec3 position;
+        int count = 0;
+        do {
+            count++;
 
-        pos *= scales[gl_GlobalInvocationID.x % 2];
-        pos += offsets[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y];
+            float s = (
+            float(gl_GlobalInvocationID.x+1)*float(gl_GlobalInvocationID.x+1)*float(gl_GlobalInvocationID.x+1) +
+            float(gl_GlobalInvocationID.y)*float(gl_GlobalInvocationID.y) +
+            float(i)) / 100 +
+            float(seed) / 100 +
+            float(count) * 5.0F;
 
-        #define INSPECT_BATCH 0
-        #if INSPECT_BATCH
-        if (gl_GlobalInvocationID.x != 0 || gl_GlobalInvocationID.y != 3) {
-            pos += vec2(lodSize, lodSize);
-        }
-            #endif
+            vec2 pos = placementRandom(s);
 
-        vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight, seed);
-        vec3 position = vec3(pos.x, noise.x, pos.y);
+            pos *= scales[gl_GlobalInvocationID.x % 2];
+            pos += offsets[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y];
+
+            #define INSPECT_BATCH 0
+            #if INSPECT_BATCH
+            if (gl_GlobalInvocationID.x != 0 || gl_GlobalInvocationID.y != 0) {
+                pos += vec2(lodSize, lodSize);
+                position = vec3(pos.x, 0, pos.y);
+                break;
+            }
+                #endif
+
+            vec4 noise = generateHeight(pos, noiseLayers, numNoiseLayers, useFiniteDifferences, finiteDifference, power, bowlStrength, platformHeight, seed);
+            position = vec3(pos.x, noise.x, pos.y);
+
+            float minDistance = 20.0F;
+            bool tooClose = false;
+            for (int j = 0; j < i; j++) {
+                int positionId = numPositions*invocationId + j;
+                int col = positionId % imgSize.x;
+                int row = positionId / imgSize.x;
+                ivec2 pixelCoords = ivec2(col, row);
+                vec3 p = imageLoad(imgOutput, pixelCoords).xyz;
+                if (length(p-position) < minDistance) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            if (!tooClose) {
+                break;
+            }
+        } while (count < 100);
 
         int positionId = numPositions*invocationId + i;
         int col = positionId % imgSize.x;
