@@ -1,12 +1,12 @@
 #version 330 core
 
+#include "ScatterLib.glsl"
+
 in vec2 TexCoords;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
-uniform sampler2D gExtinction;
-uniform sampler2D gInScatter;
 uniform sampler2D gDoLighting;
 uniform sampler2D ssao;
 
@@ -23,6 +23,9 @@ struct Light {
     float Specular;
 };
 uniform Light light;
+
+uniform vec3 cameraPosition;
+uniform vec3 atmosphere;
 
 uniform float exposure = 1.0F;
 uniform float gamma = 1.0F;
@@ -49,11 +52,11 @@ vec4 ACESFilm(vec4 x) {
 }
 
 void main() {
-    // retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec4 Diffuse = texture(gAlbedo, TexCoords);
 
+    // TODO turn on lighting for the sky as well
     if (texture(gDoLighting, TexCoords).r == 0.0F) {
         color = vec4(Diffuse.xyz, 1.0F);
         return;
@@ -79,8 +82,12 @@ void main() {
     vec4 lighting = ambient + diffuse + vec4(specular, 1.0F);
 
     if (useAtmosphericScattering) {
-        lighting *= texture(gExtinction, TexCoords);
-        lighting += texture(gInScatter, TexCoords);
+        vec3 extinction;
+        vec3 inScatter;
+        float lightPower = 200;
+        calcScattering(cameraPosition, FragPos, -light.FragmentToLightDir, light.Color, lightPower, atmosphere, extinction, inScatter);
+        lighting *= vec4(extinction, 1.0F);
+        lighting += vec4(inScatter, 1.0F);
     }
 
     if (useACESFilm) {

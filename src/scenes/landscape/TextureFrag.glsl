@@ -7,5 +7,5 @@ uniform sampler2D textureSampler;
 out vec4 color;
 
 void main() {
-    color = texture(textureSampler, UV).yyyy / 150;
+    color = texture(textureSampler, UV);
 }

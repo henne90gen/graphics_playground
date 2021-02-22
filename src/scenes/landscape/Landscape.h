@@ -53,8 +53,6 @@ class Landscape : public Scene {
     GLuint gPosition = 0;
     GLuint gNormal = 0;
     GLuint gAlbedo = 0;
-    GLuint gExtinction = 0;
-    GLuint gInScatter = 0;
     GLuint gDoLighting = 0;
     GLuint depthBuffer = 0;
 
@@ -71,6 +69,7 @@ class Landscape : public Scene {
     Sky sky = {};
     Trees trees = {};
     Terrain terrain = {};
+    glm::vec3 atmosphere = glm::vec3(0.4F, 0.45F, 1.2F);
 
     void renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,

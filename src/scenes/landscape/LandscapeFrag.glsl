@@ -26,15 +26,10 @@ in vec3 bitangent_frag_in;
 in vec3 model_position;
 in float normalized_height;
 
-in vec3 extinction;
-in vec3 inScatter;
-
 layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 3) out vec4 gExtinction;
-layout (location = 4) out vec4 gInScatter;
-layout (location = 5) out vec4 gDoLighting;
+layout (location = 3) out vec4 gDoLighting;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -50,10 +45,8 @@ uniform float grassLevel;
 uniform float rockLevel;
 uniform float blur;
 
-uniform vec3 lightPosition;
 uniform vec3 sunDirection;
 uniform vec3 lightColor;
-uniform float lightPower;
 
 uniform sampler2D grassTexture;
 uniform sampler2D dirtTexture;
@@ -354,7 +347,5 @@ void main() {
     gPosition = vec4(model_position, 1.0F);
     gNormal = vec4(normalize(normalMatrix * normal_frag_in), 1.0F);
     gAlbedoSpec = vec4(getSurfaceColor(normalized_height), 1.0F);
-    gExtinction = vec4(extinction, 1.0F);
-    gInScatter = vec4(inScatter, 1.0F);
     gDoLighting = vec4(1.0F);
 }

@@ -163,8 +163,6 @@ void Trees::renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
 
-    terrainParams.setShaderUniforms(shader);
-
     shader->setUniform("treeCount", treeCount);
     shader->setUniform("textureSampler", 0);
     shader->setUniform("positionTexture", 1);
