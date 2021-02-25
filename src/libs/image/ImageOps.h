@@ -7,7 +7,7 @@
 namespace ImageOps {
 bool load(const std::string &fileName, Image &image);
 
-void save(Image &image);
+bool save(Image &image);
 
 void createCheckerBoard(Image &image);
 } // namespace ImageOps
