@@ -23,7 +23,7 @@ struct TgaHeader {
 };
 #pragma pack(pop)
 
-int loadTga(Image &image) {
+bool loadTga(Image &image) {
     std::ifstream is(image.fileName);
     TgaHeader header = {};
     size_t sizeToRead = sizeof(header);
@@ -31,7 +31,7 @@ int loadTga(Image &image) {
 
     if (header.imageType != 2) {
         std::cout << "Image: Image type " << header.imageType << " is not supported." << std::endl;
-        return 1;
+        return false;
     }
 
     if (header.imageIdLength > 0) {
@@ -53,8 +53,8 @@ int loadTga(Image &image) {
     is.read(reinterpret_cast<char *>(image.pixels.data()), imageSize);
 
     //    if (is.fail()) {
-    //        std::cout << "Image: Failed to read tga is." << std::endl;
+    //        std::cout << "Image: Failed to read tga." << std::endl;
     //        return 1;
     //    }
-    return 0;
+    return true;
 }

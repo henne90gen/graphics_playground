@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "bmp.cpp"
 #include "jpeg.cpp"
 #include "png.cpp"
 #include "tga.cpp"
@@ -33,93 +34,35 @@ bool ImageOps::load(const std::string &fileName, Image &image) {
 
     image.fileName = fileName;
     if (hasExtension(image.fileName, "png")) {
-        return loadPng(image) == 0;
+        return loadPng(image);
     }
     if (hasExtension(image.fileName, "jpeg") || hasExtension(image.fileName, "jpg")) {
-        return loadJpg(image) == 0;
+        return loadJpg(image);
     }
     if (hasExtension(image.fileName, "tga")) {
-        return loadTga(image) == 0;
+        return loadTga(image);
+    }
+    if (hasExtension(image.fileName, "bmp")) {
+        return loadBmp(image);
     }
 
     std::cerr << "Image: Image file type is not supported (" << fileName << ")" << std::endl;
     return false;
 }
 
-void writePng(Image &image) {
-    FILE *fp = fopen(image.fileName.c_str(), "wb");
-    if (fp == nullptr) {
-        abort();
-    }
-
-    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    if (png == nullptr) {
-        abort();
-    }
-
-    png_infop info = png_create_info_struct(png);
-    if (info == nullptr) {
-        abort();
-    }
-
-    if (setjmp(png_jmpbuf(png))) {
-        abort();
-    }
-
-    png_init_io(png, fp);
-
-    png_byte colorType = 0;
-    if (image.channels == 1) {
-        colorType = 0;
-    } else if (image.channels == 2) {
-        colorType = 4;
-    } else if (image.channels == 3) {
-        colorType = PNG_COLOR_TYPE_RGB;
-    } else if (image.channels == 4) {
-        colorType = PNG_COLOR_TYPE_RGBA;
-    } else {
-        std::cout << "Number of channels not supported (" << image.channels << ")" << std::endl;
-        return;
-    }
-
-    // Output is 8bit depth, RGBA format.
-    png_set_IHDR(                       //
-          png,                          //
-          info,                         //
-          image.width, image.height,    //
-          image.bitDepth,               //
-          colorType,                    //
-          PNG_INTERLACE_NONE,           //
-          PNG_COMPRESSION_TYPE_DEFAULT, //
-          PNG_FILTER_TYPE_DEFAULT       //
-    );
-    png_write_info(png, info);
-
-    for (long y = image.height; y >= 0; y--) {
-        auto pixels = static_cast<png_bytep>(image.pixels.data());
-        pixels += y * image.width * image.channels;
-        png_write_row(png, pixels);
-    }
-
-    png_write_end(png, nullptr);
-
-    fclose(fp);
-    png_destroy_write_struct(&png, &info);
-}
-
-void writeJpg(const Image & /*image*/) { std::cerr << "Writing JPEG files is not supported yet" << std::endl; }
-
-void ImageOps::save(Image &image) {
+bool ImageOps::save(Image &image) {
     if (hasExtension(image.fileName, "png")) {
-        writePng(image);
-        return;
+        return writePng(image);
     }
     if (hasExtension(image.fileName, "jpeg") || hasExtension(image.fileName, "jpg")) {
-        writeJpg(image);
-        return;
+        return writeJpg(image);
+    }
+    if (hasExtension(image.fileName, "bmp")) {
+        return writeBmp(image);
     }
 
     std::cerr << "Image file type is not supported (" << image.fileName << ")" << std::endl;
+    return false;
 }
 
 void ImageOps::createCheckerBoard(Image &image) {

@@ -1,10 +1,10 @@
 #include <jpeglib.h>
 
-int loadJpg(Image &image) {
+bool loadJpg(Image &image) {
     FILE *infile = fopen(image.fileName.c_str(), "rb");
     if (infile == nullptr) {
         std::cout << "File '" << image.fileName << "' could not be opened for reading" << std::endl;
-        return 1;
+        return false;
     }
 
     jpeg_decompress_struct cinfo = {};
@@ -49,5 +49,10 @@ int loadJpg(Image &image) {
     (void)jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
 
-    return 0;
+    return true;
+}
+
+bool writeJpg(const Image & /*image*/) {
+    std::cerr << "Writing JPEG files is not supported yet" << std::endl;
+    return false;
 }
