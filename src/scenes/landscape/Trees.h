@@ -39,6 +39,7 @@ class Trees {
 
     void init();
     void initComputeShader();
+    void initModel();
     void initGrid();
 
     void showGui();

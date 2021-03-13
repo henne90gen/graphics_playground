@@ -97,7 +97,7 @@ void GraphVis::doNodeDragging(const glm::vec2 &mousePos) {
     if (!input.mouse.left && draggedNode != -1) {
         draggedNode = -1;
     }
-    if (input.mouse.left && !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive()) {
+    if (input.mouse.left && !ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive()) {
         if (draggedNode == -1) {
             for (unsigned int i = 0; i < nodes.size(); i++) {
                 const auto &node = nodes[i];

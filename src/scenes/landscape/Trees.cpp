@@ -16,26 +16,7 @@ void Trees::init() {
 
     initComputeShader();
 
-#if USE_TREE_MODELS
-#if 1
-    unsigned int error =
-          Model::loadFromFile("landscape_resources/assets/models/low_poly_tree/low_poly_tree.obj", shader, treeModel);
-#else
-    unsigned int error =
-          Model::loadFromFile("landscape_resources/assets/models/MangoTree/tree_mango_var01.obj", shader, treeModel);
-#endif
-    if (error != 0) {
-        std::cout << "Failed to load tree model" << std::endl;
-        return;
-    }
-
-    for (const auto &mesh : treeModel.getRawModel().meshes) {
-        vertexCount += mesh.vertices.size();
-    }
-#else
-    cubeVA = createCubeVA(shader);
-#endif
-
+    initModel();
     initGrid();
 }
 
@@ -146,6 +127,28 @@ void Trees::renderGrid(const glm::mat4 &projectionMatrix, const glm::mat4 &viewM
         flatColorShader->setUniform("modelMatrix", modelMatrix);
         GL_Call(glDrawElements(GL_LINES, gridVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
     }
+}
+
+void Trees::initModel() {
+#if USE_TREE_MODELS
+#if 1
+    unsigned int error =
+          Model::loadFromFile("landscape_resources/assets/models/low_poly_tree/low_poly_tree.obj", shader, treeModel);
+#else
+    unsigned int error =
+          Model::loadFromFile("landscape_resources/assets/models/MangoTree/tree_mango_var01.obj", shader, treeModel);
+#endif
+    if (error != 0) {
+        std::cout << "Failed to load tree model" << std::endl;
+        return;
+    }
+
+    for (const auto &mesh : treeModel.getRawModel().meshes) {
+        vertexCount += mesh.vertices.size();
+    }
+#else
+    cubeVA = createCubeVA(shader);
+#endif
 }
 
 void Trees::renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
