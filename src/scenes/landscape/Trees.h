@@ -48,7 +48,7 @@ class Trees {
                 const TerrainParams &terrainParams);
     void renderComputeShader(const TerrainParams &terrainParams);
     void renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                          const ShaderToggles &shaderToggles, const TerrainParams &terrainParams);
+                          const ShaderToggles &shaderToggles);
     void renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                      const TerrainParams &terrainParams);
     void renderGrid(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);

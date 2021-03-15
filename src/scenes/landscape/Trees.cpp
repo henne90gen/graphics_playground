@@ -36,8 +36,11 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
     // TODO(henne): compute shader execution can be moved into init
     renderComputeShader(terrainParams);
 
-    renderTreeModels(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+#if USE_TREE_MODELS
+    renderTreeModels(projectionMatrix, viewMatrix, shaderToggles);
+#else
     renderCubes(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+#endif
 
     renderGrid(projectionMatrix, viewMatrix);
 }
@@ -152,7 +155,7 @@ void Trees::initModel() {
 }
 
 void Trees::renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                             const ShaderToggles &shaderToggles, const TerrainParams &terrainParams) {
+                             const ShaderToggles &shaderToggles) {
 #if USE_TREE_MODELS
     if (!treeModel.isLoaded()) {
         return;
