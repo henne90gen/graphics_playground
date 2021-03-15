@@ -84,10 +84,20 @@ void main() {
     if (useAtmosphericScattering) {
         vec3 extinction;
         vec3 inScatter;
-        float lightPower = 200;
-        calcScattering(cameraPosition, FragPos, -light.FragmentToLightDir, light.Color, lightPower, atmosphere, extinction, inScatter);
-        lighting *= vec4(extinction, 1.0F);
-        lighting += vec4(inScatter, 1.0F);
+        float lightPower = 1000;
+        //calcScattering(cameraPosition, FragPos, -light.FragmentToLightDir, light.Color, lightPower, atmosphere, extinction, inScatter);
+        //lighting *= vec4(extinction, 1.0F);
+        //lighting += vec4(inScatter, 1.0F);
+
+        vec3 cameraDir = FragPos - cameraPosition;
+        lighting.xyz = calculate_scattering(
+        cameraPosition,
+        normalize(cameraDir),
+        length(cameraDir),
+        lighting.xyz,
+        -light.FragmentToLightDir,
+        vec3(lightPower)
+        );
     }
 
     if (useACESFilm) {
