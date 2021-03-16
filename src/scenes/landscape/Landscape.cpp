@@ -28,15 +28,15 @@ DEFINE_FRAGMENT_SHADER(landscape_SSAOBlur)
 float lerp(float a, float b, float f) { return a + f * (b - a); }
 
 void Landscape::setup() {
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
 
     getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
     playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
 
-    textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
-
     flatShader = CREATE_DEFAULT_SHADER(landscape_FlatColor);
-    flatShader->attachShaderLib(SHADER_CODE(landscape_NoiseLib));
+    textureShader = CREATE_DEFAULT_SHADER(landscape_Texture);
 
     lightingShader = createDefaultShader(SHADER_CODE(landscape_ScreenQuadVert), SHADER_CODE(landscape_LightingFrag));
     lightingShader->attachShaderLib(SHADER_CODE(landscape_ScatterLib));
@@ -63,8 +63,27 @@ void Landscape::tick() {
     static auto usePlayerPosition = false;
     static auto shaderToggles = ShaderToggles();
     static auto light = Light();
+    static auto dayTime = 0.0F;
+    static auto animateDayTime = false;
+    static auto dayDir = 1.0F;
+    if (animateDayTime) {
+        dayTime += 0.0005F * dayDir;
+        if (dayTime > 1.0F || dayTime < 0.0F) {
+            dayDir *= -1.0F;
+        }
+    }
+
+    float angle = (dayTime * 0.7F * glm::two_pi<float>()) - 0.1F * glm::two_pi<float>();
+    light.fragmentToLightDir = glm::vec3(std::cos(angle), std::sin(angle), 0.0F);
 
     ImGui::Begin("Settings");
+    ImGui::SliderFloat("Day Time", &dayTime, 0.0F, 1.0F);
+    ImGui::SameLine();
+    ImGui::Checkbox("", &animateDayTime);
+    auto cameraPosition = getCamera().getPosition();
+    auto cameraDirection = getCamera().getForwardDirection();
+    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
+    ImGui::DragFloat3("Camera Direction", reinterpret_cast<float *>(&cameraDirection));
     if (ImGui::Button("Show Terrain")) {
         thingToRender = 0;
     }
@@ -84,7 +103,9 @@ void Landscape::tick() {
         trees.showGui();
         ImGui::Separator();
         if (ImGui::TreeNode("Light Properties")) {
-            ImGui::DragFloat3("Light Position/Direction", reinterpret_cast<float *>(&light.fragmentToLightDir));
+            ImGui::DragFloat3("Light Direction", reinterpret_cast<float *>(&light.fragmentToLightDir));
+            ImGui::DragFloat("Light Distance", &light.distance);
+            ImGui::DragFloat("Light Scale", &light.scale);
             ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&light.color));
             ImGui::DragFloat("Light Ambient Power", &light.ambient, 0.01F);
             ImGui::DragFloat("Light Diffuse Power", &light.diffuse, 0.01F);
@@ -128,6 +149,7 @@ void Landscape::tick() {
         renderSSAO();
         renderSSAOBlur();
         renderGBufferToQuad(camera, light, shaderToggles);
+//        renderSky();
         break;
     case 1:
         renderTextureViewer();
@@ -145,21 +167,18 @@ void Landscape::tick() {
 
 void Landscape::renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles) {
     glEnable(GL_BLEND);
-
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
-    GL_Call(glClearColor(1.0, 0.0, 1.0, 1.0));
+    GL_Call(glClearColor(0.0, 0.0, 0.0, 1.0));
+    //    GL_Call(glClearColor(1.0, 1.0, 1.0, 1.0));
+    //    GL_Call(glClearColor(0.529F, 0.808F, 0.922F, 1.0));
     GL_Call(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), light.fragmentToLightDir,
-                   light.fragmentToLightDir, light.color, shaderToggles);
+    renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), light);
 
-    renderLight(camera.getProjectionMatrix(), camera.getViewMatrix(), light.fragmentToLightDir, light.color);
-
+    terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles);
     trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
 
-    static float animationTime = 0.0F;
-    animationTime += static_cast<float>(getLastFrameTime());
-    sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
+    renderSky();
 }
 
 void Landscape::renderSSAO() {
@@ -243,9 +262,9 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
     lightingShader->setUniform("light.Diffuse", light.diffuse);
     lightingShader->setUniform("light.Specular", light.specular);
 
-    glm::mat4 viewModel = inverse(camera.getViewMatrix());
-    glm::vec3 cameraPosition(viewModel[3] / viewModel[3][3]); // Might have to divide by w if you can't assume w == 1
-    lightingShader->setUniform("cameraPosition", cameraPosition);
+    lightingShader->setUniform("cameraPosition", camera.getPosition());
+    lightingShader->setUniform("cameraDir", camera.getForwardDirection());
+    lightingShader->setUniform("aspectRatio", getAspectRatio());
     lightingShader->setUniform("atmosphere", atmosphere);
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
@@ -294,20 +313,20 @@ void Landscape::renderGBufferViewer() {
     GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                            const glm::vec3 &lightPosition, const glm::vec3 &lightColor) {
-#if 0
+void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const Light &light) {
     cubeVA->bind();
     flatShader->bind();
     cubeVA->setShader(flatShader);
     glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::translate(modelMatrix, lightPosition);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(light.scale));
+    modelMatrix = glm::translate(modelMatrix, normalize(light.fragmentToLightDir) * light.distance);
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
     flatShader->setUniform("modelMatrix", modelMatrix);
+    flatShader->setUniform("normalMatrix", normalMatrix);
     flatShader->setUniform("viewMatrix", viewMatrix);
     flatShader->setUniform("projectionMatrix", projectionMatrix);
-    flatShader->setUniform("flatColor", lightColor);
+    flatShader->setUniform("flatColor", light.color);
     GL_Call(glDrawElements(GL_TRIANGLES, cubeVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
-#endif
 }
 
 void Landscape::renderTextureViewer() {
@@ -514,4 +533,11 @@ void Landscape::onAspectRatioChange() {
     // update SSAO color blur buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoColorBlurBuffer));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
+}
+
+void Landscape::renderSky() {
+    static float animationTime = 0.0F;
+    animationTime += static_cast<float>(getLastFrameTime());
+    Camera &camera = getCamera();
+    sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
 }

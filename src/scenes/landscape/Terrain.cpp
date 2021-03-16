@@ -31,8 +31,7 @@ void Terrain::showGui() {
     ImGui::DragFloat("UV scale", &uvScaleFactor, 0.1F);
 }
 
-void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
-                     const glm::vec3 &sunDirection, const glm::vec3 &lightColor, const ShaderToggles &shaderToggles) {
+void Terrain::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles) {
     terrainShader->bind();
     terrainVA->bind();
 

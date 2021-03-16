@@ -25,6 +25,9 @@ struct Light {
 uniform Light light;
 
 uniform vec3 cameraPosition;
+uniform vec3 cameraDir;
+uniform float aspectRatio;
+uniform mat4 viewMatrix;
 uniform vec3 atmosphere;
 
 uniform float exposure = 1.0F;
@@ -51,22 +54,7 @@ vec4 ACESFilm(vec4 x) {
     return clamp((x*(tA*x+tB))/(x*(tC*x+tD)+tE), 0.0, 1.0);
 }
 
-void main() {
-    vec3 FragPos = texture(gPosition, TexCoords).rgb;
-    vec3 Normal = texture(gNormal, TexCoords).rgb;
-    vec4 Diffuse = texture(gAlbedo, TexCoords);
-
-    // TODO turn on lighting for the sky as well
-    if (texture(gDoLighting, TexCoords).r == 0.0F) {
-        color = vec4(Diffuse.xyz, 1.0F);
-        return;
-    }
-
-    float AmbientOcclusion = 1.0F;
-    if (useAmbientOcclusion) {
-        AmbientOcclusion = texture(ssao, TexCoords).r;
-    }
-
+vec4 calculateLight(vec3 FragPos, vec3 Normal, Light light, vec4 Diffuse, float AmbientOcclusion) {
     vec4 ambient = vec4(vec4(light.Ambient * light.Color, 1.0F) * Diffuse * AmbientOcclusion);
     vec3 viewDir = normalize(-FragPos);// viewpos is (0.0.0)
     vec3 fragmentToLightDir = normalize(light.FragmentToLightDir);
@@ -79,25 +67,76 @@ void main() {
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 2.0);
     vec3 specular = light.Specular * light.Color * spec;
 
-    vec4 lighting = ambient + diffuse + vec4(specular, 1.0F);
+    return ambient + diffuse + vec4(specular, 1.0F);
+}
+
+void main() {
+    vec3 FragPos = texture(gPosition, TexCoords).rgb;
+    vec3 Normal = texture(gNormal, TexCoords).rgb;
+    vec4 Diffuse = texture(gAlbedo, TexCoords);
+
+    if (FragPos.x == 0.0 && FragPos.y == 0.0 && FragPos.z == 0.0) {
+        // position of the background, set this to something very far away
+        vec2 uv = TexCoords - vec2(0.5);
+        uv.x *= aspectRatio;
+        FragPos = normalize(vec3(uv, -1.0)) * 1e10;
+    }
+
+    bool cloudLighting = texture(gDoLighting, TexCoords).r == 1.0F;
+    //    if (cloudLighting) {
+    //        color = vec4(1.0, 0.0, 0.0, 1.0);
+    //        return;
+    //    }
+
+    float AmbientOcclusion = 1.0F;
+    if (useAmbientOcclusion) {
+        AmbientOcclusion = texture(ssao, TexCoords).r;
+    }
+
+    vec4 lighting = calculateLight(FragPos, Normal, light, Diffuse, AmbientOcclusion);
 
     if (useAtmosphericScattering) {
-        vec3 extinction;
-        vec3 inScatter;
-        float lightPower = 1000;
-        //calcScattering(cameraPosition, FragPos, -light.FragmentToLightDir, light.Color, lightPower, atmosphere, extinction, inScatter);
-        //lighting *= vec4(extinction, 1.0F);
-        //lighting += vec4(inScatter, 1.0F);
+        #if 1
+        if (cloudLighting) {
+            vec2 uv = TexCoords - vec2(0.5);
+            uv.x *= aspectRatio;
+            FragPos = normalize(vec3(uv, -1.0)) * 1e10;
+            vec4 prevLight = lighting;
 
-        vec3 cameraDir = FragPos - cameraPosition;
+            float lightPower = 50.0;
+            lighting = calcScattering(
+            cameraPosition,
+            FragPos,
+            normalize(-light.FragmentToLightDir),
+            light.Color,
+            lightPower,
+            atmosphere,
+            lighting);
+
+            lighting = mix(lighting, prevLight, 0.3);
+        } else {
+            float lightPower = 50.0;
+            lighting = calcScattering(
+            cameraPosition,
+            FragPos,
+            normalize(-light.FragmentToLightDir),
+            light.Color,
+            lightPower,
+            atmosphere,
+            lighting);
+        }
+            #else
+        float lightPower = 100.0;
+        float distance = length(FragPos - cameraPosition);
         lighting.xyz = calculate_scattering(
         cameraPosition,
         normalize(cameraDir),
-        length(cameraDir),
+        distance,
         lighting.xyz,
-        -light.FragmentToLightDir,
+        normalize(light.FragmentToLightDir),
         vec3(lightPower)
         );
+        #endif
     }
 
     if (useACESFilm) {
@@ -111,4 +150,8 @@ void main() {
     lighting = pow(mapped, vec4(1.0 / gamma));
 
     color = lighting;
+
+    //    color = vec4(FragPos, 1.0);
+    //    vec3 cameraDir = FragPos - cameraPosition;
+    //    color = vec4(length(cameraDir) / 1000, 0.0, 0.0, 1.0);
 }

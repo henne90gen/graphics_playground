@@ -347,5 +347,4 @@ void main() {
     gPosition = vec4(model_position, 1.0F);
     gNormal = vec4(normalize(normalMatrix * normal_frag_in), 1.0F);
     gAlbedoSpec = vec4(getSurfaceColor(normalized_height), 1.0F);
-    gDoLighting = vec4(1.0F);
 }

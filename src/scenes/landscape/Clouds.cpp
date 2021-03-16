@@ -1,28 +1,34 @@
-#include "Sky.h"
+#include "Clouds.h"
 
 #include <imgui.h>
 
 #include <util/RenderUtils.h>
 
 DEFINE_DEFAULT_SHADERS(landscape_Sky)
+DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 
-void Sky::init() {
+void Clouds::init() {
     shader = CREATE_DEFAULT_SHADER(landscape_Sky);
     quadVA = createQuadVA(shader);
 }
 
-void Sky::showGui() {
-    ImGui::Checkbox("Sky Enabled", &skyEnabled);
-    ImGui::DragFloat3("Sky Position", reinterpret_cast<float *>(&skyPosition));
-    ImGui::DragFloat3("Sky Rotation", reinterpret_cast<float *>(&skyRotation));
-    ImGui::DragFloat3("Sky Scale", reinterpret_cast<float *>(&skyScale));
-    ImGui::ColorEdit3("Sky Color", reinterpret_cast<float *>(&skyColor));
+void Clouds::showGui() {
+    ImGui::Checkbox("Clouds Enabled", &cloudsEnabled);
+    ImGui::DragFloat3("Clouds Position", reinterpret_cast<float *>(&skyPosition));
+    ImGui::DragFloat3("Clouds Rotation", reinterpret_cast<float *>(&skyRotation));
+    ImGui::DragFloat3("Clouds Scale", reinterpret_cast<float *>(&skyScale));
+    ImGui::ColorEdit3("Clouds Color", reinterpret_cast<float *>(&skyColor));
     ImGui::DragFloat("Animation Speed Clouds", &animationSpeed, 0.001F);
     ImGui::DragFloat("Cloud Blend", &cloudBlend, 0.001F);
 }
 
-void Sky::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime) {
-    if (!skyEnabled) {
+void Clouds::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime) {
+    //    renderSkyBox(projectionMatrix, viewMatrix);
+    renderClouds(projectionMatrix, viewMatrix, animationTime);
+}
+
+void Clouds::renderClouds(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime) {
+    if (!cloudsEnabled) {
         return;
     }
 
