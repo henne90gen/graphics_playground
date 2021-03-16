@@ -6,18 +6,18 @@ in vec2 uv_frag_in;
 
 uniform sampler2D textureSampler;
 
-layout (location = 0) out vec4 gPosition;
-layout (location = 1) out vec4 gNormal;
-layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 5) out vec4 gDoLighting;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec3 gAlbedoSpec;
+layout (location = 5) out vec3 gDoLighting;
 
 void main() {
-    vec4 color = texture(textureSampler, uv_frag_in);
+    vec3 color = texture(textureSampler, uv_frag_in).rgb;
 
     // make trees brighter
-    color.xyz *= 3.0F;
+    color *= 3.0F;
 
-    gPosition = vec4(position_frag_in, 1.0F);
-    gNormal = vec4(normalize(normal_frag_in), 1.0F);
+    gPosition = position_frag_in;
+    gNormal = normalize(normal_frag_in);
     gAlbedoSpec = color;
 }

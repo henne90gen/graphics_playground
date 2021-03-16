@@ -28,10 +28,6 @@ DEFINE_FRAGMENT_SHADER(landscape_SSAOBlur)
 float lerp(float a, float b, float f) { return a + f * (b - a); }
 
 void Landscape::setup() {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //    glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
-
     getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
     playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
 
@@ -63,7 +59,7 @@ void Landscape::tick() {
     static auto usePlayerPosition = false;
     static auto shaderToggles = ShaderToggles();
     static auto light = Light();
-    static auto dayTime = 0.0F;
+    static auto dayTime = 0.4F;
     static auto animateDayTime = false;
     static auto dayDir = 1.0F;
     if (animateDayTime) {
@@ -82,8 +78,10 @@ void Landscape::tick() {
     ImGui::Checkbox("", &animateDayTime);
     auto cameraPosition = getCamera().getPosition();
     auto cameraDirection = getCamera().getForwardDirection();
+    auto tmp = glm::vec2(getCamera().getPitch(), getCamera().getYaw());
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
     ImGui::DragFloat3("Camera Direction", reinterpret_cast<float *>(&cameraDirection));
+    ImGui::DragFloat2("Pitch | Yaw", reinterpret_cast<float *>(&tmp));
     if (ImGui::Button("Show Terrain")) {
         thingToRender = 0;
     }
@@ -165,7 +163,6 @@ void Landscape::tick() {
 }
 
 void Landscape::renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles) {
-    glEnable(GL_BLEND);
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
     GL_Call(glClearColor(0.0, 0.0, 0.0, 1.0));
     //    GL_Call(glClearColor(1.0, 1.0, 1.0, 1.0));
@@ -263,6 +260,9 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
 
     lightingShader->setUniform("cameraPosition", camera.getPosition());
     lightingShader->setUniform("cameraDir", camera.getForwardDirection());
+    lightingShader->setUniform("pitch", camera.getPitch());
+    lightingShader->setUniform("yaw", camera.getYaw());
+    lightingShader->setUniform("cameraOrientation", camera.getOrientation());
     lightingShader->setUniform("aspectRatio", getAspectRatio());
     lightingShader->setUniform("atmosphere", atmosphere);
 
@@ -285,11 +285,11 @@ void Landscape::renderGBufferToQuad(const Camera &camera, const Light &light, co
 void Landscape::renderGBufferViewer() {
     glDisable(GL_BLEND);
     static auto currentTextureIdIndex = 0;
-    std::array<unsigned int, 8> textureIds = {
+    std::array<unsigned int, 6> textureIds = {
           gPosition, gNormal, gAlbedo, gDoLighting, ssaoColorBuffer, ssaoColorBlurBuffer,
     };
-    std::array<const char *, 8> textureIdLabels = {
-          "Position", "Normal", "Albedo", "Do Lighting", "SSAO", "SSAO Blur",
+    std::array<const char *, 6> textureIdLabels = {
+          "Position", "Normal", "Albedo", "Is Cloud", "SSAO", "SSAO Blur",
     };
     ImGui::Begin("Settings");
     ImGui::Combo("Selected Buffer", &currentTextureIdIndex, reinterpret_cast<const char *const *>(&textureIdLabels[0]),
@@ -402,7 +402,7 @@ void Landscape::initGBuffer() {
     // create color buffer
     GL_Call(glGenTextures(1, &gAlbedo));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0));
@@ -511,11 +511,11 @@ void Landscape::onAspectRatioChange() {
 
     // update normal buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
 
     // update color buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
 
     // update do-lighting buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gDoLighting));

@@ -22,7 +22,8 @@ void Camera::updateView() {
     position = getPosition();
 
     glm::quat orientation = getOrientation();
-    viewMatrix = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(orientation);
+    viewMatrix = glm::translate(glm::identity<glm::mat4>(), position);
+    viewMatrix *= glm::toMat4(orientation);
     viewMatrix = glm::inverse(viewMatrix);
 }
 
@@ -30,7 +31,7 @@ glm::vec2 Camera::panSpeed() const {
     float x = std::min(viewportWidth / 1000.0F, 2.4F); // max = 2.4f
     float xFactor = 0.0366F * (x * x) - 0.1778F * x + 0.3021F;
 
-    float y = std::min(viewportHeight / 1000.0F, 2.4f); // max = 2.4f
+    float y = std::min(viewportHeight / 1000.0F, 2.4F); // max = 2.4f
     float yFactor = 0.0366F * (y * y) - 0.1778F * y + 0.3021F;
 
     return glm::vec2(xFactor, yFactor);
@@ -99,12 +100,12 @@ void Camera::setViewportSize(float width, float height) {
     updateProjection();
 }
 
-glm::vec3 Camera::getUpDirection() const { return glm::rotate(getOrientation(), glm::vec3(0.0f, 1.0f, 0.0f)); }
+glm::vec3 Camera::getUpDirection() const { return glm::rotate(getOrientation(), glm::vec3(0.0F, 1.0F, 0.0F)); }
 
-glm::vec3 Camera::getRightDirection() const { return glm::rotate(getOrientation(), glm::vec3(1.0f, 0.0f, 0.0f)); }
+glm::vec3 Camera::getRightDirection() const { return glm::rotate(getOrientation(), glm::vec3(1.0F, 0.0F, 0.0F)); }
 
-glm::vec3 Camera::getForwardDirection() const { return glm::rotate(getOrientation(), glm::vec3(0.0f, 0.0f, -1.0f)); }
+glm::vec3 Camera::getForwardDirection() const { return glm::rotate(getOrientation(), glm::vec3(0.0F, 0.0F, -1.0F)); }
 
 glm::vec3 Camera::getPosition() const { return focalPoint - getForwardDirection() * distance; }
 
-glm::quat Camera::getOrientation() const { return glm::quat(glm::vec3(-pitch, -yaw, 0.0f)); }
+glm::quat Camera::getOrientation() const { return glm::quat(glm::vec3(-pitch, -yaw, 0.0F)); }

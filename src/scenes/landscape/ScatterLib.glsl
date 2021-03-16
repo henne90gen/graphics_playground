@@ -38,24 +38,30 @@ vec4 color) {
     return color * vec4(extinction, 1.0F) + vec4(inScatter, 1.0F);
 }
 
+vec3 rotate_vector(vec4 quat, vec3 vec) {
+    return vec + 2.0 * cross(cross(vec, quat.xyz) + quat.w * vec, quat.xyz);
+}
+
 // https://www.shadertoy.com/view/wlBXWK
 vec3 calculate_scattering(
 vec3 start, // the start of the ray (the camera position)
 vec3 dir, // the direction of the ray (the camera vector)
 float max_dist, // the maximum distance the ray can travel (because something is in the way, like an object)
 
+vec4 cameraOrientation, // HACK we are using the camera orientation to position the planet correctly, since the given start position and direction are in camera space
+
 vec3 scene_color, // the color of the scene
 vec3 light_dir, // the direction of the light
-vec3 light_intensity // how bright the light is, affects the brightness of the atmosphere
+vec3 light_intensity// how bright the light is, affects the brightness of the atmosphere
 ) {
-    float planet_radius = 6371e3; // the radius of the planet
-    float atmo_radius = 6471e3; // the radius of the atmosphere
-    vec3 planet_position = vec3(0.0, -(planet_radius+10), 0.0); // the position of the planet
+    float planet_radius = 371e3;// the radius of the planet (used to be 6371e3)
+    float atmo_radius = 471e3;// the radius of the atmosphere (used to be 6471e3)
+    vec3 planet_position = vec3(0.0, -(planet_radius+10), 0.0);// the position of the planet
 
-    vec3 beta_ray = vec3(5.5e-6, 13.0e-6, 22.4e-6); // the amount rayleigh scattering scatters the colors (for earth: causes the blue atmosphere)
-    vec3 beta_mie = vec3(21e-6); // the amount mie scattering scatters colors
-    vec3 beta_absorption = vec3(2.04e-5, 4.97e-5, 1.95e-6); // how much air is absorbed
-    vec3 beta_ambient = vec3(0.0); // the amount of scattering that always occurs, can help make the back side of the atmosphere a bit brighter
+    vec3 beta_ray = vec3(5.5e-6, 13.0e-6, 22.4e-6);// the amount rayleigh scattering scatters the colors (for earth: causes the blue atmosphere)
+    vec3 beta_mie = vec3(21e-6);// the amount mie scattering scatters colors
+    vec3 beta_absorption = vec3(2.04e-5, 4.97e-5, 1.95e-6);// how much air is absorbed
+    vec3 beta_ambient = vec3(0.0);// the amount of scattering that always occurs, can help make the back side of the atmosphere a bit brighter
     float g = 0.7;// the direction mie scatters the light in (like a cone). closer to -1 means more towards a single direction
 
     float height_ray = 8e3;// how high do you have to go before there is no rayleigh scattering?
@@ -65,6 +71,9 @@ vec3 light_intensity // how bright the light is, affects the brightness of the a
 
     int steps_primary = 64;// the amount of steps along the 'primary' ray, more looks better but slower
     int steps_light = 4;// the amount of steps along the light ray, more looks better but slower
+
+
+    planet_position = rotate_vector(cameraOrientation, planet_position);
 
     // add an offset to the camera position, so that the atmosphere is in the correct position
     start -= planet_position;

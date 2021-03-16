@@ -71,31 +71,27 @@ class Shader {
 
     void compile();
 
-    void setUniform(const std::string &name, float f) { GL_Call(glUniform1f(getUniformLocation(name), f)); }
-
-    void setUniform(const std::string &name, int i) { GL_Call(glUniform1i(getUniformLocation(name), i)); }
-
     void setUniform(const std::string &name, const std::shared_ptr<Texture> &texture, const GLuint slot) {
         GL_Call(glActiveTexture(slot));
         texture->bind();
         setUniform(name, static_cast<int>(slot - 0x84C0));
     }
-
-    void setUniform(const std::string &name, bool b) { setUniform(name, (int)b); }
-
-    void setUniform(const std::string &name, glm::vec3 v) {
+    void setUniform(const std::string &name, float f) { GL_Call(glUniform1f(getUniformLocation(name), f)); }
+    void setUniform(const std::string &name, int i) { GL_Call(glUniform1i(getUniformLocation(name), i)); }
+    void setUniform(const std::string &name, bool b) { setUniform(name, static_cast<int>(b)); }
+    void setUniform(const std::string &name, const glm::vec3 &v) {
         GL_Call(glUniform3f(getUniformLocation(name), v.x, v.y, v.z));
     }
-
-    void setUniform(const std::string &name, glm::vec4 v) {
+    void setUniform(const std::string &name, const glm::vec4 &v) {
         GL_Call(glUniform4f(getUniformLocation(name), v.x, v.y, v.z, v.w));
     }
-
-    void setUniform(const std::string &name, glm::mat4 m) {
+    void setUniform(const std::string &name, const glm::quat &q) {
+        GL_Call(glUniform4f(getUniformLocation(name), q.x, q.y, q.z, q.w));
+    }
+    void setUniform(const std::string &name, const glm::mat4 &m) {
         GL_Call(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, (float *)&m));
     }
-
-    void setUniform(const std::string &name, glm::mat3 m) {
+    void setUniform(const std::string &name, const glm::mat3 &m) {
         GL_Call(glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, (float *)&m));
     }
 

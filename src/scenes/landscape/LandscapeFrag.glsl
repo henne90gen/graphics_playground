@@ -26,10 +26,10 @@ in vec3 bitangent_frag_in;
 in vec3 model_position;
 in float normalized_height;
 
-layout (location = 0) out vec4 gPosition;
-layout (location = 1) out vec4 gNormal;
-layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 3) out vec4 gDoLighting;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec3 gAlbedoSpec;
+layout (location = 3) out vec3 gDoLighting;
 
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -344,7 +344,7 @@ vec4 debugColors(vec3 normal, vec3 tangent, vec3 bitangent) {
 }
 
 void main() {
-    gPosition = vec4(model_position, 1.0F);
-    gNormal = vec4(normalize(normalMatrix * normal_frag_in), 1.0F);
-    gAlbedoSpec = vec4(getSurfaceColor(normalized_height), 1.0F);
+    gPosition = model_position;
+    gNormal = normalize(normalMatrix * normal_frag_in);
+    gAlbedoSpec = getSurfaceColor(normalized_height);
 }
