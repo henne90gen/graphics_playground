@@ -76,6 +76,7 @@ class Landscape : public Scene {
 
     void renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
     void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const Light &light);
+    void renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
     void renderSSAO();
     void renderSSAOBlur();
     void renderGBufferToQuad(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
@@ -88,5 +89,4 @@ class Landscape : public Scene {
     void initSSAOBuffer();
     void initSSAOBlurBuffer();
     void initKernelAndNoiseTexture();
-    void renderSky();
 };
