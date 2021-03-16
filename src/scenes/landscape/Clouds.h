@@ -5,11 +5,11 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-class Sky {
+class Clouds {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> quadVA;
 
-    bool skyEnabled = true;
+    bool cloudsEnabled = true;
     glm::vec3 skyPosition = glm::vec3(0.0F, 200.0F, 0.0F);
     glm::vec3 skyRotation = glm::vec3(glm::pi<float>() / 2.0F, 0.0F, 0.0F);
     glm::vec3 skyScale = glm::vec3(2000.0F, 2000.0F, 1.0F);
@@ -21,4 +21,5 @@ class Sky {
     void init();
     void showGui();
     void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime);
+    void renderClouds(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, float animationTime);
 };

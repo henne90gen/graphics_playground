@@ -15,15 +15,15 @@ const float _g = 0.76F;
 
 // http://developer.amd.com/wordpress/media/2012/10/GDC_02_HoffmanPreetham.pdf
 // https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/simulating-sky/simulating-colors-of-the-sky
-void calcScattering(vec3 cameraPosition, vec3 modelPosition, vec3 lightDirection, vec3 lightColor, float lightPower, vec3 atmosphere,
-out vec3 extinction, out vec3 inScatter) {
+vec4 calcScattering(vec3 cameraPosition, vec3 modelPosition, vec3 lightDirection, vec3 lightColor, float lightPower, vec3 atmosphere,
+vec4 color) {
     vec3 bR = _bR * atmosphere.x;
     float bM = _bM * atmosphere.y;
     float g = _g * atmosphere.z;
 
     vec3 modelToCamera = cameraPosition - modelPosition;
     float s = length(modelToCamera);
-    extinction = exp(-(bR + bM) * s);
+    vec3 extinction = exp(-(bR + bM) * s);
 
     float cosTheta = dot(modelToCamera, lightDirection) / (length(modelToCamera) * length(lightDirection));
     float cR = 3 / (16*PI);
@@ -33,7 +33,9 @@ out vec3 extinction, out vec3 inScatter) {
     float bMTheta = cM * bM * (oneMinusGSq / pow(1 + g*g - 2*g*cosTheta, 3/2));
     vec3 t1 = (bRTheta + bMTheta) / (bR + bM);
     vec3 t2 = 1 - extinction;
-    inScatter = t1 * lightColor * lightPower * t2;
+    vec3 inScatter = t1 * lightColor * lightPower * t2;
+
+    return color * vec4(extinction, 1.0F) + vec4(inScatter, 1.0F);
 }
 
 // https://www.shadertoy.com/view/wlBXWK
@@ -48,7 +50,7 @@ vec3 light_intensity // how bright the light is, affects the brightness of the a
 ) {
     float planet_radius = 6371e3; // the radius of the planet
     float atmo_radius = 6471e3; // the radius of the atmosphere
-    vec3 planet_position = vec3(0.0, -planet_radius, 0.0); // the position of the planet
+    vec3 planet_position = vec3(0.0, -(planet_radius+10), 0.0); // the position of the planet
 
     vec3 beta_ray = vec3(5.5e-6, 13.0e-6, 22.4e-6); // the amount rayleigh scattering scatters the colors (for earth: causes the blue atmosphere)
     vec3 beta_mie = vec3(21e-6); // the amount mie scattering scatters colors
@@ -61,7 +63,7 @@ vec3 light_intensity // how bright the light is, affects the brightness of the a
     float height_absorption = 30e3;// the height at which the most absorption happens
     float absorption_falloff = 3e3;// how fast the absorption falls off from the absorption height
 
-    int steps_primary = 12;// the amount of steps along the 'primary' ray, more looks better but slower
+    int steps_primary = 64;// the amount of steps along the 'primary' ray, more looks better but slower
     int steps_light = 4;// the amount of steps along the light ray, more looks better but slower
 
     // add an offset to the camera position, so that the atmosphere is in the correct position

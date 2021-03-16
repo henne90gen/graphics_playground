@@ -14,15 +14,6 @@ layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
 layout (location = 3) out vec4 gDoLighting;
 
-const float cloudscale = 1.1;
-const float clouddark = 0.5;
-const float cloudlight = 0.3;
-const float cloudcover = 0.2;
-const float cloudalpha = 8.0;
-const float skytint = 0.5;
-const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
-const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
-
 const mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
 
 vec2 hash(vec2 p) {
@@ -54,7 +45,15 @@ float fbm(vec2 n) {
 }
 
 // https://www.shadertoy.com/view/4tdSWr
-vec3 cloudColor(vec2 uv_, vec3 skycolor, float iTime) {
+vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
+
+    const float cloudscale = 1.1;
+    const float clouddark = 0.5;
+    const float cloudlight = 0.3;
+    const float cloudcover = 0.2;
+    const float cloudalpha = 8.0;
+    const float skytint = 0.5;
+
     vec2 uv = uv_;
     float time = iTime * animationSpeed;
     float q = fbm(uv * cloudscale * 0.5);
@@ -97,7 +96,7 @@ vec3 cloudColor(vec2 uv_, vec3 skycolor, float iTime) {
         weight *= 0.6;
     }
 
-    // noise ridge colour
+    // noise ridge color
     float c1 = 0.0;
     time = iTime * animationSpeed * 3.0;
     uv = uv_;
@@ -112,31 +111,32 @@ vec3 cloudColor(vec2 uv_, vec3 skycolor, float iTime) {
 
     c += c1;
 
-    vec3 cloudcolor = vec3(1.1, 1.1, 0.9) * clamp((clouddark + cloudlight*c), 0.0, 1.0);
+    vec4 cloudcolor = vec4(1.1, 1.1, 0.9, 1.0) * clamp((clouddark + cloudlight*c), 0.0, 1.0);
 
     f = cloudcover + cloudalpha*f*r;
 
-    vec3 result = mix(skycolor, clamp(skytint * skycolor + cloudcolor, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
+    vec4 result = mix(skycolor, clamp(skytint * skycolor + cloudcolor, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
 
-    uv = uv_;
-    float oneMinusB = 1.0F - cloudBlend;
-    float bInv = 1.0F / cloudBlend;
-    float tRight = 1.0F - clamp((uv.x - oneMinusB) * bInv, 0.0F, 1.0F);
-    float tLeft = clamp(uv.x * bInv, 0.0F, 1.0F);
-    float tTop = 1.0F - clamp((uv.y - oneMinusB) * bInv, 0.0F, 1.0F);
-    float tBottom = clamp(uv.y * bInv, 0.0F, 1.0F);
-    float t = tRight * tLeft * tTop * tBottom;
-    result = mix(skycolor, result, t);
+    //    uv = uv_;
+//    float oneMinusB = 1.0F - cloudBlend;
+//    float bInv = 1.0F / cloudBlend;
+//    float tRight = 1.0F - clamp((uv.x - oneMinusB) * bInv, 0.0F, 1.0F);
+//    float tLeft = clamp(uv.x * bInv, 0.0F, 1.0F);
+//    float tTop = 1.0F - clamp((uv.y - oneMinusB) * bInv, 0.0F, 1.0F);
+//    float tBottom = clamp(uv.y * bInv, 0.0F, 1.0F);
+//    float t = tRight * tLeft * tTop * tBottom;
+//    result = mix(skycolor, result, t);
 
     return result;
 }
 
 void main() {
     vec2 uv = model_position_frag_in.xy + 0.5F;
-    vec3 color = cloudColor(uv, flatColor, animationTime);
+    // TODO make cloudColor use transparency instead of flatColor
+    vec4 color = cloudColor(uv, vec4(flatColor, 0.0F), animationTime);
 
     gPosition = vec4(position_frag_in, 1.0F);
     gNormal = vec4(normalize(-normal_frag_in), 1.0F);
-    gAlbedoSpec = vec4(color, 1.0F);
-    gDoLighting = vec4(0.0F, 0.0F, 0.0F, 1.0F);
+    gAlbedoSpec = color;
+    gDoLighting = vec4(1.0);
 }

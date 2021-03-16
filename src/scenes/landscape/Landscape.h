@@ -10,19 +10,22 @@
 #include <memory>
 #include <util/Camera.h>
 
+#include "Clouds.h"
 #include "Layers.h"
 #include "ShaderToggles.h"
-#include "Sky.h"
 #include "Terrain.h"
 #include "Trees.h"
 
 struct Light {
-    glm::vec3 fragmentToLightDir = glm::vec3(0.0F, 150.0F, 0.0F);
+    glm::vec3 fragmentToLightDir = glm::vec3(0.0F, 1.0F, 0.0F);
     glm::vec3 color = glm::vec3(1.0F);
 
     float ambient = 0.1F;
     float diffuse = 1.0F;
     float specular = 0.3F;
+
+    float distance = 100.0F;
+    float scale = 10.0F;
 };
 
 class Landscape : public Scene {
@@ -43,8 +46,8 @@ class Landscape : public Scene {
     std::shared_ptr<VertexArray> quadVA;
     std::shared_ptr<VertexArray> cubeVA;
 
-    std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> flatShader;
+    std::shared_ptr<Shader> textureShader;
     std::shared_ptr<Shader> lightingShader;
     std::shared_ptr<Shader> ssaoShader;
     std::shared_ptr<Shader> ssaoBlurShader;
@@ -66,24 +69,24 @@ class Landscape : public Scene {
     unsigned int ssaoNoiseTexture = 0;
 
     Camera playerCamera = {};
-    Sky sky = {};
+    Clouds sky = {};
     Trees trees = {};
     Terrain terrain = {};
     glm::vec3 atmosphere = glm::vec3(0.4F, 0.45F, 1.2F);
 
     void renderTerrain(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
-    void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const glm::vec3 &lightPosition,
-                     const glm::vec3 &lightColor);
+    void renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const Light &light);
     void renderSSAO();
     void renderSSAOBlur();
     void renderGBufferToQuad(const Camera &camera, const Light &light, const ShaderToggles &shaderToggles);
     void renderGBufferViewer();
 
     void renderTextureViewer();
-    void renderTexture(const glm::vec3 &texturePosition, float zoom, const unsigned int texture);
+    void renderTexture(const glm::vec3 &texturePosition, float zoom, unsigned int texture);
 
     void initGBuffer();
     void initSSAOBuffer();
     void initSSAOBlurBuffer();
     void initKernelAndNoiseTexture();
+    void renderSky();
 };
