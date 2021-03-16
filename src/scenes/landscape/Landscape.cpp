@@ -30,7 +30,7 @@ float lerp(float a, float b, float f) { return a + f * (b - a); }
 void Landscape::setup() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+    //    glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
 
     getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
     playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
@@ -149,7 +149,6 @@ void Landscape::tick() {
         renderSSAO();
         renderSSAOBlur();
         renderGBufferToQuad(camera, light, shaderToggles);
-//        renderSky();
         break;
     case 1:
         renderTextureViewer();
@@ -178,7 +177,7 @@ void Landscape::renderTerrain(const Camera &camera, const Light &light, const Sh
     terrain.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles);
     trees.render(camera.getProjectionMatrix(), camera.getViewMatrix(), shaderToggles, terrain.terrainParams);
 
-    renderSky();
+    renderSky(camera.getProjectionMatrix(), camera.getViewMatrix());
 }
 
 void Landscape::renderSSAO() {
@@ -535,9 +534,8 @@ void Landscape::onAspectRatioChange() {
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, nullptr));
 }
 
-void Landscape::renderSky() {
+void Landscape::renderSky(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
     static float animationTime = 0.0F;
     animationTime += static_cast<float>(getLastFrameTime());
-    Camera &camera = getCamera();
-    sky.render(camera.getProjectionMatrix(), camera.getViewMatrix(), animationTime);
+    sky.render(projectionMatrix, viewMatrix, animationTime);
 }
