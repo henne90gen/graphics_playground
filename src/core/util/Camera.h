@@ -22,13 +22,16 @@ class Camera {
     void setViewportSize(float width, float height);
     inline void setFocalPoint(const glm::vec3 &point) { focalPoint = point; }
 
-    glm::vec3 getUpDirection() const;
-    glm::vec3 getRightDirection() const;
-    glm::vec3 getForwardDirection() const;
-    glm::quat getOrientation() const;
-    glm::vec3 getPosition() const;
-    const glm::mat4 &getProjectionMatrix() const { return projectionMatrix; }
-    const glm::mat4 &getViewMatrix() const { return viewMatrix; }
+    [[nodiscard]] glm::vec3 getUpDirection() const;
+    [[nodiscard]] glm::vec3 getRightDirection() const;
+    [[nodiscard]] glm::vec3 getForwardDirection() const;
+    [[nodiscard]] glm::quat getOrientation() const;
+    [[nodiscard]] glm::vec3 getPosition() const;
+    [[nodiscard]] const glm::mat4 &getProjectionMatrix() const { return projectionMatrix; }
+    [[nodiscard]] const glm::mat4 &getViewMatrix() const { return viewMatrix; }
+
+    [[nodiscard]] float getYaw() const { return yaw; }
+    [[nodiscard]] float getPitch() const { return pitch; }
 
   private:
     void updateProjection();

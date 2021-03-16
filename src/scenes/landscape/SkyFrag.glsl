@@ -9,10 +9,10 @@ uniform float animationTime;
 uniform float animationSpeed;
 uniform float cloudBlend;
 
-layout (location = 0) out vec4 gPosition;
-layout (location = 1) out vec4 gNormal;
-layout (location = 2) out vec4 gAlbedoSpec;
-layout (location = 3) out vec4 gDoLighting;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec3 gAlbedoSpec;
+layout (location = 3) out vec3 gDoLighting;
 
 const mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
 
@@ -117,15 +117,16 @@ vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
 
     vec4 result = mix(skycolor, clamp(skytint * skycolor + cloudcolor, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
 
-    //    uv = uv_;
-//    float oneMinusB = 1.0F - cloudBlend;
-//    float bInv = 1.0F / cloudBlend;
-//    float tRight = 1.0F - clamp((uv.x - oneMinusB) * bInv, 0.0F, 1.0F);
-//    float tLeft = clamp(uv.x * bInv, 0.0F, 1.0F);
-//    float tTop = 1.0F - clamp((uv.y - oneMinusB) * bInv, 0.0F, 1.0F);
-//    float tBottom = clamp(uv.y * bInv, 0.0F, 1.0F);
-//    float t = tRight * tLeft * tTop * tBottom;
-//    result = mix(skycolor, result, t);
+    // TODO decide whether to use this or not
+    uv = uv_;
+    float oneMinusB = 1.0F - cloudBlend;
+    float bInv = 1.0F / cloudBlend;
+    float tRight = 1.0F - clamp((uv.x - oneMinusB) * bInv, 0.0F, 1.0F);
+    float tLeft = clamp(uv.x * bInv, 0.0F, 1.0F);
+    float tTop = 1.0F - clamp((uv.y - oneMinusB) * bInv, 0.0F, 1.0F);
+    float tBottom = clamp(uv.y * bInv, 0.0F, 1.0F);
+    float t = tRight * tLeft * tTop * tBottom;
+    result = mix(skycolor, result, t);
 
     return result;
 }
@@ -133,10 +134,10 @@ vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
 void main() {
     vec2 uv = model_position_frag_in.xy + 0.5F;
     // TODO make cloudColor use transparency instead of flatColor
-    vec4 color = cloudColor(uv, vec4(flatColor, 0.0F), animationTime);
+    vec3 color = cloudColor(uv, vec4(flatColor, 0.0F), animationTime).rgb;
 
-    gPosition = vec4(position_frag_in, 1.0F);
-    gNormal = vec4(normalize(-normal_frag_in), 1.0F);
+    gPosition = position_frag_in;
+    gNormal = normalize(-normal_frag_in);
     gAlbedoSpec = color;
-    gDoLighting = vec4(1.0);
+    gDoLighting = vec3(1.0);
 }
