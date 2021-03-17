@@ -97,6 +97,11 @@ bool writeBmp(const Image &image) {
 std::istream &operator>>(std::istream &is, BmpFile &f) {
     is.read(reinterpret_cast<char *>(&f.fileHeader), sizeof(f.fileHeader));
     is.read(reinterpret_cast<char *>(&f.infoHeader), sizeof(f.infoHeader));
+    int diff = f.infoHeader.size - sizeof(BmpInfoHeader);
+    if (diff > 0) {
+        is.seekg(diff, std::ios_base::cur);
+    }
+
     uint32_t pixelSize = f.fileHeader.fileSizeInBytes - f.fileHeader.pixelOffset;
     f.pixels = reinterpret_cast<uint8_t *>(std::malloc(pixelSize));
     is.read(reinterpret_cast<char *>(f.pixels), pixelSize);
