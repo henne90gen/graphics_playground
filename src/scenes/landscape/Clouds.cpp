@@ -4,11 +4,11 @@
 
 #include <util/RenderUtils.h>
 
-DEFINE_DEFAULT_SHADERS(landscape_Sky)
+DEFINE_DEFAULT_SHADERS(landscape_Clouds)
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
 
 void Clouds::init() {
-    shader = CREATE_DEFAULT_SHADER(landscape_Sky);
+    shader = CREATE_DEFAULT_SHADER(landscape_Clouds);
     quadVA = createQuadVA(shader);
 }
 
