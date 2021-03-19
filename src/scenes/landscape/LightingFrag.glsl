@@ -94,7 +94,12 @@ void main() {
         FragPos = normalize(vec3(uv, -1.0)) * 1e12;
     }
 
-    vec3 lighting = calculateLight(FragPos, Normal, light, Diffuse, AmbientOcclusion);
+    vec3 lighting = vec3(0.0);
+    if (cloudLighting) {
+        lighting = calculateLight(FragPos, Normal, light, vec3(0.0), AmbientOcclusion);
+    } else {
+        lighting = calculateLight(FragPos, Normal, light, Diffuse, AmbientOcclusion);
+    }
 
     if (useAtmosphericScattering) {
         #if USE_SIMPLE_ATMOSPHERIC_SCATTERING
@@ -131,32 +136,21 @@ void main() {
             vec2 uv = (TexCoords - vec2(0.5)) * 2.0;
             uv.x *= aspectRatio;
             FragPos = normalize(vec3(uv, -1.0)) * 1e12;
-            vec3 cloudLight = lighting;
+        }
 
-            float lightPower = 100.0;
-            vec3 cDir = FragPos;
-            float distance = length(FragPos - cameraPosition);
-            lighting.xyz = calculate_scattering(
-            vec3(0.0),
-            normalize(cDir),
-            length(cDir),
-            cameraOrientation,
-            lighting.xyz,
-            normalize(light.FragmentToLightDir),
-            vec3(lightPower));
+        float lightPower = 30.0;
+        vec3 cDir = FragPos;
+        lighting.rgb = calculate_scattering(
+        vec3(0.0),
+        normalize(cDir),
+        length(cDir),
+        cameraOrientation,
+        lighting.rgb,
+        normalize(light.FragmentToLightDir),
+        vec3(lightPower));
 
-            lighting = mix(lighting, cloudLight, 0.9);
-        } else {
-            float lightPower = 30.0;
-            vec3 cDir = FragPos;
-            lighting.xyz = calculate_scattering(
-            vec3(0.0),
-            normalize(cDir),
-            length(cDir),
-            cameraOrientation,
-            lighting.xyz,
-            normalize(light.FragmentToLightDir),
-            vec3(lightPower));
+        if (cloudLighting){
+            lighting = mix(lighting, vec3(1.0F), Diffuse.r);
         }
             #endif
     }

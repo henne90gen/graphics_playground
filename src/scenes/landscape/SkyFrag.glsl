@@ -45,7 +45,7 @@ float fbm(vec2 n) {
 }
 
 // https://www.shadertoy.com/view/4tdSWr
-vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
+float cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
 
     const float cloudscale = 1.1;
     const float clouddark = 0.5;
@@ -68,6 +68,8 @@ vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
         uv = m*uv + time;
         weight *= 0.7;
     }
+
+    //    return r;
 
     // noise shape
     float f = 0.0;
@@ -115,9 +117,6 @@ vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
 
     f = cloudcover + cloudalpha*f*r;
 
-    vec4 result = mix(skycolor, clamp(skytint * skycolor + cloudcolor, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
-
-    // TODO decide whether to use this or not
     uv = uv_;
     float oneMinusB = 1.0F - cloudBlend;
     float bInv = 1.0F / cloudBlend;
@@ -126,18 +125,18 @@ vec4 cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
     float tTop = 1.0F - clamp((uv.y - oneMinusB) * bInv, 0.0F, 1.0F);
     float tBottom = clamp(uv.y * bInv, 0.0F, 1.0F);
     float t = tRight * tLeft * tTop * tBottom;
-    result = mix(skycolor, result, t);
+    f = mix(0.0, f, t);
 
-    return result;
+    return f / 4.0F;
 }
 
 void main() {
     vec2 uv = model_position_frag_in.xy + 0.5F;
     // TODO make cloudColor use transparency instead of flatColor
-    vec3 color = cloudColor(uv, vec4(flatColor, 0.0F), animationTime).rgb;
+    float color = cloudColor(uv, vec4(flatColor, 0.0F), animationTime);
 
     gPosition = position_frag_in;
     gNormal = normalize(-normal_frag_in);
-    gAlbedoSpec = color;
+    gAlbedoSpec = vec3(color);
     gDoLighting = vec3(1.0);
 }
