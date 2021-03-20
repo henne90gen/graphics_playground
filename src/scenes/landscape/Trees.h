@@ -1,6 +1,6 @@
 #pragma once
 
-#define USE_TREE_MODELS 1
+#define USE_TREE_MODELS 0
 
 #include <Model.h>
 #include <gl/Shader.h>
@@ -27,12 +27,20 @@ class Trees {
     std::shared_ptr<VertexArray> cubeVA = nullptr;
 #endif
 
+    std::shared_ptr<VertexArray> generatedTreesVA = nullptr;
+
     int treeCount = 1024;
     float lodSize = 1000.0F;
     float lodInnerSize = 100.0F;
+    float treeScale = 1.0F;
 
     std::shared_ptr<VertexArray> gridVA = nullptr;
     float gridHeight = 120.0F;
+
+    // TODO add these to toggles to the UI
+    bool showTrees = true;
+    bool showGrid = false;
+    bool usingGeneratedTrees = true;
 
   public:
     [[nodiscard]] unsigned int getTreePositionTextureId() const { return treePositionTextureId; }
@@ -44,6 +52,8 @@ class Trees {
 
     void showGui();
 
+    void generateTrees();
+
     void render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                 const TerrainParams &terrainParams);
     void renderComputeShader(const TerrainParams &terrainParams);
@@ -52,4 +62,6 @@ class Trees {
     void renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                      const TerrainParams &terrainParams);
     void renderGrid(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
+    void renderGeneratedTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
+                              const ShaderToggles &shaderToggles, const TerrainParams &terrainParams);
 };

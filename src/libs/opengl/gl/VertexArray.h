@@ -9,10 +9,11 @@ class VertexArray {
     explicit VertexArray(std::shared_ptr<Shader> s);
     ~VertexArray();
 
-    [[nodiscard]] std::shared_ptr<IndexBuffer> getIndexBuffer() const { return indexBuffer; }
+    [[nodiscard]] std::shared_ptr<IndexBuffer> &getIndexBuffer()  { return indexBuffer; }
     void setIndexBuffer(const std::shared_ptr<IndexBuffer> &buffer);
 
     void addVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer);
+    std::vector<std::shared_ptr<VertexBuffer>> &getVertexBuffers() { return vertexBuffers; }
 
     void bind() const;
     static void unbind();

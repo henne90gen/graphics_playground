@@ -14,15 +14,13 @@ class IndexBuffer {
     ~IndexBuffer();
 
     void bind() const;
-
     static void unbind();
 
+    [[nodiscard]] unsigned int getGLID() const { return id; }
     [[nodiscard]] unsigned int getCount() const { return count; }
 
     void update(const unsigned int *data, unsigned int count);
-
     void update(const std::vector<unsigned int> &data);
-
     void update(const std::vector<glm::ivec3> &data);
 
   private:

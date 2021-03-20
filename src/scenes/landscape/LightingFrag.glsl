@@ -60,7 +60,7 @@ vec4 ACESFilm(vec4 x) {
 }
 
 vec3 calculateLight(vec3 FragPos, vec3 Normal, Light light, vec3 Diffuse, float AmbientOcclusion) {
-    // TODO this produces artifacts if the light comes from behind the FragPos
+    // TODO this produces a shine through artifact, when the light comes from behind the fragment
 
     vec3 ambient = light.Ambient * light.Color * Diffuse * AmbientOcclusion;
     vec3 viewDir = normalize(-FragPos);// camera is at vec3(0,0,0)
