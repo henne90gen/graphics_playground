@@ -268,11 +268,9 @@ void Trees::generateTrees() {
     std::vector<glm::vec3> positions = {};
     std::vector<glm::vec3> normals = {};
     std::vector<glm::ivec3> indices = {};
-    auto *root = new Branch({0.6, 0.45, 2.5});
-    for (int i = 0; i < 100; i++) {
-        root->grow(growthrate);
-    }
-    constructTree(root, positions, normals, indices);
+    TreeSettings settings = {};
+    Tree *tree = Tree::create(settings);
+    tree->construct(positions, normals, indices);
 
     std::vector<float> vertexData = {};
     for (int i = 0; i < positions.size(); i++) {
@@ -287,7 +285,6 @@ void Trees::generateTrees() {
     BufferLayout layout = {
           {ShaderDataType::Float3, "a_Position"},
           {ShaderDataType::Float3, "a_Normal"},
-//          {ShaderDataType::Float2, "a_UV"},
     };
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertexData, layout);
     generatedTreesVA->addVertexBuffer(vertexBuffer);
