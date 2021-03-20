@@ -26,10 +26,6 @@ struct Light {
 };
 uniform Light light;
 
-uniform vec3 cameraPosition;
-uniform vec3 cameraDir;
-uniform float yaw;
-uniform float pitch;
 uniform vec4 cameraOrientation;
 uniform float aspectRatio;
 uniform mat4 viewMatrix;
@@ -142,6 +138,7 @@ void main() {
 
         float lightPower = 30.0;
         vec3 cDir = FragPos;
+        // TODO use atmosphere settings for this scattering function as well
         lighting.rgb = calculate_scattering(
         vec3(0.0),
         normalize(cDir),
