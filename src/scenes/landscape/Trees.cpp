@@ -1,7 +1,10 @@
 #include "Trees.h"
 
 #include <imgui.h>
+#include <random>
 #include <util/RenderUtils.h>
+
+#include "Branch.h"
 
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
@@ -25,6 +28,7 @@ void Trees::showGui() {
     ImGui::DragFloat("LOD Size", &lodSize);
     ImGui::DragFloat("LOD Inner Size", &lodInnerSize);
     ImGui::DragFloat("Grid Height", &gridHeight);
+    ImGui::DragFloat("Tree Scale", &treeScale);
 #if USE_TREE_MODELS
     ImGui::Text("Mesh count: %zu", treeModel.getMeshes().size());
     ImGui::Text("Vertex count: %d", vertexCount);
@@ -33,16 +37,25 @@ void Trees::showGui() {
 
 void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
                    const TerrainParams &terrainParams) {
-    // TODO(henne): compute shader execution can be moved into init
-    renderComputeShader(terrainParams);
+    if (!showTrees) {
+        return;
+    }
+
+    if (usingGeneratedTrees) {
+        generateTrees();
+        renderGeneratedTrees(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+    } else {
+        // TODO(henne): compute shader execution can be moved into init
+        renderComputeShader(terrainParams);
 
 #if USE_TREE_MODELS
-    renderTreeModels(projectionMatrix, viewMatrix, shaderToggles);
+        renderTreeModels(projectionMatrix, viewMatrix, shaderToggles);
 #else
-    renderCubes(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+        renderCubes(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
 #endif
 
-    renderGrid(projectionMatrix, viewMatrix);
+        renderGrid(projectionMatrix, viewMatrix);
+    }
 }
 
 void Trees::initComputeShader() {
@@ -100,6 +113,10 @@ void Trees::initGrid() {
 }
 
 void Trees::renderGrid(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+    if (!showGrid) {
+        return;
+    }
+
     gridVA->bind();
     flatColorShader->bind();
     flatColorShader->setUniform("viewMatrix", viewMatrix);
@@ -230,4 +247,79 @@ void Trees::renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &view
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
     }
 #endif
+}
+
+void Trees::generateTrees() {
+    if (generatedTreesVA != nullptr) {
+        return;
+        for (auto &vb : generatedTreesVA->getVertexBuffers()) {
+            const unsigned int glid = vb->getGLID();
+            GL_Call(glDeleteBuffers(1, &glid));
+        }
+        generatedTreesVA->getVertexBuffers().clear();
+
+        const unsigned int glid = generatedTreesVA->getIndexBuffer()->getGLID();
+        GL_Call(glDeleteBuffers(1, &glid));
+        generatedTreesVA->getIndexBuffer() = nullptr;
+    } else {
+        generatedTreesVA = std::make_shared<VertexArray>(flatColorShader);
+    }
+
+    std::vector<glm::vec3> positions = {};
+    std::vector<glm::vec3> normals = {};
+    std::vector<glm::ivec3> indices = {};
+    auto *root = new Branch({0.6, 0.45, 2.5});
+    for (int i = 0; i < 100; i++) {
+        root->grow(growthrate);
+    }
+    constructTree(root, positions, normals, indices);
+
+    std::vector<float> vertexData = {};
+    for (int i = 0; i < positions.size(); i++) {
+        vertexData.push_back(positions[i].x);
+        vertexData.push_back(positions[i].y);
+        vertexData.push_back(positions[i].z);
+        vertexData.push_back(normals[i].x);
+        vertexData.push_back(normals[i].y);
+        vertexData.push_back(normals[i].z);
+    }
+
+    BufferLayout layout = {
+          {ShaderDataType::Float3, "a_Position"},
+          {ShaderDataType::Float3, "a_Normal"},
+//          {ShaderDataType::Float2, "a_UV"},
+    };
+    auto vertexBuffer = std::make_shared<VertexBuffer>(vertexData, layout);
+    generatedTreesVA->addVertexBuffer(vertexBuffer);
+
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
+    generatedTreesVA->setIndexBuffer(indexBuffer);
+}
+
+void Trees::renderGeneratedTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
+                                 const ShaderToggles &shaderToggles, const TerrainParams &terrainParams) {
+    generatedTreesVA->bind();
+    flatColorShader->bind();
+    generatedTreesVA->setShader(flatColorShader);
+    auto modelMatrix = glm::identity<glm::mat4>();
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(treeScale));
+    flatColorShader->setUniform("modelMatrix", modelMatrix);
+    flatColorShader->setUniform("viewMatrix", viewMatrix);
+    flatColorShader->setUniform("projectionMatrix", projectionMatrix);
+    flatColorShader->setUniform("flatColor", glm::vec3(1.0F, 0.0F, 0.0F));
+
+    if (shaderToggles.drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+    }
+
+#if 0
+    GL_Call(glDrawElementsInstanced(GL_TRIANGLES, generatedTreesVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
+                                    nullptr, treeCount));
+#else
+    GL_Call(glDrawElements(GL_TRIANGLES, generatedTreesVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
+#endif
+
+    if (shaderToggles.drawWireframe) {
+        GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    }
 }

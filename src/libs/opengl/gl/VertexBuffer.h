@@ -24,11 +24,11 @@ class VertexBuffer {
     void update(const std::vector<glm::vec4> &data) const;
 
     void setLayout(const BufferLayout &l) { this->layout = l; };
+    [[nodiscard]] const BufferLayout &getLayout() const { return layout; }
 
-    const BufferLayout &getLayout() const { return layout; }
+    [[nodiscard]] unsigned int getGLID() const { return id; }
 
     void bind() const;
-
     static void unbind();
 
   private:

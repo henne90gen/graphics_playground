@@ -15,5 +15,5 @@ void main() {
     gPosition = model_position;
     gNormal = normalize(normalMatrix * normal_frag_in);
     gAlbedoSpec = flatColor;
-    gDoLighting = vec3(1.0F);
+    gDoLighting = vec3(0.0F);
 }
