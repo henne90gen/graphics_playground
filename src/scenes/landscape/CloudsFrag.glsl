@@ -132,7 +132,6 @@ float cloudColor(vec2 uv_, vec4 skycolor, float iTime) {
 
 void main() {
     vec2 uv = model_position_frag_in.xy + 0.5F;
-    // TODO make cloudColor use transparency instead of flatColor
     float color = cloudColor(uv, vec4(flatColor, 0.0F), animationTime);
 
     gPosition = position_frag_in;
