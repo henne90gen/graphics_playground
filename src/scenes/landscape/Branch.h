@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
+#include <random>
 #include <string>
 
 /**
@@ -11,21 +13,43 @@
  */
 
 struct TreeSettings {
+    int randomSeed = 1337;
     int leafmindepth = 8;
     glm::vec2 treescale = {15.0F, 5.0F};
 
     int ringsize = 12;
     int leafcount = 10;
-    float leafsize = 5.0;
-    float taper = 0.6;
+    float leafsize = 5.0F;
+    float taper = 0.6F;
     glm::vec3 leafspread = {50.0F, 50.0F, 50.0F};
 
-    float growthrate = 1.0;
-    float passratio = 0.3;
-    float splitdecay = 1E-2;
-    float directedness = 0.5;
+    float growthrate = 1.0F;
+    float passratio = 0.3F;
+    float splitdecay = 1E-2F;
+    float directedness = 0.5F;
     int localdepth = 2;
     bool conservearea = true;
+
+    void showGui() {
+        if (ImGui::TreeNode("Tree Settings")) {
+            ImGui::SliderInt("randomSeed", &randomSeed, 0, 1e+9);
+            ImGui::SliderInt("leafmindepth", &leafmindepth, 0, 100);
+            ImGui::DragFloat2("treescale", reinterpret_cast<float *>(&treescale), 0.01F);
+            ImGui::SliderInt("ringsize", &ringsize, 3, 30);
+            ImGui::SliderInt("leafcount", &leafcount, 0, 100);
+            ImGui::DragFloat("leafsize", &leafsize, 0.01F);
+            ImGui::DragFloat("taper", &taper, 0.001F);
+            ImGui::DragFloat3("leafspread", reinterpret_cast<float *>(&leafspread), 0.1F);
+
+            ImGui::DragFloat("growthrate", &growthrate, 0.001F);
+            ImGui::DragFloat("passratio", &passratio, 0.001F);
+            ImGui::DragFloat("splitdecay", &splitdecay, 0.001F);
+            ImGui::DragFloat("directedness", &directedness, 0.01F);
+            ImGui::SliderInt("localdepth", &localdepth, 0, 100);
+            ImGui::Checkbox("conservearea", &conservearea);
+            ImGui::TreePop();
+        }
+    }
 };
 
 struct Branch {

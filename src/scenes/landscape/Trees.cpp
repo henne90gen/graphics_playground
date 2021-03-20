@@ -4,8 +4,6 @@
 #include <random>
 #include <util/RenderUtils.h>
 
-#include "Branch.h"
-
 DEFINE_DEFAULT_SHADERS(landscape_Tree)
 DEFINE_DEFAULT_SHADERS(landscape_Texture)
 DEFINE_DEFAULT_SHADERS(landscape_FlatColor)
@@ -29,6 +27,7 @@ void Trees::showGui() {
     ImGui::DragFloat("LOD Inner Size", &lodInnerSize);
     ImGui::DragFloat("Grid Height", &gridHeight);
     ImGui::DragFloat("Tree Scale", &treeScale);
+    treeSettings.showGui();
 #if USE_TREE_MODELS
     ImGui::Text("Mesh count: %zu", treeModel.getMeshes().size());
     ImGui::Text("Vertex count: %d", vertexCount);
@@ -251,7 +250,6 @@ void Trees::renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &view
 
 void Trees::generateTrees() {
     if (generatedTreesVA != nullptr) {
-        return;
         for (auto &vb : generatedTreesVA->getVertexBuffers()) {
             const unsigned int glid = vb->getGLID();
             GL_Call(glDeleteBuffers(1, &glid));
@@ -268,8 +266,7 @@ void Trees::generateTrees() {
     std::vector<glm::vec3> positions = {};
     std::vector<glm::vec3> normals = {};
     std::vector<glm::ivec3> indices = {};
-    TreeSettings settings = {};
-    Tree *tree = Tree::create(settings);
+    Tree *tree = Tree::create(treeSettings);
     tree->construct(positions, normals, indices);
 
     std::vector<float> vertexData = {};

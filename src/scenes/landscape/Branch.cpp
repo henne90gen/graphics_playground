@@ -3,6 +3,11 @@
 const std::hash<std::string> position_hash;
 float hashrand(int i) { return static_cast<float>(position_hash(std::to_string(i)) % 1000) / 1000.0F; }
 
+std::mt19937 randomEngine;
+std::uniform_int_distribution<int> distribution = std::uniform_int_distribution<int>(0, 100000);
+
+int randInt() { return distribution(randomEngine); }
+
 void Branch::grow(const TreeSettings &settings, double feed) {
 
     radius = sqrt(area / glm::pi<float>()); // Current Radius
@@ -55,7 +60,7 @@ void Branch::split(const TreeSettings &settings) {
     glm::vec3 N = glm::normalize(glm::cross(dir, D));         // Normal Vector
     glm::vec3 M = -1.0F * N;                                  // Reflection
 
-    float flip = (rand() % 2) ? 1.0 : -1.0; // Random Direction Flip
+    float flip = (randInt() % 2 == 0) ? 1.0 : -1.0; // Random Direction Flip
     A->dir = glm::normalize(glm::mix(flip * spread * N, dir, ratio));
     B->dir = glm::normalize(glm::mix(flip * spread * M, dir, 1.0 - ratio));
 }
@@ -63,7 +68,7 @@ void Branch::split(const TreeSettings &settings) {
 glm::vec3 Branch::leafdensity(const TreeSettings &settings, int searchdepth) {
 
     // Random Vector! (for noise)
-    glm::vec3 r = glm::vec3(rand() % 100, rand() % 100, rand() % 100) / glm::vec3(100) - glm::vec3(0.5);
+    glm::vec3 r = glm::vec3(randInt() % 100, randInt() % 100, randInt() % 100) / glm::vec3(100) - glm::vec3(0.5);
 
     if (depth == 0) {
         return r;
@@ -175,14 +180,6 @@ void Tree::construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &
     addBranch(root, glm::vec3(0.0));
 }
 
-Tree *Tree::create(const TreeSettings &settings) {
-    auto *root = new Branch(0.6F, 0.45F, 2.5F);
-    for (int i = 0; i < 100; i++) {
-        root->grow(settings, settings.growthrate);
-    }
-    return new Tree(settings, root);
-}
-
 // Construct Leaf Particle System from Tree Data
 void addLeaves(const TreeSettings &settings, Branch *root, std::vector<glm::mat4> &p) {
     p.clear();
@@ -217,4 +214,13 @@ void addLeaves(const TreeSettings &settings, Branch *root, std::vector<glm::mat4
     };
 
     addLeaf(root, glm::vec3(0.0));
+}
+
+Tree *Tree::create(const TreeSettings &settings) {
+    randomEngine = std::mt19937(settings.randomSeed);
+    auto *root = new Branch(0.6F, 0.45F, 2.5F);
+    for (int i = 0; i < 100; i++) {
+        root->grow(settings, settings.growthrate);
+    }
+    return new Tree(settings, root);
 }

@@ -10,6 +10,7 @@
 #include "Layers.h"
 #include "ShaderToggles.h"
 #include "TerrainParams.h"
+#include "Branch.h"
 
 class Trees {
     std::shared_ptr<Shader> shader = nullptr;
@@ -33,6 +34,7 @@ class Trees {
     float lodSize = 1000.0F;
     float lodInnerSize = 100.0F;
     float treeScale = 1.0F;
+    TreeSettings treeSettings = {};
 
     std::shared_ptr<VertexArray> gridVA = nullptr;
     float gridHeight = 120.0F;
