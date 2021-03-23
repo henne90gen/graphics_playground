@@ -1,5 +1,6 @@
 #include "Trees.h"
 
+#include <array>
 #include <imgui.h>
 #include <random>
 #include <util/RenderUtils.h>
@@ -248,6 +249,40 @@ void Trees::renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &view
 #endif
 }
 
+void appendLeaf(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals, std::vector<glm::ivec3> &indices,
+                const glm::mat4 &modelMatrix) {
+    const std::array<glm::vec3, 11> leafVertices = {
+          glm::vec3(-0.1F, 0.0F, 0.0F), //
+          glm::vec3(0.1F, 0.0F, 0.0F),  //
+          glm::vec3(0.1F, 0.0F, 1.0F),  //
+          glm::vec3(-0.1F, 0.0F, 1.0F), //
+          glm::vec3(-0.4F, 0.0F, 0.5F), //
+          glm::vec3(-1.0F, 0.0F, 0.8F), //
+          glm::vec3(-1.0F, 0.0F, 1.7F), //
+          glm::vec3(0.0F, 0.0F, 2.5F),  //
+          glm::vec3(1.0F, 0.0F, 1.7F),  //
+          glm::vec3(1.0F, 0.0F, 0.8F),  //
+          glm::vec3(0.4F, 0.0F, 0.5F),  //
+    };
+    const glm::vec3 quadNormal = {0.0F, 1.0F, 0.0F};
+
+    auto positionOffset = positions.size();
+    for (const auto &leafVertex : leafVertices) {
+        positions.emplace_back(modelMatrix * glm::vec4(leafVertex, 1.0F));
+        normals.emplace_back(modelMatrix * glm::vec4(quadNormal, 0.0F));
+    }
+
+    indices.emplace_back(positionOffset + 0, positionOffset + 1, positionOffset + 2);
+    indices.emplace_back(positionOffset + 0, positionOffset + 2, positionOffset + 3);
+    indices.emplace_back(positionOffset + 4, positionOffset + 3, positionOffset + 5);
+    indices.emplace_back(positionOffset + 5, positionOffset + 3, positionOffset + 6);
+    indices.emplace_back(positionOffset + 6, positionOffset + 3, positionOffset + 7);
+    indices.emplace_back(positionOffset + 7, positionOffset + 3, positionOffset + 2);
+    indices.emplace_back(positionOffset + 7, positionOffset + 2, positionOffset + 8);
+    indices.emplace_back(positionOffset + 8, positionOffset + 2, positionOffset + 9);
+    indices.emplace_back(positionOffset + 9, positionOffset + 2, positionOffset + 10);
+}
+
 void Trees::generateTrees() {
     if (generatedTreesVA != nullptr) {
         for (auto &vb : generatedTreesVA->getVertexBuffers()) {
@@ -268,6 +303,46 @@ void Trees::generateTrees() {
     std::vector<glm::ivec3> indices = {};
     Tree *tree = Tree::create(treeSettings);
     tree->construct(positions, normals, indices);
+
+    std::vector<glm::mat4> leafModelMatrices = {};
+    tree->addLeaves(leafModelMatrices);
+
+    int leafPositionOffset = positions.size();
+    int leafIndicesOffset = indices.size();
+
+    int sectorCount = 5;
+    int stackCount = 3;
+    int verticesPerLeaf = (sectorCount + 1) * (stackCount + 1);
+    int indicesPerLeaf = (stackCount - 1) * sectorCount * 2;
+    int totalVertices = leafPositionOffset + leafModelMatrices.size() * verticesPerLeaf;
+    int totalIndices = leafIndicesOffset + leafModelMatrices.size() * indicesPerLeaf;
+
+    positions.resize(totalVertices);
+    normals.resize(totalVertices);
+    indices.resize(totalIndices);
+
+#pragma omp parallel for
+    for (int i = 0; i < leafModelMatrices.size(); i++) {
+        const auto &modelMatrix = leafModelMatrices[i];
+#if 0
+        appendLeaf(positions, normals, indices, modelMatrix);
+#else
+        std::vector<glm::vec3> vertices = {};
+        std::vector<glm::ivec3> sphereIndices = {};
+        appendSphere(vertices, sphereIndices, 5, 3);
+        int positionOffset = leafPositionOffset + i * verticesPerLeaf;
+        int indexOffset = leafIndicesOffset + i * indicesPerLeaf;
+        for (int j = 0; j < vertices.size(); j++) {
+            const auto &vertex = vertices[j];
+            positions[positionOffset + j] = glm::vec3(modelMatrix * glm::vec4(vertex, 1.0));
+            normals[positionOffset + j] = glm::vec3(modelMatrix * glm::vec4(0.0F, 1.0F, 0.0F, 0.0F));
+        }
+        for (int j = 0; j < sphereIndices.size(); j++) {
+            const auto &index = sphereIndices[j];
+            indices[indexOffset + j] = index + positionOffset;
+        }
+#endif
+    }
 
     std::vector<float> vertexData = {};
     for (int i = 0; i < positions.size(); i++) {
