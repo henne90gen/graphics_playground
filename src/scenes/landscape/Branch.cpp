@@ -181,7 +181,7 @@ void Tree::construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &
 }
 
 // Construct Leaf Particle System from Tree Data
-void addLeaves(const TreeSettings &settings, Branch *root, std::vector<glm::mat4> &p) {
+void Tree::addLeaves(std::vector<glm::mat4> &p) const {
     p.clear();
 
     // Explore the Tree and Add Leaves!
@@ -194,18 +194,14 @@ void addLeaves(const TreeSettings &settings, Branch *root, std::vector<glm::mat4
             return;
         }
 
-        if (b->depth < settings.leafmindepth) {
-            return;
-        }
-
         for (int i = 0; i < settings.leafcount; i++) {
             // Hashed Random Displace
             glm::vec3 d = glm::vec3(hashrand(b->ID + i), hashrand(b->ID + i + settings.leafcount),
                                     hashrand(b->ID + i + 2 * settings.leafcount)) -
                           glm::vec3(0.5);
-            d = d * glm::vec3(settings.leafspread[0], settings.leafspread[1], settings.leafspread[2]);
+            d *= glm::vec3(settings.leafspread[0], settings.leafspread[1], settings.leafspread[2]);
 
-            // Rotate Towards Camera (or not) and Scale
+            // Rotate and Scale
             glm::mat4 model = glm::translate(glm::identity<glm::mat4>(), pos + d);
             model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
 
