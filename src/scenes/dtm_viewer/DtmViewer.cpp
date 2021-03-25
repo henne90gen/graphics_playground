@@ -404,10 +404,10 @@ void DtmViewer::batchProcessor() {
 
             rawBatchMutex.unlock();
 
-//#pragma omp task
+#pragma omp task
             { processBatch(rawBatch); }
         }
-//#pragma omp taskwait
+#pragma omp taskwait
     }
 
     finishProcessing = std::chrono::high_resolution_clock::now();
