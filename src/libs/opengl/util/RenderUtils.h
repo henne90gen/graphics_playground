@@ -7,6 +7,8 @@
 
 std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader);
 
+std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, int sectorCount = 36,
+                                            int stackCount = 18);
 /**
  * Copied from http://www.songho.ca/opengl/gl_sphere.html
  * @param shader
@@ -14,8 +16,8 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
  * @param stackCount "strips" from top to bottom of the sphere
  * @return
  */
-std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, int sectorCount = 36,
-                                            int stackCount = 18);
+void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices, int sectorCount = 36,
+                  int stackCount = 18);
 
 std::shared_ptr<VertexArray> createQuadVA(const std::shared_ptr<Shader> &shader, const glm::vec2 &scale = {1.0F, 1.0F});
 

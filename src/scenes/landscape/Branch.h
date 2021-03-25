@@ -14,12 +14,11 @@
 
 struct TreeSettings {
     int randomSeed = 1337;
-    int leafmindepth = 8;
     glm::vec2 treescale = {15.0F, 5.0F};
 
     int ringsize = 12;
-    int leafcount = 10;
-    float leafsize = 5.0F;
+    int leafcount = 8;
+    float leafsize = 15.0F;
     float taper = 0.6F;
     glm::vec3 leafspread = {50.0F, 50.0F, 50.0F};
 
@@ -33,7 +32,6 @@ struct TreeSettings {
     void showGui() {
         if (ImGui::TreeNode("Tree Settings")) {
             ImGui::SliderInt("randomSeed", &randomSeed, 0, 1e+9);
-            ImGui::SliderInt("leafmindepth", &leafmindepth, 0, 100);
             ImGui::DragFloat2("treescale", reinterpret_cast<float *>(&treescale), 0.01F);
             ImGui::SliderInt("ringsize", &ringsize, 3, 30);
             ImGui::SliderInt("leafcount", &leafcount, 0, 100);
@@ -109,6 +107,7 @@ struct Tree {
 
     void construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals,
                    std::vector<glm::ivec3> &indices);
+    void addLeaves(std::vector<glm::mat4> &p) const;
 
     static Tree *create(const TreeSettings &settings);
 };

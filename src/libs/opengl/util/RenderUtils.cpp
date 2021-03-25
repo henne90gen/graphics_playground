@@ -127,11 +127,8 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
     return result;
 }
 
-std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, const int sectorCount,
-                                            const int stackCount) {
-    std::vector<glm::vec3> vertices = {};
-    std::vector<glm::ivec3> indices = {};
-
+void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices, const int sectorCount,
+                  const int stackCount) {
     float sectorStep = glm::two_pi<float>() / static_cast<float>(sectorCount);
     float stackStep = glm::pi<float>() / static_cast<float>(stackCount);
 
@@ -149,6 +146,9 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
             vertices.emplace_back(x, y, z);
         }
     }
+
+    // stackCount * sectorCount * 2 - sectorCount * 2
+    // (stackCount - 1) * sectorCount * 2
 
     int k1 = 0;
     int k2 = 0;
@@ -169,6 +169,14 @@ std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shade
             }
         }
     }
+}
+
+std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, const int sectorCount,
+                                            const int stackCount) {
+    std::vector<glm::vec3> vertices = {};
+    std::vector<glm::ivec3> indices = {};
+
+    appendSphere(vertices, indices, sectorCount, stackCount);
 
     auto array = std::make_shared<VertexArray>(shader);
     BufferLayout layout = {
