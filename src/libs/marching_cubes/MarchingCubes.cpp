@@ -144,9 +144,9 @@ inline glm::vec3 getVertexOnEdge(const glm::vec3 &v1, const float &w1, const glm
 // BM_MarchingCubes/40      61031 ns        60253 ns        10844
 // BM_MarchingCubes/50     119281 ns       118597 ns         5889
 // BM_MarchingCubes/60     197227 ns       195985 ns         3424
-#define MARCHING_CUBES_SEQUENTIAL 0
-#if MARCHING_CUBES_SEQUENTIAL
-void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
+#define MARCHING_CUBES_SEQUENTIAL 1
+//#if MARCHING_CUBES_SEQUENTIAL
+void runMarchingCubesSequential(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func) {
     vertices.clear();
     indices.clear();
@@ -206,7 +206,7 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
         indices.emplace_back(i * 3, i * 3 + 1, i * 3 + 2);
     }
 }
-#else
+//#else
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func) {
     const unsigned int cubeCount = dimensions.x * dimensions.y * dimensions.z;
@@ -278,4 +278,4 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
         indices[i] = glm::ivec3(i * 3, i * 3 + 1, i * 3 + 2);
     }
 }
-#endif
+//#endif

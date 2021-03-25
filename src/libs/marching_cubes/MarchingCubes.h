@@ -55,3 +55,6 @@ typedef std::function<float(const glm::vec3 &)> implicit_surface_func;
 
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func);
+
+void runMarchingCubesSequential(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
+                      implicit_surface_func &func);
