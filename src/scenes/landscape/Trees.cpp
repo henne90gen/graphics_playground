@@ -283,18 +283,25 @@ void appendLeaf(int positionOffset, int indexOffset, std::vector<glm::vec3> &pos
 }
 
 void appendSphereLeaf(const glm::mat4 modelMatrix, std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals,
-                      std::vector<glm::ivec3> &indices, int positionOffset, int indexOffset) {
+                      std::vector<glm::vec2> &uvs, std::vector<glm::ivec3> &indices, int positionOffset,
+                      int indexOffset) {
     std::vector<glm::vec3> vertices = {};
+    std::vector<glm::vec3> sphereNormals = {};
+    std::vector<glm::vec2> sphereUvs = {};
     std::vector<glm::ivec3> sphereIndices = {};
-    appendSphere(vertices, sphereIndices, 5, 3);
+
+    appendSphere(vertices, sphereNormals, sphereUvs, sphereIndices, 5, 3);
+
     for (int i = 0; i < vertices.size(); i++) {
         const auto &vertex = vertices[i];
         positions[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(vertex, 1.0));
-        normals[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(0.0F, 1.0F, 0.0F, 0.0F));
+        const auto &normal = sphereNormals[i];
+        normals[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(normal, 0.0F));
+        uvs[positionOffset + i] = sphereUvs[i];
     }
+
     for (int i = 0; i < sphereIndices.size(); i++) {
-        const auto &index = sphereIndices[i];
-        indices[indexOffset + i] = index + positionOffset;
+        indices[indexOffset + i] = sphereIndices[i] + positionOffset;
     }
 }
 
@@ -315,6 +322,7 @@ void Trees::generateTrees() {
 
     std::vector<glm::vec3> positions = {};
     std::vector<glm::vec3> normals = {};
+    std::vector<glm::vec2> uvs = {};
     std::vector<glm::ivec3> indices = {};
     Tree *tree = Tree::create(treeSettings);
     tree->construct(positions, normals, indices);
@@ -334,6 +342,7 @@ void Trees::generateTrees() {
 
     positions.resize(totalVertices);
     normals.resize(totalVertices);
+    uvs.resize(totalVertices);
     indices.resize(totalIndices);
 
 #pragma omp parallel for
@@ -343,25 +352,29 @@ void Trees::generateTrees() {
         int indexOffset = leafIndicesOffset + i * indicesPerLeaf;
 #define USE_SPHERES_AS_LEAFS 1
 #if USE_SPHERES_AS_LEAFS
-        appendSphereLeaf(modelMatrix, positions, normals, indices, positionOffset, indexOffset);
+        appendSphereLeaf(modelMatrix, positions, normals, uvs, indices, positionOffset, indexOffset);
 #else
         appendLeaf(positionOffset, indexOffset, positions, normals, indices, modelMatrix);
 #endif
     }
 
-    std::vector<float> vertexData = {};
+    auto vertexData = std::vector<float>(positions.size() * 8);
+#pragma omp parallel for
     for (int i = 0; i < positions.size(); i++) {
-        vertexData.push_back(positions[i].x);
-        vertexData.push_back(positions[i].y);
-        vertexData.push_back(positions[i].z);
-        vertexData.push_back(normals[i].x);
-        vertexData.push_back(normals[i].y);
-        vertexData.push_back(normals[i].z);
+        vertexData[i * 8 + 0] = positions[i].x;
+        vertexData[i * 8 + 1] = positions[i].y;
+        vertexData[i * 8 + 2] = positions[i].z;
+        vertexData[i * 8 + 3] = normals[i].x;
+        vertexData[i * 8 + 4] = normals[i].y;
+        vertexData[i * 8 + 5] = normals[i].z;
+        vertexData[i * 8 + 6] = uvs[i].x;
+        vertexData[i * 8 + 7] = uvs[i].y;
     }
 
     BufferLayout layout = {
           {ShaderDataType::Float3, "a_Position"},
           {ShaderDataType::Float3, "a_Normal"},
+          {ShaderDataType::Float2, "a_UV"},
     };
     auto vertexBuffer = std::make_shared<VertexBuffer>(vertexData, layout);
     generatedTreesVA->addVertexBuffer(vertexBuffer);
