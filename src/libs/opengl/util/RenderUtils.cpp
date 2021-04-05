@@ -127,8 +127,8 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
     return result;
 }
 
-void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices, const int sectorCount,
-                  const int stackCount) {
+void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
+                  std::vector<glm::ivec3> &indices, const int sectorCount, const int stackCount) {
     float sectorStep = glm::two_pi<float>() / static_cast<float>(sectorCount);
     float stackStep = glm::pi<float>() / static_cast<float>(stackCount);
 
@@ -144,6 +144,13 @@ void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &ind
             float x = xy * glm::cos(sectorAngle);
             float y = xy * glm::sin(sectorAngle);
             vertices.emplace_back(x, y, z);
+
+            // center of sphere is (0,0,0), thus the vertex coordinate is also the normal
+            normals.emplace_back(x, y, z);
+
+            float s = static_cast<float>(j) / static_cast<float>(sectorCount);
+            float t = static_cast<float>(i) / static_cast<float>(stackCount);
+            uvs.emplace_back(s, t);
         }
     }
 
@@ -174,15 +181,32 @@ void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &ind
 std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, const int sectorCount,
                                             const int stackCount) {
     std::vector<glm::vec3> vertices = {};
+    std::vector<glm::vec3> normals = {};
+    std::vector<glm::vec2> uvs = {};
     std::vector<glm::ivec3> indices = {};
 
-    appendSphere(vertices, indices, sectorCount, stackCount);
+    appendSphere(vertices, normals, uvs, indices, sectorCount, stackCount);
+
+    auto vertexData = std::vector<float>(vertices.size() * 8);
+#pragma omp parallel for
+    for (int i = 0; i < vertices.size(); i++) {
+        vertexData[i * 8 + 0] = vertices[i].x;
+        vertexData[i * 8 + 1] = vertices[i].y;
+        vertexData[i * 8 + 2] = vertices[i].z;
+        vertexData[i * 8 + 3] = normals[i].x;
+        vertexData[i * 8 + 4] = normals[i].y;
+        vertexData[i * 8 + 5] = normals[i].z;
+        vertexData[i * 8 + 6] = uvs[i].x;
+        vertexData[i * 8 + 7] = uvs[i].y;
+    }
 
     auto array = std::make_shared<VertexArray>(shader);
     BufferLayout layout = {
           {ShaderDataType::Float3, "a_Position"},
+          {ShaderDataType::Float3, "a_Normal"},
+          {ShaderDataType::Float2, "a_Uv"},
     };
-    std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(vertices, layout);
+    std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(vertexData, layout);
     array->addVertexBuffer(vb);
     std::shared_ptr<IndexBuffer> ib = std::make_shared<IndexBuffer>(indices);
     array->setIndexBuffer(ib);
