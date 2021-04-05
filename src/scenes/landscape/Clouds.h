@@ -9,7 +9,7 @@ class Clouds {
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> quadVA;
 
-    bool cloudsEnabled = true;
+    bool cloudsEnabled = false;
     glm::vec3 skyPosition = glm::vec3(0.0F, 200.0F, 0.0F);
     glm::vec3 skyRotation = glm::vec3(glm::pi<float>() / 2.0F, 0.0F, 0.0F);
     glm::vec3 skyScale = glm::vec3(2000.0F, 2000.0F, 1.0F);

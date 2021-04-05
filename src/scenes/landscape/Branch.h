@@ -17,7 +17,7 @@ struct TreeSettings {
     glm::vec2 treescale = {15.0F, 5.0F};
 
     int ringsize = 12;
-    int leafcount = 8;
+    int leafcount = 2;
     float leafsize = 15.0F;
     float taper = 0.6F;
     glm::vec3 leafspread = {50.0F, 50.0F, 50.0F};
