@@ -20,6 +20,13 @@ void Trees::init() {
 
     initModel();
     initGrid();
+
+    barkTexture = std::make_shared<Texture>();
+
+    Image img = {};
+    if (ImageOps::load("./landscape_resources/assets/textures/Maple_Bark_2_COLOR.png", img)) {
+        img.applyToTexture(barkTexture);
+    }
 }
 
 void Trees::showGui() {
@@ -27,7 +34,7 @@ void Trees::showGui() {
     ImGui::DragFloat("LOD Size", &lodSize);
     ImGui::DragFloat("LOD Inner Size", &lodInnerSize);
     ImGui::DragFloat("Grid Height", &gridHeight);
-    ImGui::DragFloat("Tree Scale", &treeScale);
+    ImGui::DragFloat("Global Tree Scale", &treeScale, 0.001F);
     treeSettings.showGui();
 #if USE_TREE_MODELS
     ImGui::Text("Mesh count: %zu", treeModel.getMeshes().size());
@@ -43,7 +50,7 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
 
     if (usingGeneratedTrees) {
         generateTrees();
-        renderGeneratedTrees(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+        renderGeneratedTrees(projectionMatrix, viewMatrix, shaderToggles);
     } else {
         // TODO(henne): compute shader execution can be moved into init
         renderComputeShader(terrainParams);
@@ -51,7 +58,7 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
 #if USE_TREE_MODELS
         renderTreeModels(projectionMatrix, viewMatrix, shaderToggles);
 #else
-        renderCubes(projectionMatrix, viewMatrix, shaderToggles, terrainParams);
+        renderCubes(projectionMatrix, viewMatrix, shaderToggles);
 #endif
 
         renderGrid(projectionMatrix, viewMatrix);
@@ -220,7 +227,7 @@ void Trees::renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 
 }
 
 void Trees::renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                        const ShaderToggles &shaderToggles, const TerrainParams &terrainParams) {
+                        const ShaderToggles &shaderToggles) {
 #if !USE_TREE_MODELS
     cubeVA->bind();
     shader->bind();
@@ -231,7 +238,6 @@ void Trees::renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &view
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("treeCount", treeCount);
     shader->setUniform("positionTexture", 0);
-    terrainParams.setShaderUniforms(shader);
 
     GL_Call(glActiveTexture(GL_TEXTURE0));
     GL_Call(glBindTexture(GL_TEXTURE_2D, treePositionTextureId));
@@ -384,16 +390,26 @@ void Trees::generateTrees() {
 }
 
 void Trees::renderGeneratedTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                                 const ShaderToggles &shaderToggles, const TerrainParams &terrainParams) {
+                                 const ShaderToggles &shaderToggles) {
     generatedTreesVA->bind();
-    flatColorShader->bind();
-    generatedTreesVA->setShader(flatColorShader);
+    shader->bind();
+    generatedTreesVA->setShader(shader);
     auto modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::scale(modelMatrix, glm::vec3(treeScale));
-    flatColorShader->setUniform("modelMatrix", modelMatrix);
-    flatColorShader->setUniform("viewMatrix", viewMatrix);
-    flatColorShader->setUniform("projectionMatrix", projectionMatrix);
-    flatColorShader->setUniform("flatColor", glm::vec3(1.0F, 0.0F, 0.0F));
+    auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
+    shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("viewMatrix", viewMatrix);
+    shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("normalMatrix", normalMatrix);
+    shader->setUniform("flatColor", glm::vec3(1.0F, 0.0F, 0.0F));
+    shader->setUniform("textureSampler", 0);
+    shader->setUniform("positionTexture", 1);
+
+    GL_Call(glActiveTexture(GL_TEXTURE0));
+    barkTexture->bind();
+
+    GL_Call(glActiveTexture(GL_TEXTURE1));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, treePositionTextureId));
 
     if (shaderToggles.drawWireframe) {
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
