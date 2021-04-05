@@ -7,10 +7,10 @@
 #include <gl/VertexArray.h>
 #include <memory>
 
+#include "Branch.h"
 #include "Layers.h"
 #include "ShaderToggles.h"
 #include "TerrainParams.h"
-#include "Branch.h"
 
 class Trees {
     std::shared_ptr<Shader> shader = nullptr;
@@ -29,11 +29,12 @@ class Trees {
 #endif
 
     std::shared_ptr<VertexArray> generatedTreesVA = nullptr;
+    std::shared_ptr<Texture> barkTexture = nullptr;
 
     int treeCount = 1024;
     float lodSize = 1000.0F;
     float lodInnerSize = 100.0F;
-    float treeScale = 1.0F;
+    float treeScale = 0.3F;
     TreeSettings treeSettings = {};
 
     std::shared_ptr<VertexArray> gridVA = nullptr;
@@ -61,9 +62,9 @@ class Trees {
     void renderComputeShader(const TerrainParams &terrainParams);
     void renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                           const ShaderToggles &shaderToggles);
-    void renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix, const ShaderToggles &shaderToggles,
-                     const TerrainParams &terrainParams);
+    void renderCubes(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
+                     const ShaderToggles &shaderToggles);
     void renderGrid(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
     void renderGeneratedTrees(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
-                              const ShaderToggles &shaderToggles, const TerrainParams &terrainParams);
+                              const ShaderToggles &shaderToggles);
 };

@@ -316,10 +316,10 @@ void Landscape::renderLight(const glm::mat4 &projectionMatrix, const glm::mat4 &
     cubeVA->bind();
     flatShader->bind();
     cubeVA->setShader(flatShader);
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    auto modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(light.scale));
     modelMatrix = glm::translate(modelMatrix, normalize(light.fragmentToLightDir) * light.distance);
-    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
+    auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(viewMatrix * modelMatrix)));
     flatShader->setUniform("modelMatrix", modelMatrix);
     flatShader->setUniform("normalMatrix", normalMatrix);
     flatShader->setUniform("viewMatrix", viewMatrix);

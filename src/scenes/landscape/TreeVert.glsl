@@ -14,7 +14,6 @@ uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
-uniform int treeCount;
 uniform sampler2D positionTexture;
 
 void main() {
@@ -25,7 +24,7 @@ void main() {
     uv.y = float(gl_InstanceID / positionTextureSize.y) / float(positionTextureSize.y);
     vec3 position = a_Position + texture(positionTexture, uv).xyz;
     #else
-    vec3 position = vec3(0.0);
+    vec3 position = a_Position;
     #endif
 
     vec4 viewPosition = viewMatrix * modelMatrix * vec4(position, 1.0F);

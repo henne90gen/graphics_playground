@@ -109,7 +109,7 @@ void Terrain::initTextures() {
     std::array<Image, 3> images = {};
 #pragma omp parallel for
     for (int i = 0; i < images.size(); i++) {
-        if (!ImageOps::load("landscape_resources/textures/" + fileNames[i], images[i])) {
+        if (!ImageOps::load("landscape_resources/assets/textures/" + fileNames[i], images[i])) {
             ImageOps::createCheckerBoard(images[i]);
         }
     }
