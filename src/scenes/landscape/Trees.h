@@ -34,7 +34,7 @@ class Trees {
     int treeCount = 1024;
     float lodSize = 1000.0F;
     float lodInnerSize = 100.0F;
-    float treeScale = 0.3F;
+    float treeScale = 0.15F;
     TreeSettings treeSettings = {};
 
     std::shared_ptr<VertexArray> gridVA = nullptr;

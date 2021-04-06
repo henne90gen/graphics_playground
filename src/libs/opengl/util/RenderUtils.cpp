@@ -127,8 +127,8 @@ std::shared_ptr<VertexArray> createCubeVA(const std::shared_ptr<Shader> &shader)
     return result;
 }
 
-void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
-                  std::vector<glm::ivec3> &indices, const int sectorCount, const int stackCount) {
+void Sphere::append(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
+                    std::vector<glm::ivec3> &indices) const {
     float sectorStep = glm::two_pi<float>() / static_cast<float>(sectorCount);
     float stackStep = glm::pi<float>() / static_cast<float>(stackCount);
 
@@ -178,14 +178,13 @@ void appendSphere(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &norm
     }
 }
 
-std::shared_ptr<VertexArray> createSphereVA(const std::shared_ptr<Shader> &shader, const int sectorCount,
-                                            const int stackCount) {
+std::shared_ptr<VertexArray> Sphere::createVA(const std::shared_ptr<Shader> &shader) const {
     std::vector<glm::vec3> vertices = {};
     std::vector<glm::vec3> normals = {};
     std::vector<glm::vec2> uvs = {};
     std::vector<glm::ivec3> indices = {};
 
-    appendSphere(vertices, normals, uvs, indices, sectorCount, stackCount);
+    append(vertices, normals, uvs, indices);
 
     auto vertexData = std::vector<float>(vertices.size() * 8);
 #pragma omp parallel for
