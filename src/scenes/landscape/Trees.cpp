@@ -24,9 +24,23 @@ void Trees::init() {
     barkTexture = std::make_shared<Texture>();
 
     Image img = {};
-    if (ImageOps::load("./landscape_resources/assets/textures/Maple_Bark_2_COLOR.png", img)) {
+#if 0
+    if (ImageOps::load("./landscape_resources/assets/textures/bark.png", img)) {
         img.applyToTexture(barkTexture);
     }
+#elif 0
+    if (ImageOps::load("./landscape_resources/assets/textures/leafs.png", img)) {
+        img.applyToTexture(barkTexture);
+    }
+#elif 0
+    if (ImageOps::load("./landscape_resources/assets/textures/bark_and_leafs.png", img)) {
+        img.applyToTexture(barkTexture);
+    }
+#else
+    if (ImageOps::load("./landscape_resources/assets/textures/bark_and_leafs_light.png", img)) {
+        img.applyToTexture(barkTexture);
+    }
+#endif
 }
 
 void Trees::showGui() {
@@ -48,13 +62,13 @@ void Trees::render(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatri
         return;
     }
 
+    // TODO(henne): compute shader execution can be moved into init
+    renderComputeShader(terrainParams);
+
     if (usingGeneratedTrees) {
         generateTrees();
         renderGeneratedTrees(projectionMatrix, viewMatrix, shaderToggles);
     } else {
-        // TODO(henne): compute shader execution can be moved into init
-        renderComputeShader(terrainParams);
-
 #if USE_TREE_MODELS
         renderTreeModels(projectionMatrix, viewMatrix, shaderToggles);
 #else
@@ -296,14 +310,21 @@ void appendSphereLeaf(const glm::mat4 modelMatrix, std::vector<glm::vec3> &posit
     std::vector<glm::vec2> sphereUvs = {};
     std::vector<glm::ivec3> sphereIndices = {};
 
-    appendSphere(vertices, sphereNormals, sphereUvs, sphereIndices, 5, 3);
+    Sphere s = {5, 3};
+    s.append(vertices, sphereNormals, sphereUvs, sphereIndices);
 
     for (int i = 0; i < vertices.size(); i++) {
         const auto &vertex = vertices[i];
         positions[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(vertex, 1.0));
+
         const auto &normal = sphereNormals[i];
         normals[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(normal, 0.0F));
-        uvs[positionOffset + i] = sphereUvs[i];
+
+        auto uv = sphereUvs[i];
+        uv.x *= 0.3289;
+        uv.y *= 0.4358;
+        uv += glm::vec2(0.6711, 0);
+        uvs[positionOffset + i] = uv;
     }
 
     for (int i = 0; i < sphereIndices.size(); i++) {
@@ -323,7 +344,7 @@ void Trees::generateTrees() {
         GL_Call(glDeleteBuffers(1, &glid));
         generatedTreesVA->getIndexBuffer() = nullptr;
     } else {
-        generatedTreesVA = std::make_shared<VertexArray>(flatColorShader);
+        generatedTreesVA = std::make_shared<VertexArray>(shader);
     }
 
     std::vector<glm::vec3> positions = {};
@@ -331,7 +352,13 @@ void Trees::generateTrees() {
     std::vector<glm::vec2> uvs = {};
     std::vector<glm::ivec3> indices = {};
     Tree *tree = Tree::create(treeSettings);
-    tree->construct(positions, normals, indices);
+    tree->construct(positions, normals, uvs, indices);
+
+    // adjust uv coordinates to be constrained to the bark side of the texture
+#pragma omp parallel for
+    for (int i = 0; i < uvs.size(); i++) {
+        uvs[i].x *= 0.671;
+    }
 
     std::vector<glm::mat4> leafModelMatrices = {};
     tree->addLeaves(leafModelMatrices);
@@ -343,8 +370,8 @@ void Trees::generateTrees() {
     int stackCount = 5;
     int verticesPerLeaf = (sectorCount + 1) * (stackCount + 1);
     int indicesPerLeaf = (stackCount - 1) * sectorCount * 2;
-    int totalVertices = leafPositionOffset + leafModelMatrices.size() * verticesPerLeaf;
-    int totalIndices = leafIndicesOffset + leafModelMatrices.size() * indicesPerLeaf;
+    int totalVertices = leafPositionOffset + static_cast<int>(leafModelMatrices.size()) * verticesPerLeaf;
+    int totalIndices = leafIndicesOffset + static_cast<int>(leafModelMatrices.size()) * indicesPerLeaf;
 
     positions.resize(totalVertices);
     normals.resize(totalVertices);
@@ -415,7 +442,7 @@ void Trees::renderGeneratedTrees(const glm::mat4 &projectionMatrix, const glm::m
         GL_Call(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     }
 
-#if 0
+#if 1
     GL_Call(glDrawElementsInstanced(GL_TRIANGLES, generatedTreesVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
                                     nullptr, treeCount));
 #else

@@ -105,7 +105,7 @@ struct Tree {
 
     explicit Tree(const TreeSettings &s, Branch *b) : settings(s), root(b) {}
 
-    void construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals,
+    void construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
                    std::vector<glm::ivec3> &indices);
     void addLeaves(std::vector<glm::mat4> &p) const;
 

@@ -123,7 +123,7 @@ glm::vec3 Branch::leafdensity(const TreeSettings &settings, int searchdepth) {
     return settings.directedness * glm::normalize(leafaverage(C) - rel) + (1.0F - settings.directedness) * r;
 }
 
-void Tree::construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals,
+void Tree::construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
                      std::vector<glm::ivec3> &indices) {
     // Basically Add Lines for the Tree!
     std::function<void(Branch *, glm::vec3)> addBranch = [&](Branch *b, glm::vec3 p) {
@@ -158,16 +158,19 @@ void Tree::construct(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &
         }
 
         for (int i = 0; i < settings.ringsize; i++) {
+            auto percentAround = static_cast<float>(i) / static_cast<float>(settings.ringsize);
+
             positions.push_back(start + b->radius * settings.treescale[1] * glm::vec3(n));
             normals.emplace_back(n);
+            uvs.emplace_back(0.0F, percentAround);
             n = r * n;
 
             positions.push_back(end + settings.taper * b->radius * settings.treescale[1] * glm::vec3(n));
             normals.emplace_back(n);
+            uvs.emplace_back(1.0F, percentAround);
             n = r * n;
         }
 
-        // No Leaves
         if (b->leaf) {
             return;
         }
