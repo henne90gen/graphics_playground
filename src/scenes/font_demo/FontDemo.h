@@ -7,19 +7,11 @@
 
 #include <functional>
 
-#include "gl/Shader.h"
-#include "gl/Texture.h"
-#include "gl/VertexArray.h"
-#include "gl/VertexBuffer.h"
-
-struct Character {
-    char character;
-    Texture texture;
-    glm::ivec2 dimension;
-    glm::ivec2 offset;
-    long advance;
-    long maxHeight;
-};
+#include <Text.h>
+#include <gl/Shader.h>
+#include <gl/Texture.h>
+#include <gl/VertexArray.h>
+#include <gl/VertexBuffer.h>
 
 class FontDemo : public Scene {
   public:
@@ -28,30 +20,28 @@ class FontDemo : public Scene {
     ~FontDemo() override = default;
 
     void setup() override;
-
     void tick() override;
-
     void destroy() override;
 
   private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
 
-    std::vector<Character> characters = {};
+    Text t = {};
 
-    FT_Library library = nullptr;
-    FT_Face face = nullptr;
+#if 0
+        std::vector<Character> characters = {};
 
-    void loadFont(std::string &fontPath, unsigned int characterHeight);
+        FT_Library library = nullptr;
+        FT_Face face = nullptr;
 
-    Character loadCharacter(const char character, const unsigned int characterHeight);
-
-    void loadAlphabet(unsigned int characterHeight);
+        void loadFont(std::string &fontPath, unsigned int characterHeight);
+        Character loadCharacter(char character, unsigned int characterHeight);
+        void loadAlphabet(unsigned int characterHeight);
+#endif
 
     void renderCharacter(const Character &character, const glm::vec2 &translation) const;
-
-    void renderAlphabet(const glm::vec2 &translation, float zoom) const;
-
+    void renderAlphabet(const glm::vec2 &translation, float zoom);
     void renderText(std::string &text, const glm::vec2 &translation, float zoom);
 
     void setViewMatrix(const glm::vec2 &translation, float zoom) const;
@@ -59,7 +49,7 @@ class FontDemo : public Scene {
 
 void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
                   unsigned int &characterResolution, unsigned int &selectedFontIndex, bool &shouldRenderAlphabet,
-                  FT_Face &face);
+                  Text &t);
 
 void showFontInfo(FT_Face &face);
 
