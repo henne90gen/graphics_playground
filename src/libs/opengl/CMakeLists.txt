@@ -10,12 +10,11 @@ add_library(opengl
         util/OpenGLUtils.cpp
         util/RenderUtils.cpp)
 
-set_target_properties(model PROPERTIES
+set_target_properties(opengl PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(opengl
-        glad)
+target_link_libraries(opengl glad glm)
 
 target_include_directories(opengl PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -25,14 +24,10 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_package(OpenGL REQUIRED)
     target_include_directories(opengl PUBLIC ${OPENGL_INCLUDE_DIR})
     target_link_libraries(opengl ${OPENGL_gl_LIBRARY})
+    target_compile_options(opengl PRIVATE /std:c++17)
 elseif (APPLE)
 else ()
     target_link_libraries(opengl stdc++fs)
-endif ()
-
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    target_compile_options(opengl PRIVATE /std:c++17)
-else ()
     target_compile_options(opengl PRIVATE
             -Wall
             -Wextra
