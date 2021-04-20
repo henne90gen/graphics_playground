@@ -3,12 +3,13 @@
 in vec2 position;
 in vec2 vertexUV;
 
-uniform mat4 model;
-uniform mat4 view;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
 out vec2 UV;
 
 void main() {
     UV = vertexUV;
-    gl_Position = view * model * vec4(position, 0.0, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 0.0, 1.0);
 }

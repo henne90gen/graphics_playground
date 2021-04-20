@@ -14,7 +14,7 @@ set_target_properties(opengl PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(opengl glad glm)
+target_link_libraries(opengl glad)
 
 target_include_directories(opengl PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}

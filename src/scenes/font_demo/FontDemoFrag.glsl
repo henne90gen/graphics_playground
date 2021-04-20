@@ -2,12 +2,17 @@
 
 in vec2 UV;
 
+uniform bool useTexture = false;
+uniform vec3 flatColor;
 uniform sampler2D textureSampler;
-uniform vec3 textColor;
 
 out vec4 color;
 
 void main() {
-    vec4 textureColor = texture(textureSampler, UV);
-    color = vec4(textColor, textureColor.r);
+    if (useTexture) {
+        vec4 textureColor = texture(textureSampler, UV);
+        color = vec4(flatColor, textureColor.r);
+    } else {
+        color = vec4(flatColor, 1.0F);
+    }
 }
