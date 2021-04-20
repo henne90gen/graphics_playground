@@ -8,6 +8,7 @@ DEFINE_SCENE_MAIN(FontDemo)
 DEFINE_DEFAULT_SHADERS(font_demo_FontDemo)
 
 void FontDemo::setup() {
+    onAspectRatioChange();
     shader = CREATE_DEFAULT_SHADER(font_demo_FontDemo);
     shader->bind();
 
@@ -35,41 +36,48 @@ void FontDemo::setup() {
 
 void FontDemo::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
+void FontDemo::onAspectRatioChange() {
+    float aspectRatio = getAspectRatio();
+    projectionMatrix = glm::ortho(-aspectRatio, aspectRatio, -1.0F, 1.0F);
+}
+
 void FontDemo::tick() {
     std::string text = "Jeb quickly drove a few extra miles on the glazed pavement";
-    static auto color = glm::vec3(1.0F, 1.0F, 1.0F);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto translation = glm::vec2(-0.16, 0.11); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static float zoom = 0.112F;                       // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static unsigned int characterResolution = 512;    // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static unsigned int selectedFontIndex = 3;        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto color = glm::vec3(1.0F, 1.0F, 1.0F);
+    static auto cameraPosition = glm::vec2(-0.16, 0.11);
+    static float zoom = 0.112F;
+    static unsigned int characterResolution = 512;
+    static unsigned int selectedFontIndex = 3;
     static bool shouldRenderAlphabet = true;
 
     std::vector<std::string> fontPaths = {};
 
-    showSettings(fontPaths, color, translation, zoom, characterResolution, selectedFontIndex, shouldRenderAlphabet, t);
+    showSettings(fontPaths, color, cameraPosition, zoom, characterResolution, selectedFontIndex, shouldRenderAlphabet,
+                 t);
     if (settingsHaveChanged(characterResolution, selectedFontIndex) && !fontPaths.empty()) {
         t.load(fontPaths[selectedFontIndex], characterResolution);
     }
 
     shader->bind();
-    vertexArray->bind();
+    shader->setUniform("flatColor", color);
 
-    shader->setUniform("textColor", color);
+    glm::mat4 viewMatrix = glm::mat4(1.0F);
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(cameraPosition, 0.0F));
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
+    shader->setUniform("viewMatrix", viewMatrix);
+    shader->setUniform("projectionMatrix", projectionMatrix);
 
     if (shouldRenderAlphabet) {
-        renderAlphabet(translation, zoom);
+        renderAlphabet();
     }
 
-    const glm::vec2 textTranslation = translation + glm::vec2(0.1F, 0.1F);
-    renderText(text, textTranslation, zoom);
+    renderText(text);
 
     vertexArray->unbind();
     shader->unbind();
 }
 
-void FontDemo::renderAlphabet(const glm::vec2 &translation, float zoom) {
-    setViewMatrix(translation, zoom);
-
+void FontDemo::renderAlphabet() {
     const unsigned int numColumns = 10;
     const unsigned int firstCharacter = 32;
     const unsigned int lastCharacter = 127;
@@ -86,16 +94,7 @@ void FontDemo::renderAlphabet(const glm::vec2 &translation, float zoom) {
     }
 }
 
-void FontDemo::setViewMatrix(const glm::vec2 &translation, float zoom) const {
-    glm::mat4 viewMatrix = glm::mat4(1.0F);
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(translation, 0.0F));
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom, zoom, zoom));
-    shader->setUniform("view", viewMatrix);
-}
-
-void FontDemo::renderText(std::string &text, const glm::vec2 &translation, float zoom) {
-    setViewMatrix(translation, zoom);
-
+void FontDemo::renderText(std::string &text) {
     glm::vec2 nextCharacterPosition = glm::vec2();
     for (char c : text) {
         std::optional<Character> characterOpt = t.character(c);
@@ -109,6 +108,8 @@ void FontDemo::renderText(std::string &text, const glm::vec2 &translation, float
               static_cast<float>(character.advance) / characterToPixelSpace / static_cast<float>(character.maxHeight);
         nextCharacterPosition += glm::vec2(scaledAdvance, 0.0F);
     }
+
+    renderBaseline(glm::vec2(), nextCharacterPosition.x);
 }
 
 void FontDemo::renderCharacter(const Character &character, const glm::vec2 &translation) const {
@@ -124,12 +125,34 @@ void FontDemo::renderCharacter(const Character &character, const glm::vec2 &tran
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(characterScale, 1.0F));
-    shader->setUniform("model", modelMatrix);
+    shader->setUniform("modelMatrix", modelMatrix);
+    shader->setUniform("useTexture", true);
 
     character.texture.bind();
-
+    vertexArray->bind();
     GL_Call(glDrawArrays(GL_TRIANGLES, 0, 6));
-    Texture::unbind();
+}
+
+void FontDemo::renderBaseline(const glm::vec2 &offset, float length) {
+    auto baselineVA = std::make_shared<VertexArray>(shader);
+    baselineVA->bind();
+
+    std::vector<glm::vec2> vertices = {
+          {0.0, 0.0}, //
+          {1.0, 0.0}, //
+    };
+    BufferLayout bufferLayout = {{ShaderDataType::Float2, "position"}};
+    auto buffer = std::make_shared<VertexBuffer>(vertices, bufferLayout);
+    baselineVA->addVertexBuffer(buffer);
+
+    shader->setUniform("useTexture", false);
+    shader->setUniform("flatColor", glm::vec3(1.0F));
+    auto modelMatrix = glm::identity<glm::mat4>();
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(offset.x, offset.y, 1.0F));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(length));
+    shader->setUniform("modelMatrix", modelMatrix);
+
+    GL_Call(glDrawArrays(GL_LINES, 0, 2));
 }
 
 void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,

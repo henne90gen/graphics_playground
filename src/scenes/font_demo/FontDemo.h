@@ -22,10 +22,12 @@ class FontDemo : public Scene {
     void setup() override;
     void tick() override;
     void destroy() override;
+    void onAspectRatioChange() override;
 
   private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
+    glm::mat4 projectionMatrix;
 
     Text t = {};
 
@@ -41,10 +43,10 @@ class FontDemo : public Scene {
 #endif
 
     void renderCharacter(const Character &character, const glm::vec2 &translation) const;
-    void renderAlphabet(const glm::vec2 &translation, float zoom);
-    void renderText(std::string &text, const glm::vec2 &translation, float zoom);
+    void renderAlphabet();
+    void renderText(std::string &text);
 
-    void setViewMatrix(const glm::vec2 &translation, float zoom) const;
+    void renderBaseline(const glm::vec2 &translation, float zoom);
 };
 
 void showSettings(std::vector<std::string> &fontPaths, glm::vec3 &color, glm::vec2 &translation, float &zoom,
