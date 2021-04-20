@@ -20,13 +20,13 @@ void GL_ClearError();
 
 bool GL_LogCall(const char *function, const char *file, int line);
 
-glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation);
+glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation = glm::vec3(0.0F));
 glm::mat4 createModelMatrix(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation = glm::vec3(0.0F),
                             const glm::vec3 &modelScale = glm::vec3(1.0F));
 
 struct MappedMousePosition {
     glm::vec2 canvasPos;
-    glm::vec2 worldPos;
+    glm::vec3 worldPos;
 };
 
 MappedMousePosition mapMouseOntoCanvas(const glm::vec2 &mousePos, const glm::mat4 &transformationMatrix,

@@ -191,7 +191,7 @@ void AStar::checkForMouseClick(const unsigned int canvasWidth, const unsigned in
         return;
     }
 
-    auto &mousePos = input.mouse.pos;
+    const auto &mousePos = input.mouse.pos;
     auto mappedMousePos = mapMouseOntoCanvas(mousePos, viewMatrix, canvasWidth, canvasHeight, getWidth(), getHeight());
     auto canvasPos = mappedMousePos.canvasPos;
 

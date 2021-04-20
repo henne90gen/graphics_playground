@@ -3,12 +3,12 @@
 #include <Scene.h>
 
 #include <Model.h>
+#include <camera/Camera.h>
 #include <functional>
 #include <gl/IndexBuffer.h>
 #include <gl/Texture.h>
 #include <gl/VertexArray.h>
 #include <memory>
-#include <util/Camera.h>
 
 #include "Clouds.h"
 #include "Layers.h"

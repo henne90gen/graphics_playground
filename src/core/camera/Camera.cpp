@@ -19,7 +19,7 @@ void Camera::updateProjection() {
 
 void Camera::updateView() {
     // m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
-    position = getPosition();
+    glm::vec3 position = getPosition();
 
     glm::quat orientation = getOrientation();
     viewMatrix = glm::translate(glm::identity<glm::mat4>(), position);
@@ -37,7 +37,7 @@ glm::vec2 Camera::panSpeed() const {
     return glm::vec2(xFactor, yFactor);
 }
 
-float Camera::rotationSpeed() const { return 0.8F; }
+float Camera::rotationSpeed() { return 0.8F; }
 
 float Camera::zoomSpeed() const {
     float d = distance * 0.2F;
@@ -75,21 +75,21 @@ void Camera::mousePan(const glm::vec2 &delta) {
 }
 
 void Camera::mouseRotate(const glm::vec2 &delta) {
-    float yawSign = getUpDirection().y < 0 ? -1.0f : 1.0f;
+    float yawSign = getUpDirection().y < 0 ? -1.0F : 1.0F;
     yaw += yawSign * delta.x * rotationSpeed();
     pitch += delta.y * rotationSpeed();
 }
 
 void Camera::mouseZoom(float delta) {
     distance -= delta * zoomSpeed();
-    if (distance < 1.0f) {
+    if (distance < 1.0F) {
         focalPoint += getForwardDirection();
-        distance = 1.0f;
+        distance = 1.0F;
     }
 }
 
 void Camera::onScroll(double yOffset) {
-    float delta = yOffset * 0.1F;
+    float delta = static_cast<float>(yOffset) * 0.1F;
     mouseZoom(delta);
     updateView();
 }

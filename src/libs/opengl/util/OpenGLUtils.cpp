@@ -28,7 +28,7 @@ glm::mat4 createViewMatrix(const glm::vec3 &cameraPosition, const glm::vec3 &cam
 }
 
 glm::mat4 createModelMatrix(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
-                            const glm::vec3 &modelScale ) {
+                            const glm::vec3 &modelScale) {
     auto modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::translate(modelMatrix, modelPosition);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
@@ -51,8 +51,10 @@ MappedMousePosition mapMouseOntoCanvas(const glm::vec2 &mousePos, const glm::mat
 
     auto adjustedDisplayPos = glm::inverse(transformationMatrix) * glm::vec4(mouseDisplaySpace, 0.0F, 1.0F);
     auto canvasPos = (glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y) + glm::vec2(1.0F, 1.0F)) / 2.0F;
-    return {glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF)),
-            glm::vec2(adjustedDisplayPos.x, adjustedDisplayPos.y)};
+    return {
+          glm::vec2(canvasPos.x * widthF, heightF - (canvasPos.y * heightF)),
+          glm::vec3(adjustedDisplayPos.x, adjustedDisplayPos.y, adjustedDisplayPos.z),
+    };
 }
 
 void checkFramebufferStatus() {
