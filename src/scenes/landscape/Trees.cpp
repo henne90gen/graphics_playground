@@ -24,23 +24,9 @@ void Trees::init() {
     barkTexture = std::make_shared<Texture>();
 
     Image img = {};
-#if 0
-    if (ImageOps::load("./landscape_resources/assets/textures/bark.png", img)) {
-        img.applyToTexture(barkTexture);
-    }
-#elif 0
-    if (ImageOps::load("./landscape_resources/assets/textures/leafs.png", img)) {
-        img.applyToTexture(barkTexture);
-    }
-#elif 0
-    if (ImageOps::load("./landscape_resources/assets/textures/bark_and_leafs.png", img)) {
-        img.applyToTexture(barkTexture);
-    }
-#else
     if (ImageOps::load("./landscape_resources/assets/textures/bark_and_leafs_light.png", img)) {
         img.applyToTexture(barkTexture);
     }
-#endif
 }
 
 void Trees::showGui() {

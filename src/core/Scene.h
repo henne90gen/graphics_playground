@@ -7,7 +7,7 @@
 #include <imgui.h>
 #include <utility>
 
-#include "util/Camera.h"
+#include "camera/Camera.h"
 #include "util/InputData.h"
 #include "util/TimeUtils.h"
 
@@ -34,11 +34,11 @@ class Scene {
     virtual void onCharacterTyped(unsigned int i) {}
     virtual void onScroll(double xOffset, double yOffset);
 
-    inline float getAspectRatio() const { return aspectRatio; }
-    inline unsigned int getWidth() const { return width; }
-    inline unsigned int getHeight() const { return height; }
-    inline double getLastFrameTime() const { return timeDelta; }
-    inline const InputData &getInput() const { return input; }
+    [[nodiscard]] inline float getAspectRatio() const { return aspectRatio; }
+    [[nodiscard]] inline unsigned int getWidth() const { return width; }
+    [[nodiscard]] inline unsigned int getHeight() const { return height; }
+    [[nodiscard]] inline double getLastFrameTime() const { return timeDelta; }
+    [[nodiscard]] inline const InputData &getInput() const { return input; }
     inline Camera &getCamera() { return camera; }
     inline PerformanceCounter *getPerformanceCounter() { return &this->performanceCounter; }
 

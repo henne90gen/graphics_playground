@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cmath>
-#include <memory>
 #include <random>
 
 constexpr unsigned int WIDTH = 10;
