@@ -11,6 +11,12 @@ uniform float lod1Size;
 uniform float lod2Size;
 uniform int treeCount;
 
+const int MAX_NUM_NOISE_LAYERS = 15;
+struct NoiseLayer {
+    float frequency;
+    float amplitude;
+    bool enabled;
+};
 uniform NoiseLayer noiseLayers[MAX_NUM_NOISE_LAYERS];
 uniform int numNoiseLayers;
 uniform float finiteDifference;

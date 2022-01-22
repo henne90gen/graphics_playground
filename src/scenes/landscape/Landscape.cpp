@@ -425,8 +425,8 @@ void Landscape::initGBuffer() {
     // Create depth buffer
     GL_Call(glGenRenderbuffers(1, &depthBuffer));
     GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
-    GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
-    GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer));
+    GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height));
+    GL_Call(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer));
 
     checkFramebufferStatus();
 }
