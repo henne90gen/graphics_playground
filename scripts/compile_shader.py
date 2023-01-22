@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 def run_compile_shader(input_file: str, output_file: str):
@@ -41,3 +42,11 @@ def run_compile_shader(input_file: str, output_file: str):
 
     with open(output_file, "w+") as f:
         f.writelines(lines)
+
+
+def main():
+    run_compile_shader(sys.argv[1], sys.argv[2])
+
+
+if __name__ == "__main__":
+    main()

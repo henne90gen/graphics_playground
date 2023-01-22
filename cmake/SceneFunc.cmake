@@ -9,7 +9,7 @@ function(create_scene)
         set(OUTPUT_FILE ${SHADER_DIR}/${OUTPUT_FILE_NAME})
         add_custom_command(
                 OUTPUT ${OUTPUT_FILE}
-                COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts compile-shader ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILE} ${OUTPUT_FILE}
+                COMMAND cd ${CMAKE_SOURCE_DIR} && python scripts/compile_shader.py ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILE} ${OUTPUT_FILE}
                 COMMENT "Building shader object ${OUTPUT_FILE_NAME}"
                 DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILE})
         list(APPEND SHADERS ${OUTPUT_FILE})
@@ -68,6 +68,6 @@ function(add_scene_resource_directory RESOURCE_DIR)
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
     add_custom_target(${SCENE_NAME}_copy_resources
-            COMMAND cd ${CMAKE_SOURCE_DIR} && python -m scripts copy-resources ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCE_DIR} ${CMAKE_BINARY_DIR}/bin/${SCENE_NAME}_resources)
+            COMMAND cd ${CMAKE_SOURCE_DIR} && python scripts/copy_resources.py ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCE_DIR} ${CMAKE_BINARY_DIR}/bin/${SCENE_NAME}_resources)
     add_dependencies(${SCENE_NAME} ${SCENE_NAME}_copy_resources)
 endfunction()
