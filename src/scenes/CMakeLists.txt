@@ -1,5 +1,3 @@
-include("../../vendor/catch/contrib/Catch.cmake")
-
 file(GLOB DIRECTORIES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*")
 foreach (DIRECTORY ${DIRECTORIES})
     if (${DIRECTORY} STREQUAL CMakeLists.txt)
