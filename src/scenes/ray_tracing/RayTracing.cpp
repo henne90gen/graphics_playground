@@ -225,7 +225,7 @@ void RayTracing::renderObject(const RayTracer::Object &object) {
     modelMatrix = glm::translate(modelMatrix, object.position);
 
     if (object.type == RayTracer::Object::Sphere) {
-        array = createSphereVA(shader);
+        array = Sphere().createVA(shader);
         float r = object.data.sphere.radius;
         modelMatrix = glm::scale(modelMatrix, glm::vec3(r, r, r));
     }
