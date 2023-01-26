@@ -7,6 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 include(SceneFunc)
+include(FetchContent)
 
 option(BUILD_OPENCV "Turn this on to build OpenCV from source" OFF)
 
@@ -144,10 +145,19 @@ set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
 # gif-h
 set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
 
-# Catch
-set(CATCH_DIR ${VENDOR_DIR}/catch)
-set(CATCH_INCLUDE_DIR ${CATCH_DIR}/single_include/catch2)
-add_subdirectory(${CATCH_DIR})
+# Google Test
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
+)
+
+# Google Benchmark
+FetchContent_Declare(
+        benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG 49aa374da96199d64fd3de9673b6f405bbc3de3e # some commits after v1.7.0
+)
 
 # FFMPEG
 function(find_ffmpeg_libraries)
@@ -185,38 +195,8 @@ endfunction()
 
 find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
 
-# Google Benchmark
-set(BENCHMARK_ENABLE_TESTING OFF)
-add_subdirectory(${VENDOR_DIR}/benchmark)
-
 # OpenMP
 find_package(OpenMP)
-
-# OpenCV
-if (BUILD_OPENCV)
-    set(BUILD_TESTS OFF CACHE BOOL "Disable tests" FORCE)
-    set(BUILD_PERF_TESTS OFF CACHE BOOL "Disable perf tests" FORCE)
-    set(BUILD_JAVA OFF CACHE BOOL "Disable Java bindings" FORCE)
-    set(BUILD_ZLIB OFF CACHE BOOL "Build zlib" FORCE)
-    set(BUILD_opencv_python2 OFF CACHE BOOL "Disable python2" FORCE)
-    set(BUILD_opencv_python3 OFF CACHE BOOL "Disable python3" FORCE)
-    set(BUILD_opencv_python_bindings_generator OFF CACHE BOOL "Disable python bindings generator" FORCE)
-    set(BUILD_opencv_python_tests OFF CACHE BOOL "Disable python tests" FORCE)
-    set(BUILD_opencv_java OFF CACHE BOOL "Disable java" FORCE)
-    set(BUILD_opencv_java_bindings_generator OFF CACHE BOOL "Disable java bindings generator" FORCE)
-    set(OPENCV_DIR ${VENDOR_DIR}/opencv)
-    set(OPENCV_INCLUDE_DIR
-            ${OPENCV_DIR}/include
-            ${OPENCV_DIR}/modules/core/include
-            ${OPENCV_DIR}/modules/imgproc/include
-            ${OPENCV_DIR}/modules/videoio/include
-            ${CMAKE_BINARY_DIR}
-            )
-    add_subdirectory(${OPENCV_DIR})
-else ()
-    find_package(OpenCV REQUIRED)
-endif ()
-set(OPENCV_LIBS opencv_core opencv_imgproc opencv_videoio)
 
 # libsoundio
 set(LIBSOUNDIO_DIR ${VENDOR_DIR}/libsoundio)
@@ -225,6 +205,11 @@ set(BUILD_EXAMPLE_PROGRAMS OFF)
 set(LIBSOUNDIO_LIBRARY libsoundio_shared)
 set(LIBSOUNDIO_INCLUDE_DIR ${LIBSOUNDIO_DIR})
 add_subdirectory(${LIBSOUNDIO_DIR})
+
+FetchContent_MakeAvailable(
+        googletest
+        benchmark
+)
 
 enable_testing()
 add_subdirectory(src)
