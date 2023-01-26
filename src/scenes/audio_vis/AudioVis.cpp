@@ -1,6 +1,7 @@
 #include "AudioVis.h"
 
 #include <algorithm>
+#include <array>
 
 #include "Main.h"
 
@@ -26,10 +27,9 @@ void AudioVis::setup() {
     playBack.coefficients = fourier::fft(inputData, playBack.wav->header.sampleRate);
     initSoundIo(wav.header.sampleRate);
 
-#if 1
+    // pause the audio playback by default
     playBack.paused = true;
     soundio_outstream_pause(outstream, playBack.paused);
-#endif
 
     initMesh();
 }
@@ -62,8 +62,8 @@ void AudioVis::tick() {
     ImGui::Text("Number of Channels: %d", wav.header.numChannels);
 
     ImGui::Text("Cursor: %d", playBack.sampleCursor);
-    float seconds = static_cast<float>(playBack.sampleCursor) /
-                    (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
+    const auto seconds = static_cast<float>(playBack.sampleCursor) /
+                         (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
     ImGui::Text("%.2fs", seconds);
 
     ImGui::SliderInt("", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / wav.header.numChannels,
@@ -79,8 +79,11 @@ void AudioVis::tick() {
     }
 
     ImGui::DragInt("Lines Per Second", &linesPerSecond, 1, 1, wav.header.sampleRate);
-    // TODO make this a dropdown
-    ImGui::DragInt("Current Mode", reinterpret_cast<int *>(&currentMode));
+
+    std::array<const char *, 4> items = {"AMPLITUDE", "PHASE", "FREQUENCY", "MAGNITUDE"};
+    ImGui::Combo("Current Mode", reinterpret_cast<int *>(&currentMode),
+                 reinterpret_cast<const char *const *>(items.data()), items.size());
+
     ImGui::End();
 
     switch (currentMode) {
@@ -231,7 +234,7 @@ void AudioVis::initMesh() {
     }
 
     const unsigned long verticesSize = vertices.size() * 2 * sizeof(float);
-    BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
+    const BufferLayout positionLayout = {{ShaderDataType::Float2, "position"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices.data(), verticesSize, positionLayout);
     va->addVertexBuffer(positionBuffer);
 
@@ -241,12 +244,12 @@ void AudioVis::initMesh() {
         h = 0.0F;
     }
     heightBuffer = std::make_shared<VertexBuffer>();
-    BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
+    const BufferLayout heightLayout = {{ShaderDataType::Float, "height"}};
     heightBuffer->setLayout(heightLayout);
     va->addVertexBuffer(heightBuffer);
 
     const unsigned int trianglesPerQuad = 2;
-    unsigned int indicesCount = WIDTH * LENGTH * trianglesPerQuad;
+    const auto indicesCount = WIDTH * LENGTH * trianglesPerQuad;
     auto indices = std::vector<glm::ivec3>(indicesCount);
     unsigned int counter = 0;
     for (unsigned int y = 0; y < LENGTH - 1; y++) {
@@ -266,8 +269,8 @@ void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPo
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, modelScale);
-    glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+    const auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    const auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("model", modelMatrix);
     shader->setUniform("view", viewMatrix);
     shader->setUniform("projection", projectionMatrix);
@@ -302,9 +305,12 @@ void AudioVis::updateMesh(const std::function<double(int)> &calcSample01Func, un
     float maxHeight = 0.0F;
     int samplesPerLine = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
     while (currentCursor >= std::max(0, playBack.sampleCursor - samplesPerLine * LENGTH)) {
-        double sample01 = calcSample01Func(currentCursor);
-        unsigned long bucketIndex = std::floor(sample01 * static_cast<double>(WIDTH));
-        unsigned long index = currentLine * WIDTH + bucketIndex;
+        const auto sample01 = calcSample01Func(currentCursor);
+        if (sample01 < 0 || sample01 > 1) {
+            std::cout << "Sample is not between 0 and 1: " << sample01 << std::endl;
+        }
+        const auto bucketIndex = std::floor(sample01 * static_cast<double>(WIDTH));
+        const auto index = currentLine * WIDTH + bucketIndex;
         if (index < heightMap.size()) {
             heightMap[index] += 1.0F;
             if (heightMap[index] > maxHeight) {
@@ -331,10 +337,10 @@ void AudioVis::updateMesh(const std::function<double(int)> &calcSample01Func, un
 void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
     updateMesh(
           [this](int currentCursor) {
-              auto sample = static_cast<double>(*(wav.data.data16 + currentCursor));
-              double min = std::abs(static_cast<double>(std::numeric_limits<int16_t>::min()));
-              double max = std::abs(static_cast<double>(std::numeric_limits<int16_t>::max()));
-              return (sample + min) / (min + max);
+              const auto sample = static_cast<double>(*(wav.data.data16 + currentCursor));
+              const auto min = static_cast<double>(std::numeric_limits<int16_t>::min());
+              const auto max = static_cast<double>(std::numeric_limits<int16_t>::max());
+              return (sample - min) / (max - min);
           },
           linesPerSecond);
 }
@@ -342,7 +348,8 @@ void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
 void AudioVis::updateMeshPhase(unsigned int linesPerSecond) {
     updateMesh(
           [this](int currentCursor) {
-              float phase = playBack.coefficients[currentCursor].phase;
+              auto phase = playBack.coefficients[currentCursor].phase;
+              phase = std::clamp(phase, -180.0, 180.0);
               return (phase + 180.0F) / 360.0F;
           },
           linesPerSecond);
@@ -351,7 +358,7 @@ void AudioVis::updateMeshPhase(unsigned int linesPerSecond) {
 void AudioVis::updateMeshFrequency(unsigned int linesPerSecond) {
     updateMesh(
           [this](int currentCursor) {
-              double frequency = playBack.coefficients[currentCursor].frequency;
+              const auto frequency = playBack.coefficients[currentCursor].frequency;
               return frequency / (wav.header.sampleRate * 0.5);
           },
           linesPerSecond);
@@ -360,7 +367,7 @@ void AudioVis::updateMeshFrequency(unsigned int linesPerSecond) {
 void AudioVis::updateMeshMagnitude(unsigned int linesPerSecond) {
     updateMesh(
           [this](int currentCursor) {
-              float magnitude = playBack.coefficients[currentCursor].magnitude;
+              const auto magnitude = playBack.coefficients[currentCursor].magnitude;
               return magnitude;
           },
           linesPerSecond);

@@ -6,62 +6,7 @@
 
 namespace fourier {
 
-void refactoredFft(float *fftBuffer, long fftFrameSize, long sign) {
-    long logN = (long)(std::log(fftFrameSize) / std::log(2.0) + 0.5);
-
-    for (long i = 2; i < 2 * fftFrameSize - 2; i += 2) {
-        long j = 0;
-        for (long bitm = 2; bitm < 2 * fftFrameSize; bitm <<= 1) {
-            if (i & bitm)
-                j++;
-            j <<= 1;
-        }
-        if (i < j) {
-            float *p1 = fftBuffer + i;
-            float *p2 = fftBuffer + j;
-            float temp = *p1;
-            *(p1++) = *p2;
-            *(p2++) = temp;
-            temp = *p1;
-            *p1 = *p2;
-            *p2 = temp;
-        }
-    }
-
-    long le = 2;
-    for (long k = 0; k < logN; k++) {
-        le <<= 1;
-        long le2 = le >> 1;
-        float ur = 1.0;
-        float ui = 0.0;
-        float arg = M_PI / (le2 >> 1);
-        float wr = cos(arg);
-        float wi = sign * sin(arg);
-        for (long j = 0; j < le2; j += 2) {
-            float *p1r = fftBuffer + j;
-            float *p1i = p1r + 1;
-            float *p2r = p1r + le2;
-            float *p2i = p2r + 1;
-            for (long i = j; i < 2 * fftFrameSize; i += le) {
-                float tr = *p2r * ur - *p2i * ui;
-                float ti = *p2r * ui + *p2i * ur;
-                *p2r = *p1r - tr;
-                *p2i = *p1i - ti;
-                *p1r += tr;
-                *p1i += ti;
-                p1r += le;
-                p1i += le;
-                p2r += le;
-                p2i += le;
-            }
-            float tr = ur * wr - ui * wi;
-            ui = ur * wi + ui * wr;
-            ur = tr;
-        }
-    }
-}
-
-void originalFft(float *fftBuffer, long fftFrameSize, long sign) {
+void internalFFT(float *fftBuffer, long fftFrameSize, long sign) {
     float wr, wi, arg, *p1, *p2, temp;
     float tr, ti, ur, ui, *p1r, *p1i, *p2r, *p2i;
     long i, bitm, j, le, le2, k, logN;
@@ -128,9 +73,9 @@ long roundUpToPowerOfTwo(long num) {
 }
 
 std::vector<DataPoint> fft(const std::vector<float> &inputData, unsigned int sampleRate) {
-    long fftFrameSize = roundUpToPowerOfTwo(inputData.size());
+    const auto fftFrameSize = roundUpToPowerOfTwo(inputData.size());
     float *fftBuffer = reinterpret_cast<float *>(std::malloc(2 * fftFrameSize * sizeof(float)));
-    long sign = -1L;
+    const auto sign = -1L;
 
     for (unsigned int i = 0; i < fftFrameSize; i++) {
         if (i < inputData.size()) {
@@ -141,23 +86,23 @@ std::vector<DataPoint> fft(const std::vector<float> &inputData, unsigned int sam
         fftBuffer[i * 2 + 1] = 0.0F;
     }
 
-#if 0
-    refactoredFft(fftBuffer, fftFrameSize, sign);
-#else
-    originalFft(fftBuffer, fftFrameSize, sign);
-#endif
+    internalFFT(fftBuffer, fftFrameSize, sign);
 
     auto result = std::vector<DataPoint>();
-    double transformLength = inputData.size();
+    const auto transformLength = inputData.size();
     for (unsigned int bin = 0; bin < fftFrameSize; bin += 2) {
-        double cosPart = fftBuffer[bin];
-        double sinPart = fftBuffer[bin + 1];
+        const auto cosPart = fftBuffer[bin];
+        const auto sinPart = fftBuffer[bin + 1];
 
-        double frequency = (static_cast<double>(bin) * static_cast<double>(sampleRate)) / transformLength;
-        double magnitude = (20.0 * log10(2.0 * std::sqrt(sinPart * sinPart + cosPart * cosPart))) / transformLength;
-        double phase = (100.0 * std::atan2(sinPart, cosPart)) / M_PI - 90.0;
+        const auto frequency = (static_cast<double>(bin) * static_cast<double>(sampleRate)) / transformLength;
+        //        const auto magnitude = (20.0 * log10(2.0 * std::sqrt(sinPart * sinPart + cosPart * cosPart))) /
+        //        transformLength;
+        const auto magnitude = std::sqrt(sinPart * sinPart + cosPart * cosPart);
+        const auto phase = (180.0 * std::atan2(sinPart, cosPart)) / M_PI;
         result.push_back({frequency, magnitude, phase});
     }
+
+    free(fftBuffer);
 
     return result;
 }
