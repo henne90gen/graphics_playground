@@ -16,9 +16,6 @@
 [submodule "vendor/libpng"]
 	path = vendor/libpng
 	url = git@github.com:glennrp/libpng.git
-[submodule "vendor/catch"]
-	path = vendor/catch
-	url = git@github.com:catchorg/Catch2.git
 [submodule "vendor/zlib"]
 	path = vendor/zlib
 	url = git@github.com:madler/zlib.git
@@ -28,9 +25,6 @@
 [submodule "vendor/gif-h"]
 	path = vendor/gif-h
 	url = git@github.com:ginsweater/gif-h.git
-[submodule "vendor/benchmark"]
-	path = vendor/benchmark
-	url = git@github.com:google/benchmark.git
 [submodule "vendor/opencv"]
 	path = vendor/opencv
 	url = git@github.com:opencv/opencv.git
