@@ -1,6 +1,3 @@
-[submodule "vendor/libpng"]
-	path = vendor/libpng
-	url = git@github.com:glennrp/libpng.git
 [submodule "vendor/zlib"]
 	path = vendor/zlib
 	url = git@github.com:madler/zlib.git
