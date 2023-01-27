@@ -6,9 +6,9 @@ set_target_properties(video PROPERTIES
 
 target_link_libraries(video
         glad
+        gif
         ${FFMPEG_LIBRARY})
 
 target_include_directories(video PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GIF_H_DIR}
         ${FFMPEG_INCLUDE_DIR})

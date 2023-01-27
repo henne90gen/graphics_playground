@@ -52,9 +52,6 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif ()
 export(TARGETS ${ZLIB_LIBRARIES} FILE zlibstatic.cmake)
 
-# gif-h
-set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
-
 # FFMPEG
 function(find_ffmpeg_libraries)
     set(FFMPEG_FOUND TRUE)
@@ -132,6 +129,11 @@ FetchContent_Declare(
         GIT_TAG 07b8803110da160b158ebfef872627da6c85cbdf # v1.6.39
 )
 FetchContent_Declare(
+        gif
+        GIT_REPOSITORY https://github.com/charlietangora/gif-h.git
+        GIT_TAG 3d2657b9ad40aac9fd6f75ad079335856e94d664 # 10.11.2020
+)
+FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
@@ -169,6 +171,7 @@ FetchContent_MakeAvailable(
         libsoundio
         libjpeg
         libpng
+        gif
         googletest
         benchmark
 )
@@ -184,8 +187,7 @@ add_library(imgui
         "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
         "${imgui_SOURCE_DIR}/imgui_tables.cpp"
         "${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
-        "${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp"
-        )
+        "${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp")
 target_include_directories(imgui PUBLIC "${imgui_SOURCE_DIR}")
 target_link_libraries(imgui PUBLIC glad glfw)
 target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
@@ -196,6 +198,10 @@ target_include_directories(libsoundio_shared PUBLIC "${libsoundio_SOURCE_DIR}")
 # libpng
 target_include_directories(png PUBLIC "${libpng_SOURCE_DIR}")
 target_include_directories(png PUBLIC "${libpng_BINARY_DIR}")
+
+# GIF
+add_library(gif INTERFACE)
+target_include_directories(gif INTERFACE ${gif_SOURCE_DIR})
 
 # OpenMP
 find_package(OpenMP)

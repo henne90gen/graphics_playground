@@ -1,6 +1,3 @@
 [submodule "vendor/zlib"]
 	path = vendor/zlib
 	url = git@github.com:madler/zlib.git
-[submodule "vendor/gif-h"]
-	path = vendor/gif-h
-	url = git@github.com:ginsweater/gif-h.git
