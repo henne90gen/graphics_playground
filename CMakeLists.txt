@@ -9,6 +9,23 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include(SceneFunc)
 include(FetchContent)
 
+if (EMSCRIPTEN)
+    # TODO change to .js and add custom index.html
+    # set(CMAKE_EXECUTABLE_SUFFIX ".js")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASSERTIONS=1")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s WASM=1")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s MIN_WEBGL_VERSION=2")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/res@/res")
+
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/html)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/html)
+
+#    configure_file(index.html ${CMAKE_BINARY_DIR}/html/index.html)
+endif ()
+
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
 find_program(
@@ -125,8 +142,16 @@ FetchContent_MakeAvailable(zlib)
 # zlib configuration for libpng
 set(ZLIB_LIBRARY zlib)
 set(ZLIB_LIBRARIES zlib)
-set(ZLIB_INCLUDE_DIRS "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
-target_include_directories(zlib PUBLIC "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
+set(ZLIB_INCLUDE_DIR "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
+set(ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR})
+target_include_directories(zlib PUBLIC ${ZLIB_INCLUDE_DIR})
+
+set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
+set(PNG_SHARED ON CACHE BOOL "" FORCE) # libpng
+set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # libpng
+set(PNG_TESTS OFF CACHE BOOL "" FORCE) # libpng
+set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE) # libpng
+FetchContent_MakeAvailable(libpng)
 
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE) # benchmark
 set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE) # benchmark
@@ -140,26 +165,32 @@ set(BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_DYNAMIC_LIBS ON CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_TESTS OFF CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_EXAMPLE_PROGRAMS OFF CACHE BOOL "" FORCE) # libsoundio
-set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
-set(PNG_SHARED ON CACHE BOOL "" FORCE) # libpng
-set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # libpng
-set(PNG_TESTS OFF CACHE BOOL "" FORCE) # libpng
-set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE) # libpng
+
+# libpng
+set(PNG_LIBRARY png)
+set(PNG_PNG_INCLUDE_DIR "${libpng_SOURCE_DIR}" "${libpng_BINARY_DIR}")
+target_include_directories(png PUBLIC ${PNG_PNG_INCLUDE_DIR})
 
 FetchContent_MakeAvailable(
-        glfw
         glm
         imgui
         freetype
         fastnoise
         libsoundio
         libjpeg
-        libpng
         gif
         zlib
-        googletest
-        benchmark
 )
+
+if (NOT EMSCRIPTEN)
+    FetchContent_MakeAvailable(
+            glfw
+            googletest
+            benchmark
+    )
+    find_package(OpenGL REQUIRED)
+endif ()
+
 
 # FastNoise
 add_library(FastNoise INTERFACE)
@@ -179,9 +210,6 @@ target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # libsoundio
 target_include_directories(libsoundio_shared PUBLIC "${libsoundio_SOURCE_DIR}")
-
-# libpng
-target_include_directories(png PUBLIC "${libpng_SOURCE_DIR}" "${libpng_BINARY_DIR}")
 
 # GIF
 add_library(gif INTERFACE)
