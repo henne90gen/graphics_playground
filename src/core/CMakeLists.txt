@@ -46,7 +46,6 @@ endif ()
 
 target_link_libraries(core
         glfw
-        glad
         imgui
         opengl
         OpenMP::OpenMP_CXX)
