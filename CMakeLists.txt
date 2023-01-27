@@ -25,32 +25,6 @@ else ()
     set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "--fix")
 endif ()
 
-set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
-
-# GLAD
-set(GLAD_DIR ${VENDOR_DIR}/glad)
-add_library(glad "${GLAD_DIR}/src/glad.c")
-target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
-
-# zlib
-# zlib/png integration hack - removes all the errors related to export
-# (zlib doesn't export; libpng wants to; in this case we don't care).
-#set(SKIP_INSTALL_EXPORT TRUE)
-#set(ZLIB_DIR ${VENDOR_DIR}/zlib)
-#add_subdirectory(${ZLIB_DIR})
-#get_directory_property(
-#        ZLIB_BUILD_DIRECTORY
-#        DIRECTORY
-#        ${ZLIB_DIR}
-#        DEFINITION
-#        CMAKE_CURRENT_BINARY_DIR
-#)
-
-#if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-#    include_directories(${ZLIB_INCLUDE_DIRS})
-#endif ()
-#export(TARGETS ${ZLIB_LIBRARIES} FILE zlibstatic.cmake)
-
 # FFMPEG
 function(find_ffmpeg_libraries)
     set(FFMPEG_FOUND TRUE)
