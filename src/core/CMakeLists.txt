@@ -10,19 +10,17 @@ add_library(core
         fourier_transform/Fourier.cpp
         )
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    target_compile_options(core PRIVATE /std:c++17)
+if (MSVC)
 else ()
     target_compile_options(core PRIVATE
             -Wall
             -Wextra
             -pedantic
             -Wno-unused-parameter)
-    add_definitions(-std=c++17)
 endif ()
 
 set_target_properties(core PROPERTIES
-        CXX_STANDARD 17
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON)
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -44,19 +42,22 @@ else ()
     message("-- Screen Recording: disabled")
 endif ()
 
-target_link_libraries(core
+target_link_libraries(core PUBLIC
         glfw
         imgui
-        opengl
-        OpenMP::OpenMP_CXX)
+        opengl)
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+if (OpenMP_FOUND)
+    target_link_libraries(core PUBLIC OpenMP::OpenMP_CXX)
+endif ()
+
+if (MSVC)
     find_package(OpenGL REQUIRED)
     target_include_directories(core PUBLIC ${OPENGL_INCLUDE_DIR})
-    target_link_libraries(core ${OPENGL_gl_LIBRARY})
+    target_link_libraries(core PUBLIC ${OPENGL_gl_LIBRARY})
 elseif (APPLE)
 else ()
-    target_link_libraries(core stdc++fs)
+    target_link_libraries(core PUBLIC stdc++fs)
 endif ()
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

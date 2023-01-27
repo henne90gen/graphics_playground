@@ -1,10 +1,10 @@
 #pragma once
 
-#include <FastNoise.h>
+#include <FastNoiseLite.h>
 #include <array>
 #include <imgui.h>
 
 namespace ImGui {
-void NoiseTypeSelector(FastNoise::NoiseType *noiseType);
-void NoiseTypeSelector(const char *label, FastNoise::NoiseType *noiseType);
+void NoiseTypeSelector(FastNoiseLite::NoiseType *noiseType);
+void NoiseTypeSelector(const char *label, FastNoiseLite::NoiseType *noiseType);
 } // namespace ImGui

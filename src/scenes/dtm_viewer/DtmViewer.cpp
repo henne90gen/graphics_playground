@@ -404,10 +404,14 @@ void DtmViewer::batchProcessor() {
 
             rawBatchMutex.unlock();
 
+#if OpenMP_FOUND
 #pragma omp task
+#endif
             { processBatch(rawBatch); }
         }
+#if OpenMP_FOUND
 #pragma omp taskwait
+#endif
     }
 
     finishProcessing = std::chrono::high_resolution_clock::now();

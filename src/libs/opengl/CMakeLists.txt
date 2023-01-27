@@ -17,11 +17,10 @@ set_target_properties(opengl PROPERTIES
 target_link_libraries(opengl PUBLIC glad glm)
 target_include_directories(opengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+if (MSVC)
     find_package(OpenGL REQUIRED)
     target_include_directories(opengl PUBLIC ${OPENGL_INCLUDE_DIR})
     target_link_libraries(opengl PUBLIC ${OPENGL_gl_LIBRARY})
-    target_compile_options(opengl PRIVATE /std:c++20)
 elseif (APPLE)
 else ()
     target_link_libraries(opengl PUBLIC stdc++fs)
@@ -30,5 +29,4 @@ else ()
             -Wextra
             -pedantic
             -Wno-unused-parameter)
-    add_definitions(-std=c++20)
 endif ()

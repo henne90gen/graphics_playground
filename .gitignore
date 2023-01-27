@@ -5,8 +5,7 @@ build/
 build-release/
 build-debug/
 venv/
-cmake-build-debug/
-cmake-build-release/
+cmake-build-*/
 CMakeSettings.json
 __pycache__/
 docs/

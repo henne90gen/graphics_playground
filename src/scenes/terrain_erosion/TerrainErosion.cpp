@@ -29,15 +29,15 @@ void TerrainErosion::setup() {
     shader = CREATE_DEFAULT_SHADER(terrain_erosion_Terrain);
     shader->bind();
 
-    noise1 = new FastNoise();
-    noise2 = new FastNoise();
-    noise3 = new FastNoise();
+    noise1 = new FastNoiseLite();
+    noise2 = new FastNoiseLite();
+    noise3 = new FastNoiseLite();
 
     noise1->SetFrequency(0.1F);
     noise2->SetFrequency(0.3F);
     noise3->SetFrequency(0.7F);
 
-    FastNoise::NoiseType noiseType = FastNoise::Simplex;
+    FastNoiseLite::NoiseType noiseType = FastNoiseLite::NoiseType_OpenSimplex2;
     noise1->SetNoiseType(noiseType);
     noise2->SetNoiseType(noiseType);
     noise3->SetNoiseType(noiseType);
@@ -236,7 +236,7 @@ void TerrainErosion::regenerateRaindrops(const glm::ivec2 &terrainSize, std::vec
     }
 }
 
-float generateHeight(const FastNoise *noise, const float x, const float y, const float z) {
+float generateHeight(const FastNoiseLite *noise, const float x, const float y, const float z) {
     float generatedHeight = noise->GetNoise(x, y, z);
     const float offset = 1.0F;
     generatedHeight += offset;

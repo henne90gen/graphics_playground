@@ -1,7 +1,7 @@
 
 function(benchmark name)
     add_executable(${name}_bench ${name}.cpp)
-    target_link_libraries(${name}_bench PRIVATE core benchmark::benchmark OpenMP::OpenMP_CXX)
+    target_link_libraries(${name}_bench PRIVATE core benchmark::benchmark)
     target_include_directories(${name}_bench PRIVATE
             ${CMAKE_SOURCE_DIR}/src/core
             ${GLM_DIR})

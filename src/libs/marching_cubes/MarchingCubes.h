@@ -1,10 +1,9 @@
 #pragma once
 
-#include <vector>
+#include <FastNoiseLite.h>
 #include <functional>
-
-#include <FastNoise.h>
 #include <glm/ext.hpp>
+#include <vector>
 
 #include "TriangulationTable.h"
 
@@ -32,13 +31,13 @@ class MarchingCubes {
     float surfaceLevel = 0.4;
     bool interpolate = true;
     float frequency = 0.08F;
-    FastNoise::NoiseType noiseType = FastNoise::ValueFractal;
+    FastNoiseLite::NoiseType noiseType = FastNoiseLite::NoiseType_Value;
 
   private:
     glm::vec3 cubePosition = glm::vec3();
     int stepCount = 0;
     bool isRunning = false;
-    FastNoise noise = FastNoise();
+    FastNoiseLite noise = FastNoiseLite();
     std::vector<glm::vec3> vertices;
     std::vector<glm::ivec3> indices;
 
@@ -56,5 +55,5 @@ typedef std::function<float(const glm::vec3 &)> implicit_surface_func;
 void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
                       implicit_surface_func &func);
 
-void runMarchingCubesSequential(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices, std::vector<glm::ivec3> &indices,
-                      implicit_surface_func &func);
+void runMarchingCubesSequential(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vertices,
+                                std::vector<glm::ivec3> &indices, implicit_surface_func &func);

@@ -2,8 +2,11 @@
 
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <omp.h>
 #include <thread>
+
+#if OpenMP_ENABLED
+#include <omp.h>
+#endif
 
 #include "Scene.h"
 #include "util/ImGuiUtils.h"
@@ -17,12 +20,14 @@ const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
 
 void setOmpThreadLimit() {
+#if OpenMP_ENABLED
     auto coreCount = std::thread::hardware_concurrency();
     if (coreCount == 0) {
         coreCount = 2;
     }
     // setting to one less than the core count, to leave one core empty for the rendering thread
     omp_set_num_threads(coreCount - 1);
+#endif
 }
 
 void GLAPIENTRY messageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/,
