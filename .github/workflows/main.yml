@@ -37,3 +37,35 @@ jobs:
       - name: Build and Install
         working-directory: ./build
         run: cmake --build .
+
+  build-web:
+    name: "Web"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install emscripten SDK
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+      - run: |
+          mkdir build
+# ln -s /usr/bin/python3 /usr/bin/python
+
+      - name: Run CMake
+        working-directory: build
+        run: |
+          source ../emsdk/emsdk_env.sh
+          emcmake cmake ..
+
+      - name: Build
+        working-directory: build
+        run: cmake --build .
+
+#      - name: Deploy to GitHub Pages
+#        uses: JamesIves/github-pages-deploy-action@v4
+#        with:
+#          branch: gh-pages
+#          folder: build/html
