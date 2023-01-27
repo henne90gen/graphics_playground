@@ -145,6 +145,7 @@ set(ZLIB_LIBRARIES zlib)
 set(ZLIB_INCLUDE_DIR "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
 set(ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR})
 target_include_directories(zlib PUBLIC ${ZLIB_INCLUDE_DIR})
+export(TARGETS ${ZLIB_LIBRARY} FILE zlib.cmake)
 
 set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
 set(PNG_SHARED ON CACHE BOOL "" FORCE) # libpng
@@ -152,6 +153,11 @@ set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # libpng
 set(PNG_TESTS OFF CACHE BOOL "" FORCE) # libpng
 set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE) # libpng
 FetchContent_MakeAvailable(libpng)
+
+# libpng
+set(PNG_LIBRARY png)
+set(PNG_PNG_INCLUDE_DIR "${libpng_SOURCE_DIR}" "${libpng_BINARY_DIR}")
+target_include_directories(png PUBLIC ${PNG_PNG_INCLUDE_DIR})
 
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE) # benchmark
 set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE) # benchmark
@@ -165,11 +171,6 @@ set(BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_DYNAMIC_LIBS ON CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_TESTS OFF CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_EXAMPLE_PROGRAMS OFF CACHE BOOL "" FORCE) # libsoundio
-
-# libpng
-set(PNG_LIBRARY png)
-set(PNG_PNG_INCLUDE_DIR "${libpng_SOURCE_DIR}" "${libpng_BINARY_DIR}")
-target_include_directories(png PUBLIC ${PNG_PNG_INCLUDE_DIR})
 
 FetchContent_MakeAvailable(
         glm
