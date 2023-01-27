@@ -83,31 +83,31 @@ set(LIBPNG_LIBRARY ${LIBPNG_STATIC})
 set(LIBPNG_INCLUDE_DIR ${LIBPNG_DIR} ${LIBPNG_BUILD_DIR})
 
 # libjpeg
-set(LIBJPEG_DIR ${VENDOR_DIR}/libjpeg)
-add_subdirectory(${LIBJPEG_DIR})
-get_directory_property(
-        LIBJPEG_BUILD_DIR
-        DIRECTORY
-        ${LIBJPEG_DIR}
-        DEFINITION
-        CMAKE_CURRENT_BINARY_DIR
-)
-get_directory_property(
-        LIBJPEG_STATIC
-        DIRECTORY
-        ${LIBJPEG_DIR}
-        DEFINITION
-        JPEG_LIB_NAME_STATIC
-)
-get_directory_property(
-        LIBJPEG_SHARED
-        DIRECTORY
-        ${LIBJPEG_DIR}
-        DEFINITION
-        JPEG_LIB_NAME
-)
-set(LIBJPEG_LIBRARY ${LIBJPEG_STATIC})
-set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
+#set(LIBJPEG_DIR ${VENDOR_DIR}/libjpeg)
+#add_subdirectory(${LIBJPEG_DIR})
+#get_directory_property(
+#        LIBJPEG_BUILD_DIR
+#        DIRECTORY
+#        ${LIBJPEG_DIR}
+#        DEFINITION
+#        CMAKE_CURRENT_BINARY_DIR
+#)
+#get_directory_property(
+#        LIBJPEG_STATIC
+#        DIRECTORY
+#        ${LIBJPEG_DIR}
+#        DEFINITION
+#        JPEG_LIB_NAME_STATIC
+#)
+#get_directory_property(
+#        LIBJPEG_SHARED
+#        DIRECTORY
+#        ${LIBJPEG_DIR}
+#        DEFINITION
+#        JPEG_LIB_NAME
+#)
+#set(LIBJPEG_LIBRARY ${LIBJPEG_STATIC})
+#set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
 
 # gif-h
 set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
@@ -180,6 +180,11 @@ FetchContent_Declare(
         GIT_TAG a24148e15ffd3fe3fe3c5ee22fd6bbd7351c7539 # 12.10.2022
 )
 FetchContent_Declare(
+        libjpeg
+        GIT_REPOSITORY https://github.com/henne90gen/libjpeg.git
+        GIT_TAG 27391253448f7edd556aa9f25c38ac4822cf6f17
+)
+FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
@@ -210,6 +215,7 @@ FetchContent_MakeAvailable(
         freetype
         fastnoise
         libsoundio
+        libjpeg
         googletest
         benchmark
 )
