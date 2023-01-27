@@ -35,22 +35,21 @@ target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
 # zlib
 # zlib/png integration hack - removes all the errors related to export
 # (zlib doesn't export; libpng wants to; in this case we don't care).
-set(SKIP_INSTALL_EXPORT TRUE)
-set(ZLIB_DIR ${VENDOR_DIR}/zlib)
-add_subdirectory(${ZLIB_DIR})
-get_directory_property(
-        ZLIB_BUILD_DIRECTORY
-        DIRECTORY
-        ${ZLIB_DIR}
-        DEFINITION
-        CMAKE_CURRENT_BINARY_DIR
-)
-set(ZLIB_INCLUDE_DIRS ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
-set(ZLIB_LIBRARIES zlibstatic)
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    include_directories(${ZLIB_INCLUDE_DIRS})
-endif ()
-export(TARGETS ${ZLIB_LIBRARIES} FILE zlibstatic.cmake)
+#set(SKIP_INSTALL_EXPORT TRUE)
+#set(ZLIB_DIR ${VENDOR_DIR}/zlib)
+#add_subdirectory(${ZLIB_DIR})
+#get_directory_property(
+#        ZLIB_BUILD_DIRECTORY
+#        DIRECTORY
+#        ${ZLIB_DIR}
+#        DEFINITION
+#        CMAKE_CURRENT_BINARY_DIR
+#)
+
+#if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+#    include_directories(${ZLIB_INCLUDE_DIRS})
+#endif ()
+#export(TARGETS ${ZLIB_LIBRARIES} FILE zlibstatic.cmake)
 
 # FFMPEG
 function(find_ffmpeg_libraries)
@@ -134,6 +133,11 @@ FetchContent_Declare(
         GIT_TAG 3d2657b9ad40aac9fd6f75ad079335856e94d664 # 10.11.2020
 )
 FetchContent_Declare(
+        zlib
+        GIT_REPOSITORY https://github.com/madler/zlib.git
+        GIT_TAG 04f42ceca40f73e2978b50e93806c2a18c1281fc # v1.2.13
+)
+FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
@@ -162,6 +166,13 @@ set(PNG_BUILD_ZLIB ON) # libpng
 set(PNG_TESTS OFF) # libpng
 set(PNG_EXECUTABLES OFF) # libpng
 
+FetchContent_MakeAvailable(zlib)
+
+# zlib
+set(ZLIB_LIBRARIES zlibstatic)
+set(ZLIB_INCLUDE_DIRS "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
+target_include_directories(zlibstatic PUBLIC "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
+
 FetchContent_MakeAvailable(
         glfw
         glm
@@ -172,6 +183,7 @@ FetchContent_MakeAvailable(
         libjpeg
         libpng
         gif
+        zlib
         googletest
         benchmark
 )
@@ -196,8 +208,7 @@ target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_include_directories(libsoundio_shared PUBLIC "${libsoundio_SOURCE_DIR}")
 
 # libpng
-target_include_directories(png PUBLIC "${libpng_SOURCE_DIR}")
-target_include_directories(png PUBLIC "${libpng_BINARY_DIR}")
+target_include_directories(png PUBLIC "${libpng_SOURCE_DIR}" "${libpng_BINARY_DIR}")
 
 # GIF
 add_library(gif INTERFACE)
