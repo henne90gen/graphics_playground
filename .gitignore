@@ -2,8 +2,7 @@
 .vs/
 .idea/
 build/
-build-release/
-build-debug/
+build-*/
 venv/
 cmake-build-*/
 CMakeSettings.json
