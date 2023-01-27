@@ -32,14 +32,6 @@ set(GLAD_DIR ${VENDOR_DIR}/glad)
 add_library(glad "${GLAD_DIR}/src/glad.c")
 target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
 
-# FastNoise
-set(FAST_NOISE_DIR ${VENDOR_DIR}/FastNoise)
-add_subdirectory(${FAST_NOISE_DIR})
-
-# Freetype2
-set(FREETYPE_DIR ${VENDOR_DIR}/freetype2)
-add_subdirectory(${FREETYPE_DIR})
-
 # zlib
 # zlib/png integration hack - removes all the errors related to export
 # (zlib doesn't export; libpng wants to; in this case we don't care).
@@ -157,17 +149,6 @@ endfunction()
 
 find_ffmpeg_libraries(x264 swscale avutil avformat avcodec)
 
-# OpenMP
-find_package(OpenMP)
-
-# libsoundio
-set(LIBSOUNDIO_DIR ${VENDOR_DIR}/libsoundio)
-set(BUILD_STATIC_LIBS OFF)
-set(BUILD_EXAMPLE_PROGRAMS OFF)
-set(LIBSOUNDIO_LIBRARY libsoundio_shared)
-set(LIBSOUNDIO_INCLUDE_DIR ${LIBSOUNDIO_DIR})
-add_subdirectory(${LIBSOUNDIO_DIR})
-
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -184,25 +165,58 @@ FetchContent_Declare(
         GIT_TAG d7c8516a4b848c0291e3d75b627c0843f515f591 # v1.89.2
 )
 FetchContent_Declare(
+        freetype
+        GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+        GIT_TAG e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf # 2.12.1
+)
+FetchContent_Declare(
+        fastnoise
+        GIT_REPOSITORY https://github.com/Auburn/FastNoiseLite.git
+        GIT_TAG 95900f7372d9aad1691cfeabf45103a132a4664f # 11.11.2022
+)
+FetchContent_Declare(
+        libsoundio
+        GIT_REPOSITORY https://github.com/andrewrk/libsoundio.git
+        GIT_TAG a24148e15ffd3fe3fe3c5ee22fd6bbd7351c7539 # 12.10.2022
+)
+FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
+        GIT_TAG b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
 )
 FetchContent_Declare(
         benchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG 49aa374da96199d64fd3de9673b6f405bbc3de3e # some commits after v1.7.0
+        GIT_TAG d572f4777349d43653b21d6c2fc63020ab326db2 # v1.7.1
 )
 
-option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
-option(GLFW_INSTALL "Generate installation target" OFF)
+set(BENCHMARK_ENABLE_TESTING OFF) # benchmark
+set(BENCHMARK_ENABLE_INSTALL OFF) # benchmark
+set(BENCHMARK_INSTALL_DOCS OFF) # benchmark
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF) # benchmark
+set(GLFW_BUILD_DOCS OFF) # glfw
+set(GLFW_INSTALL OFF) # glfw
+set(FT_DISABLE_ZLIB ON) # freetype
+set(SKIP_INSTALL_ALL ON) # freetype
+set(BUILD_STATIC_LIBS OFF) # libsoundio
+set(BUILD_DYNAMIC_LIBS ON) # libsoundio
+set(BUILD_TESTS OFF) # libsoundio
+set(BUILD_EXAMPLE_PROGRAMS OFF) # libsoundio
+
 FetchContent_MakeAvailable(
         glfw
         glm
         imgui
+        freetype
+        fastnoise
+        libsoundio
         googletest
         benchmark
 )
+
+# FastNoise
+add_library(FastNoise INTERFACE)
+target_include_directories(FastNoise INTERFACE "${fastnoise_SOURCE_DIR}/Cpp")
 
 # ImGUI
 add_library(imgui
@@ -216,6 +230,12 @@ add_library(imgui
 target_include_directories(imgui PUBLIC "${imgui_SOURCE_DIR}")
 target_link_libraries(imgui PUBLIC glad glfw)
 target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
+# libsoundio
+target_include_directories(libsoundio_shared PUBLIC "${libsoundio_SOURCE_DIR}")
+
+# OpenMP
+find_package(OpenMP)
 
 enable_testing()
 add_subdirectory(src)

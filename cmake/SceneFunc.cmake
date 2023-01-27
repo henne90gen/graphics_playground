@@ -53,8 +53,7 @@ function(create_scene_benchmark)
     add_executable(${SCENE_NAME}_bench ${ARGN})
     target_link_libraries(${SCENE_NAME}_bench PRIVATE
             core
-            benchmark::benchmark
-            OpenMP::OpenMP_CXX)
+            benchmark::benchmark)
     target_include_directories(${SCENE_NAME}_bench PRIVATE
             ${GLM_DIR})
     set_target_properties(

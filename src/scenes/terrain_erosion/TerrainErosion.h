@@ -6,7 +6,7 @@
 #include <memory>
 #include <random>
 
-#include <FastNoise.h>
+#include <FastNoiseLite.h>
 
 #include "RainSimulation.h"
 #include "gl/IndexBuffer.h"
@@ -45,9 +45,9 @@ class TerrainErosion : public Scene {
 
     TerrainData noiseTerrain;
 
-    FastNoise *noise1;
-    FastNoise *noise2;
-    FastNoise *noise3;
+    FastNoiseLite *noise1;
+    FastNoiseLite *noise2;
+    FastNoiseLite *noise3;
     std::mt19937 randomGenerator;
     std::uniform_real_distribution<double> randomDistribution;
 

@@ -1,7 +1,10 @@
 #include "MarchingCubes.h"
 
 #include <iostream>
+
+#if OpenMP_ENABLED
 #include <omp.h>
+#endif
 
 void MarchingCubes::start() { isRunning = true; }
 
