@@ -27,21 +27,10 @@ endif ()
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-# GLFW
-set(GLFW_DIR ${VENDOR_DIR}/glfw)
-set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
-set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
-set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
-set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
-add_subdirectory("${GLFW_DIR}")
-
 # GLAD
 set(GLAD_DIR ${VENDOR_DIR}/glad)
 add_library(glad "${GLAD_DIR}/src/glad.c")
 target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
-
-# GLM
-set(GLM_DIR ${VENDOR_DIR}/glm)
 
 # ImGui
 set(IMGUI_DIR ${VENDOR_DIR}/imgui)
@@ -145,19 +134,6 @@ set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
 # gif-h
 set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
 
-# Google Test
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
-)
-
-# Google Benchmark
-FetchContent_Declare(
-        benchmark
-        GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG 49aa374da96199d64fd3de9673b6f405bbc3de3e # some commits after v1.7.0
-)
 
 # FFMPEG
 function(find_ffmpeg_libraries)
@@ -206,7 +182,36 @@ set(LIBSOUNDIO_LIBRARY libsoundio_shared)
 set(LIBSOUNDIO_INCLUDE_DIR ${LIBSOUNDIO_DIR})
 add_subdirectory(${LIBSOUNDIO_DIR})
 
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 7482de6071d21db77a7236155da44c172a7f6c9e # 3.3.8
+)
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm.git
+        GIT_TAG bf71a834948186f4097caa076cd2663c69a10e1e # 0.9.9.8
+)
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG d7c8516a4b848c0291e3d75b627c0843f515f591 # v1.89.2
+)
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
+)
+FetchContent_Declare(
+        benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG 49aa374da96199d64fd3de9673b6f405bbc3de3e # some commits after v1.7.0
+)
+
 FetchContent_MakeAvailable(
+        glfw
+        glm
+        imgui
         googletest
         benchmark
 )

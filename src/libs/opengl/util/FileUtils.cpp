@@ -22,7 +22,7 @@ void getFilesInDirectory(const std::string &directoryPath, std::vector<std::stri
     }
 
     for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
-        std::string fileName = entry.path().u8string();
+        auto fileName = entry.path().string();
         filePaths.push_back(fileName);
     }
 
