@@ -66,7 +66,7 @@ void AudioVis::tick() {
                          (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
     ImGui::Text("%.2fs", seconds);
 
-    ImGui::SliderInt("", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / wav.header.numChannels,
+    ImGui::SliderInt("##", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / wav.header.numChannels,
                      "");
 
     std::string btnText = "Pause";
