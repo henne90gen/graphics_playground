@@ -32,20 +32,6 @@ set(GLAD_DIR ${VENDOR_DIR}/glad)
 add_library(glad "${GLAD_DIR}/src/glad.c")
 target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
 
-# ImGui
-set(IMGUI_DIR ${VENDOR_DIR}/imgui)
-add_library(imgui
-        "${IMGUI_DIR}/imgui.cpp"
-        "${IMGUI_DIR}/imgui_draw.cpp"
-        "${IMGUI_DIR}/imgui_widgets.cpp"
-        "${IMGUI_DIR}/imgui_tables.cpp"
-        "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-        "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-        )
-target_include_directories(imgui PUBLIC "${IMGUI_DIR}")
-target_link_libraries(imgui PUBLIC glad glfw)
-target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
-
 # FastNoise
 set(FAST_NOISE_DIR ${VENDOR_DIR}/FastNoise)
 add_subdirectory(${FAST_NOISE_DIR})
@@ -208,6 +194,8 @@ FetchContent_Declare(
         GIT_TAG 49aa374da96199d64fd3de9673b6f405bbc3de3e # some commits after v1.7.0
 )
 
+option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
+option(GLFW_INSTALL "Generate installation target" OFF)
 FetchContent_MakeAvailable(
         glfw
         glm
@@ -215,6 +203,19 @@ FetchContent_MakeAvailable(
         googletest
         benchmark
 )
+
+# ImGUI
+add_library(imgui
+        "${imgui_SOURCE_DIR}/imgui.cpp"
+        "${imgui_SOURCE_DIR}/imgui_draw.cpp"
+        "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
+        "${imgui_SOURCE_DIR}/imgui_tables.cpp"
+        "${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
+        "${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp"
+        )
+target_include_directories(imgui PUBLIC "${imgui_SOURCE_DIR}")
+target_link_libraries(imgui PUBLIC glad glfw)
+target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 enable_testing()
 add_subdirectory(src)
