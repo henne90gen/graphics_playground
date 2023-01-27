@@ -45,73 +45,15 @@ get_directory_property(
         DEFINITION
         CMAKE_CURRENT_BINARY_DIR
 )
-set(ZLIB_INCLUDE_DIR ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
-set(ZLIB_LIBRARY zlibstatic)
+set(ZLIB_INCLUDE_DIRS ${ZLIB_DIR} ${ZLIB_BUILD_DIRECTORY})
+set(ZLIB_LIBRARIES zlibstatic)
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    include_directories(${ZLIB_INCLUDE_DIR})
+    include_directories(${ZLIB_INCLUDE_DIRS})
 endif ()
-export(TARGETS ${ZLIB_LIBRARY} FILE zlibstatic.cmake)
-
-# libpng
-set(LIBPNG_DIR ${VENDOR_DIR}/libpng)
-set(PNG_SHARED OFF CACHE INTERNAL "")
-set(PNG_BUILD_ZLIB ON CACHE INTERNAL "")
-set(PNG_TESTS OFF CACHE INTERNAL "")
-add_subdirectory(${LIBPNG_DIR})
-get_directory_property(
-        LIBPNG_BUILD_DIR
-        DIRECTORY
-        ${LIBPNG_DIR}
-        DEFINITION
-        CMAKE_CURRENT_BINARY_DIR
-)
-get_directory_property(
-        LIBPNG_STATIC
-        DIRECTORY
-        ${LIBPNG_DIR}
-        DEFINITION
-        PNG_LIB_NAME_STATIC
-)
-get_directory_property(
-        LIBPNG_SHARED
-        DIRECTORY
-        ${LIBPNG_DIR}
-        DEFINITION
-        PNG_LIB_NAME
-)
-set(LIBPNG_LIBRARY ${LIBPNG_STATIC})
-set(LIBPNG_INCLUDE_DIR ${LIBPNG_DIR} ${LIBPNG_BUILD_DIR})
-
-# libjpeg
-#set(LIBJPEG_DIR ${VENDOR_DIR}/libjpeg)
-#add_subdirectory(${LIBJPEG_DIR})
-#get_directory_property(
-#        LIBJPEG_BUILD_DIR
-#        DIRECTORY
-#        ${LIBJPEG_DIR}
-#        DEFINITION
-#        CMAKE_CURRENT_BINARY_DIR
-#)
-#get_directory_property(
-#        LIBJPEG_STATIC
-#        DIRECTORY
-#        ${LIBJPEG_DIR}
-#        DEFINITION
-#        JPEG_LIB_NAME_STATIC
-#)
-#get_directory_property(
-#        LIBJPEG_SHARED
-#        DIRECTORY
-#        ${LIBJPEG_DIR}
-#        DEFINITION
-#        JPEG_LIB_NAME
-#)
-#set(LIBJPEG_LIBRARY ${LIBJPEG_STATIC})
-#set(LIBJPEG_INCLUDE_DIR ${LIBJPEG_DIR} ${LIBJPEG_BUILD_DIR})
+export(TARGETS ${ZLIB_LIBRARIES} FILE zlibstatic.cmake)
 
 # gif-h
 set(GIF_H_DIR ${VENDOR_DIR}/gif-h)
-
 
 # FFMPEG
 function(find_ffmpeg_libraries)
@@ -185,6 +127,11 @@ FetchContent_Declare(
         GIT_TAG 27391253448f7edd556aa9f25c38ac4822cf6f17
 )
 FetchContent_Declare(
+        libpng
+        GIT_REPOSITORY https://github.com/glennrp/libpng.git
+        GIT_TAG 07b8803110da160b158ebfef872627da6c85cbdf # v1.6.39
+)
+FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
@@ -207,6 +154,11 @@ set(BUILD_STATIC_LIBS OFF) # libsoundio
 set(BUILD_DYNAMIC_LIBS ON) # libsoundio
 set(BUILD_TESTS OFF) # libsoundio
 set(BUILD_EXAMPLE_PROGRAMS OFF) # libsoundio
+set(PNG_STATIC OFF) # libpng
+set(PNG_SHARED ON) # libpng
+set(PNG_BUILD_ZLIB ON) # libpng
+set(PNG_TESTS OFF) # libpng
+set(PNG_EXECUTABLES OFF) # libpng
 
 FetchContent_MakeAvailable(
         glfw
@@ -216,6 +168,7 @@ FetchContent_MakeAvailable(
         fastnoise
         libsoundio
         libjpeg
+        libpng
         googletest
         benchmark
 )
@@ -239,6 +192,10 @@ target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # libsoundio
 target_include_directories(libsoundio_shared PUBLIC "${libsoundio_SOURCE_DIR}")
+
+# libpng
+target_include_directories(png PUBLIC "${libpng_SOURCE_DIR}")
+target_include_directories(png PUBLIC "${libpng_BINARY_DIR}")
 
 # OpenMP
 find_package(OpenMP)
