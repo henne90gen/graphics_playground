@@ -10,6 +10,4 @@ target_link_libraries(image
         png
         ${ZLIB_LIBRARY})
 
-target_include_directories(image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-        ${ZLIB_INCLUDE_DIR}
-        ${LIBPNG_INCLUDE_DIR})
+target_include_directories(image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${LIBPNG_INCLUDE_DIR})

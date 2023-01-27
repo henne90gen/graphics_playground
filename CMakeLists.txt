@@ -140,11 +140,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(zlib)
 
 # zlib configuration for libpng
-set(ZLIB_LIBRARY zlib)
-set(ZLIB_LIBRARIES zlib)
+set(ZLIB_LIBRARY zlibstatic)
+set(ZLIB_LIBRARIES zlibstatic)
 set(ZLIB_INCLUDE_DIR "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
 set(ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR})
-target_include_directories(zlib PUBLIC ${ZLIB_INCLUDE_DIR})
+target_include_directories(${ZLIB_LIBRARY} PUBLIC ${ZLIB_INCLUDE_DIR})
 export(TARGETS ${ZLIB_LIBRARY} FILE zlib.cmake)
 
 set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
