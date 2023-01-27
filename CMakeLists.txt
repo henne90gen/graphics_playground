@@ -9,8 +9,6 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include(SceneFunc)
 include(FetchContent)
 
-option(BUILD_OPENCV "Turn this on to build OpenCV from source" OFF)
-
 # Clang Tidy
 message(STATUS "Looking for clang-tidy")
 find_program(
@@ -122,30 +120,31 @@ FetchContent_Declare(
         GIT_TAG d572f4777349d43653b21d6c2fc63020ab326db2 # v1.7.1
 )
 
-set(BENCHMARK_ENABLE_TESTING OFF) # benchmark
-set(BENCHMARK_ENABLE_INSTALL OFF) # benchmark
-set(BENCHMARK_INSTALL_DOCS OFF) # benchmark
-set(BENCHMARK_ENABLE_GTEST_TESTS OFF) # benchmark
-set(GLFW_BUILD_DOCS OFF) # glfw
-set(GLFW_INSTALL OFF) # glfw
-set(FT_DISABLE_ZLIB ON) # freetype
-set(SKIP_INSTALL_ALL ON) # freetype
-set(BUILD_STATIC_LIBS OFF) # libsoundio
-set(BUILD_DYNAMIC_LIBS ON) # libsoundio
-set(BUILD_TESTS OFF) # libsoundio
-set(BUILD_EXAMPLE_PROGRAMS OFF) # libsoundio
-set(PNG_STATIC OFF) # libpng
-set(PNG_SHARED ON) # libpng
-set(PNG_BUILD_ZLIB ON) # libpng
-set(PNG_TESTS OFF) # libpng
-set(PNG_EXECUTABLES OFF) # libpng
-
 FetchContent_MakeAvailable(zlib)
 
-# zlib
-set(ZLIB_LIBRARIES zlibstatic)
+# zlib configuration for libpng
+set(ZLIB_LIBRARY zlib)
+set(ZLIB_LIBRARIES zlib)
 set(ZLIB_INCLUDE_DIRS "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
-target_include_directories(zlibstatic PUBLIC "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
+target_include_directories(zlib PUBLIC "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
+
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE) # benchmark
+set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE) # benchmark
+set(BENCHMARK_INSTALL_DOCS OFF CACHE BOOL "" FORCE) # benchmark
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE) # benchmark
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE) # glfw
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE) # glfw
+set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE) # freetype
+set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE) # freetype
+set(BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE) # libsoundio
+set(BUILD_DYNAMIC_LIBS ON CACHE BOOL "" FORCE) # libsoundio
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE) # libsoundio
+set(BUILD_EXAMPLE_PROGRAMS OFF CACHE BOOL "" FORCE) # libsoundio
+set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
+set(PNG_SHARED ON CACHE BOOL "" FORCE) # libpng
+set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # libpng
+set(PNG_TESTS OFF CACHE BOOL "" FORCE) # libpng
+set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE) # libpng
 
 FetchContent_MakeAvailable(
         glfw
