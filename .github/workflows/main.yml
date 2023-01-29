@@ -1,10 +1,10 @@
-name: Build and Install the CGV framework
+name: Build Graphics Playground
 
 on: push
 
 jobs:
   build-ubuntu:
-    name: "Ubuntu: Build and Install the CGV framework"
+    name: "Ubuntu: Build Graphics Playground"
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
         run: docker run -v $(pwd):/app build-image
 
   build-windows:
-    name: "Windows: Build and Install the CGV framework"
+    name: "Windows: Build Graphics Playground"
     runs-on: windows-latest
 
     steps:
@@ -39,7 +39,7 @@ jobs:
         run: cmake --build .
 
   build-web:
-    name: "Web"
+    name: "Web: Build Graphics Playground"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
