@@ -145,6 +145,12 @@ set(ZLIB_LIBRARIES zlibstatic) # zlib
 set(ZLIB_INCLUDE_DIR "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}") # zlib
 set(ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR}) # zlib
 target_include_directories(${ZLIB_LIBRARY} PUBLIC ${ZLIB_INCLUDE_DIR}) # zlib
+if (EMSCRIPTEN)
+    target_include_directories(example PUBLIC ${ZLIB_INCLUDE_DIR})
+    target_include_directories(example64 PUBLIC ${ZLIB_INCLUDE_DIR})
+    target_include_directories(minigzip PUBLIC ${ZLIB_INCLUDE_DIR})
+    target_include_directories(minigzip64 PUBLIC ${ZLIB_INCLUDE_DIR})
+endif ()
 
 set(SKIP_INSTALL_EXPORT ON CACHE BOOL "" FORCE) # libpng
 set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
