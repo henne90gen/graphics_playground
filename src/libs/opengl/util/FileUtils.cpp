@@ -36,6 +36,10 @@ std::vector<std::string> getFilesInDirectory(const std::string &directoryPath) {
 }
 
 int64_t getLastModifiedTimeNano(const std::string &filePath) {
+#if EMSCRIPTEN
+    return 0;
+#endif
+
 #if defined(_WIN32)
     {
         std::filesystem::path filePath_ = filePath;

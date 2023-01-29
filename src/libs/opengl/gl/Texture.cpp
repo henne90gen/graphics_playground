@@ -10,8 +10,8 @@ void Texture::init() {
     GL_Call(glGenTextures(1, &id));
     GL_Call(glActiveTexture(settings.activeTexture));
     bind();
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.magnificationFilter));
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.minificationFilter));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.magnificationFilter));
 }
 
 void Texture::bind() const { GL_Call(glBindTexture(GL_TEXTURE_2D, id)); }

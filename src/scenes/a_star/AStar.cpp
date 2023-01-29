@@ -15,11 +15,12 @@ void AStar::setup() {
     vertexArray = createQuadVA(shader, {2.0F, 2.0F});
     vertexArray->bind();
 
-    texture = std::make_shared<Texture>();
+    auto textureSettings = TextureSettings();
+    textureSettings.minificationFilter = GL_NEAREST;
+    textureSettings.magnificationFilter = GL_NEAREST;
+    texture = std::make_shared<Texture>(textureSettings);
     glActiveTexture(GL_TEXTURE0);
     texture->bind();
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     shader->setUniform("u_TextureSampler", 0);
 
     solver = std::make_unique<AStarSolver>();
