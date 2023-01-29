@@ -26,10 +26,10 @@ std::string shaderTypeToString(GLuint shaderType) {
 ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     std::string shaderCode;
     {
-        std::ifstream shaderStream(filePath, std::ios::in);
+        const std::ifstream shaderStream(filePath, std::ios::in);
         if (!shaderStream.is_open()) {
             std::cout << "Could not open " << filePath << std::endl;
-            return ShaderCode();
+            return {};
         }
 
         // this might be slow
@@ -71,7 +71,7 @@ void Shader::compile() {
 
     auto shaderIds = std::vector<GLuint>();
     for (const auto &shaderCode : shaderComponents) {
-        GLuint shaderId = load(shaderCode.first, shaderCode.second);
+        const auto shaderId = load(shaderCode.first, shaderCode.second);
         if (shaderId == 0U) {
             return;
         }
@@ -257,7 +257,8 @@ int Shader::getAttributeLocation(const std::string &name) {
 
 void Shader::bind() {
     bool recompile = false;
-    // NOTE we need to wait a little bit (100ms) before actually reading the file, because Windows gives us an empty
+#if !EMSCRIPTEN
+    // NOTE we need to wait a little (100ms) before actually reading the file, because Windows gives us an empty
     // file otherwise
     const int64_t waitTimeNano = 200 * 1000 * 1000;
     const auto currentTime = std::chrono::system_clock::now();
@@ -282,6 +283,7 @@ void Shader::bind() {
             break;
         }
     }
+#endif
 
     if (id == 0 || recompile) {
         compile();

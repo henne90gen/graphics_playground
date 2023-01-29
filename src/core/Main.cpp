@@ -8,6 +8,10 @@
 #include <omp.h>
 #endif
 
+#if EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 #include "Scene.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
@@ -18,6 +22,7 @@
 
 const unsigned int INITIAL_WINDOW_WIDTH = 1200;
 const unsigned int INITIAL_WINDOW_HEIGHT = 900;
+GLFWwindow *glfwWindow = nullptr;
 
 void setOmpThreadLimit() {
 #if OpenMP_ENABLED
@@ -115,10 +120,29 @@ void renderCaptureMenu(ScreenRecorder *recorder) {
 }
 #endif
 
+void runMainLoop(void *data) {
+    const auto scene = static_cast<Scene *>(data);
+
+    glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
+
+    startImGuiFrame();
+
+    scene->internalTick();
+
+#ifdef WITH_SCREEN_RECORDING
+    renderCaptureMenu(&recorder);
+    recorder.tick(scene->getWidth(), scene->getHeight());
+#endif
+
+    finishImGuiFrame();
+
+    glfwSwapBuffers(glfwWindow);
+    glfwPollEvents();
+}
+
 int runScene(Scene *scene) {
     setOmpThreadLimit();
-
-    GLFWwindow *window = nullptr;
 
     if (glfwInit() == 0) {
         return 1;
@@ -128,14 +152,15 @@ int runScene(Scene *scene) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, scene->getName().c_str(), nullptr, nullptr);
-    if (window == nullptr) {
+    glfwWindow =
+          glfwCreateWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, scene->getName().c_str(), nullptr, nullptr);
+    if (glfwWindow == nullptr) {
         std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
         return 1;
     }
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(glfwWindow);
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return 1;
@@ -149,38 +174,27 @@ int runScene(Scene *scene) {
     glfwSetWindowUserPointer(window, &recorder);
 #endif
 
-    glfwSetWindowUserPointer(window, scene);
+    glfwSetWindowUserPointer(glfwWindow, scene);
     // triggering it once "manually" to ensure the aspect ratio is set up correctly
     scene->onWindowResize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-    installCallbacks(window);
+    installCallbacks(glfwWindow);
 
     // ImGui installs its own glfw callbacks, which will then call our previously installed callbacks
-    initImGui(window);
+    initImGui(glfwWindow);
 
-    scene->setup(window);
+    scene->setup(glfwWindow);
 
     glEnable(GL_DEPTH_TEST);
 
     enableOpenGLDebugging();
 
-    while (glfwWindowShouldClose(window) == 0) {
-        glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
-
-        startImGuiFrame();
-
-        scene->internalTick();
-
-#ifdef WITH_SCREEN_RECORDING
-        renderCaptureMenu(&recorder);
-        recorder.tick(scene->getWidth(), scene->getHeight());
-#endif
-
-        finishImGuiFrame();
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+#if EMSCRIPTEN
+    emscripten_set_main_loop_arg(runMainLoop, scene, 0, 1);
+#else
+    while (glfwWindowShouldClose(glfwWindow) == 0) {
+        runMainLoop(scene);
     }
+#endif
 
     glfwTerminate();
     return 0;
