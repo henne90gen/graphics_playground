@@ -51,13 +51,4 @@ if (OpenMP_FOUND)
     target_link_libraries(core PUBLIC OpenMP::OpenMP_CXX)
 endif ()
 
-if (MSVC)
-    find_package(OpenGL REQUIRED)
-    target_include_directories(core PUBLIC ${OPENGL_INCLUDE_DIR})
-    target_link_libraries(core PUBLIC ${OPENGL_gl_LIBRARY})
-elseif (APPLE)
-else ()
-    target_link_libraries(core PUBLIC stdc++fs)
-endif ()
-
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

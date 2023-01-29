@@ -22,7 +22,7 @@ if (NOT EMSCRIPTEN)
 endif()
 
 if (NOT MSVC)
-    target_link_libraries(opengl PUBLIC stdc++fs)
+#    target_link_libraries(opengl PUBLIC stdc++fs)
     target_compile_options(opengl PRIVATE
             -Wall
             -Wextra
