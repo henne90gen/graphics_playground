@@ -42,12 +42,10 @@ void GLAPIENTRY messageCallback(GLenum /*source*/, GLenum type, GLuint /*id*/, G
 }
 
 void enableOpenGLDebugging() {
-#if 0
     // TODO(henne): this does not work on MacOS
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(messageCallback, nullptr);
-#endif
 }
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
