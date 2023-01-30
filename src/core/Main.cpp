@@ -15,6 +15,7 @@
 #include "Scene.h"
 #include "util/ImGuiUtils.h"
 #include "util/InputData.h"
+#include "util/OpenGLUtils.h"
 
 #ifdef WITH_SCREEN_RECORDING
 #include <ScreenRecorder.h>
@@ -163,6 +164,9 @@ int runScene(Scene *scene) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return 1;
     }
+
+    GL_Call(const auto openGLVersion = glGetString(GL_VERSION));
+    std::cout << "OpenGL Version: " << openGLVersion << std::endl;
 
     // to disable vsync uncomment this line
     //    glfwSwapInterval(0);
