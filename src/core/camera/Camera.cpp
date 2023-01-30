@@ -19,30 +19,30 @@ void Camera::updateProjection() {
 
 void Camera::updateView() {
     // m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
-    glm::vec3 position = getPosition();
+    const auto position = getPosition();
 
-    glm::quat orientation = getOrientation();
+    const auto orientation = getOrientation();
     viewMatrix = glm::translate(glm::identity<glm::mat4>(), position);
     viewMatrix *= glm::toMat4(orientation);
     viewMatrix = glm::inverse(viewMatrix);
 }
 
 glm::vec2 Camera::panSpeed() const {
-    float x = std::min(viewportWidth / 1000.0F, 2.4F); // max = 2.4f
-    float xFactor = 0.0366F * (x * x) - 0.1778F * x + 0.3021F;
+    const auto x = std::min(viewportWidth / 1000.0F, 2.4F); // max = 2.4f
+    const auto xFactor = 0.0366F * (x * x) - 0.1778F * x + 0.3021F;
 
-    float y = std::min(viewportHeight / 1000.0F, 2.4F); // max = 2.4f
-    float yFactor = 0.0366F * (y * y) - 0.1778F * y + 0.3021F;
+    const auto y = std::min(viewportHeight / 1000.0F, 2.4F); // max = 2.4f
+    const auto yFactor = 0.0366F * (y * y) - 0.1778F * y + 0.3021F;
 
-    return glm::vec2(xFactor, yFactor);
+    return {xFactor, yFactor};
 }
 
 float Camera::rotationSpeed() { return 0.8F; }
 
 float Camera::zoomSpeed() const {
-    float d = distance * 0.2F;
+    auto d = distance * 0.2F;
     d = std::max(d, 0.0F);
-    float speed = d * d;
+    auto speed = d * d;
     speed = std::min(speed, 100.0F); // max speed = 100
     return speed;
 }
@@ -53,8 +53,8 @@ void Camera::update(const InputData &input) {
         return;
     }
 
-    const glm::vec2 &mouse = input.mouse.pos;
-    glm::vec2 delta = (mouse - initialMousePosition) * 0.003F;
+    const auto &mouse = input.mouse.pos;
+    const auto delta = (mouse - initialMousePosition) * 0.003F;
     initialMousePosition = mouse;
 
     if (input.mouse.middle) {
@@ -69,13 +69,13 @@ void Camera::update(const InputData &input) {
 }
 
 void Camera::mousePan(const glm::vec2 &delta) {
-    auto speed = panSpeed();
+    const auto speed = panSpeed();
     focalPoint += -getRightDirection() * delta.x * speed.x * distance;
     focalPoint += getUpDirection() * delta.y * speed.y * distance;
 }
 
 void Camera::mouseRotate(const glm::vec2 &delta) {
-    float yawSign = getUpDirection().y < 0 ? -1.0F : 1.0F;
+    const auto yawSign = getUpDirection().y < 0 ? -1.0F : 1.0F;
     yaw += yawSign * delta.x * rotationSpeed();
     pitch += delta.y * rotationSpeed();
 }
@@ -89,7 +89,7 @@ void Camera::mouseZoom(float delta) {
 }
 
 void Camera::onScroll(double yOffset) {
-    float delta = static_cast<float>(yOffset) * 0.1F;
+    const auto delta = static_cast<float>(yOffset) * 0.1F;
     mouseZoom(delta);
     updateView();
 }
@@ -108,4 +108,4 @@ glm::vec3 Camera::getForwardDirection() const { return glm::rotate(getOrientatio
 
 glm::vec3 Camera::getPosition() const { return focalPoint - getForwardDirection() * distance; }
 
-glm::quat Camera::getOrientation() const { return glm::quat(glm::vec3(-pitch, -yaw, 0.0F)); }
+glm::quat Camera::getOrientation() const { return {glm::vec3(-pitch, -yaw, 0.0F)}; }
