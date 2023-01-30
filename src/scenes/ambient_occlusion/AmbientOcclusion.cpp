@@ -20,10 +20,14 @@ float lerp(float a, float b, float f) { return a + f * (b - a); }
 
 void AmbientOcclusion::setup() {
     geometryShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Geometry);
-    textureShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_TextureFrag));
-    lightingShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_LightingFrag));
-    ssaoShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_SSAOFrag));
-    ssaoBlurShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_SSAOBlurFrag));
+    textureShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert),
+                                        SHADER_CODE(ambient_occlusion_TextureFrag));
+    lightingShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert),
+                                         SHADER_CODE(ambient_occlusion_LightingFrag));
+    ssaoShader =
+          createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert), SHADER_CODE(ambient_occlusion_SSAOFrag));
+    ssaoBlurShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert),
+                                         SHADER_CODE(ambient_occlusion_SSAOBlurFrag));
 
     cube = createCubeVA(geometryShader);
     quadVA = createQuadVA(lightingShader);
@@ -57,7 +61,7 @@ void AmbientOcclusion::tick() {
     ImGui::Checkbox("Use Point Light", &usePointLight);
     ImGui::Checkbox("Render Texture", &shouldRenderTexture);
     if (shouldRenderTexture) {
-        ImGui::Combo("", &currentTextureIdIndex, reinterpret_cast<const char *const *>(&textureIdLabels[0]),
+        ImGui::Combo("##", &currentTextureIdIndex, reinterpret_cast<const char *const *>(textureIdLabels.data()),
                      textureIdLabels.size());
     }
     ImGui::End();
@@ -169,7 +173,7 @@ void AmbientOcclusion::renderGBufferToQuad(const glm::vec3 &lightPosition, const
     const float linear = 0.09F;
     const float quadratic = 0.032F;
 
-    glm::vec4 lightPositionView = getCamera().getViewMatrix() * glm::vec4(lightPosition, usePointLight ? 1.0F : 0.0F);
+    const auto lightPositionView = getCamera().getViewMatrix() * glm::vec4(lightPosition, usePointLight ? 1.0F : 0.0F);
     lightingShader->setUniform("light.Position", lightPositionView);
     lightingShader->setUniform("light.Color", lightColor);
     lightingShader->setUniform("light.Linear", linear);
@@ -205,8 +209,9 @@ void AmbientOcclusion::renderTexture(unsigned int textureId) {
 }
 
 void AmbientOcclusion::onAspectRatioChange() {
-    unsigned int width = getWidth();
-    unsigned int height = getHeight();
+    const auto width = getWidth();
+    const auto height = getHeight();
+    std::cout << "New dimensions: " << width << "x" << height << std::endl;
 
     // update position buffer
     GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
@@ -234,14 +239,15 @@ void AmbientOcclusion::onAspectRatioChange() {
 }
 
 void AmbientOcclusion::initGBuffer() {
-    unsigned int width = getWidth();
-    unsigned int height = getHeight();
+    const auto width = getWidth();
+    const auto height = getHeight();
+    std::cout << "Creating G framebuffer with dimensions: " << width << "x" << height << std::endl;
 
-    // Create framebuffer object
+    // Framebuffer object
     GL_Call(glGenFramebuffers(1, &gBuffer));
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, gBuffer));
 
-    // Create position buffer
+    // Position buffer
     GL_Call(glGenTextures(1, &gPosition));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gPosition));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
@@ -251,7 +257,7 @@ void AmbientOcclusion::initGBuffer() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0));
 
-    // Create normal buffer
+    // Normal buffer
     GL_Call(glGenTextures(1, &gNormal));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gNormal));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr));
@@ -259,7 +265,7 @@ void AmbientOcclusion::initGBuffer() {
     GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0));
 
-    // create color buffer
+    // Color buffer
     GL_Call(glGenTextures(1, &gAlbedo));
     GL_Call(glBindTexture(GL_TEXTURE_2D, gAlbedo));
     GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
@@ -268,9 +274,9 @@ void AmbientOcclusion::initGBuffer() {
     GL_Call(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0));
 
     std::array<unsigned int, 3> attachments = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-    glDrawBuffers(3, reinterpret_cast<unsigned int *>(&attachments[0]));
+    GL_Call(glDrawBuffers(3, reinterpret_cast<unsigned int *>(attachments.data())));
 
-    // Create depth buffer
+    // Depth buffer
     GL_Call(glGenRenderbuffers(1, &depthBuffer));
     GL_Call(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
     GL_Call(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
@@ -280,8 +286,9 @@ void AmbientOcclusion::initGBuffer() {
 }
 
 void AmbientOcclusion::initSSAOBuffer() {
-    unsigned int width = getWidth();
-    unsigned int height = getHeight();
+    const auto width = getWidth();
+    const auto height = getHeight();
+    std::cout << "Creating SSAO framebuffer with dimensions: " << width << "x" << height << std::endl;
 
     GL_Call(glGenFramebuffers(1, &ssaoFbo));
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo));
@@ -298,8 +305,9 @@ void AmbientOcclusion::initSSAOBuffer() {
 }
 
 void AmbientOcclusion::initSSAOBlurBuffer() {
-    unsigned int width = getWidth();
-    unsigned int height = getHeight();
+    const auto width = getWidth();
+    const auto height = getHeight();
+    std::cout << "Creating SSAO-Blur framebuffer with dimensions: " << width << "x" << height << std::endl;
 
     GL_Call(glGenFramebuffers(1, &ssaoBlurFbo));
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFbo));
@@ -316,7 +324,7 @@ void AmbientOcclusion::initSSAOBlurBuffer() {
 }
 
 void AmbientOcclusion::initKernelAndNoiseTexture() {
-    std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+    std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
     std::default_random_engine generator;
     for (unsigned int i = 0; i < 64; ++i) {
         glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0,
@@ -333,15 +341,15 @@ void AmbientOcclusion::initKernelAndNoiseTexture() {
 
     std::vector<glm::vec3> ssaoNoise;
     for (unsigned int i = 0; i < 16; i++) {
-        glm::vec3 noise(randomFloats(generator) * 2.0F - 1.0F, randomFloats(generator) * 2.0F - 1.0F,
-                        0.0F); // rotate around z-axis (in tangent space)
+        const glm::vec3 noise(randomFloats(generator) * 2.0F - 1.0F, randomFloats(generator) * 2.0F - 1.0F,
+                              0.0F); // rotate around z-axis (in tangent space)
         ssaoNoise.push_back(noise);
     }
-    glGenTextures(1, &ssaoNoiseTexture);
-    glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GL_Call(glGenTextures(1, &ssaoNoiseTexture));
+    GL_Call(glBindTexture(GL_TEXTURE_2D, ssaoNoiseTexture));
+    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, ssaoNoise.data()));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+    GL_Call(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 }
