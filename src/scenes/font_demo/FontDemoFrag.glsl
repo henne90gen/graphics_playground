@@ -1,8 +1,9 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec2 UV;
 
-uniform bool useTexture = false;
+uniform bool useTexture;
 uniform vec3 flatColor;
 uniform sampler2D textureSampler;
 
