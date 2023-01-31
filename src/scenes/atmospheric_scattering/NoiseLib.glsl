@@ -112,7 +112,7 @@ in float power, in int seed
     float noiseMin = 0.0F;
     float noiseMax = 0.0F;
 
-    vec2 seedOffset = vec2(gold_noise(float(seed))*10000, gold_noise(float(seed))*10000);
+    vec2 seedOffset = vec2(gold_noise(float(seed))*10000.0F, gold_noise(float(seed))*10000.0F);
     for (int i = 0; i < numNoiseLayers; i++) {
         if (!noiseLayers[i].enabled) {
             continue;
