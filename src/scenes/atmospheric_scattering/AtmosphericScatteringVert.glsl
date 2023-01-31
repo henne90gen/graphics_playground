@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 #include "NoiseLib.glsl"
 #include "ScatterLib.glsl"

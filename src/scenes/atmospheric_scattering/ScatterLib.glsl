@@ -18,13 +18,13 @@ out vec3 extinction, out vec3 inScatter) {
     extinction = exp(-(bR + bM) * s);
 
     float cosTheta = dot(modelToCamera, lightDirection) / (length(modelToCamera) * length(lightDirection));
-    float cR = 3 / (16*PI);
-    float cM = 1 / (4*PI);
-    vec3 bRTheta = cR * bR * (1 + cosTheta*cosTheta);
-    float oneMinusGSq = (1-g) * (1-g);
-    float bMTheta = cM * bM * (oneMinusGSq / pow(1 + g*g - 2*g*cosTheta, 3/2));
+    float cR = 3.0F / (16.0F*PI);
+    float cM = 1.0F / (4.0F*PI);
+    vec3 bRTheta = cR * bR * (1.0F + cosTheta*cosTheta);
+    float oneMinusGSq = (1.0F-g) * (1.0F-g);
+    float bMTheta = cM * bM * (oneMinusGSq / pow(1.0F + g*g - 2.0F*g*cosTheta, 3.0F/2.0F));
     vec3 t1 = (bRTheta + bMTheta) / (bR + bM);
-    vec3 t2 = 1 - extinction;
+    vec3 t2 = 1.0F - extinction;
     inScatter = t1 * lightColor * lightPower * t2;
 }
 

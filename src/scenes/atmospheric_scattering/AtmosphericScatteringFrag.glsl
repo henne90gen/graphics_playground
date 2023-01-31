@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 struct DirLight {
     vec3 direction;
@@ -107,7 +108,7 @@ void main() {
     vec3 materialDiffuseColor = getSurfaceColor(normalized_height);
     vec3 materialAmbientColor = vec3(0.1, 0.1, 0.1) * materialDiffuseColor;
     vec3 materialSpecularColor = vec3(0.3, 0.3, 0.3);
-    Material material = Material(materialAmbientColor, materialDiffuseColor, materialSpecularColor, 2);
+    Material material = Material(materialAmbientColor, materialDiffuseColor, materialSpecularColor, float(2));
     PointLight light = PointLight(lightPosition, lightColor, lightPower);
     DirLight dirLight = DirLight(lightDirection, lightColor, lightPower);
 

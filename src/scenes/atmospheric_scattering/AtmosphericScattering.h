@@ -32,7 +32,7 @@ class AtmosphericScattering : public Scene {
 
     glm::vec3 lightDirection = glm::vec3(0.0F, -10.0F, 50.0F);
     glm::vec3 lightColor = glm::vec3(1.0F, 1.0F, 1.0F);
-    float lightPower = 100.0F;
+    float lightPower = 30.0F;
 
     bool showFex = false;
     bool useFex = true;
