@@ -49,6 +49,8 @@ void AudioVis::tick() {
     static int linesPerSecond = 15;
     static VisMode currentMode = VisMode::AMPLITUDE;
 
+    std::cout << "Finished ImGUI setup" << std::endl;
+
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.001F);
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.1F);
@@ -62,12 +64,16 @@ void AudioVis::tick() {
     ImGui::Text("Number of Channels: %d", wav.header.numChannels);
 
     ImGui::Text("Cursor: %d", playBack.sampleCursor);
-    const auto seconds = static_cast<float>(playBack.sampleCursor) /
-                         (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
-    ImGui::Text("%.2fs", seconds);
+    const auto sampleRate = (static_cast<float>(wav.header.sampleRate) * static_cast<float>(wav.header.numChannels));
+    if (sampleRate != 0) {
+        const auto seconds = static_cast<float>(playBack.sampleCursor) / sampleRate;
+        ImGui::Text("%.2fs", seconds);
+    }
 
-    ImGui::SliderInt("##", &playBack.sampleCursor, 0, static_cast<int>(wav.data.subChunkSize) / wav.header.numChannels,
-                     "");
+    if (wav.header.numChannels != 0) {
+        const auto cursorMax = static_cast<int>(wav.data.subChunkSize) / wav.header.numChannels;
+        ImGui::SliderInt("##", &playBack.sampleCursor, 0, cursorMax, "");
+    }
 
     std::string btnText = "Pause";
     if (playBack.paused) {
@@ -86,6 +92,9 @@ void AudioVis::tick() {
 
     ImGui::End();
 
+    std::cout << "Finished ImGUI setup" << std::endl;
+
+#if !EMSCRIPTEN
     switch (currentMode) {
     case VisMode::AMPLITUDE:
         updateMeshAmplitude(linesPerSecond);
@@ -100,7 +109,9 @@ void AudioVis::tick() {
         updateMeshMagnitude(linesPerSecond);
         break;
     }
+
     renderMesh(modelScale, cameraPosition, cameraRotation, drawWireframe);
+#endif
 }
 
 void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int frameCountMax) {
@@ -179,7 +190,7 @@ void AudioVis::initSoundIo(int sampleRate) {
 
     soundio_flush_events(soundio);
 
-    int default_out_device_index = soundio_default_output_device_index(soundio);
+    const auto default_out_device_index = soundio_default_output_device_index(soundio);
     if (default_out_device_index < 0) {
         std::cerr << "no output device found" << std::endl;
         return;
@@ -303,7 +314,8 @@ void AudioVis::updateMesh(const std::function<double(int)> &calcSample01Func, un
     int currentLine = 0;
     int currentCursor = playBack.sampleCursor;
     float maxHeight = 0.0F;
-    int samplesPerLine = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
+
+    const int samplesPerLine = (wav.header.sampleRate * wav.header.numChannels) / linesPerSecond;
     while (currentCursor >= std::max(0, playBack.sampleCursor - samplesPerLine * LENGTH)) {
         const auto sample01 = calcSample01Func(currentCursor);
         if (sample01 < 0 || sample01 > 1) {
@@ -340,7 +352,8 @@ void AudioVis::updateMeshAmplitude(unsigned int linesPerSecond) {
               const auto sample = static_cast<double>(*(wav.data.data16 + currentCursor));
               const auto min = static_cast<double>(std::numeric_limits<int16_t>::min());
               const auto max = static_cast<double>(std::numeric_limits<int16_t>::max());
-              return (sample - min) / (max - min);
+              const auto divisor = max - min;
+              return (sample - min) / divisor;
           },
           linesPerSecond);
 }
