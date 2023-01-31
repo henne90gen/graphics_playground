@@ -3,9 +3,6 @@
 #include <cmath>
 #include <iostream>
 
-#define GIF_FLIP_VERT
-#include <gif.h>
-
 #include <glad/glad.h>
 
 constexpr const char *VIDEO_TMP_FILE = "tmp.h264";
@@ -170,8 +167,8 @@ void Mp4VideoSaver::remux() {
 }
 
 bool Mp4VideoSaver::doInit() {
-    int width = static_cast<int>(frameWidth);
-    int height = static_cast<int>(frameHeight);
+    const auto width = static_cast<int>(frameWidth);
+    const auto height = static_cast<int>(frameHeight);
 
     oformat = av_guess_format(nullptr, VIDEO_TMP_FILE, nullptr);
     if (oformat == nullptr) {
@@ -186,7 +183,7 @@ bool Mp4VideoSaver::doInit() {
         return false;
     }
 
-    AVCodec *codec = avcodec_find_encoder(oformat->video_codec);
+    const auto *codec = avcodec_find_encoder(oformat->video_codec);
     if (codec == nullptr) {
         std::cout << "Failed to find encoder" << std::endl;
         free();
@@ -207,7 +204,7 @@ bool Mp4VideoSaver::doInit() {
         return false;
     }
 
-    int bitrate = 0; // FIXME what is this?
+    const int bitrate = 0; // FIXME what is this?
     videoStream->codecpar->codec_id = oformat->video_codec;
     videoStream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     videoStream->codecpar->width = width;
@@ -357,29 +354,32 @@ bool GifVideoSaver::doInit() {
     if (gifWriter == nullptr) {
         gifWriter = new GifWriter();
     }
+
     unsigned int width = frameWidth;
     unsigned int height = frameHeight;
     if (scaleDown) {
         width = SCALED_DOWN_WIDTH;
         height = SCALED_DOWN_HEIGHT;
     }
-    if (!GifBegin(reinterpret_cast<GifWriter *>(gifWriter), videoFileName.c_str(), width, height, delay)) {
+
+    if (!GifBegin(gifWriter, videoFileName.c_str(), width, height, delay)) {
         std::cerr << "Could not open " << videoFileName << " for writing." << std::endl;
         return false;
     }
+
     return true;
 }
 
 void averagePixel(unsigned int pixel1, unsigned int pixel2, unsigned int *dest) {
-    unsigned int r1 = (pixel1 & 0x000000ff);
-    unsigned int g1 = (pixel1 & 0x0000ff00) >> 8;
-    unsigned int b1 = (pixel1 & 0x00ff0000) >> 16;
-    unsigned int r2 = (pixel2 & 0x000000ff);
-    unsigned int g2 = (pixel2 & 0x0000ff00) >> 8;
-    unsigned int b2 = (pixel2 & 0x00ff0000) >> 16;
-    unsigned int r = (r1 + r2) / 2;
-    unsigned int g = (g1 + g2) / 2;
-    unsigned int b = (b1 + b2) / 2;
+    const auto r1 = (pixel1 & 0x000000ff);
+    const auto g1 = (pixel1 & 0x0000ff00) >> 8;
+    const auto b1 = (pixel1 & 0x00ff0000) >> 16;
+    const auto r2 = (pixel2 & 0x000000ff);
+    const auto g2 = (pixel2 & 0x0000ff00) >> 8;
+    const auto b2 = (pixel2 & 0x00ff0000) >> 16;
+    const auto r = (r1 + r2) / 2;
+    const auto g = (g1 + g2) / 2;
+    const auto b = (b1 + b2) / 2;
     *dest = r + (g << 8) + (b << 16);
 }
 
@@ -435,7 +435,7 @@ void GifVideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
     if (scaleDown) {
         scaleDownFrame(frame.get(), SCALED_DOWN_WIDTH, SCALED_DOWN_HEIGHT);
     }
-    GifWriteFrame(reinterpret_cast<GifWriter *>(gifWriter), frame->buffer, frame->width, frame->height, delay);
+    GifWriteFrame(gifWriter, frame->buffer, frame->width, frame->height, delay);
 }
 
-bool GifVideoSaver::doSave() { return GifEnd(reinterpret_cast<GifWriter *>(gifWriter)); }
+bool GifVideoSaver::doSave() { return GifEnd(gifWriter); }
