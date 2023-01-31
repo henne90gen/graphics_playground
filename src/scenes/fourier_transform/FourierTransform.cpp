@@ -48,6 +48,8 @@ void FourierTransform::destroy() {
 }
 
 void FourierTransform::tick() {
+    GL_Call(glDisable(GL_DEPTH_TEST));
+
     static auto colors = createColors();
     static std::vector<glm::vec2> mousePositions = {};
     static std::vector<glm::vec2> drawnPoints = {};
@@ -57,8 +59,8 @@ void FourierTransform::tick() {
     static float rotationSpeed = 1.0F;
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static int fourierResolution = 200;
-    static bool useMousePositions = true;
-    int previousFourierResolution = fourierResolution;
+    static bool useMousePositions = false;
+    const int previousFourierResolution = fourierResolution;
 
     updateCoefficients(mousePositions, useMousePositions, fourierResolution);
 
