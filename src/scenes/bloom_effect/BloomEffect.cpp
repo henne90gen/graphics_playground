@@ -298,6 +298,7 @@ void BloomEffect::renderQuad(const std::shared_ptr<Shader> &s) {
 void BloomEffect::renderStepsOrFinal(bool drawSteps) {
     textureShader->bind();
     textureShader->setUniform("u_Texture", 0);
+    textureShader->setUniform("u_ColorAmplifier", 1.0F);
     GL_Call(glActiveTexture(GL_TEXTURE0));
 
     if (drawSteps) {

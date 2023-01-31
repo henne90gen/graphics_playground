@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec2 UV;
 
@@ -7,8 +8,8 @@ out vec4 FragColor;
 uniform sampler2D u_SceneTexture;
 uniform sampler2D u_BloomBlurTexture;
 
-uniform bool u_DoBloom = true;
-uniform bool u_DoGammaCorrection = true;
+uniform bool u_DoBloom;
+uniform bool u_DoGammaCorrection;
 uniform float u_Exposure;
 
 void main() {
