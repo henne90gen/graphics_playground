@@ -4,6 +4,9 @@
 #include <string>
 #include <utility>
 
+#define GIF_FLIP_VERT
+#include <gif.h>
+
 #if FFMPEG_FOUND
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -78,7 +81,7 @@ class Mp4VideoSaver : public VideoSaver {
     AVFormatContext *ofctx = nullptr;
     AVFrame *videoFrame = nullptr;
     SwsContext *swsCtx = nullptr;
-    AVOutputFormat *oformat = nullptr;
+    const AVOutputFormat *oformat = nullptr;
 
     void cleanUp();
     void remux();
@@ -98,5 +101,5 @@ class GifVideoSaver : public VideoSaver {
   private:
     int delay = 1;
     bool scaleDown = true;
-    void *gifWriter = nullptr;
+    GifWriter *gifWriter = nullptr;
 };
