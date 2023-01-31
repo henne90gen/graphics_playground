@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec2 position;
 in float height;
@@ -11,5 +12,5 @@ out float h;
 
 void main() {
     h = height;
-    gl_Position = projection * view * model * vec4(position.x, height, position.y, 1.0);
+    gl_Position = projection * view * model * vec4(position.x, height, position.y, 1.0F);
 }
