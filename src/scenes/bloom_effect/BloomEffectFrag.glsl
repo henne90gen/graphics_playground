@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 struct Light {
     vec3 position;
@@ -24,16 +25,16 @@ void main() {
     float distanceToLight = length(surfaceToLight);
 
     float brightness = dot(v_Normal, surfaceToLight) / (distanceToLight * distanceToLight);
-    brightness = clamp(brightness, 0, 1);
+    brightness = clamp(brightness, 0.0F, 1.0F);
 
     vec4 surfaceColor = texture(u_TextureSampler, v_UV);
     vec3 diffuseColor = brightness * u_Light.color * surfaceColor.rgb;
 
     vec3 cameraDirection = normalize(v_CameraPosition - v_Position);
     vec3 reflectionDirection = reflect(surfaceToLight, v_Normal);
-    float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0, 1);
+    float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0.0F, 1.0F);
 
-    vec3 specularColor = u_SpecularColor * u_Light.color * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
+    vec3 specularColor = u_SpecularColor * u_Light.color * pow(cosAlpha, 5.0F) / (distanceToLight * distanceToLight);
 
     vec3 color = vec3(0.0);
     color += u_AmbientColor;

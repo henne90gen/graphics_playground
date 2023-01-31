@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec3 a_Position;
 in vec3 a_Normal;
@@ -10,7 +11,7 @@ out vec2 v_UV;
 out vec3 v_CameraPosition;
 
 uniform mat4 u_Model;
-uniform mat3 u_NormalMatrix = mat3(1.0);
+uniform mat3 u_NormalMatrix;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 

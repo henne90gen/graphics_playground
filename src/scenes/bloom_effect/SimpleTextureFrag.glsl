@@ -1,9 +1,10 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec2 UV;
 
 uniform sampler2D u_Texture;
-uniform float u_ColorAmplifier = 1.0;
+uniform float u_ColorAmplifier;
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
