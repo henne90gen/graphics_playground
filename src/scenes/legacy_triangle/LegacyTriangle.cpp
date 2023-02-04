@@ -28,7 +28,7 @@ void LegacyTriangle::tick() {
     glBegin(GL_TRIANGLES);
     glColor3f(color[0], color[1], color[2]);
     for (unsigned long i = 0; i < vertices.size(); i += 2) {
-        glVertex2f(vertices[i], vertices[i + 1]); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+        glVertex2f(vertices[i], vertices[i + 1]);
     }
     glEnd();
     GL_CheckErrors();
