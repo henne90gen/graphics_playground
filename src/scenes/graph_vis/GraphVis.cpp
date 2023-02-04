@@ -52,7 +52,7 @@ void GraphVis::tick() {
             shouldRunSimulation = true;
         }
     }
-    ImGui::Combo("", reinterpret_cast<int *>(&chosenGraph), "SMALL_LATTICE\0STAR\0LATTICE\0TREE\0\0");
+    ImGui::Combo("##", reinterpret_cast<int *>(&chosenGraph), "SMALL_LATTICE\0STAR\0LATTICE\0TREE\0\0");
     ImGui::SameLine();
     if (ImGui::Button("Reset Simulation")) {
         resetGraph(chosenGraph);
@@ -136,11 +136,12 @@ void GraphVis::renderNodes(const glm::mat4 &viewMatrix, const bool drawWireframe
     GL_Call(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
 
     GL_Call(glEnableVertexAttribArray(1));
-    GL_Call(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(positions[0]), (void *)0));
+    GL_Call(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
     GL_Call(glVertexAttribDivisor(1, 1));
 
     GL_Call(glEnableVertexAttribArray(2));
-    GL_Call(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), (void *)sizeof(glm::vec2)));
+    GL_Call(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]),
+                                  reinterpret_cast<void *>(sizeof(glm::vec2))));
     GL_Call(glVertexAttribDivisor(2, 1));
 
     if (drawWireframe) {
