@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 struct Light {
     vec3 position;
@@ -20,10 +21,10 @@ uniform bool u_UseNormalMap;
 out vec4 color;
 
 void main() {
-    vec3 normal = vec3(1.0);
+    vec3 normal = vec3(1.0F);
     if (u_UseNormalMap) {
         normal = texture(u_NormalSampler, v_UV).rgb;
-        normal = normalize(normal * 2.0 - 1.0);
+        normal = normalize(normal * 2.0F - 1.0F);
         normal = normalize(v_TBN * normal);
     } else {
         normal = normalize(u_NormalMatrix * v_Normal);
@@ -33,19 +34,19 @@ void main() {
     float distanceToLight = length(surfaceToLight);
 
     float brightness = dot(normal, surfaceToLight) / (distanceToLight * distanceToLight);
-    brightness = clamp(brightness, 0, 1);
+    brightness = clamp(brightness, 0.0F, 1.0F);
 
     vec4 surfaceColor = texture(u_TextureSampler, v_UV);
     vec3 diffuseColor = brightness * u_Light.color * surfaceColor.rgb;
 
-    vec3 specularColor = vec3(0.1);
+    vec3 specularColor = vec3(0.1F);
     vec3 cameraDirection = normalize(v_CameraPosition - v_Position);
     vec3 reflectionDirection = reflect(surfaceToLight, normal);
-    float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0, 1);
-    specularColor *= u_Light.color * pow(cosAlpha, 5) / (distanceToLight * distanceToLight);
+    float cosAlpha = clamp(dot(cameraDirection, reflectionDirection), 0.0F, 1.0F);
+    specularColor *= u_Light.color * pow(cosAlpha, 5.0F) / (distanceToLight * distanceToLight);
 
-    vec3 colorv3 = vec3(0.0);
-    vec3 ambientColor = vec3(0.1);
+    vec3 colorv3 = vec3(0.0F);
+    vec3 ambientColor = vec3(0.1F);
     colorv3 += ambientColor;
     colorv3 += diffuseColor;
     colorv3 += specularColor;
