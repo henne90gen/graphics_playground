@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec2 v_UV;
 
@@ -12,6 +13,6 @@ void main() {
     if (u_UseTexture) {
         color = texture(u_TextureSampler, v_UV);
     } else {
-        color = vec4(u_Color, 1.0);
+        color = vec4(u_Color, 1.0F);
     }
 }
