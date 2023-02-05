@@ -27,6 +27,10 @@ function(create_scene)
             CXX_STANDARD 17
             CXX_STANDARD_REQUIRED ON
     )
+
+    if (EMSCRIPTEN)
+        configure_file(${CMAKE_SOURCE_DIR}/src/web/scene.html ${CMAKE_BINARY_DIR}/html/${SCENE_NAME}.html)
+    endif ()
 endfunction()
 
 function(create_scene_test)

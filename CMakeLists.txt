@@ -10,9 +10,7 @@ include(SceneFunc)
 include(FetchContent)
 
 if (EMSCRIPTEN)
-    # TODO change to .js and add custom index.html
-    # set(CMAKE_EXECUTABLE_SUFFIX ".js")
-    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    set(CMAKE_EXECUTABLE_SUFFIX ".js")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASSERTIONS=1")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s WASM=1")
@@ -26,8 +24,7 @@ if (EMSCRIPTEN)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/html)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/html)
 
-    # TODO add custom index.html
-    # configure_file(index.html ${CMAKE_BINARY_DIR}/html/index.html)
+    configure_file(src/web/index.html ${CMAKE_BINARY_DIR}/html/index.html)
 endif ()
 
 # Clang Tidy
