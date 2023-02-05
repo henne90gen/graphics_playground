@@ -10,6 +10,7 @@
 
 #if EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #include "Scene.h"
@@ -81,6 +82,15 @@ void resizeCallback(GLFWwindow *window, int width, int height) {
     scene->onWindowResize(width, height);
 }
 
+#if EMSCRIPTEN
+extern "C" {
+EMSCRIPTEN_KEEPALIVE void emscriptenCanvasResized(int width, int height) {
+    std::cout << "resizing with emscripten: " << width << "x" << height << std::endl;
+    glfwSetWindowSize(glfwWindow, width, height);
+}
+};
+#endif
+
 void installCallbacks(GLFWwindow *window) {
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, cursorPosCallback);
@@ -122,7 +132,7 @@ void renderCaptureMenu(ScreenRecorder *recorder) {
 #endif
 
 void runMainLoop(void *data) {
-    const auto scene = static_cast<Scene *>(data);
+    auto *scene = static_cast<Scene *>(data);
 
     glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
@@ -130,6 +140,11 @@ void runMainLoop(void *data) {
     startImGuiFrame();
 
     scene->internalTick();
+
+    int width = 0;
+    int height = 0;
+    glfwGetWindowSize(glfwWindow, &width, &height);
+    std::cout << "window dimensions: " << width << "x" << height << std::endl;
 
 #ifdef WITH_SCREEN_RECORDING
     renderCaptureMenu(&recorder);

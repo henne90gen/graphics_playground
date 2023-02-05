@@ -48,7 +48,6 @@
             margin-right: auto;
             display: block;
             text-align: center;
-
         }
 
         #console {
@@ -111,8 +110,14 @@
         })(),
         canvas: (function () {
             var canvas = document.getElementById('canvas');
-            canvas.width = canvas.offsetWidth
-            canvas.height = canvas.offsetHeight
+
+            const observer = new ResizeObserver((entries) => {
+                const entry = entries.find((entry) => entry.target === canvas);
+                canvas.width = entry.devicePixelContentBoxSize[0].inlineSize;
+                canvas.height = entry.devicePixelContentBoxSize[0].blockSize;
+                Module._emscriptenCanvasResized(canvas.width, canvas.height);
+            });
+            observer.observe(canvas, {box: 'device-pixel-content-box'});
 
             // As a default initial behavior, pop up an alert when webgl context is lost. To make your
             // application robust, you may want to override this behavior before shipping!
