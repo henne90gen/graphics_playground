@@ -1,4 +1,5 @@
-#version 330
+#version 300 es
+precision mediump float;
 
 in float vHeight;
 in vec3 vPosition;
@@ -27,12 +28,12 @@ void main() {
     } else if (height < grassLevel-blur) {
         color = grassColor;
     } else if (height < grassLevel+blur) {
-        float t = (height-(grassLevel-blur)) / (2.0F*blur);
+        float t = (height-(grassLevel-blur)) / (2.0F * blur);
         color = mix(grassColor, rockColor, t);
     } else if (height < rockLevel-blur){
         color = rockColor;
     } else if (height < rockLevel+blur) {
-        float t = (height-(rockLevel-blur)) / (2.0F*blur);
+        float t = (height-(rockLevel-blur)) / (2.0F * blur);
         color = mix(rockColor, snowColor, t);
     } else {
         color = snowColor;
@@ -43,11 +44,11 @@ void main() {
 
     float brightness = dot(normal, surfaceToLight);
     brightness *= lightPower;
-    brightness = clamp(brightness, 0, 1);
+    brightness = clamp(brightness, 0.0F, 1.0F);
 
     vec3 diffuseColor = brightness * lightColor * color.rgb;
 
-    vec3 colorv3 = vec3(0.0);
+    vec3 colorv3 = vec3(0.0F);
     colorv3 += diffuseColor;
     color = vec4(colorv3, 1.0F);
 }

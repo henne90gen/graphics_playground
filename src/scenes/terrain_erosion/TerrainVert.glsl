@@ -1,4 +1,5 @@
-#version 330 core
+#version 300 es
+precision mediump float;
 
 in vec2 position;
 in float height;
@@ -17,7 +18,7 @@ void main() {
     vHeight = height;
     vNormal = normalMatrix * in_normal;
     vec3 finalPosition = vec3(position.x, height, position.y);
-    vec4 worldPosition = modelMatrix * vec4(finalPosition, 1.0);
+    vec4 worldPosition = modelMatrix * vec4(finalPosition, 1.0F);
     vPosition = vec3(worldPosition);
     gl_Position = projectionMatrix * viewMatrix * worldPosition;
 }
