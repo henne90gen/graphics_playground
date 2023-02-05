@@ -50,9 +50,7 @@ jobs:
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-      - run: |
-          mkdir build
-# ln -s /usr/bin/python3 /usr/bin/python
+      - run: mkdir build
 
       - name: Run CMake
         working-directory: build
@@ -62,7 +60,7 @@ jobs:
 
       - name: Build
         working-directory: build
-        run: cmake --build .
+        run: cmake --build . -j$(nproc)
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
