@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+#include <iostream>
+
 constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 10000.0F;
