@@ -85,7 +85,6 @@ void resizeCallback(GLFWwindow *window, int width, int height) {
 #if EMSCRIPTEN
 extern "C" {
 EMSCRIPTEN_KEEPALIVE void emscriptenCanvasResized(int width, int height) {
-    std::cout << "resizing with emscripten: " << width << "x" << height << std::endl;
     glfwSetWindowSize(glfwWindow, width, height);
 }
 };
