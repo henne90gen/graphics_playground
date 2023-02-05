@@ -140,11 +140,6 @@ void runMainLoop(void *data) {
 
     scene->internalTick();
 
-    int width = 0;
-    int height = 0;
-    glfwGetWindowSize(glfwWindow, &width, &height);
-    std::cout << "window dimensions: " << width << "x" << height << std::endl;
-
 #ifdef WITH_SCREEN_RECORDING
     renderCaptureMenu(&recorder);
     recorder.tick(scene->getWidth(), scene->getHeight());
