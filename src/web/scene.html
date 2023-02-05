@@ -115,7 +115,9 @@
                 const entry = entries.find((entry) => entry.target === canvas);
                 canvas.width = entry.devicePixelContentBoxSize[0].inlineSize;
                 canvas.height = entry.devicePixelContentBoxSize[0].blockSize;
-                Module._emscriptenCanvasResized(canvas.width, canvas.height);
+                if (Object.hasOwn(Module, "_emscriptenCanvasResized")) {
+                    Module._emscriptenCanvasResized(canvas.width, canvas.height);
+                }
             });
             observer.observe(canvas, {box: 'device-pixel-content-box'});
 
