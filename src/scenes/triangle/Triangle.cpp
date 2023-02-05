@@ -38,16 +38,16 @@ void Triangle::tick() {
     static std::array<float, VERTEX_COUNT> vertices = {-1, -1, 0, 1, 1, -1};
     pickColorAndVertices(color.data(), vertices.data());
 
-    shader->bind();
-
     positionBuffer->update(vertices.data(), vertices.size() * sizeof(float));
 
     const unsigned int TOTAL_COLOR_COUNT = 9;
     std::array<float, TOTAL_COLOR_COUNT> colors = {};
     for (unsigned long i = 0; i < colors.size(); i++) {
-        colors[i] = color[i % 3]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+        colors[i] = color[i % 3];
     }
     colorBuffer->update(colors.data(), colors.size() * sizeof(float));
+
+    shader->bind();
 
     GL_Call(glEnableVertexAttribArray(positionLocation));
     GL_Call(glEnableVertexAttribArray(colorLocation));
