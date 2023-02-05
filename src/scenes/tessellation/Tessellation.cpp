@@ -86,8 +86,8 @@ void Tessellation::tick() {
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&model.rotation), 0.01F);
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&model.scale), 0.01F);
     ImGui::Checkbox("Draw Wireframe", &drawWireframe);
-    ImGui::DragFloat3("Outer Tess", reinterpret_cast<float *>(&tessellationLevels.outer));
-    ImGui::DragFloat("Inner Tess", &tessellationLevels.inner);
+    ImGui::DragFloat3("Outer Tess", reinterpret_cast<float *>(&tessellationLevels.outer), 1.0F, 1.0F, 100.0F);
+    ImGui::DragFloat("Inner Tess", &tessellationLevels.inner, 1.0F, 1.0F, 100.0F);
     ImGui::End();
 
     renderTessellatedQuad(drawWireframe, camera, model, tessellationLevels);
