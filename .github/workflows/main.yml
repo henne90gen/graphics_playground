@@ -56,7 +56,7 @@ jobs:
         working-directory: build
         run: |
           source ../emsdk/emsdk_env.sh
-          emcmake cmake ..
+          emcmake cmake .. -D CMAKE_BUILD_TYPE=Release
 
       - name: Build
         working-directory: build
