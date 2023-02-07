@@ -85,6 +85,9 @@ class Shader {
     void setUniform(const std::string &name, const glm::vec3 &v) {
         GL_Call(glUniform3f(getUniformLocation(name), v.x, v.y, v.z));
     }
+    void setUniform(const std::string &name, const glm::ivec3 &v) {
+        GL_Call(glUniform3i(getUniformLocation(name), v.x, v.y, v.z));
+    }
     void setUniform(const std::string &name, const glm::vec4 &v) {
         GL_Call(glUniform4f(getUniformLocation(name), v.x, v.y, v.z, v.w));
     }
