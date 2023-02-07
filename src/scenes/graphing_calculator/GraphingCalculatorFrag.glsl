@@ -4,6 +4,7 @@ in vec2 coords;
 
 uniform vec2 boundsX;
 uniform vec2 boundsY;
+uniform float axisWidth;
 
 out vec4 color;
 
@@ -42,10 +43,10 @@ void main() {
     color = mix(vec4(0.0F), vec4(1.0F), t);
 
     // draw x axis
-    t = abs(step(verticalSize * 0.001F, abs(expectedY)) - 1.0F);
+    t = abs(step(verticalSize * axisWidth, abs(expectedY)) - 1.0F);
     color = mix(color, vec4(0.0F), t);
 
     // draw y axis
-    t = abs(step(horizontalSize * 0.001F, abs(expectedX)) - 1.0F);
+    t = abs(step(horizontalSize * axisWidth, abs(expectedX)) - 1.0F);
     color = mix(color, vec4(0.0F), t);
 }
