@@ -172,7 +172,7 @@ void RayTracing::renderLines(const glm::vec3 &rayTracerCameraPosition, const flo
 
     shader->setUniform("u_UseTexture", false);
     shader->setUniform("u_Model", glm::mat4(1.0F));
-    shader->setUniform("u_Color", {0, 1, 1});
+    shader->setUniform("u_Color", glm::vec3(0.0F, 1.0F, 1.0F));
     GL_Call(glDrawElements(GL_LINES, array.getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
