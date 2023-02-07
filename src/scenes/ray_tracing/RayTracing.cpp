@@ -166,7 +166,7 @@ void RayTracing::renderLines(const glm::vec3 &rayTracerCameraPosition, const flo
           0, 3, //
           0, 4, //
     };
-    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(indices);
+    auto indexBuffer = std::make_shared<IndexBuffer>(indices);
     array.setIndexBuffer(indexBuffer);
     array.bind();
 
