@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from typing import Tuple, Union
 
 CPP_TEMPLATE = """\
@@ -105,3 +106,15 @@ def generate_scene_template(scene_name: str):
 
     cmake_lists_path = os.path.join(folder_path, "CMakeLists.txt")
     write_template(cmake_lists_path, CMAKE_LISTS_TEMPLATE, cpp_file=f"{scene_name}.cpp")
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python generate_scene_template.py <scene_name>")
+        return
+
+    generate_scene_template(sys.argv[1])
+
+
+if __name__ == "__main__":
+    main()
