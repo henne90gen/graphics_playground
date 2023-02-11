@@ -197,6 +197,7 @@ if (NOT EMSCRIPTEN)
             benchmark
     )
     find_package(OpenGL REQUIRED)
+    include(GoogleTest)
 endif ()
 
 
@@ -227,4 +228,6 @@ target_include_directories(gif INTERFACE ${gif_SOURCE_DIR})
 find_package(OpenMP)
 
 enable_testing()
+configure_file(${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+
 add_subdirectory(src)
