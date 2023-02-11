@@ -48,10 +48,10 @@ float Camera::zoomSpeed() const {
 }
 
 void Camera::update(const InputData &input) {
-    if (!input.keyboard.isKeyDown(GLFW_KEY_LEFT_ALT)) {
-        updateView();
-        return;
-    }
+//    if (!input.keyboard.isKeyDown(GLFW_KEY_LEFT_ALT)) {
+//        updateView();
+//        return;
+//    }
 
     const auto &mouse = input.mouse.pos;
     const auto delta = (mouse - initialMousePosition) * 0.003F;
