@@ -20,51 +20,40 @@ function(create_scene)
     endforeach ()
 
     add_executable(${SCENE_NAME} ${ARGN} ${SHADERS})
-    target_include_directories(${SCENE_NAME} PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${GLFW_DIR}/include
-            ${GLM_DIR}
-            ${IMGUI_DIR})
     target_link_libraries(${SCENE_NAME} core opengl)
     set_target_properties(
             ${SCENE_NAME} PROPERTIES
-            CXX_STANDARD 17
+            CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
     )
 endfunction()
 
 function(create_scene_test)
+    if (EMSCRIPTEN)
+        return()
+    endif ()
+
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    set(TEST_NAME ${SCENE_NAME}_test)
 
-    add_executable(${SCENE_NAME}_test ${ARGN})
-
-    set_target_properties(${SCENE_NAME}_test PROPERTIES
-            CXX_STANDARD 17
+    add_executable(${TEST_NAME} ${ARGN})
+    target_link_libraries(${TEST_NAME} core GTest::gtest_main)
+    set_target_properties(${TEST_NAME} PROPERTIES
+            CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON)
 
-    target_include_directories(${SCENE_NAME}_test PRIVATE
-            ${CATCH_INCLUDE_DIR}
-            ${GLM_DIR}
-            ${FFMPEG_INCLUDE_DIR})
-    target_link_libraries(${SCENE_NAME}_test core)
-
-    catch_discover_tests(${SCENE_NAME}_test)
+    gtest_discover_tests(${TEST_NAME})
 endfunction()
 
 function(create_scene_benchmark)
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    set(BENCH_NAME ${SCENE_NAME}_bench)
 
-    add_executable(${SCENE_NAME}_bench ${ARGN})
-    target_link_libraries(${SCENE_NAME}_bench PRIVATE
-            core
-            benchmark::benchmark)
-    target_include_directories(${SCENE_NAME}_bench PRIVATE
-            ${GLM_DIR})
-    set_target_properties(
-            ${SCENE_NAME}_bench PROPERTIES
-            CXX_STANDARD 17
-            CXX_STANDARD_REQUIRED ON
-    )
+    add_executable(${BENCH_NAME} ${ARGN})
+    target_link_libraries(${BENCH_NAME} PRIVATE core benchmark::benchmark)
+    set_target_properties(${BENCH_NAME} PROPERTIES
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED ON)
 endfunction()
 
 function(add_scene_resource_directory RESOURCE_DIR)
