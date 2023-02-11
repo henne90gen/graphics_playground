@@ -3,12 +3,10 @@ add_library(core
         Main.cpp
         Scene.cpp
         camera/Camera.cpp
-        camera/FpsCamera.cpp
         util/DataReadUtils.cpp
         util/ImGuiUtils.cpp
         util/TimeUtils.cpp
-        fourier_transform/Fourier.cpp
-        )
+        fourier_transform/Fourier.cpp)
 
 if (MSVC)
 else ()
