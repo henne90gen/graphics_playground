@@ -24,15 +24,10 @@ class RubiksCubeScene : public Scene {
 
     void destroy() override;
 
-  protected:
-    void onAspectRatioChange() override;
-
   private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<IndexBuffer> indexBuffer;
-
-    glm::mat4 projectionMatrix;
 
     float *vertices;
     unsigned int *indices;

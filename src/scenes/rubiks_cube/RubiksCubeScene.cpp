@@ -18,175 +18,175 @@ float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     // back face
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     // left face
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     // right face
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     // top face
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     // bottom face
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = max.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = max.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     *vertPtr++ = min.x; // x NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.y; // y NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     *vertPtr++ = min.z; // z NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 1; // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    *vertPtr++ = 0; // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 1;     // r NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // g NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    *vertPtr++ = 0;     // b NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     return vertPtr;
 }
@@ -196,10 +196,10 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
     const unsigned int numFaces = 6;
     const unsigned int startIndex = cubeNumber * numFaces * numVerticesPerFace;
     for (unsigned int i = 0; i < numFaces; i++) {
-        *indPtr++ = startIndex + i * numVerticesPerFace; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace;     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         *indPtr++ = startIndex + i * numVerticesPerFace + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         *indPtr++ = startIndex + i * numVerticesPerFace + 2; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        *indPtr++ = startIndex + i * numVerticesPerFace; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *indPtr++ = startIndex + i * numVerticesPerFace;     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         *indPtr++ = startIndex + i * numVerticesPerFace + 2; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         *indPtr++ = startIndex + i * numVerticesPerFace + 3; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
@@ -209,8 +209,6 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 void RubiksCubeScene::setup() {
     shader = CREATE_DEFAULT_SHADER(rubiks_cube_RubiksCube);
     shader->bind();
-
-    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     vertexArray = std::make_shared<VertexArray>(shader);
     vertexArray->bind();
@@ -235,9 +233,9 @@ void RubiksCubeScene::setup() {
     for (unsigned int x = 0; x < sideCount; x++) {
         for (unsigned int y = 0; y < sideCount; y++) {
             for (unsigned int z = 0; z < sideCount; z++) {
-                auto xF = static_cast<float>(x);
-                auto yF = static_cast<float>(y);
-                auto zF = static_cast<float>(z);
+                const auto xF = static_cast<float>(x);
+                const auto yF = static_cast<float>(y);
+                const auto zF = static_cast<float>(z);
 
                 const float minOffset = 1.5F;
                 const float maxOffset = 0.5F;
@@ -245,36 +243,25 @@ void RubiksCubeScene::setup() {
                 const glm::vec3 max = glm::vec3(xF - maxOffset, yF - maxOffset, zF - maxOffset);
                 vertPtr = addCubeVertices(vertPtr, min, max);
 
-                unsigned int cubeNumber = x + (y * sideCount) + (z * sideCount * sideCount);
+                const unsigned int cubeNumber = x + (y * sideCount) + (z * sideCount * sideCount);
                 indPtr = addCubeIndices(indPtr, cubeNumber);
             }
         }
     }
 
-    BufferLayout bufferLayout = {
-            {ShaderDataType::Float3, "position"},
-            {ShaderDataType::Float3, "color"}
-    };
+    const BufferLayout bufferLayout = {{ShaderDataType::Float3, "position"}, {ShaderDataType::Float3, "color"}};
     auto positionBuffer = std::make_shared<VertexBuffer>(vertices, verticesSize, bufferLayout);
     vertexArray->addVertexBuffer(positionBuffer);
 
     indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);
 
-    rubiksCube.reset(new RubiksCube(
-            {
-                    R_F, R_L, R_RI, R_LI, R_R, R_F, R_F, R_BOI, R_TI, R_BAI, R_L, R_FI, R_FI,
-                    R_L, R_L, R_BO, R_BOI, R_BAI, R_TI, R_BOI
-            }
-    ));
-}
-
-void RubiksCubeScene::onAspectRatioChange() {
-    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
+    rubiksCube.reset(new RubiksCube({R_F, R_L,  R_RI, R_LI, R_R, R_F,  R_F,   R_BOI, R_TI, R_BAI,
+                                     R_L, R_FI, R_FI, R_L,  R_L, R_BO, R_BOI, R_BAI, R_TI, R_BOI}));
 }
 
 void RubiksCubeScene::destroy() {
     free(vertices); // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
-    free(indices); // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
+    free(indices);  // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
 }
 
 std::string to_string(unsigned int input) {
@@ -313,14 +300,14 @@ void RubiksCubeScene::tick() {
     }
     ImGui::Text("Executed Rotation Commands: %d", rubiksCube->executedRotationCommands);
 
-    unsigned int averageLength = rubiksCube->getAverageRotationListLength();
-    float averageLengthPerRotationCommand =
-            static_cast<float>(averageLength) / static_cast<float>(rubiksCube->executedRotationCommands);
+    const unsigned int averageLength = rubiksCube->getAverageRotationListLength();
+    const float averageLengthPerRotationCommand =
+          static_cast<float>(averageLength) / static_cast<float>(rubiksCube->executedRotationCommands);
     ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
 
-    unsigned int maximumLength = rubiksCube->getMaximumRotationListLength();
-    float maximumLengthPerRotationCommand =
-            static_cast<float>(maximumLength) / static_cast<float>(rubiksCube->executedRotationCommands);
+    const unsigned int maximumLength = rubiksCube->getMaximumRotationListLength();
+    const float maximumLengthPerRotationCommand =
+          static_cast<float>(maximumLength) / static_cast<float>(rubiksCube->executedRotationCommands);
     ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
 
     ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube->getTotalRotationListEntriesCount());
@@ -335,10 +322,9 @@ void RubiksCubeScene::tick() {
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
-    glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
     shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", viewMatrix);
-    shader->setUniform("projectionMatrix", projectionMatrix);
+    shader->setUniform("viewMatrix", getCamera().getViewMatrix());
+    shader->setUniform("projectionMatrix", getCamera().getProjectionMatrix());
 
     rubiksCube->solve();
     rubiksCube->rotate(rotationSpeed);
@@ -346,7 +332,7 @@ void RubiksCubeScene::tick() {
     for (unsigned int i = 0; i < NUMBER_OF_SMALL_CUBES; i++) {
         shader->setUniform("cubeMatrix", rubiksCube->getRotationMatrix(i));
         const unsigned int vertexCountPerSmallCube = 36;
-        unsigned int count = i * vertexCountPerSmallCube * sizeof(unsigned int);
+        const unsigned int count = i * vertexCountPerSmallCube * sizeof(unsigned int);
         GL_Call(glDrawElements(GL_TRIANGLES, vertexCountPerSmallCube, GL_UNSIGNED_INT,
                                reinterpret_cast<void *>(count))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     }
