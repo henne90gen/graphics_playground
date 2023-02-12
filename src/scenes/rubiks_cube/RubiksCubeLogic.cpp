@@ -23,7 +23,7 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
     *currentAngle += rotationSpeed;
 
     bool isDoneRotating = false;
-    const auto piHalf = glm::pi<float>() / 2.0F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    const auto piHalf = glm::pi<float>() * 0.5F;
     if (*currentAngle >= piHalf) {
         isDoneRotating = true;
         *currentAngle = piHalf;
@@ -60,18 +60,21 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
         break;
     }
 
-    for (unsigned int cube : cubes) {
-        unsigned int cubeIndex = cubePositions[cube];
+    for (const auto cube : cubes) {
+        const auto cubeIndex = cubePositions[cube];
         rubiks::updateCubeRotation(cubeRotations[cubeIndex], rotationVector, isDoneRotating);
     }
 
-    if (isDoneRotating) {
-        if (command.direction == CLOCKWISE) {
-            rubiks::adjustIndicesClockwise(cubePositions, cubes);
-        } else {
-            rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
-        }
+    if (!isDoneRotating) {
+        return isDoneRotating;
     }
+
+    if (command.direction == CLOCKWISE) {
+        rubiks::adjustIndicesClockwise(cubePositions, cubes);
+    } else {
+        rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    }
+
     return isDoneRotating;
 }
 
