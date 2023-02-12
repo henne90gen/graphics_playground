@@ -143,6 +143,7 @@ void RubiksCube::solve() {
     if (!solving) {
         return;
     }
+
     rotationCommands.clear();
     std::cout << "Solving..." << std::endl;
 
