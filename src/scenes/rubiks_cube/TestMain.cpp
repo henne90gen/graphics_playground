@@ -1,6 +1,9 @@
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include <gtest/gtest.h>
 
-int main(int argc, char *argv[]) {
-    return Catch::Session().run(argc, argv);
+// Demonstrate some basic assertions.
+TEST(HelloTest, BasicAssertions) {
+    // Expect two strings not to be equal.
+    EXPECT_STRNE("hello", "world");
+    // Expect equality.
+    EXPECT_EQ(7 * 6, 42);
 }
