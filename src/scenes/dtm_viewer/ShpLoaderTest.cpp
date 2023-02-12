@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <gtest/gtest.h>
 
 #include <iostream>
 
@@ -44,21 +44,25 @@ template <class Itr> int32_t toInt(Itr begin, Itr end) {
     return std::stoi(str.substr(firstNonWhitespaceChar(str)));
 }
 
-TEST_CASE("Can load shp file") {
+TEST(ShpLoaderTest, can_load_shp_file) {
+    GTEST_SKIP_("This test depends on data which is not committed");
+
     ShpData shpData;
-    bool success = loadShpFile("../../gis_data/gravimetry/gravi.shp", shpData);
-    REQUIRE(success);
-    REQUIRE(shpData.records.size() == 605);
+    bool success = loadShpFile("../../../gis_data/gravimetry/gravi.shp", shpData);
+    ASSERT_TRUE(success);
+    ASSERT_EQ(shpData.records.size(), 605);
 }
 
-TEST_CASE("Can load dbf file") {
-    DbfData dbfData;
-    bool success = loadDbfFile("../../gis_data/gravimetry/gravi.dbf", dbfData);
-    REQUIRE(success);
+TEST(ShpLoaderTest, can_load_dbf_file) {
+    GTEST_SKIP_("This test depends on data which is not committed");
 
-    REQUIRE(dbfData.header.numRecords == 605);
-    REQUIRE(dbfData.header.numBytesRecord == 117);
-    REQUIRE(dbfData.numFieldDescriptors == 6);
+    DbfData dbfData;
+    const auto success = loadDbfFile("../../../gis_data/gravimetry/gravi.dbf", dbfData);
+    ASSERT_TRUE(success);
+
+    ASSERT_EQ(dbfData.header.numRecords, 605);
+    ASSERT_EQ(dbfData.header.numBytesRecord, 117);
+    ASSERT_EQ(dbfData.numFieldDescriptors, 6);
     // TODO check each field descriptor
 #if 0
     for (int i = 0; i < dbfData.numFieldDescriptors; i++) {

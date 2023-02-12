@@ -1,28 +1,32 @@
-#include <catch.hpp>
+#include <gtest/gtest.h>
 
 #include "XyzLoader.h"
 
 #include <iostream>
 
-TEST_CASE("Can load xyz directory") {
+TEST(XyzLoaderTest, Can_load_xyz_directory) {
+    GTEST_SKIP_("This test depends on data which is not committed");
+
     std::vector<glm::vec3> result = {};
     BoundingBox3 bb = {};
-    bool success = loadXyzDir("../../src/test/gis/dtm", bb, result);
-    REQUIRE(success);
-    REQUIRE(result.size() == 38220);
-    REQUIRE(bb.min == glm::vec3(278240, 470.22, 5.58986e+06));
-    REQUIRE(bb.max == glm::vec3(281980, 633.59, 5.60482e+06));
+    const auto success = loadXyzDir("../../../../src/test/gis/dtm", bb, result);
+    ASSERT_TRUE(success);
+    ASSERT_EQ(result.size(), 38220);
+    ASSERT_EQ(bb.min, glm::vec3(278240, 470.22, 5.58986e+06));
+    ASSERT_EQ(bb.max, glm::vec3(281980, 633.59, 5.60482e+06));
 }
 
-TEST_CASE("Can count lines in xyz directory") {
-    unsigned long result = countLinesInDir("../../src/test/gis/dtm");
-    REQUIRE(result == 38220);
+TEST(XyzLoaderTest, Can_count_lines_in_xyz_directory) {
+    GTEST_SKIP_("This test depends on data which is not committed");
+
+    const auto result = countLinesInDir("../../../../src/test/gis/dtm");
+    ASSERT_EQ(result, 38220);
 }
 
-TEST_CASE("Can parse batch name from file name") {
+TEST(XyzLoaderTest, Can_parse_batch_name_from_file_name) {
     auto result = getBatchName("332785590_dgm20.xyz");
-    REQUIRE(result == 2785590);
+    ASSERT_EQ(result, 2785590);
 
     result = getBatchName("331234567_dgm20.xyz");
-    REQUIRE(result == 1234567);
+    ASSERT_EQ(result, 1234567);
 }
