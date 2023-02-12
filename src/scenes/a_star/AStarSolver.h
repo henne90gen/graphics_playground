@@ -54,7 +54,7 @@ class AStarSolver {
     unsigned int getTotalSteps() {
         const auto &itr = perfCounter.dataPoints.find("TotalTime");
         if (itr == perfCounter.dataPoints.end()) {
-            return 0.0;
+            return 0;
         }
         return itr->second.timerCount;
     }
