@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Model.h"
+#include "util/TestUtils.h"
 
 TEST(ModelLoaderTest, not_existing_file_is_handled_correctly) {
     RawModel model;
@@ -74,9 +75,9 @@ static void assertListEquals(const std::string &message, std::vector<glm::vec3> 
                              std::vector<glm::vec3> &actual) {
     ASSERT_EQ(expected.size(), actual.size()) << message;
     for (unsigned long i = 0; i < expected.size(); i++) {
-        ASSERT_FLOAT_EQ(expected[i].x, actual[i].x) << "i = " << i;
-        ASSERT_FLOAT_EQ(expected[i].y, actual[i].y) << "i = " << i;
-        ASSERT_FLOAT_EQ(expected[i].z, actual[i].z) << "i = " << i;
+        ASSERT_FLOAT_EQ(expected[i].x, actual[i].x) << INFO_BASIC(i);
+        ASSERT_FLOAT_EQ(expected[i].y, actual[i].y) << INFO_BASIC(i);
+        ASSERT_FLOAT_EQ(expected[i].z, actual[i].z) << INFO_BASIC(i);
     }
 }
 
@@ -84,8 +85,8 @@ static void assertListEquals(const std::string &message, std::vector<glm::ivec3>
                              std::vector<glm::ivec3> &actual) {
     ASSERT_EQ(expected.size(), actual.size()) << message;
     for (unsigned long i = 0; i < expected.size(); i++) {
-        ASSERT_EQ(expected[i].x, actual[i].x) << "i = " << i;
-        ASSERT_EQ(expected[i].y, actual[i].y) << "i = " << i;
-        ASSERT_EQ(expected[i].z, actual[i].z) << "i = " << i;
+        ASSERT_EQ(expected[i].x, actual[i].x) << INFO_BASIC(i);
+        ASSERT_EQ(expected[i].y, actual[i].y) << INFO_BASIC(i);
+        ASSERT_EQ(expected[i].z, actual[i].z) << INFO_BASIC(i);
     }
 }
