@@ -17,3 +17,5 @@ create_scene(
 #        RubiksCubeData.cpp
 #        RubiksCubeLogic.cpp
 #)
+
+create_scene_test(TestMain.cpp)
