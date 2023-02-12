@@ -9,7 +9,8 @@ set -e \n\
 mkdir -p build \n\
 cd build || exit 0 \n\
 cmake .. -G Ninja -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++ \n\
-cmake --build . \n" > /build.sh
+cmake --build . \n\
+ctest\n" > /build.sh
 
 RUN chmod +x /build.sh
 CMD ["/build.sh"]
