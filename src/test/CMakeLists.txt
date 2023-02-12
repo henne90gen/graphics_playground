@@ -1,3 +1,6 @@
+if (EMSCRIPTEN)
+    return()
+endif ()
 
 include(GoogleTest)
 
