@@ -89,7 +89,7 @@ void RubiksCube::shuffle() {
     }
 
     std::cout << "Shuffeling cube..." << std::endl;
-    std::cout << to_string(rotationCommands) << std::endl;
+    std::cout << rotationCommands.to_string() << std::endl;
 
     isRotating = true;
 }
@@ -159,12 +159,12 @@ void RubiksCube::solve() {
           {5, RIGHT}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
           {7, FRONT}  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     }};
-    for (EdgePiece edgePiece : edgePieces) {
-        Face bottomFace = getCurrentFace(BOTTOM, edgePiece.localIndex);
+    for (const EdgePiece &edgePiece : edgePieces) {
+        const Face bottomFace = getCurrentFace(BOTTOM, edgePiece.localIndex);
         if (bottomFace == BOTTOM) {
-            Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
+            const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
             if (edgePartnerFace != edgePiece.face) {
-                Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
+                const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
                 std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
                 if (edgePartnerFace == oppositeFace) {
                     rotationCommands.push(R_BO);
@@ -177,7 +177,7 @@ void RubiksCube::solve() {
         }
     }
 
-    std::cout << to_string(rotationCommands) << std::endl;
+    std::cout << rotationCommands.to_string() << std::endl;
     // find the bottom edge pieces
     // move them to the correct position
 }

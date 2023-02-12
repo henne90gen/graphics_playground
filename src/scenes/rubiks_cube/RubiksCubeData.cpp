@@ -1,6 +1,6 @@
 #include "RubiksCubeData.h"
 
-std::string to_string(Face &face, bool simple) {
+std::string to_string(const Face &face, bool simple) {
     switch (face) {
         case FRONT:
             if (simple) {
@@ -41,7 +41,7 @@ std::string to_string(Face &face, bool simple) {
     }
 }
 
-std::string to_string(Direction &dir, bool simple) {
+std::string to_string(const Direction &dir, bool simple) {
     if (dir == CLOCKWISE) {
         if (simple) {
             return "";
@@ -55,7 +55,7 @@ std::string to_string(Direction &dir, bool simple) {
 
 }
 
-std::string to_string(RotationCommand &cmd, bool simple) {
+std::string to_string(const RotationCommand &cmd, bool simple) {
     std::string separator;
     if (simple) {
         separator = "";

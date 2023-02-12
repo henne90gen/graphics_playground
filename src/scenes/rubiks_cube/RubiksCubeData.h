@@ -49,8 +49,8 @@ struct SmallCube {
     glm::mat4 rotationMatrix;
 };
 
-std::string to_string(Face &face, bool simple = false);
+std::string to_string(const Face &face, bool simple = false);
 
-std::string to_string(Direction &dir, bool simple = false);
+std::string to_string(const Direction &dir, bool simple = false);
 
-std::string to_string(RotationCommand &cmd, bool simple = false);
+std::string to_string(const RotationCommand &cmd, bool simple = false);
