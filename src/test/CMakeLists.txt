@@ -15,4 +15,4 @@ create_test(FourierTest)
 create_test(ModelLoaderTest)
 target_link_libraries(ModelLoaderTest model)
 
-#create_test(QuadTreeTest)
+create_test(QuadTreeTest)
