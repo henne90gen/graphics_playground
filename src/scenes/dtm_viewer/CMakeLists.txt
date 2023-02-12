@@ -1,14 +1,12 @@
 
 create_scene(DtmViewer.cpp XyzLoader.cpp ShpLoader.cpp)
 
-# TODO make scene test work again
-#create_scene_test(
-#        TestMain.cpp
-#        ShpLoaderTest.cpp
-#        XyzLoaderTest.cpp
-#        XyzLoader.cpp
-#        ShpLoader.cpp
-#)
+create_scene_test(
+        ShpLoader.cpp
+        ShpLoaderTest.cpp
+        XyzLoader.cpp
+        XyzLoaderTest.cpp
+)
 
 if (NOT EMSCRIPTEN)
     create_scene_benchmark(
