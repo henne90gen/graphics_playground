@@ -1,15 +1,15 @@
-#include "RubiksCube.h"
-#include "catch.hpp"
-#include <iostream>
+#include <gtest/gtest.h>
 #include <vector>
+
+#include "RubiksCube.h"
 
 void assertWholeFace(RubiksCube cube, Face face) {
     for (int i = 0; i < 9; i++) {
-        REQUIRE(cube.getCurrentFace(face, i) == face);
+        ASSERT_EQ(cube.getCurrentFace(face, i), face);
     }
 }
 
-TEST_CASE("Face does not change without a rotation") {
+TEST(RubiksCubeTest, face_does_not_change_without_a_rotation) {
     RubiksCube cube = RubiksCube();
     assertWholeFace(cube, FRONT);
     assertWholeFace(cube, BACK);
@@ -19,45 +19,45 @@ TEST_CASE("Face does not change without a rotation") {
     assertWholeFace(cube, BOTTOM);
 }
 
-TEST_CASE("Face is calculated correctly with one rotation") {
+TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
     RubiksCube cube = RubiksCube({R_R});
     cube.rotate(2.0f);
 
-    REQUIRE(cube.getCurrentFace(FRONT, 2) == BOTTOM);
-    REQUIRE(cube.getCurrentFace(FRONT, 5) == BOTTOM);
-    REQUIRE(cube.getCurrentFace(FRONT, 8) == BOTTOM);
+    ASSERT_EQ(cube.getCurrentFace(FRONT, 2), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFace(FRONT, 5), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFace(FRONT, 8), BOTTOM);
 
-    REQUIRE(cube.getCurrentFace(TOP, 2) == FRONT);
-    REQUIRE(cube.getCurrentFace(TOP, 5) == FRONT);
-    REQUIRE(cube.getCurrentFace(TOP, 8) == FRONT);
+    ASSERT_EQ(cube.getCurrentFace(TOP, 2), FRONT);
+    ASSERT_EQ(cube.getCurrentFace(TOP, 5), FRONT);
+    ASSERT_EQ(cube.getCurrentFace(TOP, 8), FRONT);
 
-    REQUIRE(cube.getCurrentFace(BACK, 0) == TOP);
-    REQUIRE(cube.getCurrentFace(BACK, 3) == TOP);
-    REQUIRE(cube.getCurrentFace(BACK, 6) == TOP);
+    ASSERT_EQ(cube.getCurrentFace(BACK, 0), TOP);
+    ASSERT_EQ(cube.getCurrentFace(BACK, 3), TOP);
+    ASSERT_EQ(cube.getCurrentFace(BACK, 6), TOP);
 
-    REQUIRE(cube.getCurrentFace(BOTTOM, 2) == BACK);
-    REQUIRE(cube.getCurrentFace(BOTTOM, 5) == BACK);
-    REQUIRE(cube.getCurrentFace(BOTTOM, 8) == BACK);
+    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 2), BACK);
+    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 5), BACK);
+    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 8), BACK);
 }
 
-TEST_CASE("Face is calculated correctly with two rotations") {
+TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations) {
     RubiksCube cube = RubiksCube({R_R, R_T});
     cube.rotate(2.0f);
     cube.rotate(2.0f);
 
-    REQUIRE(cube.getCurrentFace(FRONT, 2) == BOTTOM);
-    REQUIRE(cube.getCurrentFace(FRONT, 5) == BOTTOM);
-    REQUIRE(cube.getCurrentFace(FRONT, 8) == RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(FRONT, 2), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFace(FRONT, 5), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFace(FRONT, 8), RIGHT);
 
-    REQUIRE(cube.getCurrentFace(TOP, 2) == FRONT);
-    REQUIRE(cube.getCurrentFace(TOP, 5) == TOP);
-    REQUIRE(cube.getCurrentFace(TOP, 8) == TOP);
+    ASSERT_EQ(cube.getCurrentFace(TOP, 2), FRONT);
+    ASSERT_EQ(cube.getCurrentFace(TOP, 5), TOP);
+    ASSERT_EQ(cube.getCurrentFace(TOP, 8), TOP);
 
-    REQUIRE(cube.getCurrentFace(BACK, 0) == TOP);
-    REQUIRE(cube.getCurrentFace(BACK, 3) == TOP);
-    REQUIRE(cube.getCurrentFace(BACK, 6) == LEFT);
+    ASSERT_EQ(cube.getCurrentFace(BACK, 0), TOP);
+    ASSERT_EQ(cube.getCurrentFace(BACK, 3), TOP);
+    ASSERT_EQ(cube.getCurrentFace(BACK, 6), LEFT);
 
-    REQUIRE(cube.getCurrentFace(BOTTOM, 2) == BACK);
-    REQUIRE(cube.getCurrentFace(BOTTOM, 5) == BACK);
-    REQUIRE(cube.getCurrentFace(BOTTOM, 8) == BACK);
+    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 2), BACK);
+    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 5), BACK);
+    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 8), BACK);
 }
