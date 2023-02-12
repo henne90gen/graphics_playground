@@ -322,7 +322,7 @@ std::string to_string(unsigned int input) {
 void RubiksCubeScene::tick() {
     static auto translation = glm::vec3(3.0F, 0.0F, -12.0F);
     static auto modelRotation = glm::vec3(-0.56F, -0.68F, 0.0F);
-    static auto rotationSpeed = 2.01F;
+    static auto rotationSpeed = 0.1F;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
