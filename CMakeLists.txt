@@ -191,6 +191,8 @@ FetchContent_MakeAvailable(
 )
 
 if (NOT EMSCRIPTEN)
+    set(gtest_force_shared_crt on)
+
     FetchContent_MakeAvailable(
             glfw
             googletest

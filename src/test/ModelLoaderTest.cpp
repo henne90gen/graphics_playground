@@ -1,22 +1,21 @@
-#include <catch.hpp>
+#include <gtest/gtest.h>
 
 #include "Model.h"
-#include "util/TestUtils.h"
 
-TEST_CASE("Not existing file is handled correctly") {
+TEST(ModelLoaderTest, not_existing_file_is_handled_correctly) {
     RawModel model;
     auto result = Model::loadRawModelFromFile("not-existing.obj", model);
-    REQUIRE(result == 1);
-    REQUIRE(model.meshes.empty());
-    REQUIRE(model.materials.empty());
+    ASSERT_EQ(result, 1);
+    ASSERT_TRUE(model.meshes.empty());
+    ASSERT_TRUE(model.materials.empty());
 }
 
-TEST_CASE("Empty file is handled correctly") {
+TEST(ModelLoaderTest, empty_file_is_handled_correctly) {
     RawModel model;
     auto result = Model::loadRawModelFromFile("../../src/test/empty.obj", model);
-    REQUIRE(result == 1);
-    REQUIRE(model.meshes.empty());
-    REQUIRE(model.materials.empty());
+    ASSERT_EQ(result, 1);
+    ASSERT_TRUE(model.meshes.empty());
+    ASSERT_TRUE(model.materials.empty());
 }
 
 static void assertListEquals(const std::string &message, std::vector<glm::vec3> &expected,
@@ -25,11 +24,11 @@ static void assertListEquals(const std::string &message, std::vector<glm::vec3> 
 static void assertListEquals(const std::string &message, std::vector<glm::ivec3> &expected,
                              std::vector<glm::ivec3> &actual);
 
-TEST_CASE("Simple cube model is loaded correctly") {
+TEST(ModelLoaderTest, simple_cube_model_is_loaded_correctly) {
     RawModel model;
-    auto error = Model::loadRawModelFromFile("../../src/test/cube.obj", model);
-    REQUIRE(error == 0);
-    REQUIRE(model.meshes.size() == 1);
+    auto error = Model::loadRawModelFromFile("../../../src/test/cube.obj", model);
+    ASSERT_EQ(error, 0);
+    ASSERT_EQ(model.meshes.size(), 1);
     std::vector<glm::vec3> vertices = {
           {1.000000, -1.000000, 1.000000},  {-1.000000, -1.000000, -1.000000}, {1.000000, -1.000000, -1.000000},
           {-1.000000, 1.000000, -1.000000}, {1.000000, 1.000000, 1.000000},    {1.000000, 1.000000, -1.000000},
@@ -68,32 +67,25 @@ TEST_CASE("Simple cube model is loaded correctly") {
     };
     assertListEquals("Indices", indices, model.meshes[0].indices);
 
-    REQUIRE(model.meshes[0].uvs.empty());
+    ASSERT_TRUE(model.meshes[0].uvs.empty());
 }
-
-#include <iostream>
 
 static void assertListEquals(const std::string &message, std::vector<glm::vec3> &expected,
                              std::vector<glm::vec3> &actual) {
-    INFO(message);
-    REQUIRE(expected.size() == actual.size());
-    float margin = std::numeric_limits<float>::epsilon();
+    ASSERT_EQ(expected.size(), actual.size()) << message;
     for (unsigned long i = 0; i < expected.size(); i++) {
-        INFO("i = " << i);
-        REQUIRE(expected[i].x == Approx(actual[i].x).margin(margin));
-        REQUIRE(expected[i].y == Approx(actual[i].y).margin(margin));
-        REQUIRE(expected[i].z == Approx(actual[i].z).margin(margin));
+        ASSERT_FLOAT_EQ(expected[i].x, actual[i].x) << "i = " << i;
+        ASSERT_FLOAT_EQ(expected[i].y, actual[i].y) << "i = " << i;
+        ASSERT_FLOAT_EQ(expected[i].z, actual[i].z) << "i = " << i;
     }
 }
 
 static void assertListEquals(const std::string &message, std::vector<glm::ivec3> &expected,
                              std::vector<glm::ivec3> &actual) {
-    INFO(message);
-    REQUIRE(expected.size() == actual.size());
+    ASSERT_EQ(expected.size(), actual.size()) << message;
     for (unsigned long i = 0; i < expected.size(); i++) {
-        INFO_BASIC(i);
-        REQUIRE(expected[i].x == actual[i].x);
-        REQUIRE(expected[i].y == actual[i].y);
-        REQUIRE(expected[i].z == actual[i].z);
+        ASSERT_EQ(expected[i].x, actual[i].x) << "i = " << i;
+        ASSERT_EQ(expected[i].y, actual[i].y) << "i = " << i;
+        ASSERT_EQ(expected[i].z, actual[i].z) << "i = " << i;
     }
 }
