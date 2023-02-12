@@ -255,7 +255,7 @@ void RubiksCubeScene::setup() {
 
     indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);
 
-    rubiksCube.reset(new RubiksCube({R_F, R_L,  R_RI, R_LI, R_R, R_F,  R_F,   R_BOI, R_TI, R_BAI,
+    rubiksCube.reset(new rubiks::RubiksCube({R_F, R_L,  R_RI, R_LI, R_R, R_F,  R_F,   R_BOI, R_TI, R_BAI,
                                      R_L, R_FI, R_FI, R_L,  R_L, R_BO, R_BOI, R_BAI, R_TI, R_BOI}));
 }
 

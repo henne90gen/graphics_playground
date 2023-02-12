@@ -4,15 +4,16 @@
 #include <glm/gtx/string_cast.hpp>
 #include <vector>
 
-#include "RubiksCubeData.h"
 #include "RotationCommandStack.h"
+#include "RubiksCubeData.h"
 
 #include "RubiksCube.h"
 
+namespace rubiks {
 void printRotations(std::vector<glm::vec3> &rotations);
 
-bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions,
-            RotationCommand command, float *currentAngle, float rotationSpeed = 0.1f);
+bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
+            float *currentAngle, float rotationSpeed = 0.1f);
 
 int getDirection(RotationCommand &rot);
 
@@ -30,3 +31,4 @@ class RubiksCube; // forward declaration
 Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index);
 
 Face getOppositeFace(Face face);
+} // namespace
