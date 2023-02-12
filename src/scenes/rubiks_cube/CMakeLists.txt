@@ -8,7 +8,7 @@ create_scene(
 )
 
 create_scene_test(
-#        RubiksCubeTest.cpp
+        RubiksCubeTest.cpp
         RubiksCubeLogicTest.cpp
         RotationCommandStack.cpp
         RubiksCube.cpp
