@@ -10,7 +10,7 @@ void initCubePositions(std::vector<unsigned int> &cubePosition) {
     }
 }
 
-TEST(RubiksCubeTest, indices_are_adjusted_correctly_for_counter_clockwise_front_rotation) {
+TEST(RubiksCubeLogicTest, indices_are_adjusted_correctly_for_counter_clockwise_front_rotation) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = FRONT_CUBES;
@@ -26,7 +26,7 @@ TEST(RubiksCubeTest, indices_are_adjusted_correctly_for_counter_clockwise_front_
     ASSERT_EQ(cubePositions[26], 20);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_back_rotation) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_back_rotation) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BACK_CUBES;
@@ -42,7 +42,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_back_r
     ASSERT_EQ(cubePositions[8], 6);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_left_rotation) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_left_rotation) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = LEFT_CUBES;
@@ -58,7 +58,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_left_r
     ASSERT_EQ(cubePositions[6], 24);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_right_rotation) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_right_rotation) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = RIGHT_CUBES;
@@ -74,7 +74,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_right_
     ASSERT_EQ(cubePositions[2], 20);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_top_rotation) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_top_rotation) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = TOP_CUBES;
@@ -90,7 +90,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_counter_clockwise_top_ro
     ASSERT_EQ(cubePositions[26], 24);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_two_counter_clockwise_bottom_rotations) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_counter_clockwise_bottom_rotations) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BOTTOM_CUBES;
@@ -117,7 +117,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_two_counter_clockwise_bo
     ASSERT_EQ(cubePositions[9], 11);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_two_clockwise_bottom_rotations) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_clockwise_bottom_rotations) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BOTTOM_CUBES;
@@ -144,7 +144,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_two_clockwise_bottom_rot
     ASSERT_EQ(cubePositions[9], 11);
 }
 
-TEST(RubiksCubeTest, IndicesAdjustment_RI) {
+TEST(RubiksCubeLogicTest, IndicesAdjustment_RI) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = RIGHT_CUBES;
@@ -160,7 +160,7 @@ TEST(RubiksCubeTest, IndicesAdjustment_RI) {
     ASSERT_EQ(cubePositions[23], 17);
 }
 
-TEST(RubiksCubeTest, IndicesAdjustment_RI_BI) {
+TEST(RubiksCubeLogicTest, IndicesAdjustment_RI_BI) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = RIGHT_CUBES;
@@ -179,7 +179,7 @@ TEST(RubiksCubeTest, IndicesAdjustment_RI_BI) {
     ASSERT_EQ(cubePositions[1], 9);
 }
 
-TEST(RubiksCubeTest, IndicesAdjustment_RI_BI_R) {
+TEST(RubiksCubeLogicTest, IndicesAdjustment_RI_BI_R) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = RIGHT_CUBES;
@@ -201,7 +201,7 @@ TEST(RubiksCubeTest, IndicesAdjustment_RI_BI_R) {
     ASSERT_EQ(cubePositions[26], 20);
 }
 
-TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_cw_bottom_and_cw_right_rotation) {
+TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_cw_bottom_and_cw_right_rotation) {
     std::vector<unsigned int> cubePositions;
     initCubePositions(cubePositions);
     std::vector<unsigned int> cubes = BOTTOM_CUBES;
@@ -229,7 +229,7 @@ TEST(RubiksCubeTest, Indices_are_adjusted_correctly_for_cw_bottom_and_cw_right_r
     ASSERT_EQ(cubePositions[17], 23);
 }
 
-TEST(RubiksCubeTest, rotation_matrix_is_updated_correctly_for_one_rotation_vector) {
+TEST(RubiksCubeLogicTest, rotation_matrix_is_updated_correctly_for_one_rotation_vector) {
     SmallCube cubeRotation = {std::vector<glm::vec3>(), glm::mat4()};
     const auto piHalf = glm::pi<float>() / 2.0f;
     const glm::vec3 rotationVector = glm::vec3(piHalf, 0, 0);
@@ -251,7 +251,7 @@ TEST(RubiksCubeTest, rotation_matrix_is_updated_correctly_for_one_rotation_vecto
     ASSERT_NEAR(matrix[2][2], 0.0f, epsilon);  // cos(a)
 }
 
-TEST(RubiksCubeTest, rotation_matrix_is_updated_correctly_for_two_opposing_rotation_vectors) {
+TEST(RubiksCubeLogicTest, rotation_matrix_is_updated_correctly_for_two_opposing_rotation_vectors) {
     SmallCube cubeRotation = {std::vector<glm::vec3>(), glm::mat4()};
     const auto piHalf = glm::pi<float>() / 2.0f;
     const auto rotationVector = glm::vec3(piHalf, 0, 0);
@@ -274,7 +274,7 @@ TEST(RubiksCubeTest, rotation_matrix_is_updated_correctly_for_two_opposing_rotat
     ASSERT_FLOAT_EQ(matrix[2][2], 1.0f);
 }
 
-TEST(RubiksCubeTest, rotations_list_is_updated_correctly) {
+TEST(RubiksCubeLogicTest, rotations_list_is_updated_correctly) {
     SmallCube cubeRotation = {std::vector<glm::vec3>(), glm::mat4()};
     float piHalf = glm::pi<float>() / 2.0f;
     const glm::vec3 rotationVector = glm::vec3(piHalf, 0, 0);
@@ -290,7 +290,7 @@ TEST(RubiksCubeTest, rotations_list_is_updated_correctly) {
     ASSERT_EQ(cubeRotation.rotations[1], glm::vec3());
 }
 
-TEST(RubiksCubeTest, Rotation_matrix_is_calculated_correctly_for_two_rotations) {
+TEST(RubiksCubeLogicTest, Rotation_matrix_is_calculated_correctly_for_two_rotations) {
     SmallCube cubeRotation = {std::vector<glm::vec3>(), glm::mat4()};
     const auto piHalf = glm::pi<float>() / 2.0F;
     cubeRotation.rotations.emplace_back(piHalf, 0, 0);
@@ -319,7 +319,7 @@ void assertDirection(Face face, int direction) {
     ASSERT_EQ(getDirection(rot), -1 * direction);
 }
 
-TEST(RubiksCubeTest, Direction_is_calculated_correctly) {
+TEST(RubiksCubeLogicTest, Direction_is_calculated_correctly) {
     assertDirection(RIGHT, -1);
     assertDirection(LEFT, 1);
 
@@ -339,7 +339,7 @@ void assertFaceRotation(Face face, std::vector<Face> results) {
     ASSERT_EQ(rotateFaceBack(face, glm::vec3(0, 0, -1)), results[5]);
 }
 
-TEST(RubiksCubeTest, Single_face_is_rotated_correctly) {
+TEST(RubiksCubeLogicTest, Single_face_is_rotated_correctly) {
     std::vector<Face> results = {TOP, BOTTOM, LEFT, RIGHT, FRONT, FRONT};
     assertFaceRotation(FRONT, results);
 
@@ -359,7 +359,7 @@ TEST(RubiksCubeTest, Single_face_is_rotated_correctly) {
     assertFaceRotation(BOTTOM, results);
 }
 
-TEST(RubiksCubeTest, rotations_are_squashed_correctly) {
+TEST(RubiksCubeLogicTest, rotations_are_squashed_correctly) {
     auto cubes = std::vector<SmallCube>();
     auto rotations = std::vector<glm::vec3>();
     rotations.emplace_back(1.0f, 0, 0);
