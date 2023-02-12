@@ -5,22 +5,21 @@
 #include <iostream>
 #include <random>
 
+namespace rubiks {
 const unsigned int SIDES_COUNT = 6;
 const unsigned int NEXT_FACES_PER_SIDE = 6;
-std::array<std::array<Face, SIDES_COUNT>, NEXT_FACES_PER_SIDE> NEXT_FACE_MAP = {
-        {
-                // x,    -x,     y,      -y,     z,      -z
-                {TOP, BOTTOM, LEFT, RIGHT, FRONT, FRONT}, // FRONT
-                {BOTTOM, TOP, RIGHT, LEFT, BACK, BACK}, // BACK
-                {LEFT, LEFT, BACK, FRONT, TOP, BOTTOM}, // LEFT
-                {RIGHT, RIGHT, FRONT, BACK, BOTTOM, TOP}, // RIGHT
-                {BACK, FRONT, TOP, TOP, RIGHT, LEFT}, // TOP
-                {FRONT, BACK, BOTTOM, BOTTOM, LEFT, RIGHT}, // BOTTOM
-        }
-};
+std::array<std::array<Face, SIDES_COUNT>, NEXT_FACES_PER_SIDE> NEXT_FACE_MAP = {{
+      // x,    -x,     y,      -y,     z,      -z
+      {TOP, BOTTOM, LEFT, RIGHT, FRONT, FRONT},   // FRONT
+      {BOTTOM, TOP, RIGHT, LEFT, BACK, BACK},     // BACK
+      {LEFT, LEFT, BACK, FRONT, TOP, BOTTOM},     // LEFT
+      {RIGHT, RIGHT, FRONT, BACK, BOTTOM, TOP},   // RIGHT
+      {BACK, FRONT, TOP, TOP, RIGHT, LEFT},       // TOP
+      {FRONT, BACK, BOTTOM, BOTTOM, LEFT, RIGHT}, // BOTTOM
+}};
 
-bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions,
-            RotationCommand command, float *currentAngle, float rotationSpeed) {
+bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
+            float *currentAngle, float rotationSpeed) {
     *currentAngle += rotationSpeed;
 
     bool isDoneRotating = false;
@@ -33,44 +32,44 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
     const unsigned int cubeCount = 9;
     std::vector<unsigned int> cubes(cubeCount);
     glm::vec3 rotationVector;
-    auto direction = static_cast<float>(getDirection(command));
+    auto direction = static_cast<float>(rubiks::getDirection(command));
     switch (command.face) {
-        case FRONT:
-            cubes = FRONT_CUBES;
-            rotationVector = glm::vec3(0, 0, direction * *currentAngle);
-            break;
-        case BACK:
-            cubes = BACK_CUBES;
-            rotationVector = glm::vec3(0, 0, direction * *currentAngle);
-            break;
-        case LEFT:
-            cubes = LEFT_CUBES;
-            rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
-            break;
-        case RIGHT:
-            cubes = RIGHT_CUBES;
-            rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
-            break;
-        case TOP:
-            cubes = TOP_CUBES;
-            rotationVector = glm::vec3(0, direction * *currentAngle, 0);
-            break;
-        case BOTTOM:
-            cubes = BOTTOM_CUBES;
-            rotationVector = glm::vec3(0, direction * *currentAngle, 0);
-            break;
+    case FRONT:
+        cubes = FRONT_CUBES;
+        rotationVector = glm::vec3(0, 0, direction * *currentAngle);
+        break;
+    case BACK:
+        cubes = BACK_CUBES;
+        rotationVector = glm::vec3(0, 0, direction * *currentAngle);
+        break;
+    case LEFT:
+        cubes = LEFT_CUBES;
+        rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
+        break;
+    case RIGHT:
+        cubes = RIGHT_CUBES;
+        rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
+        break;
+    case TOP:
+        cubes = TOP_CUBES;
+        rotationVector = glm::vec3(0, direction * *currentAngle, 0);
+        break;
+    case BOTTOM:
+        cubes = BOTTOM_CUBES;
+        rotationVector = glm::vec3(0, direction * *currentAngle, 0);
+        break;
     }
 
     for (unsigned int cube : cubes) {
         unsigned int cubeIndex = cubePositions[cube];
-        updateCubeRotation(cubeRotations[cubeIndex], rotationVector, isDoneRotating);
+        rubiks::updateCubeRotation(cubeRotations[cubeIndex], rotationVector, isDoneRotating);
     }
 
     if (isDoneRotating) {
         if (command.direction == CLOCKWISE) {
-            adjustIndicesClockwise(cubePositions, cubes);
+            rubiks::adjustIndicesClockwise(cubePositions, cubes);
         } else {
-            adjustIndicesCounterClockwise(cubePositions, cubes);
+            rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
         }
     }
     return isDoneRotating;
@@ -94,7 +93,7 @@ int getDirection(RotationCommand &rot) {
 void printRotations(std::vector<glm::vec3> &rotations) {
     std::string result;
     bool isFirst = true;
-    for (auto &rotation: rotations) {
+    for (auto &rotation : rotations) {
         if (!isFirst) {
             result += "->";
         } else {
@@ -137,42 +136,42 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
 
 void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
     // move the corners
-    unsigned int tmp1 = positions[selectedCubes[2]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    unsigned int tmp1 = positions[selectedCubes[2]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     positions[selectedCubes[2]] = positions[selectedCubes[0]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    unsigned int tmp2 = positions[selectedCubes[8]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[8]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[6]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[6]] = tmp2; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[0]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    unsigned int tmp2 = positions[selectedCubes[8]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[8]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[6]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[6]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[0]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     // move the edges
-    tmp1 = positions[selectedCubes[5]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[5]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     positions[selectedCubes[5]] = positions[selectedCubes[1]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp2 = positions[selectedCubes[7]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[7]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[3]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[3]] = tmp2; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[1]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp2 = positions[selectedCubes[7]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[7]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[3]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[3]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[1]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 }
 
 void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
     // move the corners
-    unsigned int tmp1 = positions[selectedCubes[6]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    unsigned int tmp1 = positions[selectedCubes[6]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     positions[selectedCubes[6]] = positions[selectedCubes[0]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    unsigned int tmp2 = positions[selectedCubes[8]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[8]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[2]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[2]] = tmp2; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[0]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    unsigned int tmp2 = positions[selectedCubes[8]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[8]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[2]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[2]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[0]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     // move the edges
-    tmp1 = positions[selectedCubes[3]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[3]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     positions[selectedCubes[3]] = positions[selectedCubes[1]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp2 = positions[selectedCubes[7]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[7]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[5]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[5]] = tmp2; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[1]] = tmp1; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp2 = positions[selectedCubes[7]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[7]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[5]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[5]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    positions[selectedCubes[1]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 }
 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
@@ -181,22 +180,34 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
     }
 
     if (rotation.x > 0.0F) {
-        return NEXT_FACE_MAP[currentFace][0]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP
+              [currentFace]
+              [0]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
     }
     if (rotation.x < 0.0F) {
-        return NEXT_FACE_MAP[currentFace][1]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP
+              [currentFace]
+              [1]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
     }
     if (rotation.y > 0.0F) {
-        return NEXT_FACE_MAP[currentFace][2]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP
+              [currentFace]
+              [2]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
     }
     if (rotation.y < 0.0F) {
-        return NEXT_FACE_MAP[currentFace][3]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP
+              [currentFace]
+              [3]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
     }
     if (rotation.z > 0.0F) {
-        return NEXT_FACE_MAP[currentFace][4]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP
+              [currentFace]
+              [4]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
     }
     if (rotation.z < 0.0F) {
-        return NEXT_FACE_MAP[currentFace][5]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP
+              [currentFace]
+              [5]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
     }
     return currentFace;
 }
@@ -231,19 +242,19 @@ unsigned int squashRotations(std::vector<SmallCube> &cubeRotations) {
     return removed;
 }
 
-Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index) {
+Face getEdgePartnerFace(rubiks::RubiksCube *cube, Face face, unsigned int index) {
     if (face == BOTTOM) {
         switch (index) {
-            case 1: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                return cube->getCurrentFace(BACK, 1);
-            case 3: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                return cube->getCurrentFace(LEFT, 1);
-            case 5: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                return cube->getCurrentFace(RIGHT, 1);
-            case 7: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                return cube->getCurrentFace(FRONT, 1);
-            default:
-                throw std::exception();
+        case 1: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            return cube->getCurrentFace(BACK, 1);
+        case 3: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            return cube->getCurrentFace(LEFT, 1);
+        case 5: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            return cube->getCurrentFace(RIGHT, 1);
+        case 7: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            return cube->getCurrentFace(FRONT, 1);
+        default:
+            throw std::exception();
         }
     }
     throw std::exception();
@@ -251,17 +262,19 @@ Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index) {
 
 Face getOppositeFace(Face face) {
     switch (face) {
-        case FRONT:
-            return BACK;
-        case BACK:
-            return FRONT;
-        case TOP:
-            return BOTTOM;
-        case BOTTOM:
-            return TOP;
-        case LEFT:
-            return RIGHT;
-        case RIGHT:
-            return LEFT;
+    case FRONT:
+        return BACK;
+    case BACK:
+        return FRONT;
+    case TOP:
+        return BOTTOM;
+    case BOTTOM:
+        return TOP;
+    case LEFT:
+        return RIGHT;
+    case RIGHT:
+        return LEFT;
     }
 }
+
+} // namespace rubiks

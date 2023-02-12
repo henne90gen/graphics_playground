@@ -32,5 +32,5 @@ class RubiksCubeScene : public Scene {
     float *vertices;
     unsigned int *indices;
 
-    std::shared_ptr<RubiksCube> rubiksCube;
+    std::shared_ptr<rubiks::RubiksCube> rubiksCube;
 };

@@ -2,16 +2,17 @@
 
 #include <array>
 
+#include "RotationCommandStack.h"
 #include "RubiksCubeData.h"
 #include "RubiksCubeLogic.h"
-#include "RotationCommandStack.h"
 
+namespace rubiks {
 const unsigned int FACE_COUNT = 6;
 const unsigned int SMALL_FACE_COUNT = 9;
 extern const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_CUBE;
 
 class RubiksCube {
-public:
+  public:
     explicit RubiksCube(const std::vector<RotationCommand> &initialCommands = {});
 
     void rotate(float rotationSpeed);
@@ -20,9 +21,7 @@ public:
 
     Face getCurrentFace(Face direction, unsigned int localIndex);
 
-    glm::mat4 getRotationMatrix(unsigned int index) {
-        return smallCubes[index].rotationMatrix;
-    }
+    glm::mat4 getRotationMatrix(unsigned int index) { return smallCubes[index].rotationMatrix; }
 
     unsigned int getMaximumRotationListLength();
 
@@ -36,10 +35,9 @@ public:
 
     void solve();
 
-    void startSolving() {
-        solving = true;
-    }
-private:
+    void startSolving() { solving = true; }
+
+  private:
     bool isRotating = true;
     float currentAngle = 0;
     RotationCommand currentCommand = {};
@@ -50,3 +48,4 @@ private:
     RotationCommandStack rotationCommands;
     bool solving = false;
 };
+} // namespace rubiks
