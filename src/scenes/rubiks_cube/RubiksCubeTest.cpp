@@ -3,14 +3,14 @@
 
 #include "RubiksCube.h"
 
-void assertWholeFace(RubiksCube cube, Face face) {
+void assertWholeFace(rubiks::RubiksCube cube, Face face) {
     for (int i = 0; i < 9; i++) {
         ASSERT_EQ(cube.getCurrentFace(face, i), face);
     }
 }
 
 TEST(RubiksCubeTest, face_does_not_change_without_a_rotation) {
-    RubiksCube cube = RubiksCube();
+    auto cube = rubiks::RubiksCube();
     assertWholeFace(cube, FRONT);
     assertWholeFace(cube, BACK);
     assertWholeFace(cube, LEFT);
@@ -20,7 +20,7 @@ TEST(RubiksCubeTest, face_does_not_change_without_a_rotation) {
 }
 
 TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
-    RubiksCube cube = RubiksCube({R_R});
+    auto cube = rubiks::RubiksCube({R_R});
     cube.rotate(2.0f);
 
     ASSERT_EQ(cube.getCurrentFace(FRONT, 2), BOTTOM);
@@ -41,7 +41,7 @@ TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
 }
 
 TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations) {
-    RubiksCube cube = RubiksCube({R_R, R_T});
+    auto cube = rubiks::RubiksCube({R_R, R_T});
     cube.rotate(2.0f);
     cube.rotate(2.0f);
 
