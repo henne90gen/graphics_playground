@@ -20,18 +20,21 @@ void GraphingCalculator::tick() {
     static glm::vec2 boundsX = glm::vec2(-1.0, 1.0);
     static glm::vec2 boundsY = glm::vec2(-1.0, 1.0);
     static float axisWidth = 0.001F;
+    static float lineWidth =0.001F;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat2("Bounds X", reinterpret_cast<float *>(&boundsX), 0.1F);
     ImGui::DragFloat2("Bounds Y", reinterpret_cast<float *>(&boundsY), 0.1F);
     ImGui::DragFloat("Axis Width", &axisWidth, 0.001F);
+    ImGui::DragFloat("Line Width", &lineWidth, 0.001F);
     ImGui::End();
 
     shader->bind();
 
-    shader->setUniform("boundsX", boundsX);
-    shader->setUniform("boundsY", boundsY);
+    shader->setUniform("horizontalCoordinateBounds", boundsX);
+    shader->setUniform("verticalCoordinateBounds", boundsY);
     shader->setUniform("axisWidth", axisWidth);
+    shader->setUniform("lineWidth", lineWidth);
 
     va->bind();
     GL_Call(glDrawElements(GL_TRIANGLES, va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));

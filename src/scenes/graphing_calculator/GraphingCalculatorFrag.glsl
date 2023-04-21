@@ -1,80 +1,84 @@
 #version 300 es
 precision mediump float;
 
-// goes from (0,0) to (1,1), bottom-left to top-right
-in vec2 coords;
+// much of the code was taken from: https://www.shadertoy.com/view/3sKSWc
 
-uniform vec2 boundsX;
-uniform vec2 boundsY;
+// goes from (0,0) to (1,1), bottom-left to top-right
+in vec2 positionScreenSpace;
+
+uniform vec2 horizontalCoordinateBounds;
+uniform vec2 verticalCoordinateBounds;
 uniform float axisWidth;
+uniform float lineWidth;
 
 out vec4 color;
 
 float my_function(float x) {
-    return x*x;
+    return sin(x);
+//     return x*x;
 }
 
 float InvLerp(float a, float b, float v) {
     return (v - a) / (b - a);
 }
 
+float distanceToLineSegment(vec2 p0, vec2 p1, vec2 p) {
+    float distanceP0 = length(p0 - p);
+    float distanceP1 = length(p1 - p);
+
+    float l2 =pow(length(p0 - p1), 2.);
+    float t = max(0., min(1., dot(p - p0, p1 - p0) / l2));
+    vec2 projection = p0 + t * (p1 - p0);
+    float distanceToProjection = length(projection - p);
+
+    return min(min(distanceP0, distanceP1), distanceToProjection);
+}
+
+float distanceToFunction(vec2 p, float xDelta) {
+    float result = 100.;
+
+    for (float i = -3.; i <= 3.; i += 1.) {
+        vec2 q = p;
+        q.x += xDelta * i;
+
+        vec2 p0 = vec2(q.x, my_function(q.x));
+        vec2 p1 = vec2(q.x + xDelta, my_function(q.x + xDelta));
+        result = min(result, distanceToLineSegment(p0, p1, p));
+    }
+
+    return result;
+}
+
+vec4 axis(vec4 color, float perpendicularScale, float coordinate)  {
+    float t = abs(step(perpendicularScale * axisWidth, abs(coordinate)) - 1.0F);
+    color = mix(color, vec4(0.0F), t);
+    return color;
+}
+
 void main() {
     float epsilon = 0.00001F;
 
-    float expectedX = mix(boundsX.x, boundsX.y, coords.x);
-    float expectedY = mix(boundsY.x, boundsY.y, coords.y);
-
-    float leftXScreen = coords.x - epsilon;
-    float leftX = mix(boundsX.x, boundsX.y, leftXScreen);
-    float leftY = my_function(leftX);
-
-    float rightXScreen = coords.x + epsilon;
-    float rightX = mix(boundsX.x, boundsX.y, rightXScreen);
-    float rightY = my_function(rightX);
-
-    float m_f = (leftX-rightX) / (leftY-rightY);
-    float n_f = leftY - m_f*leftX;
-
-    float m_g = -1.0F / m_f;
-    float n_g = expectedY - m_g*expectedX;
-
-    float qX = (n_g - n_f) / (m_f - m_g);
-    float qY = m_f*qX + n_f;
-    vec2 Q = vec2(qX, qY);
-
-    vec2 P = vec2(expectedX, expectedY);
-    vec2 dir = Q - P;
-    float horizontalSize = boundsX.y - boundsX.x;
-    float verticalSize = boundsY.y - boundsY.x;
-
-    vec2 scaledDir = vec2(
-    InvLerp(0.0F, horizontalSize, abs(dir.x)),
-    InvLerp(0.0F, verticalSize, abs(dir.y))
+    vec2 positionCoordinateSpace = vec2(
+    mix(horizontalCoordinateBounds.x, horizontalCoordinateBounds.y, positionScreenSpace.x),
+    mix(verticalCoordinateBounds.x, verticalCoordinateBounds.y, positionScreenSpace.y)
     );
-    float distance = length(scaledDir);
 
-    float t = InvLerp(0.005, 0.01, distance);
-    color = mix(vec4(0.0F), vec4(1.0F), t);
+    float horizontalSize = horizontalCoordinateBounds.y - horizontalCoordinateBounds.x;
+    float verticalSize = verticalCoordinateBounds.y - verticalCoordinateBounds.x;
 
-    //    color = vec4(scaledDir, 0.0F, 1.0F);
-    //    color = vec4(
-    //    InvLerp(boundsX.x, boundsX.y, Q.x),
-    //    InvLerp(boundsY.x, boundsY.y, Q.y),
-    //    0.0,
-    //    1.0
-    //    );
-//        color = vec4(
-//        InvLerp(boundsX.x, boundsX.y, dir.x),
-//        InvLerp(boundsY.x, boundsY.y, dir.y),
-//        0.0,
-//        1.0
-//        );
+    vec2 resolution = vec2(500, 600);
+    float distanceToPlot = distanceToFunction(positionCoordinateSpace, (1.0 / resolution.x));
+    distanceToPlot *= (resolution.x + resolution.y)/2.0;
+    distanceToPlot *= 1.0 / verticalSize;
+    distanceToPlot *= 1.0 / horizontalSize;
+    float t = 1.0 - distanceToPlot;
+    float intensity = smoothstep(0.0, 1.0, t);
+    intensity = pow(intensity, 1.0/2.2);
+    color = vec4(vec3(1.0) - vec3(intensity), 1.0);
 
     // draw x axis
-    //    t = abs(step(verticalSize * axisWidth, abs(expectedY)) - 1.0F);
-    //    color = mix(color, vec4(0.0F), t);
+    color = axis(color, verticalSize, positionCoordinateSpace.y);
 
     // draw y axis
-    //    t = abs(step(horizontalSize * axisWidth, abs(expectedX)) - 1.0F);
-    //    color = mix(color, vec4(0.0F), t);
+    color = axis(color, horizontalSize, positionCoordinateSpace.x);
 }
