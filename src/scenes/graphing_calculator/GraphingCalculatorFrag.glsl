@@ -6,6 +6,7 @@ precision mediump float;
 // goes from (0,0) to (1,1), bottom-left to top-right
 in vec2 positionScreenSpace;
 
+uniform vec2 resolution;
 uniform vec2 horizontalCoordinateBounds;
 uniform vec2 verticalCoordinateBounds;
 uniform float axisWidth;
@@ -15,7 +16,7 @@ out vec4 color;
 
 float my_function(float x) {
     return sin(x);
-//     return x*x;
+    //     return x*x;
 }
 
 float InvLerp(float a, float b, float v) {
@@ -35,9 +36,9 @@ float distanceToLineSegment(vec2 p0, vec2 p1, vec2 p) {
 }
 
 float distanceToFunction(vec2 p, float xDelta) {
-    float result = 100.;
+    float result = 100.0;
 
-    for (float i = -3.; i <= 3.; i += 1.) {
+    for (float i = -3.0; i <= 3.0; i += 1.0) {
         vec2 q = p;
         q.x += xDelta * i;
 
@@ -66,11 +67,10 @@ void main() {
     float horizontalSize = horizontalCoordinateBounds.y - horizontalCoordinateBounds.x;
     float verticalSize = verticalCoordinateBounds.y - verticalCoordinateBounds.x;
 
-    vec2 resolution = vec2(500, 600);
-    float distanceToPlot = distanceToFunction(positionCoordinateSpace, (1.0 / resolution.x));
-    distanceToPlot *= (resolution.x + resolution.y)/2.0;
-    distanceToPlot *= 1.0 / verticalSize;
-    distanceToPlot *= 1.0 / horizontalSize;
+    float distanceToPlot = distanceToFunction(positionCoordinateSpace, (horizontalSize / resolution.x));
+    distanceToPlot *= (resolution.x + resolution.y) / 2.0;
+    distanceToPlot /= (horizontalSize + verticalSize);
+    distanceToPlot /= lineWidth;
     float t = 1.0 - distanceToPlot;
     float intensity = smoothstep(0.0, 1.0, t);
     intensity = pow(intensity, 1.0/2.2);
