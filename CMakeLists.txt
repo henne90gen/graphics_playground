@@ -105,7 +105,7 @@ FetchContent_Declare(
 FetchContent_Declare(
         libsoundio
         GIT_REPOSITORY https://github.com/andrewrk/libsoundio.git
-        GIT_TAG a24148e15ffd3fe3fe3c5ee22fd6bbd7351c7539 # 12.10.2022
+        GIT_TAG 49a1f78b50eb0f5a49d096786a95a93874a2592a # 20.07.2023
 )
 FetchContent_Declare(
         libjpeg

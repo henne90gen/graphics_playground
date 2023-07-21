@@ -15,7 +15,7 @@ struct PlayBack {
     WavFile *wav = nullptr;
     std::vector<fourier::DataPoint> coefficients = {};
     int sampleCursor = 0;
-    bool paused = false;
+    bool paused = true;
 };
 
 class AudioVis : public Scene {

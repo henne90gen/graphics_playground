@@ -18,19 +18,18 @@ DEFINE_DEFAULT_SHADERS(audio_vis_AudioVis)
 void AudioVis::setup() {
     shader = CREATE_DEFAULT_SHADER(audio_vis_AudioVis);
 
-    loadWavFile("audio_vis_resources/res/audio_test.wav", wav);
+    if (!loadWavFile("audio_vis_resources/res/audio_test.wav", wav)) {
+        return;
+    }
+
     playBack.wav = &wav;
     auto inputData = std::vector<float>(wav.data.subChunkSize);
     for (unsigned int i = 0; i < wav.data.subChunkSize; i++) {
         inputData[i] = static_cast<float>(wav.data.data8[i]);
     }
     playBack.coefficients = fourier::fft(inputData, playBack.wav->header.sampleRate);
+
     initSoundIo(wav.header.sampleRate);
-
-    // pause the audio playback by default
-    playBack.paused = true;
-    soundio_outstream_pause(outstream, playBack.paused);
-
     initMesh();
 }
 
@@ -42,14 +41,16 @@ void AudioVis::destroy() {
 }
 
 void AudioVis::tick() {
+    if (playBack.wav == nullptr) {
+        return;
+    }
+
     static auto modelScale = glm::vec3(1.0F, 20.0F, -1.0F);
     static auto cameraPosition = glm::vec3(-35.0F, -75.0F, -50.0F);
     static glm::vec3 cameraRotation = {0.75F, -0.25F, 0.0F};
     static bool drawWireframe = true;
     static int linesPerSecond = 15;
     static VisMode currentMode = VisMode::AMPLITUDE;
-
-    std::cout << "Finished ImGUI setup" << std::endl;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.001F);
@@ -77,7 +78,7 @@ void AudioVis::tick() {
 
     std::string btnText = "Pause";
     if (playBack.paused) {
-        btnText = "Resume";
+        btnText = "Play";
     }
     if (ImGui::Button(btnText.c_str())) {
         playBack.paused = !playBack.paused;
@@ -91,8 +92,6 @@ void AudioVis::tick() {
                  reinterpret_cast<const char *const *>(items.data()), items.size());
 
     ImGui::End();
-
-    std::cout << "Finished ImGUI setup" << std::endl;
 
 #if !EMSCRIPTEN
     switch (currentMode) {
@@ -119,7 +118,7 @@ void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int fr
     const SoundIoChannelLayout *layout = &outstream->layout;
     SoundIoChannelArea *areas = nullptr;
 
-    // std::cout << "max: " << frameCountMax << ", min: " << frameCountMin << std::endl;
+    std::cout << "max: " << frameCountMax << ", min: " << frameCountMin << std::endl;
 
     int framesLeft = frameCountMax;
     while (framesLeft > 0) {
@@ -178,14 +177,27 @@ void writeCallback(struct SoundIoOutStream *outstream, int frameCountMin, int fr
 void AudioVis::initSoundIo(int sampleRate) {
     soundio = soundio_create();
     if (soundio == nullptr) {
-        std::cerr << "Out of memory" << std::endl;
+        std::cerr << "out of memory" << std::endl;
         return;
     }
 
-    int err = soundio_connect(soundio);
-    if (err != 0) {
-        std::cerr << "Error connecting: " << soundio_strerror(err) << std::endl;
-        return;
+    int err = 0;
+    for (int i = 0; i < soundio_backend_count(soundio); i++) {
+        auto backend = soundio_get_backend(soundio, i);
+        if (backend == SoundIoBackendJack) {
+            // JACK caused problems when pipewire was installed
+            continue;
+        }
+
+        auto backend_name = soundio_backend_name(backend);
+        std::cout << "Using backend " << backend_name << std::endl;
+
+        err = soundio_connect_backend(soundio, backend);
+        if (err != 0) {
+            std::cerr << "error connecting: " << soundio_strerror(err) << std::endl;
+            return;
+        }
+        break;
     }
 
     soundio_flush_events(soundio);
@@ -217,7 +229,7 @@ void AudioVis::initSoundIo(int sampleRate) {
 
     err = soundio_outstream_open(outstream);
     if (err != 0) {
-        std::cerr << "unable to open device: " << soundio_strerror(err) << std::endl;
+        std::cerr << "unable to open stream: " << soundio_strerror(err) << std::endl;
         return;
     }
 
@@ -227,9 +239,19 @@ void AudioVis::initSoundIo(int sampleRate) {
 
     err = soundio_outstream_start(outstream);
     if (err != 0) {
-        std::cerr << "unable to start device: " << soundio_strerror(err) << std::endl;
+        std::cerr << "unable to start stream: " << soundio_strerror(err) << std::endl;
         return;
     }
+
+    // pause the audio playback by default
+    playBack.paused = true;
+    err = soundio_outstream_pause(outstream, playBack.paused);
+    if (err != 0) {
+        std::cerr << "unable to pause stream" << std::endl;
+        return;
+    }
+
+    std::cout << "Successfully initialized libsoundio" << std::endl;
 }
 
 void AudioVis::initMesh() {

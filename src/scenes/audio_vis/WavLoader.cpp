@@ -8,7 +8,7 @@
 std::istream &operator>>(std::istream &is, WavHeader &header) {
     is.read(reinterpret_cast<char *>(&header), sizeof(header));
     if (is.fail()) {
-        std::cout << "Failed to read wav header" << std::endl;
+        std::cout << "failed to read wav header" << std::endl;
         return is;
     }
 
@@ -21,7 +21,7 @@ std::istream &operator>>(std::istream &is, WavHeader &header) {
 std::istream &operator>>(std::istream &is, WavData &data) {
     is.read(reinterpret_cast<char *>(&data), sizeof(data.subChunkId) + sizeof(data.subChunkSize));
     if (is.fail()) {
-        std::cout << "Failed to read wav data header" << std::endl;
+        std::cerr << "failed to read wav data header" << std::endl;
         return is;
     }
 
@@ -30,7 +30,7 @@ std::istream &operator>>(std::istream &is, WavData &data) {
     data.data8 = static_cast<uint8_t *>(std::malloc(data.subChunkSize));
     is.read(reinterpret_cast<char *>(data.data8), data.subChunkSize);
     if (is.fail()) {
-        std::cout << "Failed to read wav data" << std::endl;
+        std::cerr << "failed to read wav data" << std::endl;
         return is;
     }
 
@@ -44,10 +44,9 @@ std::istream &operator>>(std::istream &is, WavFile &wav) {
 }
 
 bool loadWavFile(const std::string &fileName, WavFile &wav) {
-    std::ifstream wavFile;
-    wavFile.open(fileName, std::ios::in | std::ios::binary);
+    auto wavFile = std::ifstream(fileName, std::ios::in | std::ios::binary);
     if (!wavFile.is_open()) {
-        std::cout << "Failed to open wav file: " << fileName << std::endl;
+        std::cerr << "failed to open wav file: " << fileName << std::endl;
         return false;
     }
 
