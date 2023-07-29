@@ -139,14 +139,7 @@ unsigned int RubiksCube::getAverageRotationListLength() {
     return result / smallCubes.size();
 }
 
-void RubiksCube::solve() {
-    if (!solving) {
-        return;
-    }
-
-    rotationCommands.clear();
-    std::cout << "Solving..." << std::endl;
-
+void RubiksCube::solveBottomLayer() {
     // find miss-aligned bottom pieces
     struct EdgePiece {
         unsigned int localIndex;
@@ -167,22 +160,49 @@ void RubiksCube::solve() {
         }
 
         const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
-        if (edgePartnerFace != edgePiece.face) {
-            const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
-            std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
-            if (edgePartnerFace == oppositeFace) {
-                rotationCommands.push(R_BO);
-                rotationCommands.push(R_BO);
-            } else {
-                rotationCommands.push(R_BO);
-            }
+        if (edgePartnerFace == edgePiece.face) {
+            // face is already at the correct position
+            continue;
+        }
+
+        const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
+        std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
+        if (edgePartnerFace == oppositeFace) {
+            rotationCommands.push(R_BO);
+            rotationCommands.push(R_BO);
             return;
         }
+
+        // TODO check whether we need to rotate into the other direction here
+        rotationCommands.push(R_BO);
+        return;
     }
+
+    std::array<std::array<int, 6>, 6> bla = {
+          {0, 0, 0, 0, 0, 0}, // FRONT
+    };
 
     std::cout << rotationCommands.to_string() << std::endl;
     // find the bottom edge pieces
     // move them to the correct position
+}
+
+void RubiksCube::solve() {
+    if (solveStage == SolveStage::NOT_SOLVING) {
+        return;
+    }
+
+    rotationCommands.clear();
+    std::cout << "Solving..." << std::endl;
+
+    switch (solveStage) {
+    case SolveStage::NOT_SOLVING:
+    default:
+        return;
+    case SolveStage::BOTTOM_LAYER:
+        solveBottomLayer();
+        return;
+    }
 }
 
 } // namespace rubiks

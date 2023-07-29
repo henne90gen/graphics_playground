@@ -11,6 +11,8 @@ const unsigned int FACE_COUNT = 6;
 const unsigned int SMALL_FACE_COUNT = 9;
 extern const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_CUBE;
 
+enum class SolveStage { NOT_SOLVING, BOTTOM_LAYER };
+
 class RubiksCube {
   public:
     explicit RubiksCube(const std::vector<RotationCommand> &initialCommands = {});
@@ -45,7 +47,7 @@ class RubiksCube {
 
     void solve();
 
-    void startSolving() { solving = true; }
+    void startSolving() { solveStage = SolveStage::BOTTOM_LAYER; }
 
   private:
     bool isRotating = true;
@@ -56,6 +58,8 @@ class RubiksCube {
     std::vector<unsigned int> positionMapping;
 
     RotationCommandStack rotationCommands;
-    bool solving = false;
+    SolveStage solveStage = SolveStage::NOT_SOLVING;
+
+    void solveBottomLayer();
 };
 } // namespace rubiks
