@@ -74,10 +74,10 @@ void RubiksCube::rotate(float rotationSpeed) {
 void RubiksCube::shuffle() {
     rotationCommands.clear();
 
-    const unsigned int rotationCommandCount = 12;
+    const auto rotationCommandCount = 12;
     std::array<RotationCommand, rotationCommandCount> rotations = {
           RotationCommand(R_R), R_RI, R_F, R_FI, R_BO, R_BOI, R_L, R_LI, R_T, R_TI, R_BA, R_BAI};
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
 
@@ -88,13 +88,13 @@ void RubiksCube::shuffle() {
         rotationCommands.push(rotation);
     }
 
-    std::cout << "Shuffeling cube..." << std::endl;
+    std::cout << "Shuffling cube..." << std::endl;
     std::cout << rotationCommands.to_string() << std::endl;
 
     isRotating = true;
 }
 
-Face RubiksCube::getCurrentFace(Face direction, unsigned int localIndex) {
+Face RubiksCube::getCurrentFaceAtLocalIndex(Face direction, unsigned int localIndex) {
     if (localIndex == 4) {
         return direction;
     }
@@ -160,20 +160,23 @@ void RubiksCube::solve() {
           {7, FRONT}  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     }};
     for (const EdgePiece &edgePiece : edgePieces) {
-        const Face bottomFace = getCurrentFace(BOTTOM, edgePiece.localIndex);
-        if (bottomFace == BOTTOM) {
-            const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
-            if (edgePartnerFace != edgePiece.face) {
-                const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
-                std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
-                if (edgePartnerFace == oppositeFace) {
-                    rotationCommands.push(R_BO);
-                    rotationCommands.push(R_BO);
-                } else {
-                    rotationCommands.push(R_BO);
-                }
-                return;
+        const Face bottomFace = getCurrentFaceAtLocalIndex(BOTTOM, edgePiece.localIndex);
+        if (bottomFace != BOTTOM) {
+            // face is not a bottom face
+            continue;
+        }
+
+        const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
+        if (edgePartnerFace != edgePiece.face) {
+            const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
+            std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
+            if (edgePartnerFace == oppositeFace) {
+                rotationCommands.push(R_BO);
+                rotationCommands.push(R_BO);
+            } else {
+                rotationCommands.push(R_BO);
             }
+            return;
         }
     }
 

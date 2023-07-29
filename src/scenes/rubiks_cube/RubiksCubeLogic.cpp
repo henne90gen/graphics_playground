@@ -249,13 +249,13 @@ Face getEdgePartnerFace(rubiks::RubiksCube *cube, Face face, unsigned int index)
     if (face == BOTTOM) {
         switch (index) {
         case 1: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFace(BACK, 1);
+            return cube->getCurrentFaceAtLocalIndex(BACK, 1);
         case 3: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFace(LEFT, 1);
+            return cube->getCurrentFaceAtLocalIndex(LEFT, 1);
         case 5: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFace(RIGHT, 1);
+            return cube->getCurrentFaceAtLocalIndex(RIGHT, 1);
         case 7: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFace(FRONT, 1);
+            return cube->getCurrentFaceAtLocalIndex(FRONT, 1);
         default:
             throw std::exception();
         }

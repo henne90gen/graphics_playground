@@ -19,7 +19,17 @@ class RubiksCube {
 
     void shuffle();
 
-    Face getCurrentFace(Face direction, unsigned int localIndex);
+    /**
+     * @brief Get the current face at the provided local index.
+     *
+     * This methods looks at the given face of the cube and returns to which face the piece at the given local index
+     * belongs to.
+     *
+     * @param direction Global face to look at
+     * @param localIndex Local index to look at
+     * @return Face that is present at the selected position
+     */
+    Face getCurrentFaceAtLocalIndex(Face direction, unsigned int localIndex);
 
     glm::mat4 getRotationMatrix(unsigned int index) { return smallCubes[index].rotationMatrix; }
 

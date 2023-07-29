@@ -5,7 +5,7 @@
 
 void assertWholeFace(rubiks::RubiksCube cube, Face face) {
     for (int i = 0; i < 9; i++) {
-        ASSERT_EQ(cube.getCurrentFace(face, i), face);
+        ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(face, i), face);
     }
 }
 
@@ -23,21 +23,21 @@ TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
     auto cube = rubiks::RubiksCube({R_R});
     cube.rotate(2.0f);
 
-    ASSERT_EQ(cube.getCurrentFace(FRONT, 2), BOTTOM);
-    ASSERT_EQ(cube.getCurrentFace(FRONT, 5), BOTTOM);
-    ASSERT_EQ(cube.getCurrentFace(FRONT, 8), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(FRONT, 2), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(FRONT, 5), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(FRONT, 8), BOTTOM);
 
-    ASSERT_EQ(cube.getCurrentFace(TOP, 2), FRONT);
-    ASSERT_EQ(cube.getCurrentFace(TOP, 5), FRONT);
-    ASSERT_EQ(cube.getCurrentFace(TOP, 8), FRONT);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(TOP, 2), FRONT);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(TOP, 5), FRONT);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(TOP, 8), FRONT);
 
-    ASSERT_EQ(cube.getCurrentFace(BACK, 0), TOP);
-    ASSERT_EQ(cube.getCurrentFace(BACK, 3), TOP);
-    ASSERT_EQ(cube.getCurrentFace(BACK, 6), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BACK, 0), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BACK, 3), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BACK, 6), TOP);
 
-    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 2), BACK);
-    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 5), BACK);
-    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 8), BACK);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BOTTOM, 2), BACK);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BOTTOM, 5), BACK);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BOTTOM, 8), BACK);
 }
 
 TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations) {
@@ -45,19 +45,19 @@ TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations) {
     cube.rotate(2.0f);
     cube.rotate(2.0f);
 
-    ASSERT_EQ(cube.getCurrentFace(FRONT, 2), BOTTOM);
-    ASSERT_EQ(cube.getCurrentFace(FRONT, 5), BOTTOM);
-    ASSERT_EQ(cube.getCurrentFace(FRONT, 8), RIGHT);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(FRONT, 2), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(FRONT, 5), BOTTOM);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(FRONT, 8), RIGHT);
 
-    ASSERT_EQ(cube.getCurrentFace(TOP, 2), FRONT);
-    ASSERT_EQ(cube.getCurrentFace(TOP, 5), TOP);
-    ASSERT_EQ(cube.getCurrentFace(TOP, 8), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(TOP, 2), FRONT);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(TOP, 5), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(TOP, 8), TOP);
 
-    ASSERT_EQ(cube.getCurrentFace(BACK, 0), TOP);
-    ASSERT_EQ(cube.getCurrentFace(BACK, 3), TOP);
-    ASSERT_EQ(cube.getCurrentFace(BACK, 6), LEFT);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BACK, 0), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BACK, 3), TOP);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BACK, 6), LEFT);
 
-    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 2), BACK);
-    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 5), BACK);
-    ASSERT_EQ(cube.getCurrentFace(BOTTOM, 8), BACK);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BOTTOM, 2), BACK);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BOTTOM, 5), BACK);
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(BOTTOM, 8), BACK);
 }
