@@ -10,23 +10,21 @@ const unsigned int SIDES_COUNT = 6;
 const unsigned int NEXT_FACES_PER_SIDE = 6;
 std::array<std::array<Face, SIDES_COUNT>, NEXT_FACES_PER_SIDE> NEXT_FACE_MAP = {{
       // x,    -x,     y,      -y,     z,      -z
-      {Face::TOP, Face::BOTTOM, Face::LEFT, Face::RIGHT, Face::FRONT, Face::FRONT},   // FRONT
-      {Face::BOTTOM, Face::TOP, Face::RIGHT, Face::LEFT, Face::BACK, Face::BACK},     // BACK
-      {Face::LEFT, Face::LEFT, Face::BACK, Face::FRONT, Face::TOP, Face::BOTTOM},     // LEFT
-      {Face::RIGHT, Face::RIGHT, Face::FRONT, Face::BACK, Face::BOTTOM, Face::TOP},   // RIGHT
-      {Face::BACK, Face::FRONT, Face::TOP, Face::TOP, Face::RIGHT, Face::LEFT},       // TOP
-      {Face::FRONT, Face::BACK, Face::BOTTOM, Face::BOTTOM, Face::LEFT, Face::RIGHT}, // BOTTOM
+      {Face::UP, Face::DOWN, Face::LEFT, Face::RIGHT, Face::FRONT, Face::FRONT},  // FRONT
+      {Face::DOWN, Face::UP, Face::RIGHT, Face::LEFT, Face::BACK, Face::BACK},    // BACK
+      {Face::LEFT, Face::LEFT, Face::BACK, Face::FRONT, Face::UP, Face::DOWN},    // LEFT
+      {Face::RIGHT, Face::RIGHT, Face::FRONT, Face::BACK, Face::DOWN, Face::UP},  // RIGHT
+      {Face::BACK, Face::FRONT, Face::UP, Face::UP, Face::RIGHT, Face::LEFT},     // UP
+      {Face::FRONT, Face::BACK, Face::DOWN, Face::DOWN, Face::LEFT, Face::RIGHT}, // DOWN
 }};
 
 bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
-            float *currentAngle, float rotationSpeed) {
-    *currentAngle += rotationSpeed;
-
+            float &currentAngle) {
     bool isDoneRotating = false;
     const auto piHalf = glm::pi<float>() * 0.5F;
-    if (*currentAngle >= piHalf) {
+    if (currentAngle >= piHalf) {
         isDoneRotating = true;
-        *currentAngle = piHalf;
+        currentAngle = piHalf;
     }
 
     const unsigned int cubeCount = 9;
@@ -36,27 +34,27 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
     switch (command.face) {
     case Face::FRONT:
         cubes = FRONT_CUBES;
-        rotationVector = glm::vec3(0, 0, direction * *currentAngle);
+        rotationVector = glm::vec3(0, 0, direction * currentAngle);
         break;
     case Face::BACK:
         cubes = BACK_CUBES;
-        rotationVector = glm::vec3(0, 0, direction * *currentAngle);
+        rotationVector = glm::vec3(0, 0, direction * currentAngle);
         break;
     case Face::LEFT:
         cubes = LEFT_CUBES;
-        rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
+        rotationVector = glm::vec3(direction * currentAngle, 0, 0);
         break;
     case Face::RIGHT:
         cubes = RIGHT_CUBES;
-        rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
+        rotationVector = glm::vec3(direction * currentAngle, 0, 0);
         break;
-    case Face::TOP:
-        cubes = TOP_CUBES;
-        rotationVector = glm::vec3(0, direction * *currentAngle, 0);
+    case Face::UP:
+        cubes = UP_CUBES;
+        rotationVector = glm::vec3(0, direction * currentAngle, 0);
         break;
-    case Face::BOTTOM:
-        cubes = BOTTOM_CUBES;
-        rotationVector = glm::vec3(0, direction * *currentAngle, 0);
+    case Face::DOWN:
+        cubes = DOWN_CUBES;
+        rotationVector = glm::vec3(0, direction * currentAngle, 0);
         break;
     }
 
@@ -80,13 +78,13 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
 
 int getDirection(RotationCommand &rot) {
     if (rot.direction == Direction::CLOCKWISE) {
-        if (rot.face == Face::BOTTOM || rot.face == Face::LEFT || rot.face == Face::BACK) {
+        if (rot.face == Face::DOWN || rot.face == Face::LEFT || rot.face == Face::BACK) {
             return 1;
         }
         return -1;
     }
 
-    if (rot.face == Face::BOTTOM || rot.face == Face::LEFT || rot.face == Face::BACK) {
+    if (rot.face == Face::DOWN || rot.face == Face::LEFT || rot.face == Face::BACK) {
         return -1;
     }
 
@@ -137,44 +135,44 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
     }
 }
 
-void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
-    // move the corners
-    unsigned int tmp1 = positions[selectedCubes[2]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[2]] = positions[selectedCubes[0]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    unsigned int tmp2 = positions[selectedCubes[8]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[8]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[6]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[6]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[0]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-
-    // move the edges
-    tmp1 = positions[selectedCubes[5]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[5]] = positions[selectedCubes[1]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp2 = positions[selectedCubes[7]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[7]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[3]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[3]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[1]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-}
-
 void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
     // move the corners
-    unsigned int tmp1 = positions[selectedCubes[6]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[6]] = positions[selectedCubes[0]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    unsigned int tmp2 = positions[selectedCubes[8]];           // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[8]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[2]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[2]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[0]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    unsigned int tmp1 = positions[selectedCubes[2]];
+    positions[selectedCubes[2]] = positions[selectedCubes[0]];
+    unsigned int tmp2 = positions[selectedCubes[8]];
+    positions[selectedCubes[8]] = tmp1;
+    tmp1 = positions[selectedCubes[6]];
+    positions[selectedCubes[6]] = tmp2;
+    positions[selectedCubes[0]] = tmp1;
 
     // move the edges
-    tmp1 = positions[selectedCubes[3]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[3]] = positions[selectedCubes[1]]; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp2 = positions[selectedCubes[7]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[7]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    tmp1 = positions[selectedCubes[5]];                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[5]] = tmp2;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    positions[selectedCubes[1]] = tmp1;                        // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    tmp1 = positions[selectedCubes[5]];
+    positions[selectedCubes[5]] = positions[selectedCubes[1]];
+    tmp2 = positions[selectedCubes[7]];
+    positions[selectedCubes[7]] = tmp1;
+    tmp1 = positions[selectedCubes[3]];
+    positions[selectedCubes[3]] = tmp2;
+    positions[selectedCubes[1]] = tmp1;
+}
+
+void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
+    // move the corners
+    unsigned int tmp1 = positions[selectedCubes[6]];
+    positions[selectedCubes[6]] = positions[selectedCubes[0]];
+    unsigned int tmp2 = positions[selectedCubes[8]];
+    positions[selectedCubes[8]] = tmp1;
+    tmp1 = positions[selectedCubes[2]];
+    positions[selectedCubes[2]] = tmp2;
+    positions[selectedCubes[0]] = tmp1;
+
+    // move the edges
+    tmp1 = positions[selectedCubes[3]];
+    positions[selectedCubes[3]] = positions[selectedCubes[1]];
+    tmp2 = positions[selectedCubes[7]];
+    positions[selectedCubes[7]] = tmp1;
+    tmp1 = positions[selectedCubes[5]];
+    positions[selectedCubes[5]] = tmp2;
+    positions[selectedCubes[1]] = tmp1;
 }
 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
@@ -183,23 +181,24 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
     }
 
     if (rotation.x > 0.0F) {
-        return NEXT_FACE_MAP[(int)currentFace][0];
+        return NEXT_FACE_MAP[(int)currentFace - 1][0];
     }
     if (rotation.x < 0.0F) {
-        return NEXT_FACE_MAP[(int)currentFace][1];
+        return NEXT_FACE_MAP[(int)currentFace - 1][1];
     }
     if (rotation.y > 0.0F) {
-        return NEXT_FACE_MAP[(int)currentFace][2];
+        return NEXT_FACE_MAP[(int)currentFace - 1][2];
     }
     if (rotation.y < 0.0F) {
-        return NEXT_FACE_MAP[(int)currentFace][3];
+        return NEXT_FACE_MAP[(int)currentFace - 1][3];
     }
     if (rotation.z > 0.0F) {
-        return NEXT_FACE_MAP[(int)currentFace][4];
+        return NEXT_FACE_MAP[(int)currentFace - 1][4];
     }
     if (rotation.z < 0.0F) {
-        return NEXT_FACE_MAP[(int)currentFace][5];
+        return NEXT_FACE_MAP[(int)currentFace - 1][5];
     }
+
     return currentFace;
 }
 
@@ -233,22 +232,28 @@ unsigned int squashRotations(std::vector<SmallCube> &cubeRotations) {
     return removed;
 }
 
-Face getEdgePartnerFace(rubiks::RubiksCube *cube, Face face, unsigned int index) {
-    if (face == Face::BOTTOM) {
-        switch (index) {
-        case 1:
-            return cube->getCurrentFaceAtLocalIndex(Face::BACK, 1);
-        case 3:
-            return cube->getCurrentFaceAtLocalIndex(Face::LEFT, 1);
-        case 5:
-            return cube->getCurrentFaceAtLocalIndex(Face::RIGHT, 1);
-        case 7:
-            return cube->getCurrentFaceAtLocalIndex(Face::FRONT, 1);
-        default:
-            throw std::exception();
-        }
+// use [side][(localIndex-1)/2] to index into this array
+std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndices = {
+      std::array<std::pair<Face, unsigned int>, 4>(
+            {std::make_pair(Face::UP, 7), {Face::LEFT, 5}, {Face::RIGHT, 3}, {Face::DOWN, 1}}), // FRONT
+      {std::make_pair(Face::UP, 1), {Face::RIGHT, 5}, {Face::LEFT, 3}, {Face::DOWN, 7}},        // BACK
+      {std::make_pair(Face::UP, 3), {Face::BACK, 5}, {Face::FRONT, 3}, {Face::DOWN, 3}},        // LEFT
+      {std::make_pair(Face::UP, 5), {Face::FRONT, 5}, {Face::BACK, 3}, {Face::DOWN, 5}},        // RIGHT
+      {std::make_pair(Face::BACK, 1), {Face::LEFT, 1}, {Face::RIGHT, 1}, {Face::FRONT, 1}},     // UP
+      {std::make_pair(Face::FRONT, 7), {Face::LEFT, 7}, {Face::RIGHT, 7}, {Face::BACK, 7}},     // DOWN
+};
+
+std::pair<Face, unsigned int> getEdgePartner(rubiks::RubiksCube *cube, Face side, unsigned int localIndex) {
+    const auto tmp = (localIndex - 1);
+    if (tmp % 2 != 0) {
+        return std::make_pair(Face::NONE, 0);
     }
-    throw std::exception();
+    const auto index = (localIndex - 1) / 2;
+    if (index < 0 || index >= 4) {
+        return std::make_pair(Face::NONE, 0);
+    }
+
+    return edgePartnerLocalIndices[(int)side - 1][index];
 }
 
 Face getOppositeFace(Face face) {
@@ -257,10 +262,10 @@ Face getOppositeFace(Face face) {
         return Face::BACK;
     case Face::BACK:
         return Face::FRONT;
-    case Face::TOP:
-        return Face::BOTTOM;
-    case Face::BOTTOM:
-        return Face::TOP;
+    case Face::UP:
+        return Face::DOWN;
+    case Face::DOWN:
+        return Face::UP;
     case Face::LEFT:
         return Face::RIGHT;
     case Face::RIGHT:

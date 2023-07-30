@@ -13,7 +13,7 @@ namespace rubiks {
 void printRotations(std::vector<glm::vec3> &rotations);
 
 bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
-            float *currentAngle, float rotationSpeed = 0.1f);
+            float &currentAngle);
 
 int getDirection(RotationCommand &rot);
 
@@ -28,7 +28,7 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation);
 unsigned int squashRotations(std::vector<SmallCube> &cubeRotations);
 
 class RubiksCube; // forward declaration
-Face getEdgePartnerFace(RubiksCube *cube, Face face, unsigned int index);
+std::pair<Face, unsigned int> getEdgePartner(RubiksCube *cube, Face face, unsigned int index);
 
 Face getOppositeFace(Face face);
-} // namespace
+} // namespace rubiks

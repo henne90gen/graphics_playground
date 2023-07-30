@@ -26,17 +26,17 @@ std::string to_string(const Face &face, bool simple) {
             } else {
                 return "RIGHT";
             }
-        case Face::TOP:
+        case Face::UP:
             if (simple) {
                 return "R_T";
             } else {
-                return "TOP";
+                return "UP";
             }
-        case Face::BOTTOM:
+        case Face::DOWN:
             if (simple) {
                 return "R_BO";
             } else {
-                return "BOTTOM";
+                return "DOWN";
             }
     }
 }

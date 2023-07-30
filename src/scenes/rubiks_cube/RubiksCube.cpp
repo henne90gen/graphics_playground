@@ -11,8 +11,8 @@ const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_C
       BACK_CUBES,
       LEFT_CUBES,
       RIGHT_CUBES,
-      TOP_CUBES,
-      BOTTOM_CUBES};
+      UP_CUBES,
+      DOWN_CUBES};
 
 RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
     const unsigned int smallCubeCount = 27;
@@ -45,8 +45,9 @@ void RubiksCube::rotate(float rotationSpeed) {
         currentCommand = rotationCommands.next();
     }
 
+    currentAngle += rotationSpeed;
     bool shouldStartNextCommand =
-          isRotating && rubiks::rotate(smallCubes, positionMapping, currentCommand, &currentAngle, rotationSpeed);
+          isRotating && rubiks::rotate(smallCubes, positionMapping, currentCommand, currentAngle);
     if (!shouldStartNextCommand) {
         return;
     }
@@ -76,7 +77,7 @@ void RubiksCube::shuffle() {
 
     const auto rotationCommandCount = 12;
     std::array<RotationCommand, rotationCommandCount> rotations = {
-          RotationCommand(R_R), R_RI, R_F, R_FI, R_BO, R_BOI, R_L, R_LI, R_T, R_TI, R_BA, R_BAI};
+          RotationCommand(R_R), R_RI, R_F, R_FI, R_D, R_DI, R_L, R_LI, R_U, R_UI, R_B, R_BI};
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
@@ -94,15 +95,16 @@ void RubiksCube::shuffle() {
     isRotating = true;
 }
 
-Face RubiksCube::getCurrentFaceAtLocalIndex(Face direction, unsigned int localIndex) {
+Face RubiksCube::getCurrentFaceAtLocalIndex(Face face, unsigned int localIndex) {
     if (localIndex == 4) {
-        return direction;
+        return face;
     }
-    unsigned int globalIndex = WHOLE_CUBE[(int)direction][localIndex];
+
+    unsigned int globalIndex = WHOLE_CUBE[(int)face-1][localIndex];
     unsigned int cubeIndex = positionMapping[globalIndex];
     SmallCube cube = smallCubes[cubeIndex];
 
-    Face currentFace = direction;
+    Face currentFace = face;
     std::vector<glm::vec3> rotations(cube.rotations.size());
     std::reverse_copy(cube.rotations.begin(), cube.rotations.end(), rotations.begin());
     for (auto &rotation : rotations) {
@@ -143,78 +145,67 @@ void RubiksCube::solveBottomLayer() {
     struct EdgePiece {
         unsigned int localIndex;
         Face side;
-        Face expectedEdgePartnerFace;
+        Face expectedEdgePartnerFace = Face::NONE;
     };
     const unsigned int EDGE_PIECE_COUNT = 24;
     std::array<EdgePiece, EDGE_PIECE_COUNT> edgePieces = {{
-          {1, Face::BOTTOM, Face::BACK},  //
-          {3, Face::BOTTOM, Face::LEFT},  //
-          {5, Face::BOTTOM, Face::RIGHT}, //
-          {7, Face::BOTTOM, Face::FRONT}, //
-          {1, Face::FRONT, Face::TOP},    //
-          {3, Face::FRONT, Face::LEFT},   //
-          {5, Face::FRONT, Face::RIGHT},  //
-          {7, Face::FRONT, Face::BOTTOM}, //
-          {1, Face::LEFT, Face::TOP},     //
-          {3, Face::LEFT, Face::BACK},    //
-          {5, Face::LEFT, Face::FRONT},   //
-          {7, Face::LEFT, Face::BOTTOM},  //
-          {1, Face::RIGHT, Face::TOP},    //
-          {3, Face::RIGHT, Face::FRONT},  //
-          {5, Face::RIGHT, Face::BACK},   //
-          {7, Face::RIGHT, Face::BOTTOM}, //
-          {1, Face::BACK, Face::TOP},     //
-          {3, Face::BACK, Face::RIGHT},   //
-          {5, Face::BACK, Face::LEFT},    //
-          {7, Face::BACK, Face::BOTTOM},  //
-          {1, Face::TOP, Face::BACK},     //
-          {3, Face::TOP, Face::LEFT},     //
-          {5, Face::TOP, Face::RIGHT},    //
-          {7, Face::TOP, Face::FRONT},    //
+          {1, Face::DOWN, Face::BACK},  //
+          {3, Face::DOWN, Face::LEFT},  //
+          {5, Face::DOWN, Face::RIGHT}, //
+          {7, Face::DOWN, Face::FRONT}, //
+          {1, Face::FRONT},               //
+          {3, Face::FRONT},               //
+          {5, Face::FRONT},               //
+          {7, Face::FRONT},               //
+          {1, Face::LEFT},                //
+          {3, Face::LEFT},                //
+          {5, Face::LEFT},                //
+          {7, Face::LEFT},                //
+          {1, Face::RIGHT},               //
+          {3, Face::RIGHT},               //
+          {5, Face::RIGHT},               //
+          {7, Face::RIGHT},               //
+          {1, Face::BACK},                //
+          {3, Face::BACK},                //
+          {5, Face::BACK},                //
+          {7, Face::BACK},                //
+          {1, Face::UP},                 //
+          {3, Face::UP},                 //
+          {5, Face::UP},                 //
+          {7, Face::UP},                 //
     }};
     for (const EdgePiece &edgePiece : edgePieces) {
+        if (rotationCommands.hasCommands()) {
+            // execute the current algorithm before moving on to the next piece
+            return;
+        }
+
         const Face pieceFace = getCurrentFaceAtLocalIndex(edgePiece.side, edgePiece.localIndex);
-        if (pieceFace != Face::BOTTOM) {
+        if (pieceFace != Face::DOWN) {
             // face of piece is not a bottom face
             continue;
         }
 
-        const Face edgePartnerFace = getEdgePartnerFace(this, edgePiece.side, edgePiece.localIndex);
-        if (edgePartnerFace == edgePiece.expectedEdgePartnerFace) {
-            // case 0: piece is already at the correct position
-            continue;
+        if (edgePiece.side == Face::DOWN) {
+            const auto edgePartner = getEdgePartner(this, edgePiece.side, edgePiece.localIndex);
+            const auto edgePartnerCurrentFace = getCurrentFaceAtLocalIndex(edgePartner.first, edgePartner.second);
+            if (edgePartnerCurrentFace == edgePiece.expectedEdgePartnerFace) {
+                // piece is already at the correct position
+                continue;
+            }
+
+            // face is at the bottom, but the neighboring side does not match, thus needs to be moved to the top
+            rotationCommands.push({edgePiece.expectedEdgePartnerFace, Direction::CLOCKWISE});
+            rotationCommands.push({edgePiece.expectedEdgePartnerFace, Direction::CLOCKWISE});
         }
 
-        // case 1: face is at the bottom, but the neighboring side does not match, thus needs to be moved to the top
-        if (edgePiece.side == Face::BOTTOM) {
+        if (edgePiece.side == Face::LEFT || edgePiece.side == Face::RIGHT || edgePiece.side == Face::FRONT ||
+            edgePiece.side == Face::BACK) {
+            // face is at one of the sides and needs to be moved to the top
         }
 
-        // case 2: face is at one of the sides and needs to be moved to the top
-
-        // case 3: face is at the top
-
-        // const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
-        // if (edgePartnerFace == edgePiece.face2) {
-        //     // face is already at the correct position
-        //     continue;
-        // }
-
-        // const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face2);
-        // std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
-        // if (edgePartnerFace == oppositeFace) {
-        //     rotationCommands.push(R_BO);
-        //     rotationCommands.push(R_BO);
-        //     return;
-        // }
-
-        // TODO check whether we need to rotate into the other direction here
-        // rotationCommands.push(R_BO);
-        // return;
+        // face is now at the top
     }
-
-    std::array<std::array<int, 6>, 6> bla = {
-          {0, 0, 0, 0, 0, 0}, // FRONT
-    };
 
     std::cout << rotationCommands.to_string() << std::endl;
     // find the bottom edge pieces
