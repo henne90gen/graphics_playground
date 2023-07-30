@@ -10,12 +10,12 @@ const unsigned int SIDES_COUNT = 6;
 const unsigned int NEXT_FACES_PER_SIDE = 6;
 std::array<std::array<Face, SIDES_COUNT>, NEXT_FACES_PER_SIDE> NEXT_FACE_MAP = {{
       // x,    -x,     y,      -y,     z,      -z
-      {TOP, BOTTOM, LEFT, RIGHT, FRONT, FRONT},   // FRONT
-      {BOTTOM, TOP, RIGHT, LEFT, BACK, BACK},     // BACK
-      {LEFT, LEFT, BACK, FRONT, TOP, BOTTOM},     // LEFT
-      {RIGHT, RIGHT, FRONT, BACK, BOTTOM, TOP},   // RIGHT
-      {BACK, FRONT, TOP, TOP, RIGHT, LEFT},       // TOP
-      {FRONT, BACK, BOTTOM, BOTTOM, LEFT, RIGHT}, // BOTTOM
+      {Face::TOP, Face::BOTTOM, Face::LEFT, Face::RIGHT, Face::FRONT, Face::FRONT},   // FRONT
+      {Face::BOTTOM, Face::TOP, Face::RIGHT, Face::LEFT, Face::BACK, Face::BACK},     // BACK
+      {Face::LEFT, Face::LEFT, Face::BACK, Face::FRONT, Face::TOP, Face::BOTTOM},     // LEFT
+      {Face::RIGHT, Face::RIGHT, Face::FRONT, Face::BACK, Face::BOTTOM, Face::TOP},   // RIGHT
+      {Face::BACK, Face::FRONT, Face::TOP, Face::TOP, Face::RIGHT, Face::LEFT},       // TOP
+      {Face::FRONT, Face::BACK, Face::BOTTOM, Face::BOTTOM, Face::LEFT, Face::RIGHT}, // BOTTOM
 }};
 
 bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
@@ -34,27 +34,27 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
     glm::vec3 rotationVector;
     auto direction = static_cast<float>(rubiks::getDirection(command));
     switch (command.face) {
-    case FRONT:
+    case Face::FRONT:
         cubes = FRONT_CUBES;
         rotationVector = glm::vec3(0, 0, direction * *currentAngle);
         break;
-    case BACK:
+    case Face::BACK:
         cubes = BACK_CUBES;
         rotationVector = glm::vec3(0, 0, direction * *currentAngle);
         break;
-    case LEFT:
+    case Face::LEFT:
         cubes = LEFT_CUBES;
         rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
         break;
-    case RIGHT:
+    case Face::RIGHT:
         cubes = RIGHT_CUBES;
         rotationVector = glm::vec3(direction * *currentAngle, 0, 0);
         break;
-    case TOP:
+    case Face::TOP:
         cubes = TOP_CUBES;
         rotationVector = glm::vec3(0, direction * *currentAngle, 0);
         break;
-    case BOTTOM:
+    case Face::BOTTOM:
         cubes = BOTTOM_CUBES;
         rotationVector = glm::vec3(0, direction * *currentAngle, 0);
         break;
@@ -69,7 +69,7 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
         return isDoneRotating;
     }
 
-    if (command.direction == CLOCKWISE) {
+    if (command.direction == Direction::CLOCKWISE) {
         rubiks::adjustIndicesClockwise(cubePositions, cubes);
     } else {
         rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
@@ -79,14 +79,14 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
 }
 
 int getDirection(RotationCommand &rot) {
-    if (rot.direction == CLOCKWISE) {
-        if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
+    if (rot.direction == Direction::CLOCKWISE) {
+        if (rot.face == Face::BOTTOM || rot.face == Face::LEFT || rot.face == Face::BACK) {
             return 1;
         }
         return -1;
     }
 
-    if (rot.face == BOTTOM || rot.face == LEFT || rot.face == BACK) {
+    if (rot.face == Face::BOTTOM || rot.face == Face::LEFT || rot.face == Face::BACK) {
         return -1;
     }
 
@@ -183,34 +183,22 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
     }
 
     if (rotation.x > 0.0F) {
-        return NEXT_FACE_MAP
-              [currentFace]
-              [0]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP[(int)currentFace][0];
     }
     if (rotation.x < 0.0F) {
-        return NEXT_FACE_MAP
-              [currentFace]
-              [1]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP[(int)currentFace][1];
     }
     if (rotation.y > 0.0F) {
-        return NEXT_FACE_MAP
-              [currentFace]
-              [2]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP[(int)currentFace][2];
     }
     if (rotation.y < 0.0F) {
-        return NEXT_FACE_MAP
-              [currentFace]
-              [3]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP[(int)currentFace][3];
     }
     if (rotation.z > 0.0F) {
-        return NEXT_FACE_MAP
-              [currentFace]
-              [4]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP[(int)currentFace][4];
     }
     if (rotation.z < 0.0F) {
-        return NEXT_FACE_MAP
-              [currentFace]
-              [5]; // NOLINT(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-constant-array-index)
+        return NEXT_FACE_MAP[(int)currentFace][5];
     }
     return currentFace;
 }
@@ -246,16 +234,16 @@ unsigned int squashRotations(std::vector<SmallCube> &cubeRotations) {
 }
 
 Face getEdgePartnerFace(rubiks::RubiksCube *cube, Face face, unsigned int index) {
-    if (face == BOTTOM) {
+    if (face == Face::BOTTOM) {
         switch (index) {
-        case 1: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFaceAtLocalIndex(BACK, 1);
-        case 3: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFaceAtLocalIndex(LEFT, 1);
-        case 5: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFaceAtLocalIndex(RIGHT, 1);
-        case 7: // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            return cube->getCurrentFaceAtLocalIndex(FRONT, 1);
+        case 1:
+            return cube->getCurrentFaceAtLocalIndex(Face::BACK, 1);
+        case 3:
+            return cube->getCurrentFaceAtLocalIndex(Face::LEFT, 1);
+        case 5:
+            return cube->getCurrentFaceAtLocalIndex(Face::RIGHT, 1);
+        case 7:
+            return cube->getCurrentFaceAtLocalIndex(Face::FRONT, 1);
         default:
             throw std::exception();
         }
@@ -265,18 +253,18 @@ Face getEdgePartnerFace(rubiks::RubiksCube *cube, Face face, unsigned int index)
 
 Face getOppositeFace(Face face) {
     switch (face) {
-    case FRONT:
-        return BACK;
-    case BACK:
-        return FRONT;
-    case TOP:
-        return BOTTOM;
-    case BOTTOM:
-        return TOP;
-    case LEFT:
-        return RIGHT;
-    case RIGHT:
-        return LEFT;
+    case Face::FRONT:
+        return Face::BACK;
+    case Face::BACK:
+        return Face::FRONT;
+    case Face::TOP:
+        return Face::BOTTOM;
+    case Face::BOTTOM:
+        return Face::TOP;
+    case Face::LEFT:
+        return Face::RIGHT;
+    case Face::RIGHT:
+        return Face::LEFT;
     }
 }
 

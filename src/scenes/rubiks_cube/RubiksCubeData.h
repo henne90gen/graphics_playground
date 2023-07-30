@@ -12,20 +12,20 @@
 #define BOTTOM_CUBES {0, 1, 2, 9, 10, 11, 18, 19, 20}
 
 // macros for cube rotations (I - inverse)
-#define R_R {RIGHT, CLOCKWISE}
-#define R_RI {RIGHT, COUNTER_CLOCKWISE}
-#define R_F {FRONT, CLOCKWISE}
-#define R_FI {FRONT, COUNTER_CLOCKWISE}
-#define R_BO {BOTTOM, CLOCKWISE}
-#define R_BOI {BOTTOM, COUNTER_CLOCKWISE}
-#define R_L {LEFT, CLOCKWISE}
-#define R_LI {LEFT, COUNTER_CLOCKWISE}
-#define R_T {TOP, CLOCKWISE}
-#define R_TI {TOP, COUNTER_CLOCKWISE}
-#define R_BA {BACK, CLOCKWISE}
-#define R_BAI {BACK, COUNTER_CLOCKWISE}
+#define R_R {Face::RIGHT, Direction::CLOCKWISE}
+#define R_RI {Face::RIGHT, Direction::COUNTER_CLOCKWISE}
+#define R_F {Face::FRONT, Direction::CLOCKWISE}
+#define R_FI {Face::FRONT, Direction::COUNTER_CLOCKWISE}
+#define R_BO {Face::BOTTOM, Direction::CLOCKWISE}
+#define R_BOI {Face::BOTTOM, Direction::COUNTER_CLOCKWISE}
+#define R_L {Face::LEFT, Direction::CLOCKWISE}
+#define R_LI {Face::LEFT, Direction::COUNTER_CLOCKWISE}
+#define R_T {Face::TOP, Direction::CLOCKWISE}
+#define R_TI {Face::TOP, Direction::COUNTER_CLOCKWISE}
+#define R_BA {Face::BACK, Direction::CLOCKWISE}
+#define R_BAI {Face::BACK, Direction::COUNTER_CLOCKWISE}
 
-enum Face {
+enum class Face {
     FRONT,
     BACK,
     LEFT,
@@ -34,7 +34,7 @@ enum Face {
     BOTTOM
 };
 
-enum Direction {
+enum class Direction {
     CLOCKWISE,
     COUNTER_CLOCKWISE
 };

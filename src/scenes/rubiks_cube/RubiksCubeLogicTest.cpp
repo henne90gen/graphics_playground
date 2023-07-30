@@ -313,21 +313,21 @@ TEST(RubiksCubeLogicTest, Rotation_matrix_is_calculated_correctly_for_two_rotati
 }
 
 void assertDirection(Face face, int direction) {
-    RotationCommand rot = {face, CLOCKWISE};
+    RotationCommand rot = {face, Direction::CLOCKWISE};
     ASSERT_EQ(rubiks::getDirection(rot), direction);
-    rot = {face, COUNTER_CLOCKWISE};
+    rot = {face, Direction::COUNTER_CLOCKWISE};
     ASSERT_EQ(rubiks::getDirection(rot), -1 * direction);
 }
 
 TEST(RubiksCubeLogicTest, Direction_is_calculated_correctly) {
-    assertDirection(RIGHT, -1);
-    assertDirection(LEFT, 1);
+    assertDirection(Face::RIGHT, -1);
+    assertDirection(Face::LEFT, 1);
 
-    assertDirection(TOP, -1);
-    assertDirection(BOTTOM, 1);
+    assertDirection(Face::TOP, -1);
+    assertDirection(Face::BOTTOM, 1);
 
-    assertDirection(FRONT, -1);
-    assertDirection(BACK, 1);
+    assertDirection(Face::FRONT, -1);
+    assertDirection(Face::BACK, 1);
 }
 
 void assertFaceRotation(Face face, std::vector<Face> results) {
@@ -340,23 +340,23 @@ void assertFaceRotation(Face face, std::vector<Face> results) {
 }
 
 TEST(RubiksCubeLogicTest, Single_face_is_rotated_correctly) {
-    std::vector<Face> results = {TOP, BOTTOM, LEFT, RIGHT, FRONT, FRONT};
-    assertFaceRotation(FRONT, results);
+    std::vector<Face> results = {Face::TOP, Face::BOTTOM, Face::LEFT, Face::RIGHT, Face::FRONT, Face::FRONT};
+    assertFaceRotation(Face::FRONT, results);
 
-    results = {BOTTOM, TOP, RIGHT, LEFT, BACK, BACK};
-    assertFaceRotation(BACK, results);
+    results = {Face::BOTTOM, Face::TOP, Face::RIGHT, Face::LEFT, Face::BACK, Face::BACK};
+    assertFaceRotation(Face::BACK, results);
 
-    results = {LEFT, LEFT, BACK, FRONT, TOP, BOTTOM};
-    assertFaceRotation(LEFT, results);
+    results = {Face::LEFT, Face::LEFT, Face::BACK, Face::FRONT, Face::TOP, Face::BOTTOM};
+    assertFaceRotation(Face::LEFT, results);
 
-    results = {RIGHT, RIGHT, FRONT, BACK, BOTTOM, TOP};
-    assertFaceRotation(RIGHT, results);
+    results = {Face::RIGHT, Face::RIGHT, Face::FRONT, Face::BACK, Face::BOTTOM, Face::TOP};
+    assertFaceRotation(Face::RIGHT, results);
 
-    results = {BACK, FRONT, TOP, TOP, RIGHT, LEFT};
-    assertFaceRotation(TOP, results);
+    results = {Face::BACK, Face::FRONT, Face::TOP, Face::TOP, Face::RIGHT,Face::LEFT};
+    assertFaceRotation(Face::TOP, results);
 
-    results = {FRONT, BACK, BOTTOM, BOTTOM, LEFT, RIGHT};
-    assertFaceRotation(BOTTOM, results);
+    results = {Face::FRONT, Face::BACK, Face::BOTTOM, Face::BOTTOM, Face::LEFT, Face::RIGHT};
+    assertFaceRotation(Face::BOTTOM, results);
 }
 
 TEST(RubiksCubeLogicTest, rotations_are_squashed_correctly) {

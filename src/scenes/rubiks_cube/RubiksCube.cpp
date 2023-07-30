@@ -98,8 +98,7 @@ Face RubiksCube::getCurrentFaceAtLocalIndex(Face direction, unsigned int localIn
     if (localIndex == 4) {
         return direction;
     }
-    unsigned int globalIndex =
-          WHOLE_CUBE[direction][localIndex]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+    unsigned int globalIndex = WHOLE_CUBE[(int)direction][localIndex];
     unsigned int cubeIndex = positionMapping[globalIndex];
     SmallCube cube = smallCubes[cubeIndex];
 
@@ -143,39 +142,74 @@ void RubiksCube::solveBottomLayer() {
     // find miss-aligned bottom pieces
     struct EdgePiece {
         unsigned int localIndex;
-        Face face;
+        Face side;
+        Face expectedEdgePartnerFace;
     };
-    const unsigned int EDGE_PIECE_COUNT = 4;
+    const unsigned int EDGE_PIECE_COUNT = 24;
     std::array<EdgePiece, EDGE_PIECE_COUNT> edgePieces = {{
-          {1, BACK},  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {3, LEFT},  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {5, RIGHT}, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-          {7, FRONT}  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+          {1, Face::BOTTOM, Face::BACK},  //
+          {3, Face::BOTTOM, Face::LEFT},  //
+          {5, Face::BOTTOM, Face::RIGHT}, //
+          {7, Face::BOTTOM, Face::FRONT}, //
+          {1, Face::FRONT, Face::TOP},    //
+          {3, Face::FRONT, Face::LEFT},   //
+          {5, Face::FRONT, Face::RIGHT},  //
+          {7, Face::FRONT, Face::BOTTOM}, //
+          {1, Face::LEFT, Face::TOP},     //
+          {3, Face::LEFT, Face::BACK},    //
+          {5, Face::LEFT, Face::FRONT},   //
+          {7, Face::LEFT, Face::BOTTOM},  //
+          {1, Face::RIGHT, Face::TOP},    //
+          {3, Face::RIGHT, Face::FRONT},  //
+          {5, Face::RIGHT, Face::BACK},   //
+          {7, Face::RIGHT, Face::BOTTOM}, //
+          {1, Face::BACK, Face::TOP},     //
+          {3, Face::BACK, Face::RIGHT},   //
+          {5, Face::BACK, Face::LEFT},    //
+          {7, Face::BACK, Face::BOTTOM},  //
+          {1, Face::TOP, Face::BACK},     //
+          {3, Face::TOP, Face::LEFT},     //
+          {5, Face::TOP, Face::RIGHT},    //
+          {7, Face::TOP, Face::FRONT},    //
     }};
     for (const EdgePiece &edgePiece : edgePieces) {
-        const Face bottomFace = getCurrentFaceAtLocalIndex(BOTTOM, edgePiece.localIndex);
-        if (bottomFace != BOTTOM) {
-            // face is not a bottom face
+        const Face pieceFace = getCurrentFaceAtLocalIndex(edgePiece.side, edgePiece.localIndex);
+        if (pieceFace != Face::BOTTOM) {
+            // face of piece is not a bottom face
             continue;
         }
 
-        const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
-        if (edgePartnerFace == edgePiece.face) {
-            // face is already at the correct position
+        const Face edgePartnerFace = getEdgePartnerFace(this, edgePiece.side, edgePiece.localIndex);
+        if (edgePartnerFace == edgePiece.expectedEdgePartnerFace) {
+            // case 0: piece is already at the correct position
             continue;
         }
 
-        const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face);
-        std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
-        if (edgePartnerFace == oppositeFace) {
-            rotationCommands.push(R_BO);
-            rotationCommands.push(R_BO);
-            return;
+        // case 1: face is at the bottom, but the neighboring side does not match, thus needs to be moved to the top
+        if (edgePiece.side == Face::BOTTOM) {
         }
+
+        // case 2: face is at one of the sides and needs to be moved to the top
+
+        // case 3: face is at the top
+
+        // const Face edgePartnerFace = rubiks::getEdgePartnerFace(this, BOTTOM, edgePiece.localIndex);
+        // if (edgePartnerFace == edgePiece.face2) {
+        //     // face is already at the correct position
+        //     continue;
+        // }
+
+        // const Face oppositeFace = rubiks::getOppositeFace(edgePiece.face2);
+        // std::cout << to_string(edgePartnerFace) << " " << to_string(oppositeFace) << std::endl;
+        // if (edgePartnerFace == oppositeFace) {
+        //     rotationCommands.push(R_BO);
+        //     rotationCommands.push(R_BO);
+        //     return;
+        // }
 
         // TODO check whether we need to rotate into the other direction here
-        rotationCommands.push(R_BO);
-        return;
+        // rotationCommands.push(R_BO);
+        // return;
     }
 
     std::array<std::array<int, 6>, 6> bla = {

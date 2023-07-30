@@ -2,37 +2,37 @@
 
 std::string to_string(const Face &face, bool simple) {
     switch (face) {
-        case FRONT:
+        case Face::FRONT:
             if (simple) {
                 return "R_F";
             } else {
                 return "FRONT";
             }
-        case BACK:
+        case Face::BACK:
             if (simple) {
                 return "R_BA";
             } else {
                 return "BACK";
             }
-        case LEFT:
+        case Face::LEFT:
             if (simple) {
                 return "R_L";
             } else {
                 return "LEFT";
             }
-        case RIGHT:
+        case Face::RIGHT:
             if (simple) {
                 return "R_R";
             } else {
                 return "RIGHT";
             }
-        case TOP:
+        case Face::TOP:
             if (simple) {
                 return "R_T";
             } else {
                 return "TOP";
             }
-        case BOTTOM:
+        case Face::BOTTOM:
             if (simple) {
                 return "R_BO";
             } else {
@@ -42,7 +42,7 @@ std::string to_string(const Face &face, bool simple) {
 }
 
 std::string to_string(const Direction &dir, bool simple) {
-    if (dir == CLOCKWISE) {
+    if (dir == Direction::CLOCKWISE) {
         if (simple) {
             return "";
         }
