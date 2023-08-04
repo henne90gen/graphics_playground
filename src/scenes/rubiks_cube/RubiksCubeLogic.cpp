@@ -243,7 +243,7 @@ std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndi
       {std::make_pair(Face::FRONT, 7), {Face::LEFT, 7}, {Face::RIGHT, 7}, {Face::BACK, 7}},     // DOWN
 };
 
-std::pair<Face, unsigned int> getEdgePartner(rubiks::RubiksCube *cube, Face side, unsigned int localIndex) {
+std::pair<Face, unsigned int> getEdgePartnerSide(rubiks::RubiksCube *cube, Face side, unsigned int localIndex) {
     const auto tmp = (localIndex - 1);
     if (tmp % 2 != 0) {
         return std::make_pair(Face::NONE, 0);
