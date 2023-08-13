@@ -17,7 +17,20 @@ class RubiksCube {
   public:
     explicit RubiksCube(const std::vector<RotationCommand> &initialCommands = {});
 
+    /**
+     * Executes the rotations that have been added to the rotation command queue.
+     * Calling this function with the default rotationSpeed of 2.0F results in one full rotation being executed.
+     * Any larger value will be clamped to 2.0F, which means that this function can only ever execute one rotation
+     * at a time.
+     * Providing a smaller rotationSpeed results in a partial rotation.
+     * @param rotationSpeed Determines how fast the rotation should be executed. Is clamped to the range [0.0, 2.0].
+     */
     void rotate(float rotationSpeed);
+
+    /**
+     * Executes all commands from the rotation command queue.
+     */
+    void rotateAll();
 
     void shuffle();
 

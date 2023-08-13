@@ -57,6 +57,7 @@ LEFT   FRONT  RIGHT  BACK
 #define R_B {Face::BACK, Direction::CLOCKWISE}
 #define R_BI {Face::BACK, Direction::COUNTER_CLOCKWISE}
 
+// NOTE Do not change the numeric values of these enum constants. They are being used to index into arrays.
 enum class Face {
     NONE   = 0,
     FRONT  = 1,

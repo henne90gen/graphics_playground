@@ -111,7 +111,7 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
 
     glm::mat4 cubeMatrix = glm::mat4(1.0F);
     for (auto &rotation : cubeRotation.rotations) {
-        glm::vec3 normalizedRotation = glm::abs(glm::normalize(rotation));
+        const auto normalizedRotation = glm::abs(glm::normalize(rotation));
         float rotationAngle = 0.0F;
         if (std::abs(normalizedRotation.x) > 0.0F) {
             rotationAngle = rotation.x;
@@ -125,7 +125,7 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
             continue;
         }
         // applying accumulated rotations to rotation axis
-        glm::vec3 rotationAxis = glm::vec3(glm::inverse(cubeMatrix) * glm::vec4(normalizedRotation, 1.0F));
+        const auto rotationAxis = glm::vec3(glm::inverse(cubeMatrix) * glm::vec4(normalizedRotation, 1.0F));
         cubeMatrix = glm::rotate(cubeMatrix, rotationAngle, rotationAxis);
     }
     cubeRotation.rotationMatrix = cubeMatrix;

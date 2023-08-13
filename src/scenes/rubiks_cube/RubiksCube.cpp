@@ -36,7 +36,10 @@ RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
     }
 }
 
-void RubiksCube::rotate(float rotationSpeed) {
+void RubiksCube::rotate(float rotationSpeed = 2.0F) {
+    rotationSpeed = std::min(rotationSpeed, 2.0F);
+    rotationSpeed = std::max(rotationSpeed, 0.0F);
+
     if (loop && !isRotating && rotationCommands.hasCommands()) {
         isRotating = true;
     }
@@ -46,7 +49,7 @@ void RubiksCube::rotate(float rotationSpeed) {
     }
 
     currentAngle += rotationSpeed;
-    bool shouldStartNextCommand =
+    const auto shouldStartNextCommand =
           isRotating && rubiks::rotate(smallCubes, positionMapping, currentCommand, currentAngle);
     if (!shouldStartNextCommand) {
         return;
@@ -69,6 +72,13 @@ void RubiksCube::rotate(float rotationSpeed) {
         }
     } else {
         isRotating = false;
+    }
+}
+
+void RubiksCube::rotateAll() {
+    isRotating = true;
+    while (isRotating) {
+        rotate();
     }
 }
 
@@ -148,7 +158,7 @@ void RubiksCube::solveBottomLayer() {
         Face expectedEdgePartnerFace = Face::NONE;
     };
     const unsigned int EDGE_PIECE_COUNT = 24;
-    std::array<EdgePiece, EDGE_PIECE_COUNT> edgePieces = {{
+    const std::array<EdgePiece, EDGE_PIECE_COUNT> edgePieces = {{
           {1, Face::UP},                //
           {3, Face::UP},                //
           {5, Face::UP},                //
@@ -231,24 +241,28 @@ void RubiksCube::solveBottomLayer() {
         }
 
         // face is now at the top
-        const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, 5);
-        auto rotationFace = edgePartner.first;
+        const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, edgePiece.localIndex);
         const auto edgePartnerCurrentFace = getCurrentFaceAtLocalIndex(edgePartner.first, edgePartner.second);
         if (edgePartner.first != edgePartnerCurrentFace) {
-            std::array<std::array<int, 7>, 7> rotationCount = {
-                  std::array<int, 7>({-1, -1, -1, -1, -1, -1, -1}),
-                  {-1, -1, -1, -1, -1, -1, -1},
-                  {-1, -1, -1, -1, -1, -1, -1},
-                  {-1, -1, -1, -1, -1, -1, -1},
-                  {-1, -1, -1, -1, -1, -1, -1},
-                  {-1, -1, -1, -1, -1, -1, -1},
-                  {-1, -1, -1, -1, -1, -1, -1},
+            // TODO use negative rotationCount to signal counter clockwise rotations
+            const std::array<std::array<int, 7>, 7> rotationCount = {
+                  std::array<int, 7>(),  //
+                  {0, 0, 2, 3, 1, 0, 0}, // FRONT
+                  {0, 2, 0, 1, 3, 0, 0}, // BACK
+                  {0, 1, 3, 0, 2, 0, 0}, // LEFT
+                  {0, 3, 1, 2, 0, 0, 0}, // RIGHT
+                  {0, 0, 0, 0, 0, 0, 0}, // UP
+                  {0, 0, 0, 0, 0, 0, 0}, // DOWN
             };
-            // TODO calculate correct rotation count for all sides
+            const auto count = rotationCount[(int)edgePartnerCurrentFace][(int)edgePartner.first];
+            for (int i = 0; i < count; i++) {
+                rotationCommands.push(R_U);
+            }
         }
 
-        rotationCommands.push({rotationFace, Direction::CLOCKWISE});
-        rotationCommands.push({rotationFace, Direction::CLOCKWISE});
+        rotationCommands.push({edgePartnerCurrentFace, Direction::CLOCKWISE});
+        rotationCommands.push({edgePartnerCurrentFace, Direction::CLOCKWISE});
+        return;
     }
 
     std::cout << rotationCommands.to_string() << std::endl;

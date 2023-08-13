@@ -21,7 +21,7 @@ TEST(RubiksCubeTest, face_does_not_change_without_a_rotation) {
 
 TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
     auto cube = rubiks::RubiksCube({R_R});
-    cube.rotate(2.0f);
+    cube.rotateAll();
 
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 2), Face::DOWN);
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 5), Face::DOWN);
@@ -42,8 +42,7 @@ TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
 
 TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations_1) {
     auto cube = rubiks::RubiksCube({R_R, R_U});
-    cube.rotate(2.0f);
-    cube.rotate(2.0f);
+    cube.rotateAll();
 
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 0), Face::RIGHT);
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 1), Face::RIGHT);
@@ -66,4 +65,44 @@ TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations_1) {
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 2), Face::BACK);
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 5), Face::BACK);
     ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 8), Face::BACK);
+}
+
+void testSolving(const std::vector<RotationCommand> &initialCommands, Face side, int localIndex, Face expectedFace) {
+    auto cube = rubiks::RubiksCube(initialCommands);
+    cube.rotateAll();
+
+    cube.startSolving();
+    cube.solve();
+
+    cube.rotateAll();
+
+    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(side, localIndex), expectedFace);
+}
+
+TEST(RubiksCubeTest_Solve, BottomLayer_FrontTurnedUp) {
+    testSolving({R_F, R_F}, Face::DOWN, 1, Face::DOWN);
+    testSolving({R_F, R_F, R_U}, Face::DOWN, 1, Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_U}, Face::DOWN, 1, Face::DOWN);
+    testSolving({R_F, R_F, R_UI}, Face::DOWN, 1, Face::DOWN);
+}
+
+TEST(RubiksCubeTest_SolveBottomLayer, BottomLayer_RightTurnedUp) {
+    testSolving({R_R, R_R}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_R, R_R, R_U}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_R, R_R, R_U, R_U}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_R, R_R, R_UI}, Face::DOWN, 5, Face::DOWN);
+}
+
+TEST(RubiksCubeTest_SolveBottomLayer, BottomLayer_BackTurnedUp) {
+    testSolving({R_B, R_B}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_B, R_B, R_U}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_B, R_B, R_U, R_U}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_B, R_B, R_UI}, Face::DOWN, 5, Face::DOWN);
+}
+
+TEST(RubiksCubeTest_SolveBottomLayer, BottomLayer_LeftTurnedUp) {
+    testSolving({R_L, R_L}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_L, R_L, R_U}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_L, R_L, R_U, R_U}, Face::DOWN, 5, Face::DOWN);
+    testSolving({R_L, R_L, R_UI}, Face::DOWN, 5, Face::DOWN);
 }
