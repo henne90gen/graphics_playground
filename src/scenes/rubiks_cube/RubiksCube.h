@@ -75,4 +75,13 @@ class RubiksCube {
 
     void solveBottomLayer();
 };
+
+class CoreRubiksCube {
+
+};
+
+class AnimationRubiksCube {
+
+};
+
 } // namespace rubiks

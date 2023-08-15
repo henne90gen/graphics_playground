@@ -27,8 +27,7 @@ Face rotateFaceBack(Face currentFace, glm::vec3 rotation);
 
 unsigned int squashRotations(std::vector<SmallCube> &cubeRotations);
 
-class RubiksCube; // forward declaration
-std::pair<Face, unsigned int> getEdgePartnerSide(RubiksCube *cube, Face face, unsigned int index);
+std::pair<Face, unsigned int> getEdgePartnerSide(Face face, unsigned int index);
 
 Face getOppositeFace(Face face);
 } // namespace rubiks

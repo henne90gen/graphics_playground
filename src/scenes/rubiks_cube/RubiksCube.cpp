@@ -112,11 +112,11 @@ Face RubiksCube::getCurrentFaceAtLocalIndex(Face face, unsigned int localIndex) 
 
     unsigned int globalIndex = WHOLE_CUBE[(int)face - 1][localIndex];
     unsigned int cubeIndex = positionMapping[globalIndex];
-    SmallCube cube = smallCubes[cubeIndex];
+    const auto smallCube = smallCubes[cubeIndex];
 
     Face currentFace = face;
-    std::vector<glm::vec3> rotations(cube.rotations.size());
-    std::reverse_copy(cube.rotations.begin(), cube.rotations.end(), rotations.begin());
+    std::vector<glm::vec3> rotations(smallCube.rotations.size());
+    std::reverse_copy(smallCube.rotations.begin(), smallCube.rotations.end(), rotations.begin());
     for (auto &rotation : rotations) {
         currentFace = rubiks::rotateFaceBack(currentFace, rotation);
     }
@@ -194,7 +194,7 @@ void RubiksCube::solveBottomLayer() {
         }
 
         if (edgePiece.side == Face::DOWN) {
-            const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, edgePiece.localIndex);
+            const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
             const auto edgePartnerCurrentFace = getCurrentFaceAtLocalIndex(edgePartner.first, edgePartner.second);
             if (edgePartnerCurrentFace == edgePiece.expectedEdgePartnerFace) {
                 // piece is already at the correct position
@@ -211,7 +211,7 @@ void RubiksCube::solveBottomLayer() {
             edgePiece.side == Face::BACK) {
             if (edgePiece.localIndex == 3 || edgePiece.localIndex == 5) {
                 // face is at one of the sides and needs to be moved to the top
-                const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, 5);
+                const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
                 rotationCommands.push({edgePartner.first, edgePiece.localIndex == 3 ? Direction::COUNTER_CLOCKWISE
                                                                                     : Direction::CLOCKWISE});
                 return;
@@ -219,7 +219,7 @@ void RubiksCube::solveBottomLayer() {
 
             if (edgePiece.localIndex == 1) {
                 // face is at the bottom, but upside down
-                const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, 5);
+                const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
                 rotationCommands.push({edgePiece.side, Direction::CLOCKWISE});
                 rotationCommands.push({edgePartner.first, Direction::CLOCKWISE});
                 rotationCommands.push({Face::UP, Direction::CLOCKWISE});
@@ -229,7 +229,7 @@ void RubiksCube::solveBottomLayer() {
 
             if (edgePiece.localIndex == 7) {
                 // face is at the top, but upside down
-                const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, 5);
+                const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
                 rotationCommands.push({edgePiece.side, Direction::COUNTER_CLOCKWISE});
                 rotationCommands.push({edgePartner.first, Direction::CLOCKWISE});
                 rotationCommands.push({Face::UP, Direction::CLOCKWISE});
@@ -241,7 +241,7 @@ void RubiksCube::solveBottomLayer() {
         }
 
         // face is now at the top
-        const auto edgePartner = getEdgePartnerSide(this, edgePiece.side, edgePiece.localIndex);
+        const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
         const auto edgePartnerCurrentFace = getCurrentFaceAtLocalIndex(edgePartner.first, edgePartner.second);
         if (edgePartner.first != edgePartnerCurrentFace) {
             // TODO use negative rotationCount to signal counter clockwise rotations
