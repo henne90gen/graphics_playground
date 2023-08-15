@@ -12,20 +12,22 @@
 namespace rubiks {
 void printRotations(std::vector<glm::vec3> &rotations);
 
-bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
-            float &currentAngle);
+bool rotate(std::array<SmallCube, CUBELET_COUNT> &cubeRotations, std::array<unsigned int, CUBELET_COUNT> &cubePositions,
+            RotationCommand command, float &currentAngle);
 
 int getDirection(RotationCommand &rot);
 
-void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes);
+void adjustCubeletIndicesClockwise(std::array<unsigned int, CUBELET_COUNT> &positions,
+                                   std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes);
 
-void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes);
+void adjustCubeletIndicesCounterClockwise(std::array<unsigned int, CUBELET_COUNT> &positions,
+                                          std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes);
 
 void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool isDoneRotating);
 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation);
 
-unsigned int squashRotations(std::vector<SmallCube> &cubeRotations);
+unsigned int squashRotations(std::array<SmallCube, CUBELET_COUNT> &cubeRotations);
 
 std::pair<Face, unsigned int> getEdgePartnerSide(Face face, unsigned int index);
 

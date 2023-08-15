@@ -18,8 +18,8 @@ std::array<std::array<Face, SIDES_COUNT>, NEXT_FACES_PER_SIDE> NEXT_FACE_MAP = {
       {Face::FRONT, Face::BACK, Face::DOWN, Face::DOWN, Face::LEFT, Face::RIGHT}, // DOWN
 }};
 
-bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cubePositions, RotationCommand command,
-            float &currentAngle) {
+bool rotate(std::array<SmallCube, CUBELET_COUNT> &cubeRotations, std::array<unsigned int, CUBELET_COUNT> &cubePositions,
+            RotationCommand command, float &currentAngle) {
     bool isDoneRotating = false;
     const auto piHalf = glm::pi<float>() * 0.5F;
     if (currentAngle >= piHalf) {
@@ -27,11 +27,10 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
         currentAngle = piHalf;
     }
 
-    const unsigned int cubeCount = 9;
-    std::vector<unsigned int> cubes(cubeCount);
+    std::array<unsigned int, SMALL_FACE_COUNT> cubes;
     glm::vec3 rotationVector;
     auto direction = static_cast<float>(rubiks::getDirection(command));
-    switch (command.face) {
+    switch (command.side) {
     case Face::FRONT:
         cubes = FRONT_CUBES;
         rotationVector = glm::vec3(0, 0, direction * currentAngle);
@@ -68,27 +67,12 @@ bool rotate(std::vector<SmallCube> &cubeRotations, std::vector<unsigned int> &cu
     }
 
     if (command.direction == Direction::CLOCKWISE) {
-        rubiks::adjustIndicesClockwise(cubePositions, cubes);
+        rubiks::adjustCubeletIndicesClockwise(cubePositions, cubes);
     } else {
-        rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+        rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
     }
 
     return isDoneRotating;
-}
-
-int getDirection(RotationCommand &rot) {
-    if (rot.direction == Direction::CLOCKWISE) {
-        if (rot.face == Face::DOWN || rot.face == Face::LEFT || rot.face == Face::BACK) {
-            return 1;
-        }
-        return -1;
-    }
-
-    if (rot.face == Face::DOWN || rot.face == Face::LEFT || rot.face == Face::BACK) {
-        return -1;
-    }
-
-    return 1;
 }
 
 void printRotations(std::vector<glm::vec3> &rotations) {
@@ -133,46 +117,6 @@ void updateCubeRotation(SmallCube &cubeRotation, glm::vec3 rotationVector, bool 
     if (isDoneRotating) {
         cubeRotation.rotations.emplace_back();
     }
-}
-
-void adjustIndicesClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
-    // move the corners
-    unsigned int tmp1 = positions[selectedCubes[2]];
-    positions[selectedCubes[2]] = positions[selectedCubes[0]];
-    unsigned int tmp2 = positions[selectedCubes[8]];
-    positions[selectedCubes[8]] = tmp1;
-    tmp1 = positions[selectedCubes[6]];
-    positions[selectedCubes[6]] = tmp2;
-    positions[selectedCubes[0]] = tmp1;
-
-    // move the edges
-    tmp1 = positions[selectedCubes[5]];
-    positions[selectedCubes[5]] = positions[selectedCubes[1]];
-    tmp2 = positions[selectedCubes[7]];
-    positions[selectedCubes[7]] = tmp1;
-    tmp1 = positions[selectedCubes[3]];
-    positions[selectedCubes[3]] = tmp2;
-    positions[selectedCubes[1]] = tmp1;
-}
-
-void adjustIndicesCounterClockwise(std::vector<unsigned int> &positions, std::vector<unsigned int> &selectedCubes) {
-    // move the corners
-    unsigned int tmp1 = positions[selectedCubes[6]];
-    positions[selectedCubes[6]] = positions[selectedCubes[0]];
-    unsigned int tmp2 = positions[selectedCubes[8]];
-    positions[selectedCubes[8]] = tmp1;
-    tmp1 = positions[selectedCubes[2]];
-    positions[selectedCubes[2]] = tmp2;
-    positions[selectedCubes[0]] = tmp1;
-
-    // move the edges
-    tmp1 = positions[selectedCubes[3]];
-    positions[selectedCubes[3]] = positions[selectedCubes[1]];
-    tmp2 = positions[selectedCubes[7]];
-    positions[selectedCubes[7]] = tmp1;
-    tmp1 = positions[selectedCubes[5]];
-    positions[selectedCubes[5]] = tmp2;
-    positions[selectedCubes[1]] = tmp1;
 }
 
 Face rotateFaceBack(Face currentFace, glm::vec3 rotation) {
@@ -224,7 +168,7 @@ unsigned int squashRotations(std::vector<glm::vec3> &rotations) {
     return removed;
 }
 
-unsigned int squashRotations(std::vector<SmallCube> &cubeRotations) {
+unsigned int squashRotations(std::array<SmallCube, CUBELET_COUNT> &cubeRotations) {
     unsigned int removed = 0;
     for (auto &cube : cubeRotations) {
         removed += squashRotations(cube.rotations);
@@ -242,7 +186,9 @@ std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndi
       {std::make_pair(Face::BACK, 1), {Face::LEFT, 1}, {Face::RIGHT, 1}, {Face::FRONT, 1}},     // UP
       {std::make_pair(Face::FRONT, 7), {Face::LEFT, 7}, {Face::RIGHT, 7}, {Face::BACK, 7}},     // DOWN
 };
-
+/**
+ * This function only returns valid results for edge pieces. Corner pieces are not supported.
+ */
 std::pair<Face, unsigned int> getEdgePartnerSide(Face side, unsigned int localIndex) {
     const auto tmp = (localIndex - 1);
     if (tmp % 2 != 0) {

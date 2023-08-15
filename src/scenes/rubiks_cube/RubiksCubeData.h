@@ -74,7 +74,7 @@ enum class Direction {
 };
 
 struct RotationCommand {
-    Face face;
+    Face side;
     Direction direction;
 };
 

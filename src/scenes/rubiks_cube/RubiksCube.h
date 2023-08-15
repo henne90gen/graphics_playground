@@ -4,12 +4,12 @@
 
 #include "RotationCommandStack.h"
 #include "RubiksCubeData.h"
-#include "RubiksCubeLogic.h"
 
 namespace rubiks {
-const unsigned int FACE_COUNT = 6;
+const unsigned int CUBELET_COUNT = 27;
+const unsigned int SIDE_COUNT = 6;
 const unsigned int SMALL_FACE_COUNT = 9;
-extern const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_CUBE;
+extern const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, SIDE_COUNT> WHOLE_CUBE;
 
 enum class SolveStage { NOT_SOLVING, BOTTOM_LAYER };
 
@@ -44,7 +44,7 @@ class RubiksCube {
      * @param localIndex Local index to look at
      * @return Face that is present at the selected position
      */
-    Face getCurrentFaceAtLocalIndex(Face direction, unsigned int localIndex);
+    Face getCurrentFace(Face direction, unsigned int localIndex);
 
     glm::mat4 getRotationMatrix(unsigned int index) { return smallCubes[index].rotationMatrix; }
 
@@ -67,8 +67,8 @@ class RubiksCube {
     float currentAngle = 0;
     RotationCommand currentCommand = {};
 
-    std::vector<SmallCube> smallCubes;
-    std::vector<unsigned int> positionMapping;
+    std::array<SmallCube, CUBELET_COUNT> smallCubes;
+    std::array<unsigned int, CUBELET_COUNT> positionMapping;
 
     RotationCommandStack rotationCommands;
     SolveStage solveStage = SolveStage::NOT_SOLVING;
@@ -76,12 +76,20 @@ class RubiksCube {
     void solveBottomLayer();
 };
 
-class CoreRubiksCube {
+struct Cubelet {};
 
+struct CoreRubiksCube {
+    std::array<Cubelet, CUBELET_COUNT> cubelets;
+    std::array<unsigned int, CUBELET_COUNT> globalIndexToCubeletIndex;
+    std::array<std::array<Face, SMALL_FACE_COUNT>, SIDE_COUNT> sideAndLocalIndexToFace;
+
+    CoreRubiksCube();
+    CoreRubiksCube(const std::vector<RotationCommand> &commands);
+
+    void rotate(RotationCommand cmd);
+    void rotate(const std::vector<RotationCommand> &commands);
 };
 
-class AnimationRubiksCube {
-
-};
+class AnimationRubiksCube {};
 
 } // namespace rubiks

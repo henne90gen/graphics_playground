@@ -4,17 +4,17 @@
 
 #include "RubiksCubeLogic.h"
 
-void initCubePositions(std::vector<unsigned int> &cubePosition) {
+void initCubePositions(std::array<unsigned int, rubiks::CUBELET_COUNT> &cubePosition) {
     for (int i = 0; i < 27; i++) {
-        cubePosition.push_back(i);
+        cubePosition[i] = i;
     }
 }
 
 TEST(RubiksCubeLogicTest, indices_are_adjusted_correctly_for_counter_clockwise_front_rotation) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = FRONT_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = FRONT_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[18], 24);
     ASSERT_EQ(cubePositions[19], 21);
@@ -27,10 +27,10 @@ TEST(RubiksCubeLogicTest, indices_are_adjusted_correctly_for_counter_clockwise_f
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_back_rotation) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = BACK_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = BACK_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[0], 2);
     ASSERT_EQ(cubePositions[1], 5);
@@ -43,10 +43,10 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_b
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_left_rotation) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = LEFT_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = LEFT_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[18], 0);
     ASSERT_EQ(cubePositions[9], 3);
@@ -59,10 +59,10 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_l
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_right_rotation) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = RIGHT_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = RIGHT_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[26], 8);
     ASSERT_EQ(cubePositions[17], 5);
@@ -75,10 +75,10 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_r
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_top_rotation) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = UP_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = UP_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[6], 8);
     ASSERT_EQ(cubePositions[7], 17);
@@ -91,10 +91,10 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_counter_clockwise_t
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_counter_clockwise_down_rotations) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = DOWN_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = DOWN_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[0], 18);
     ASSERT_EQ(cubePositions[1], 9);
@@ -105,7 +105,7 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_counter_clockwi
     ASSERT_EQ(cubePositions[18], 20);
     ASSERT_EQ(cubePositions[9], 19);
 
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[0], 20);
     ASSERT_EQ(cubePositions[1], 19);
@@ -118,10 +118,10 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_counter_clockwi
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_clockwise_down_rotations) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = DOWN_CUBES;
-    rubiks::adjustIndicesClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = DOWN_CUBES;
+    rubiks::adjustCubeletIndicesClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[0], 2);
     ASSERT_EQ(cubePositions[1], 11);
@@ -132,7 +132,7 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_clockwise_down_
     ASSERT_EQ(cubePositions[18], 0);
     ASSERT_EQ(cubePositions[9], 1);
 
-    rubiks::adjustIndicesClockwise(cubePositions, cubes);
+    rubiks::adjustCubeletIndicesClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[0], 20);
     ASSERT_EQ(cubePositions[1], 19);
@@ -145,10 +145,10 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_two_clockwise_down_
 }
 
 TEST(RubiksCubeLogicTest, IndicesAdjustment_RI) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = RIGHT_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = RIGHT_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[20], 26);
     ASSERT_EQ(cubePositions[2], 20);
@@ -161,13 +161,13 @@ TEST(RubiksCubeLogicTest, IndicesAdjustment_RI) {
 }
 
 TEST(RubiksCubeLogicTest, IndicesAdjustment_RI_BI) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = RIGHT_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = RIGHT_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     cubes = DOWN_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[18], 26);
     ASSERT_EQ(cubePositions[19], 23);
@@ -180,16 +180,16 @@ TEST(RubiksCubeLogicTest, IndicesAdjustment_RI_BI) {
 }
 
 TEST(RubiksCubeLogicTest, IndicesAdjustment_RI_BI_R) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = RIGHT_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = RIGHT_CUBES;
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     cubes = DOWN_CUBES;
-    rubiks::adjustIndicesCounterClockwise(cubePositions, cubes);
+    rubiks::adjustCubeletIndicesCounterClockwise(cubePositions, cubes);
 
     cubes = RIGHT_CUBES;
-    rubiks::adjustIndicesClockwise(cubePositions, cubes);
+    rubiks::adjustCubeletIndicesClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[23], 1);
     ASSERT_EQ(cubePositions[20], 0);
@@ -202,10 +202,10 @@ TEST(RubiksCubeLogicTest, IndicesAdjustment_RI_BI_R) {
 }
 
 TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_cw_down_and_cw_right_rotation) {
-    std::vector<unsigned int> cubePositions;
+    std::array<unsigned int, rubiks::CUBELET_COUNT> cubePositions;
     initCubePositions(cubePositions);
-    std::vector<unsigned int> cubes = DOWN_CUBES;
-    rubiks::adjustIndicesClockwise(cubePositions, cubes);
+    std::array<unsigned int, rubiks::SMALL_FACE_COUNT> cubes = DOWN_CUBES;
+    rubiks::adjustCubeletIndicesClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[18], 0);
     ASSERT_EQ(cubePositions[19], 9);
@@ -218,7 +218,7 @@ TEST(RubiksCubeLogicTest, Indices_are_adjusted_correctly_for_cw_down_and_cw_righ
     ASSERT_EQ(cubePositions[2], 20);
 
     cubes = RIGHT_CUBES;
-    rubiks::adjustIndicesClockwise(cubePositions, cubes);
+    rubiks::adjustCubeletIndicesClockwise(cubePositions, cubes);
 
     ASSERT_EQ(cubePositions[20], 20);
     ASSERT_EQ(cubePositions[23], 19);
@@ -361,11 +361,11 @@ TEST(RubiksCubeLogicTest, Single_face_is_rotated_correctly) {
 }
 
 TEST(RubiksCubeLogicTest, rotations_are_squashed_correctly) {
-    auto cubes = std::vector<SmallCube>();
+    auto cubes = std::array<SmallCube, rubiks::CUBELET_COUNT>();
     auto rotations = std::vector<glm::vec3>();
     rotations.emplace_back(1.0f, 0, 0);
     rotations.emplace_back(-1.0f, 0, 0);
-    cubes.push_back({rotations, glm::mat4()});
+    cubes[0] = {rotations, glm::mat4()};
     unsigned int squashedRotations = rubiks::squashRotations(cubes);
     ASSERT_TRUE(cubes[0].rotations.empty());
     ASSERT_EQ(squashedRotations, 2);

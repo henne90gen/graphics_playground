@@ -62,5 +62,5 @@ std::string to_string(const RotationCommand &cmd, bool simple) {
     } else {
         separator = ", ";
     }
-    return to_string(cmd.face, simple) + separator + to_string(cmd.direction, simple);
+    return to_string(cmd.side, simple) + separator + to_string(cmd.direction, simple);
 }

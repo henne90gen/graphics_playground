@@ -5,8 +5,10 @@
 #include <iostream>
 #include <random>
 
+#include "RubiksCubeLogic.h"
+
 namespace rubiks {
-const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_CUBE = {
+const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, SIDE_COUNT> WHOLE_CUBE = {
       std::array<unsigned int, SMALL_FACE_COUNT>(FRONT_CUBES),
       BACK_CUBES,
       LEFT_CUBES,
@@ -15,13 +17,11 @@ const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, FACE_COUNT> WHOLE_C
       DOWN_CUBES};
 
 RubiksCube::RubiksCube(const std::vector<RotationCommand> &initialCommands) {
-    const unsigned int smallCubeCount = 27;
-    for (unsigned int i = 0; i < smallCubeCount; i++) {
+    for (unsigned int i = 0; i < CUBELET_COUNT; i++) {
         SmallCube cubeRotation = {std::vector<glm::vec3>(), glm::mat4(1.0F)};
         cubeRotation.rotations.emplace_back();
-        smallCubes.push_back(cubeRotation);
-
-        positionMapping.emplace_back(i);
+        smallCubes[i] = cubeRotation;
+        positionMapping[i] = i;
     }
 
     rotationCommands = RotationCommandStack();
@@ -105,16 +105,16 @@ void RubiksCube::shuffle() {
     isRotating = true;
 }
 
-Face RubiksCube::getCurrentFaceAtLocalIndex(Face face, unsigned int localIndex) {
+Face RubiksCube::getCurrentFace(Face side, unsigned int localIndex) {
     if (localIndex == 4) {
-        return face;
+        return side;
     }
 
-    unsigned int globalIndex = WHOLE_CUBE[(int)face - 1][localIndex];
+    unsigned int globalIndex = WHOLE_CUBE[(int)side - 1][localIndex];
     unsigned int cubeIndex = positionMapping[globalIndex];
     const auto smallCube = smallCubes[cubeIndex];
 
-    Face currentFace = face;
+    Face currentFace = side;
     std::vector<glm::vec3> rotations(smallCube.rotations.size());
     std::reverse_copy(smallCube.rotations.begin(), smallCube.rotations.end(), rotations.begin());
     for (auto &rotation : rotations) {
@@ -187,7 +187,7 @@ void RubiksCube::solveBottomLayer() {
 
     // find a piece that is at the top or generate moves to get one to the top
     for (const EdgePiece &edgePiece : edgePieces) {
-        const Face pieceFace = getCurrentFaceAtLocalIndex(edgePiece.side, edgePiece.localIndex);
+        const Face pieceFace = getCurrentFace(edgePiece.side, edgePiece.localIndex);
         if (pieceFace != Face::DOWN) {
             // face of piece is not a bottom face
             continue;
@@ -195,7 +195,7 @@ void RubiksCube::solveBottomLayer() {
 
         if (edgePiece.side == Face::DOWN) {
             const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
-            const auto edgePartnerCurrentFace = getCurrentFaceAtLocalIndex(edgePartner.first, edgePartner.second);
+            const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
             if (edgePartnerCurrentFace == edgePiece.expectedEdgePartnerFace) {
                 // piece is already at the correct position
                 continue;
@@ -242,7 +242,7 @@ void RubiksCube::solveBottomLayer() {
 
         // face is now at the top
         const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
-        const auto edgePartnerCurrentFace = getCurrentFaceAtLocalIndex(edgePartner.first, edgePartner.second);
+        const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
         if (edgePartner.first != edgePartnerCurrentFace) {
             // TODO use negative rotationCount to signal counter clockwise rotations
             const std::array<std::array<int, 7>, 7> rotationCount = {

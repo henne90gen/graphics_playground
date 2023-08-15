@@ -5,7 +5,7 @@
 
 void assertWholeFace(rubiks::RubiksCube cube, Face face) {
     for (int i = 0; i < 9; i++) {
-        ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(face, i), face);
+        ASSERT_EQ(cube.getCurrentFace(face, i), face);
     }
 }
 
@@ -23,48 +23,48 @@ TEST(RubiksCubeTest, Face_is_calculated_correctly_with_one_rotation) {
     auto cube = rubiks::RubiksCube({R_R});
     cube.rotateAll();
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 2), Face::DOWN);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 5), Face::DOWN);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 8), Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 2), Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 5), Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 8), Face::DOWN);
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 2), Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 5), Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 8), Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 2), Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 5), Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 8), Face::FRONT);
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 0), Face::UP);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 3), Face::UP);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 6), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 0), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 3), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 6), Face::UP);
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 2), Face::BACK);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 5), Face::BACK);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 8), Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(Face::DOWN, 2), Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(Face::DOWN, 5), Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(Face::DOWN, 8), Face::BACK);
 }
 
 TEST(RubiksCubeTest, Face_is_calculated_correctly_with_two_rotations_1) {
     auto cube = rubiks::RubiksCube({R_R, R_U});
     cube.rotateAll();
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 0), Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 1), Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 2), Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 5), Face::DOWN);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::FRONT, 8), Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 0), Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 1), Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 2), Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 5), Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(Face::FRONT, 8), Face::DOWN);
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 6), Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 7), Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 8), Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 2), Face::UP);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::UP, 5), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 6), Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 7), Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 8), Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 2), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::UP, 5), Face::UP);
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 0), Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 1), Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 2), Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 3), Face::UP);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::BACK, 6), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 0), Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 1), Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 2), Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 3), Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(Face::BACK, 6), Face::UP);
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 2), Face::BACK);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 5), Face::BACK);
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(Face::DOWN, 8), Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(Face::DOWN, 2), Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(Face::DOWN, 5), Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(Face::DOWN, 8), Face::BACK);
 }
 
 void testSolving(const std::vector<RotationCommand> &initialCommands, Face side, int localIndex, Face expectedFace) {
@@ -76,7 +76,7 @@ void testSolving(const std::vector<RotationCommand> &initialCommands, Face side,
 
     cube.rotateAll();
 
-    ASSERT_EQ(cube.getCurrentFaceAtLocalIndex(side, localIndex), expectedFace);
+    ASSERT_EQ(cube.getCurrentFace(side, localIndex), expectedFace);
 }
 
 TEST(RubiksCubeTest_Solve, BottomLayer_FrontTurnedUp) {
