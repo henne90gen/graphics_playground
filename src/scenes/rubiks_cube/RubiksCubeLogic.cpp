@@ -126,6 +126,9 @@ bool rotate(std::array<SmallCube, CUBELET_COUNT> &cubeRotations, std::array<unsi
         cubes = DOWN_CUBES;
         rotationVector = glm::vec3(0, direction * currentAngle, 0);
         break;
+    case Face::NONE:
+        // TODO do error handling
+        break;
     }
 
     for (const auto cube : cubes) {
@@ -261,6 +264,8 @@ Face getOppositeFace(Face face) {
         return Face::RIGHT;
     case Face::RIGHT:
         return Face::LEFT;
+    default:
+        return Face::NONE;
     }
 }
 
