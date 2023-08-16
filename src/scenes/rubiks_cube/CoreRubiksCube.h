@@ -6,10 +6,7 @@
 
 namespace rubiks {
 
-struct Cubelet {};
-
 struct CoreRubiksCube {
-    std::array<Cubelet, CUBELET_COUNT> cubelets;
     std::array<unsigned int, CUBELET_COUNT> globalIndexToCubeletIndex;
     std::array<std::array<Face, SMALL_FACE_COUNT>, SIDE_COUNT> sideAndLocalIndexToFace;
 

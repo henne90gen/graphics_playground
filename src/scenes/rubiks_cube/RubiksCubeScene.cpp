@@ -302,7 +302,7 @@ void RubiksCubeScene::setup() {
 
     indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);
 
-    rubiksCube.reset(new rubiks::RubiksCube({R_F, R_L,  R_RI, R_LI, R_R, R_F,  R_F,   R_DI, R_UI, R_BI,
+    rubiksCube.reset(new rubiks::AnimationRubiksCube({R_F, R_L,  R_RI, R_LI, R_R, R_F,  R_F,   R_DI, R_UI, R_BI,
                                              R_L, R_FI, R_FI, R_L,  R_L, R_D, R_DI, R_BI, R_UI, R_DI}));
 }
 
@@ -329,27 +329,26 @@ void RubiksCubeScene::tick() {
     ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::DragFloat("Animation Speed", &rotationSpeed, 0.001F, 0.001F, 1.0F);
 
-    ImGui::Checkbox("Loop Commands", &rubiksCube->loop);
     if (ImGui::Button("Shuffle")) {
         rubiksCube->shuffle();
     }
     if (ImGui::Button("Solve")) {
         rubiksCube->solve();
     }
-    ImGui::Text("Executed Rotation Commands: %d", rubiksCube->executedRotationCommands);
+    // ImGui::Text("Executed Rotation Commands: %d", rubiksCube->executedRotationCommands);
 
-    const unsigned int averageLength = rubiksCube->getAverageRotationListLength();
-    const float averageLengthPerRotationCommand =
-          static_cast<float>(averageLength) / static_cast<float>(rubiksCube->executedRotationCommands);
-    ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
+    // const unsigned int averageLength = rubiksCube->getAverageRotationListLength();
+    // const float averageLengthPerRotationCommand =
+    //       static_cast<float>(averageLength) / static_cast<float>(rubiksCube->executedRotationCommands);
+    // ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
 
-    const unsigned int maximumLength = rubiksCube->getMaximumRotationListLength();
-    const float maximumLengthPerRotationCommand =
-          static_cast<float>(maximumLength) / static_cast<float>(rubiksCube->executedRotationCommands);
-    ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
+    // const unsigned int maximumLength = rubiksCube->getMaximumRotationListLength();
+    // const float maximumLengthPerRotationCommand =
+    //       static_cast<float>(maximumLength) / static_cast<float>(rubiksCube->executedRotationCommands);
+    // ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
 
-    ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube->getTotalRotationListEntriesCount());
-    ImGui::Text("Squashed Rotations: %d", rubiksCube->squashedRotations);
+    // ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube->getTotalRotationListEntriesCount());
+    // ImGui::Text("Squashed Rotations: %d", rubiksCube->squashedRotations);
     ImGui::End();
 
     shader->bind();
@@ -364,11 +363,10 @@ void RubiksCubeScene::tick() {
     shader->setUniform("viewMatrix", getCamera().getViewMatrix());
     shader->setUniform("projectionMatrix", getCamera().getProjectionMatrix());
 
-    rubiksCube->solve();
     rubiksCube->rotate(rotationSpeed);
 
-    for (unsigned int i = 0; i < NUMBER_OF_SMALL_CUBES; i++) {
-        shader->setUniform("cubeMatrix", rubiksCube->getRotationMatrix(i));
+    for (unsigned int i = 0; i < rubiks::CUBELET_COUNT; i++) {
+        shader->setUniform("cubeMatrix", rubiksCube->getCubeletRotationMatrix(i));
         const unsigned int vertexCountPerSmallCube = 36;
         const unsigned int count = i * vertexCountPerSmallCube * sizeof(unsigned int);
         GL_Call(glDrawElements(GL_TRIANGLES, vertexCountPerSmallCube, GL_UNSIGNED_INT,

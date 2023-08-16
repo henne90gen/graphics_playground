@@ -4,8 +4,9 @@ create_scene(
         RotationCommandStack.cpp
         RubiksCube.cpp
         RubiksCubeData.cpp
-        CoreRubiksCube.cpp
         RubiksCubeLogic.cpp
+        CoreRubiksCube.cpp
+        AnimationRubiksCube.cpp
 )
 
 create_scene_test(

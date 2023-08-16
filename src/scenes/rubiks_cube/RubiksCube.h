@@ -79,6 +79,4 @@ class RubiksCube {
     RotationCommandStack rotationCommands;
 };
 
-class AnimationRubiksCube {};
-
 } // namespace rubiks

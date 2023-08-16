@@ -3,8 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "RubiksCube.h"
-#include "RubiksCubeLogic.h"
+#include "AnimationRubiksCube.h"
 #include "Scene.h"
 #include "gl/IndexBuffer.h"
 #include "gl/Shader.h"
@@ -32,5 +31,5 @@ class RubiksCubeScene : public Scene {
     float *vertices;
     unsigned int *indices;
 
-    std::shared_ptr<rubiks::RubiksCube> rubiksCube;
+    std::shared_ptr<rubiks::AnimationRubiksCube> rubiksCube;
 };

@@ -152,7 +152,6 @@ unsigned int RubiksCube::getAverageRotationListLength() {
 
 void RubiksCube::solve() {
     rotationCommands.clear();
-    std::cout << "Solving..." << std::endl;
     // TODO implement this
 }
 
