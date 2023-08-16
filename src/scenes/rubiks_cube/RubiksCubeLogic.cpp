@@ -74,6 +74,21 @@ void adjustCubeletIndicesCounterClockwise(std::array<unsigned int, CUBELET_COUNT
     indices[selectedCubes[1]] = tmp1;
 }
 
+int getDirection(RotationCommand &rot) {
+    if (rot.direction == Direction::CLOCKWISE) {
+        if (rot.side == Face::DOWN || rot.side == Face::LEFT || rot.side == Face::BACK) {
+            return 1;
+        }
+        return -1;
+    }
+
+    if (rot.side == Face::DOWN || rot.side == Face::LEFT || rot.side == Face::BACK) {
+        return -1;
+    }
+
+    return 1;
+}
+
 bool rotate(std::array<SmallCube, CUBELET_COUNT> &cubeRotations, std::array<unsigned int, CUBELET_COUNT> &cubePositions,
             RotationCommand command, float &currentAngle) {
     bool isDoneRotating = false;
@@ -230,32 +245,6 @@ unsigned int squashRotations(std::array<SmallCube, CUBELET_COUNT> &cubeRotations
         removed += squashRotations(cube.rotations);
     }
     return removed;
-}
-
-// use [side][(localIndex-1)/2] to index into this array
-std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndices = {
-      std::array<std::pair<Face, unsigned int>, 4>(
-            {std::make_pair(Face::UP, 7), {Face::LEFT, 5}, {Face::RIGHT, 3}, {Face::DOWN, 1}}), // FRONT
-      {std::make_pair(Face::UP, 1), {Face::RIGHT, 5}, {Face::LEFT, 3}, {Face::DOWN, 7}},        // BACK
-      {std::make_pair(Face::UP, 3), {Face::BACK, 5}, {Face::FRONT, 3}, {Face::DOWN, 3}},        // LEFT
-      {std::make_pair(Face::UP, 5), {Face::FRONT, 5}, {Face::BACK, 3}, {Face::DOWN, 5}},        // RIGHT
-      {std::make_pair(Face::BACK, 1), {Face::LEFT, 1}, {Face::RIGHT, 1}, {Face::FRONT, 1}},     // UP
-      {std::make_pair(Face::FRONT, 7), {Face::LEFT, 7}, {Face::RIGHT, 7}, {Face::BACK, 7}},     // DOWN
-};
-/**
- * This function only returns valid results for edge pieces. Corner pieces are not supported.
- */
-std::pair<Face, unsigned int> getEdgePartnerSide(Face side, unsigned int localIndex) {
-    const auto tmp = (localIndex - 1);
-    if (tmp % 2 != 0) {
-        return std::make_pair(Face::NONE, 0);
-    }
-    const auto index = (localIndex - 1) / 2;
-    if (index < 0 || index >= 4) {
-        return std::make_pair(Face::NONE, 0);
-    }
-
-    return edgePartnerLocalIndices[(int)side - 1][index];
 }
 
 Face getOppositeFace(Face face) {
