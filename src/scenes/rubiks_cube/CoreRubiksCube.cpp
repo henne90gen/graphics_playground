@@ -1,22 +1,24 @@
-#include "RubiksCube.h"
+#include "CoreRubiksCube.h"
 
 namespace rubiks {
-void initCube(CoreRubiksCube *cube) {
+
+CoreRubiksCube::CoreRubiksCube() { init(); }
+
+CoreRubiksCube::CoreRubiksCube(const std::vector<RotationCommand> &commands) {
+    init();
+    rotate(commands);
+}
+
+void CoreRubiksCube::init() {
     for (unsigned int i = 0; i < CUBELET_COUNT; i++) {
-        cube->globalIndexToCubeletIndex[i] = i;
+        globalIndexToCubeletIndex[i] = i;
     }
     std::array<Face, SIDE_COUNT> sides = {Face::FRONT, Face::BACK, Face::LEFT, Face::RIGHT, Face::UP, Face::DOWN};
     for (int i = 0; i < sides.size(); i++) {
         for (int j = 0; j < SMALL_FACE_COUNT; j++) {
-            cube->sideAndLocalIndexToFace[i][j] = sides[i];
+            sideAndLocalIndexToFace[i][j] = sides[i];
         }
     }
-}
-CoreRubiksCube::CoreRubiksCube() { initCube(this); }
-
-CoreRubiksCube::CoreRubiksCube(const std::vector<RotationCommand> &commands) {
-    initCube(this);
-    rotate(commands);
 }
 
 int getDirection(RotationCommand &rot) {
@@ -34,14 +36,15 @@ int getDirection(RotationCommand &rot) {
     return 1;
 }
 
-void adjustCubeletIndicesClockwise(std::array<unsigned int, CUBELET_COUNT> &indices,
-                                   std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
+void CoreRubiksCube::adjustCubeletIndicesClockwise(std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
     /*
         Local face indices:
             0 1 2
             3 4 5
             6 7 8
     */
+
+    auto &indices = globalIndexToCubeletIndex;
 
     // move the corners
     unsigned int tmp1 = indices[selectedCubes[2]];
@@ -62,14 +65,15 @@ void adjustCubeletIndicesClockwise(std::array<unsigned int, CUBELET_COUNT> &indi
     indices[selectedCubes[1]] = tmp1;
 }
 
-void adjustCubeletIndicesCounterClockwise(std::array<unsigned int, CUBELET_COUNT> &indices,
-                                          std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
+void CoreRubiksCube::adjustCubeletIndicesCounterClockwise(std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
     /*
         Local face indices:
             0 1 2
             3 4 5
             6 7 8
     */
+
+    auto &indices = globalIndexToCubeletIndex;
 
     // move the corners
     unsigned int tmp1 = indices[selectedCubes[6]];
@@ -91,7 +95,7 @@ void adjustCubeletIndicesCounterClockwise(std::array<unsigned int, CUBELET_COUNT
 }
 
 int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalIndex) {
-    std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> frontSide = {
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> frontSide = {
           std::array<int, SMALL_FACE_COUNT>({-1, -1, -1, -1, -1, -1, -1, -1, -1}), // FRONT
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                    // BACK
           {2, -1, -1, 5, -1, -1, 8, -1, -1},                                       // LEFT
@@ -99,7 +103,7 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {6, 7, 8, -1, -1, -1, -1, -1, -1},                                       // UP
           {-1, -1, -1, -1, -1, -1, 0, 1, 2},                                       // DOWN
     };
-    std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> backSide = {
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> backSide = {
           std::array<int, SMALL_FACE_COUNT>({-1, -1, -1, -1, -1, -1, -1, -1, -1}), // FRONT
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                    // BACK
           {-1, -1, 0, -1, -1, 3, -1, -1, 6},                                       // LEFT
@@ -107,7 +111,7 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {2, 1, 0, -1, -1, -1, -1, -1, -1},                                       // UP
           {-1, -1, -1, -1, -1, -1, 8, 7, 6},                                       // DOWN
     };
-    std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> leftSide = {
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> leftSide = {
           std::array<int, SMALL_FACE_COUNT>({-1, -1, 0, -1, -1, 3, -1, -1, 6}), // FRONT
           {2, -1, -1, 5, -1, -1, 8, -1, -1},                                    // BACK
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // LEFT
@@ -115,7 +119,7 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {0, 3, 6, -1, -1, -1, -1, -1, -1},                                    // UP
           {-1, -1, -1, -1, -1, -1, 6, 3, 0},                                    // DOWN
     };
-    std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> rightSide = {
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> rightSide = {
           std::array<int, SMALL_FACE_COUNT>({2, -1, -1, 5, -1, -1, 8, -1, -1}), // FRONT
           {-1, -1, 0, -1, -1, 3, -1, -1, 6},                                    // BACK
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // LEFT
@@ -123,7 +127,7 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {8, 5, 2, -1, -1, -1, -1, -1, -1},                                    // UP
           {-1, -1, -1, -1, -1, -1, 2, 5, 8},                                    // DOWN
     };
-    std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> upSide = {
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> upSide = {
           std::array<int, SMALL_FACE_COUNT>({-1, -1, -1, -1, -1, -1, 0, 1, 2}), // FRONT
           {2, 1, 0, -1, -1, -1, -1, -1, -1},                                    // BACK
           {0, -1, -1, 1, -1, -1, 2, -1, -1},                                    // LEFT
@@ -131,7 +135,7 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // UP
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // DOWN
     };
-    std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> downSide = {
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> downSide = {
           std::array<int, SMALL_FACE_COUNT>({6, 7, 8, -1, -1, -1, -1, -1, -1}), // FRONT
           {-1, -1, -1, -1, -1, -1, 8, 7, 6},                                    // BACK
           {8, -1, -1, 7, -1, -1, 6, -1, -1},                                    // LEFT
@@ -139,13 +143,13 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // UP
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // DOWN
     };
-    std::array<std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT>, SIDE_COUNT> arr = {
+    constexpr std::array<std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT>, SIDE_COUNT> arr = {
           frontSide, backSide, leftSide, rightSide, upSide, downSide,
     };
     return arr[(int)side - 1][(int)neighbor - 1][sideLocalIndex];
 }
 
-void adjustFaceIndicesClockwise(std::array<std::array<Face, 9UL>, 6UL> &sideAndLocalIndexToFace, Face side) {
+void CoreRubiksCube::adjustFaceIndicesClockwise(Face side) {
     /*
         Local face indices:
             0 1 2
@@ -209,9 +213,9 @@ void adjustFaceIndicesClockwise(std::array<std::array<Face, 9UL>, 6UL> &sideAndL
     auto localIndex1 = getNeighboringLocalIndex(side, lastSideToSwitch, 3);
     auto localIndex2 = getNeighboringLocalIndex(side, lastSideToSwitch, 0);
     std::array<Face, 3> current = {
-          sideAndLocalIndexToFace[(int)lastSideToSwitch - 1][localIndex0],
-          sideAndLocalIndexToFace[(int)lastSideToSwitch - 1][localIndex1],
-          sideAndLocalIndexToFace[(int)lastSideToSwitch - 1][localIndex2],
+          getCurrentFace(lastSideToSwitch, localIndex0),
+          getCurrentFace(lastSideToSwitch, localIndex1),
+          getCurrentFace(lastSideToSwitch, localIndex2),
     };
     for (int i = 0; i < sidesToSwitch.size(); i++) {
         auto sideToSwitch = sidesToSwitch[i];
@@ -226,10 +230,10 @@ void adjustFaceIndicesClockwise(std::array<std::array<Face, 9UL>, 6UL> &sideAndL
     }
 }
 
-void adjustFaceIndicesCounterClockwise(std::array<std::array<Face, 9UL>, 6UL> &sideAndLocalIndexToFace, Face side) {
+void CoreRubiksCube::adjustFaceIndicesCounterClockwise(Face side) {
     // TODO copy "adjustFaceIndicesClockwise" and change it to work counter clockwise
     for (int i = 0; i < 3; i++) {
-        adjustFaceIndicesClockwise(sideAndLocalIndexToFace, side);
+        adjustFaceIndicesClockwise(side);
     }
 }
 
@@ -257,11 +261,11 @@ void CoreRubiksCube::rotate(RotationCommand cmd) {
     }
 
     if (cmd.direction == Direction::CLOCKWISE) {
-        adjustCubeletIndicesClockwise(globalIndexToCubeletIndex, cubes);
-        adjustFaceIndicesClockwise(sideAndLocalIndexToFace, cmd.side);
+        adjustCubeletIndicesClockwise(cubes);
+        adjustFaceIndicesClockwise(cmd.side);
     } else {
-        adjustCubeletIndicesCounterClockwise(globalIndexToCubeletIndex, cubes);
-        adjustFaceIndicesCounterClockwise(sideAndLocalIndexToFace, cmd.side);
+        adjustCubeletIndicesCounterClockwise(cubes);
+        adjustFaceIndicesCounterClockwise(cmd.side);
     }
 }
 
@@ -270,4 +274,9 @@ void CoreRubiksCube::rotate(const std::vector<RotationCommand> &commands) {
         rotate(cmd);
     }
 }
+
+Face CoreRubiksCube::getCurrentFace(Face side, unsigned int localIndex) {
+    return sideAndLocalIndexToFace[(int)side - 1][localIndex];
+}
+
 } // namespace rubiks

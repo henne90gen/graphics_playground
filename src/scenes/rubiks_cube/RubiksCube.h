@@ -37,7 +37,7 @@ class RubiksCube {
     /**
      * @brief Get the current face at the provided local index.
      *
-     * This methods looks at the given face of the cube and returns to which face the piece at the given local index
+     * This method looks at the given face of the cube and returns to which face the piece at the given local index
      * belongs to.
      *
      * @param direction Global face to look at
@@ -74,20 +74,6 @@ class RubiksCube {
     SolveStage solveStage = SolveStage::NOT_SOLVING;
 
     void solveBottomLayer();
-};
-
-struct Cubelet {};
-
-struct CoreRubiksCube {
-    std::array<Cubelet, CUBELET_COUNT> cubelets;
-    std::array<unsigned int, CUBELET_COUNT> globalIndexToCubeletIndex;
-    std::array<std::array<Face, SMALL_FACE_COUNT>, SIDE_COUNT> sideAndLocalIndexToFace;
-
-    CoreRubiksCube();
-    CoreRubiksCube(const std::vector<RotationCommand> &commands);
-
-    void rotate(RotationCommand cmd);
-    void rotate(const std::vector<RotationCommand> &commands);
 };
 
 class AnimationRubiksCube {};

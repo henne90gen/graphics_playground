@@ -18,6 +18,62 @@ std::array<std::array<Face, SIDES_COUNT>, NEXT_FACES_PER_SIDE> NEXT_FACE_MAP = {
       {Face::FRONT, Face::BACK, Face::DOWN, Face::DOWN, Face::LEFT, Face::RIGHT}, // DOWN
 }};
 
+void adjustCubeletIndicesClockwise(std::array<unsigned int, CUBELET_COUNT> &indices,
+                                   std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
+    /*
+        Local face indices:
+            0 1 2
+            3 4 5
+            6 7 8
+    */
+
+    // move the corners
+    unsigned int tmp1 = indices[selectedCubes[2]];
+    indices[selectedCubes[2]] = indices[selectedCubes[0]];
+    unsigned int tmp2 = indices[selectedCubes[8]];
+    indices[selectedCubes[8]] = tmp1;
+    tmp1 = indices[selectedCubes[6]];
+    indices[selectedCubes[6]] = tmp2;
+    indices[selectedCubes[0]] = tmp1;
+
+    // move the edges
+    tmp1 = indices[selectedCubes[5]];
+    indices[selectedCubes[5]] = indices[selectedCubes[1]];
+    tmp2 = indices[selectedCubes[7]];
+    indices[selectedCubes[7]] = tmp1;
+    tmp1 = indices[selectedCubes[3]];
+    indices[selectedCubes[3]] = tmp2;
+    indices[selectedCubes[1]] = tmp1;
+}
+
+void adjustCubeletIndicesCounterClockwise(std::array<unsigned int, CUBELET_COUNT> &indices,
+                                          std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
+    /*
+        Local face indices:
+            0 1 2
+            3 4 5
+            6 7 8
+    */
+
+    // move the corners
+    unsigned int tmp1 = indices[selectedCubes[6]];
+    indices[selectedCubes[6]] = indices[selectedCubes[0]];
+    unsigned int tmp2 = indices[selectedCubes[8]];
+    indices[selectedCubes[8]] = tmp1;
+    tmp1 = indices[selectedCubes[2]];
+    indices[selectedCubes[2]] = tmp2;
+    indices[selectedCubes[0]] = tmp1;
+
+    // move the edges
+    tmp1 = indices[selectedCubes[3]];
+    indices[selectedCubes[3]] = indices[selectedCubes[1]];
+    tmp2 = indices[selectedCubes[7]];
+    indices[selectedCubes[7]] = tmp1;
+    tmp1 = indices[selectedCubes[5]];
+    indices[selectedCubes[5]] = tmp2;
+    indices[selectedCubes[1]] = tmp1;
+}
+
 bool rotate(std::array<SmallCube, CUBELET_COUNT> &cubeRotations, std::array<unsigned int, CUBELET_COUNT> &cubePositions,
             RotationCommand command, float &currentAngle) {
     bool isDoneRotating = false;

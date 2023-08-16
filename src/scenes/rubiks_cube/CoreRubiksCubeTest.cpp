@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "RubiksCube.h"
+#include "CoreRubiksCube.h"
 
 void assertCubeIsInitialCube(const rubiks::CoreRubiksCube &actual) {
     const auto expected = rubiks::CoreRubiksCube();
