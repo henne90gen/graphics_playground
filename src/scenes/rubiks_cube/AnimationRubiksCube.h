@@ -22,6 +22,7 @@ struct AnimationRubiksCube {
      * Any larger value will be clamped to 2.0F, which means that this function can only ever execute one rotation
      * at a time.
      * Providing a smaller rotationSpeed results in a partial rotation.
+     * Should be called every frame to create a continuous animation.
      * @param rotationSpeed Determines how fast the rotation should be executed. Is clamped to the range
      * [0.0, 2.0].
      */
@@ -40,6 +41,12 @@ struct AnimationRubiksCube {
     void solve();
 
     /**
+     * Toggles the pause state of the animation.
+     * Should only be called once, not every frame.
+     */
+    void togglePause() { isAnimationPaused = !isAnimationPaused; }
+
+    /**
      * Returns the rotation matrix for the cubelet at the given global index.
      */
     glm::mat4 getCubeletRotationMatrix(unsigned int globalIndex) { return cubelets[globalIndex].rotationMatrix; }
@@ -48,6 +55,9 @@ struct AnimationRubiksCube {
     CoreRubiksCube cube = {};
     std::array<Cubelet, CUBELET_COUNT> cubelets = {};
     std::vector<RotationCommand> commands = {};
+    bool isAnimationPaused = false;
+    float currentAngle = 0.0F;
+    int currentCommandIndex = -1;
 };
 
 } // namespace rubiks

@@ -322,7 +322,7 @@ std::string to_string(unsigned int input) {
 void RubiksCubeScene::tick() {
     static auto translation = glm::vec3(3.0F, 0.0F, -12.0F);
     static auto modelRotation = glm::vec3(-0.56F, -0.68F, 0.0F);
-    static auto rotationSpeed = 0.1F;
+    static auto rotationSpeed = 0.01F;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
@@ -335,20 +335,9 @@ void RubiksCubeScene::tick() {
     if (ImGui::Button("Solve")) {
         rubiksCube->solve();
     }
-    // ImGui::Text("Executed Rotation Commands: %d", rubiksCube->executedRotationCommands);
-
-    // const unsigned int averageLength = rubiksCube->getAverageRotationListLength();
-    // const float averageLengthPerRotationCommand =
-    //       static_cast<float>(averageLength) / static_cast<float>(rubiksCube->executedRotationCommands);
-    // ImGui::Text("Average Rotation List Length: %d (%f)", averageLength, averageLengthPerRotationCommand);
-
-    // const unsigned int maximumLength = rubiksCube->getMaximumRotationListLength();
-    // const float maximumLengthPerRotationCommand =
-    //       static_cast<float>(maximumLength) / static_cast<float>(rubiksCube->executedRotationCommands);
-    // ImGui::Text("Maximum Rotation List Length: %d (%f)", maximumLength, maximumLengthPerRotationCommand);
-
-    // ImGui::Text("Total Rotation List Entries Count: %d", rubiksCube->getTotalRotationListEntriesCount());
-    // ImGui::Text("Squashed Rotations: %d", rubiksCube->squashedRotations);
+    if (ImGui::Button("Pause")) {
+        rubiksCube->togglePause();
+    }
     ImGui::End();
 
     shader->bind();
