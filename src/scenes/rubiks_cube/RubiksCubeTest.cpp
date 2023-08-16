@@ -71,7 +71,7 @@ void testSolving(const std::vector<RotationCommand> &initialCommands, Face side,
     auto cube = rubiks::RubiksCube(initialCommands);
     cube.rotateAll();
 
-    cube.startSolving();
+    // cube.startSolving();
     cube.solve();
 
     cube.rotateAll();

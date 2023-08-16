@@ -334,7 +334,7 @@ void RubiksCubeScene::tick() {
         rubiksCube->shuffle();
     }
     if (ImGui::Button("Solve")) {
-        rubiksCube->startSolving();
+        rubiksCube->solve();
     }
     ImGui::Text("Executed Rotation Commands: %d", rubiksCube->executedRotationCommands);
 

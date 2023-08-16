@@ -32,6 +32,10 @@ class RubiksCube {
      */
     void rotateAll();
 
+    /**
+     * Shuffles the rubiks cube by generating a random sequence of RotatationCommands.
+     * Should only be called once, not every frame.
+     */
     void shuffle();
 
     /**
@@ -58,9 +62,11 @@ class RubiksCube {
     unsigned int squashedRotations = 0;
     unsigned int executedRotationCommands = 0;
 
+    /**
+     * Saves the commands required to solve this rubiks cube and plays them back in order.
+     * Should only be called once, not every frame.
+     */
     void solve();
-
-    void startSolving() { solveStage = SolveStage::BOTTOM_LAYER; }
 
   private:
     bool isRotating = true;
@@ -71,9 +77,6 @@ class RubiksCube {
     std::array<unsigned int, CUBELET_COUNT> positionMapping;
 
     RotationCommandStack rotationCommands;
-    SolveStage solveStage = SolveStage::NOT_SOLVING;
-
-    void solveBottomLayer();
 };
 
 class AnimationRubiksCube {};

@@ -38,12 +38,25 @@ struct CoreRubiksCube {
      */
     Face getCurrentFace(Face side, unsigned int localIndex);
 
+    /**
+     * Solves this Rubiks cube and returns the list of RotationCommands that were applied.
+     * The cube is in a solved configuration after this method has been called, the same as calling the constructor CoreRubiksCube().
+     * 
+     * NOTE: This function is not yet fully implemented
+     */
+    std::vector<RotationCommand> solve();
+
   private:
     void init();
+
     void adjustCubeletIndicesClockwise(std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes);
     void adjustCubeletIndicesCounterClockwise(std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes);
     void adjustFaceIndicesClockwise(Face side);
     void adjustFaceIndicesCounterClockwise(Face side);
+
+    std::vector<RotationCommand> solveBottomLayer();
+    std::vector<RotationCommand> solveMiddleLayer();
+    std::vector<RotationCommand> solveTopLayer();
 };
 
 } // namespace rubiks

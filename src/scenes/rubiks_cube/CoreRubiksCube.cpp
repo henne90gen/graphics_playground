@@ -258,6 +258,9 @@ void CoreRubiksCube::rotate(RotationCommand cmd) {
     case Face::DOWN:
         cubes = DOWN_CUBES;
         break;
+    case Face::NONE:
+        // TODO do error handling
+        break;
     }
 
     if (cmd.direction == Direction::CLOCKWISE) {
@@ -278,5 +281,147 @@ void CoreRubiksCube::rotate(const std::vector<RotationCommand> &commands) {
 Face CoreRubiksCube::getCurrentFace(Face side, unsigned int localIndex) {
     return sideAndLocalIndexToFace[(int)side - 1][localIndex];
 }
+
+std::vector<RotationCommand> CoreRubiksCube::solve() {
+    auto bottomLayerCommands = solveBottomLayer();
+    auto middleLayerCommands = solveMiddleLayer();
+    auto topLayerCommands = solveTopLayer();
+
+    auto result = std::vector<RotationCommand>(bottomLayerCommands.size() + middleLayerCommands.size() +
+                                               topLayerCommands.size());
+
+    result.insert(result.end(), bottomLayerCommands.begin(), bottomLayerCommands.end());
+    result.insert(result.end(), middleLayerCommands.begin(), middleLayerCommands.end());
+    result.insert(result.end(), topLayerCommands.begin(), topLayerCommands.end());
+
+    return result;
+}
+
+std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
+    /*
+        // find miss-aligned bottom pieces
+        struct EdgePiece {
+            unsigned int localIndex;
+            Face side;
+            Face expectedEdgePartnerFace = Face::NONE;
+        };
+        const unsigned int EDGE_PIECE_COUNT = 24;
+        const std::array<EdgePiece, EDGE_PIECE_COUNT> edgePieces = {{
+              {1, Face::UP},                //
+              {3, Face::UP},                //
+              {5, Face::UP},                //
+              {7, Face::UP},                //
+              {1, Face::FRONT},             //
+              {3, Face::FRONT},             //
+              {5, Face::FRONT},             //
+              {7, Face::FRONT},             //
+              {1, Face::LEFT},              //
+              {3, Face::LEFT},              //
+              {5, Face::LEFT},              //
+              {7, Face::LEFT},              //
+              {1, Face::RIGHT},             //
+              {3, Face::RIGHT},             //
+              {5, Face::RIGHT},             //
+              {7, Face::RIGHT},             //
+              {1, Face::BACK},              //
+              {3, Face::BACK},              //
+              {5, Face::BACK},              //
+              {7, Face::BACK},              //
+              {1, Face::DOWN, Face::BACK},  //
+              {3, Face::DOWN, Face::LEFT},  //
+              {5, Face::DOWN, Face::RIGHT}, //
+              {7, Face::DOWN, Face::FRONT}, //
+        }};
+
+        // find a piece that is at the top or generate moves to get one to the top
+        for (const EdgePiece &edgePiece : edgePieces) {
+            const Face pieceFace = getCurrentFace(edgePiece.side, edgePiece.localIndex);
+            if (pieceFace != Face::DOWN) {
+                // face of piece is not a bottom face
+                continue;
+            }
+
+            if (edgePiece.side == Face::DOWN) {
+                const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
+                const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
+                if (edgePartnerCurrentFace == edgePiece.expectedEdgePartnerFace) {
+                    // piece is already at the correct position
+                    continue;
+                }
+
+                // face is at the bottom, but the neighboring side does not match, thus needs to be moved to the top
+                rotationCommands.push({edgePiece.expectedEdgePartnerFace, Direction::CLOCKWISE});
+                rotationCommands.push({edgePiece.expectedEdgePartnerFace, Direction::CLOCKWISE});
+                return;
+            }
+
+            if (edgePiece.side == Face::LEFT || edgePiece.side == Face::RIGHT || edgePiece.side == Face::FRONT ||
+                edgePiece.side == Face::BACK) {
+                if (edgePiece.localIndex == 3 || edgePiece.localIndex == 5) {
+                    // face is at one of the sides and needs to be moved to the top
+                    const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
+                    rotationCommands.push({edgePartner.first, edgePiece.localIndex == 3 ? Direction::COUNTER_CLOCKWISE
+                                                                                        : Direction::CLOCKWISE});
+                    return;
+                }
+
+                if (edgePiece.localIndex == 1) {
+                    // face is at the bottom, but upside down
+                    const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
+                    rotationCommands.push({edgePiece.side, Direction::CLOCKWISE});
+                    rotationCommands.push({edgePartner.first, Direction::CLOCKWISE});
+                    rotationCommands.push({Face::UP, Direction::CLOCKWISE});
+                    rotationCommands.push({edgePartner.first, Direction::COUNTER_CLOCKWISE});
+                    return;
+                }
+
+                if (edgePiece.localIndex == 7) {
+                    // face is at the top, but upside down
+                    const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
+                    rotationCommands.push({edgePiece.side, Direction::COUNTER_CLOCKWISE});
+                    rotationCommands.push({edgePartner.first, Direction::CLOCKWISE});
+                    rotationCommands.push({Face::UP, Direction::CLOCKWISE});
+                    rotationCommands.push({edgePartner.first, Direction::COUNTER_CLOCKWISE});
+                    return;
+                }
+
+                assert(false);
+            }
+
+            // face is now at the top
+            const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
+            const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
+            if (edgePartner.first != edgePartnerCurrentFace) {
+                // TODO use negative rotationCount to signal counter clockwise rotations
+                const std::array<std::array<int, 7>, 7> rotationCount = {
+                      std::array<int, 7>(),  //
+                      {0, 0, 2, 3, 1, 0, 0}, // FRONT
+                      {0, 2, 0, 1, 3, 0, 0}, // BACK
+                      {0, 1, 3, 0, 2, 0, 0}, // LEFT
+                      {0, 3, 1, 2, 0, 0, 0}, // RIGHT
+                      {0, 0, 0, 0, 0, 0, 0}, // UP
+                      {0, 0, 0, 0, 0, 0, 0}, // DOWN
+                };
+                const auto count = rotationCount[(int)edgePartnerCurrentFace][(int)edgePartner.first];
+                for (int i = 0; i < count; i++) {
+                    rotationCommands.push(R_U);
+                }
+            }
+
+            rotationCommands.push({edgePartnerCurrentFace, Direction::CLOCKWISE});
+            rotationCommands.push({edgePartnerCurrentFace, Direction::CLOCKWISE});
+            return;
+        }
+
+        std::cout << rotationCommands.to_string() << std::endl;
+        // find the bottom edge pieces
+        // move them to the correct position
+    */
+
+    return {};
+}
+
+std::vector<RotationCommand> CoreRubiksCube::solveMiddleLayer() {}
+std::vector<RotationCommand> CoreRubiksCube::solveTopLayer() {}
 
 } // namespace rubiks
