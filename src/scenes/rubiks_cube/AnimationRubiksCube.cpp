@@ -110,6 +110,10 @@ void AnimationRubiksCube::shuffle() {
     // TODO implement this
 }
 
-void AnimationRubiksCube::solve() {}
+void AnimationRubiksCube::solve() {
+    // TODO implement this
+    // auto result = cube.solve();
+    // commands.insert(commands.end(), result.begin(), result.end());
+}
 
 } // namespace rubiks
