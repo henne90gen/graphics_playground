@@ -281,8 +281,8 @@ std::vector<RotationCommand> CoreRubiksCube::solve() {
     auto middleLayerCommands = solveMiddleLayer();
     auto topLayerCommands = solveTopLayer();
 
-    auto result = std::vector<RotationCommand>(bottomLayerCommands.size() + middleLayerCommands.size() +
-                                               topLayerCommands.size());
+    auto result = std::vector<RotationCommand>();
+    result.reserve(bottomLayerCommands.size() + middleLayerCommands.size() + topLayerCommands.size());
 
     result.insert(result.end(), bottomLayerCommands.begin(), bottomLayerCommands.end());
     result.insert(result.end(), middleLayerCommands.begin(), middleLayerCommands.end());
@@ -386,32 +386,25 @@ std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
             if (edgePiece.localIndex == 3 || edgePiece.localIndex == 5) {
                 // face is at one of the sides and needs to be moved to the top
                 const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
-                result.push_back({edgePartner.first,
+                localRotate({edgePartner.first,
                                   edgePiece.localIndex == 3 ? Direction::COUNTER_CLOCKWISE : Direction::CLOCKWISE});
-                break;
-            }
-
-            if (edgePiece.localIndex == 1) {
+            } else if (edgePiece.localIndex == 1) {
                 // face is at the bottom, but upside down
                 const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
                 localRotate({edgePiece.side, Direction::CLOCKWISE});
                 localRotate({edgePartner.first, Direction::CLOCKWISE});
                 localRotate({Face::UP, Direction::CLOCKWISE});
                 localRotate({edgePartner.first, Direction::COUNTER_CLOCKWISE});
-                break;
-            }
-
-            if (edgePiece.localIndex == 7) {
+            } else if (edgePiece.localIndex == 7) {
                 // face is at the top, but upside down
                 const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
                 localRotate({edgePiece.side, Direction::COUNTER_CLOCKWISE});
                 localRotate({edgePartner.first, Direction::CLOCKWISE});
                 localRotate({Face::UP, Direction::CLOCKWISE});
                 localRotate({edgePartner.first, Direction::COUNTER_CLOCKWISE});
-                break;
+            } else {
+                // TODO add assertion that fails if this point is reached
             }
-
-            // TODO add assertion that fails if this point is reached
         }
 
         // face is now at the top
