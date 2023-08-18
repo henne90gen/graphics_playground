@@ -57,7 +57,7 @@ struct AnimationRubiksCube {
     std::vector<RotationCommand> commands = {};
     bool isAnimationPaused = false;
     float currentAngle = 0.0F;
-    int currentCommandIndex = -1;
+    int currentCommandIndex = 0;
 };
 
 } // namespace rubiks

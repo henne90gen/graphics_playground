@@ -1,5 +1,8 @@
 #include "AnimationRubiksCube.h"
 
+#include <chrono>
+#include <random>
+
 namespace rubiks {
 
 AnimationRubiksCube::AnimationRubiksCube(std::vector<RotationCommand> commands) : commands(commands) {
@@ -88,7 +91,7 @@ void updateRotation(std::array<Cubelet, CUBELET_COUNT> &cubelets,
 }
 
 void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
-    if (isAnimationPaused || currentCommandIndex < 0) {
+    if (isAnimationPaused || currentCommandIndex < 0 || currentCommandIndex >= commands.size()) {
         return;
     }
 
@@ -105,6 +108,10 @@ void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
     }
 
     auto currentCommand = commands[currentCommandIndex];
+    if (currentCommand.side == Face::NONE) {
+        // TODO do error handling
+        return;
+    }
     updateRotation(cubelets, cube.globalIndexToCubeletIndex, currentCommand, rotationSpeed);
     if (!isDoneRotating) {
         return;
@@ -114,19 +121,34 @@ void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
 
     currentAngle = 0.0F;
     currentCommandIndex++;
+
     if (currentCommandIndex >= commands.size()) {
-        currentCommandIndex = -1;
+        currentCommandIndex = 0;
+        commands = {};
     }
 }
 
 void AnimationRubiksCube::shuffle() {
-    // TODO implement this
+    static constexpr auto rotationCommandCount = 12;
+    std::array<RotationCommand, rotationCommandCount> rotations = {
+          RotationCommand(R_R), R_RI, R_F, R_FI, R_D, R_DI, R_L, R_LI, R_U, R_UI, R_B, R_BI,
+    };
+
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
+
+    const int shuffleCount = 20;
+    for (unsigned int i = 0; i < shuffleCount; i++) {
+        unsigned int randomIndex = distribution(generator);
+        RotationCommand rotation = rotations[randomIndex];
+        commands.push_back(rotation);
+    }
 }
 
 void AnimationRubiksCube::solve() {
-    // TODO implement this
-    // auto result = cube.solve();
-    // commands.insert(commands.end(), result.begin(), result.end());
+    auto result = cube.solve();
+    commands.insert(commands.end(), result.begin(), result.end());
 }
 
 } // namespace rubiks
