@@ -321,9 +321,9 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands, ru
 }
 
 TEST(solve, BottomLayer_FrontTurnedUp) {
-    // testSolving({R_F, R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    // testSolving({R_F, R_F, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    // testSolving({R_F, R_F, R_U, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    // testSolving({R_F, R_F, R_UI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_UI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
     testSolving({R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
 }
