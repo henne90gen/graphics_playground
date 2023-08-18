@@ -1,7 +1,5 @@
 #include "AnimationRubiksCube.h"
 
-#include "RubiksCubeLogic.h"
-
 namespace rubiks {
 
 AnimationRubiksCube::AnimationRubiksCube(std::vector<RotationCommand> commands) : commands(commands) {
@@ -32,12 +30,27 @@ void updateCubeletRotation(Cubelet &cubelet, glm::vec3 rotationVector) {
     cubelet.rotationMatrix = glm::rotate(cubelet.rotationMatrix, rotationAngle, rotationAxis);
 }
 
+int getDirection(RotationCommand &rot) {
+    if (rot.direction == Direction::CLOCKWISE) {
+        if (rot.side == Face::DOWN || rot.side == Face::LEFT || rot.side == Face::BACK) {
+            return 1;
+        }
+        return -1;
+    }
+
+    if (rot.side == Face::DOWN || rot.side == Face::LEFT || rot.side == Face::BACK) {
+        return -1;
+    }
+
+    return 1;
+}
+
 void updateRotation(std::array<Cubelet, CUBELET_COUNT> &cubelets,
                     std::array<unsigned int, CUBELET_COUNT> &cubeletPositions, RotationCommand command,
                     float angleDiff) {
     std::array<unsigned int, SMALL_FACE_COUNT> cubes;
     glm::vec3 rotationVector;
-    auto direction = static_cast<float>(rubiks::getDirection(command));
+    auto direction = static_cast<float>(getDirection(command));
     switch (command.side) {
     case Face::FRONT:
         cubes = FRONT_CUBES;

@@ -2,6 +2,15 @@
 
 namespace rubiks {
 
+const std::array<std::array<unsigned int, SMALL_FACE_COUNT>, SIDE_COUNT> WHOLE_CUBE = {
+      std::array<unsigned int, SMALL_FACE_COUNT>(FRONT_CUBES),
+      BACK_CUBES,
+      LEFT_CUBES,
+      RIGHT_CUBES,
+      UP_CUBES,
+      DOWN_CUBES,
+};
+
 CoreRubiksCube::CoreRubiksCube() { init(); }
 
 CoreRubiksCube::CoreRubiksCube(const std::vector<RotationCommand> &commands) {
@@ -402,7 +411,7 @@ std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
                 break;
             }
 
-            assert(false);
+            // TODO add assertion that fails if this point is reached
         }
 
         // face is now at the top
@@ -442,3 +451,69 @@ std::vector<RotationCommand> CoreRubiksCube::solveMiddleLayer() { return {}; }
 std::vector<RotationCommand> CoreRubiksCube::solveTopLayer() { return {}; }
 
 } // namespace rubiks
+
+std::string to_string(const rubiks::Face &face, bool simple) {
+    switch (face) {
+    case rubiks::Face::FRONT:
+        if (simple) {
+            return "R_F";
+        } else {
+            return "FRONT";
+        }
+    case rubiks::Face::BACK:
+        if (simple) {
+            return "R_B";
+        } else {
+            return "BACK";
+        }
+    case rubiks::Face::LEFT:
+        if (simple) {
+            return "R_L";
+        } else {
+            return "LEFT";
+        }
+    case rubiks::Face::RIGHT:
+        if (simple) {
+            return "R_R";
+        } else {
+            return "RIGHT";
+        }
+    case rubiks::Face::UP:
+        if (simple) {
+            return "R_U";
+        } else {
+            return "UP";
+        }
+    case rubiks::Face::DOWN:
+        if (simple) {
+            return "R_D";
+        } else {
+            return "DOWN";
+        }
+    case rubiks::Face::NONE:
+        return "NONE";
+    }
+}
+
+std::string to_string(const rubiks::Direction &dir, bool simple) {
+    if (dir == rubiks::Direction::CLOCKWISE) {
+        if (simple) {
+            return "";
+        }
+        return "CLOCKWISE";
+    }
+    if (simple) {
+        return "I";
+    }
+    return "COUNTER_CLOCKWISE";
+}
+
+std::string to_string(const rubiks::RotationCommand &cmd, bool simple) {
+    std::string separator;
+    if (simple) {
+        separator = "";
+    } else {
+        separator = ", ";
+    }
+    return to_string(cmd.side, simple) + separator + to_string(cmd.direction, simple);
+}
