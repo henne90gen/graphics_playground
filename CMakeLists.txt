@@ -232,7 +232,9 @@ find_package(OpenMP)
 enable_testing()
 configure_file(${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
-# disable volatile warning, because glm violates it
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated-volatile")
+if (NOT WIN32)
+        # disable volatile warning, because glm violates it
+        set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated-volatile")
+endif()
 
 add_subdirectory(src)

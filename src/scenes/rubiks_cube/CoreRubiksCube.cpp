@@ -137,10 +137,10 @@ int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalInd
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // UP
           {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // DOWN
     };
-    constexpr std::array<std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT>, SIDE_COUNT> arr = {
+    constexpr std::array<std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT>, SIDE_COUNT> allSides = {
           frontSide, backSide, leftSide, rightSide, upSide, downSide,
     };
-    return arr[(int)side - 1][(int)neighbor - 1][sideLocalIndex];
+    return allSides[(int)side - 1][(int)neighbor - 1][sideLocalIndex];
 }
 
 void CoreRubiksCube::adjustFaceIndicesClockwise(Face side) {
