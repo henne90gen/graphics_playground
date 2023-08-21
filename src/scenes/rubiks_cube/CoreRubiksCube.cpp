@@ -277,16 +277,11 @@ Face CoreRubiksCube::getCurrentFace(Face side, unsigned int localIndex) {
 }
 
 std::vector<RotationCommand> CoreRubiksCube::solve() {
-    auto bottomLayerCommands = solveBottomLayer();
-    auto middleLayerCommands = solveMiddleLayer();
-    auto topLayerCommands = solveTopLayer();
-
     auto result = std::vector<RotationCommand>();
-    result.reserve(bottomLayerCommands.size() + middleLayerCommands.size() + topLayerCommands.size());
 
-    result.insert(result.end(), bottomLayerCommands.begin(), bottomLayerCommands.end());
-    result.insert(result.end(), middleLayerCommands.begin(), middleLayerCommands.end());
-    result.insert(result.end(), topLayerCommands.begin(), topLayerCommands.end());
+    solveBottomLayer(result);
+    solveMiddleLayer(result);
+    solveTopLayer(result);
 
     return result;
 }
@@ -304,7 +299,7 @@ std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndi
 /**
  * This function only returns valid results for edge pieces. Corner pieces are not supported.
  */
-std::pair<Face, unsigned int> getEdgePartnerSide(Face side, unsigned int localIndex) {
+std::pair<Face, unsigned int> getEdgePartnerSideAndLocalIndex(Face side, unsigned int localIndex) {
     const auto tmp = (localIndex - 1);
     if (tmp % 2 != 0) {
         return std::make_pair(Face::NONE, 0);
@@ -317,22 +312,28 @@ std::pair<Face, unsigned int> getEdgePartnerSide(Face side, unsigned int localIn
     return edgePartnerLocalIndices[(int)side - 1][index];
 }
 
-std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
-    std::vector<RotationCommand> result = {};
+std::pair<Face, unsigned int> getCornerPartnerSideAndLocalIndex(Face side, unsigned int localIndex) {
+    return std::make_pair(Face::NONE, 0);
+}
 
+void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result) {
     auto localRotate = [this, &result](RotationCommand cmd) {
         rotate(cmd);
         result.push_back(cmd);
     };
 
     auto bottomEdgePiecesAreCorrect = [this]() {
-        return getCurrentFace(Face::DOWN, 1) == Face::DOWN && //
-               getCurrentFace(Face::DOWN, 3) == Face::DOWN && //
-               getCurrentFace(Face::DOWN, 5) == Face::DOWN && //
-               getCurrentFace(Face::DOWN, 7) == Face::DOWN;
+        return getCurrentFace(Face::DOWN, 1) == Face::DOWN &&   //
+               getCurrentFace(Face::DOWN, 3) == Face::DOWN &&   //
+               getCurrentFace(Face::DOWN, 5) == Face::DOWN &&   //
+               getCurrentFace(Face::DOWN, 7) == Face::DOWN &&   //
+               getCurrentFace(Face::FRONT, 7) == Face::FRONT && //
+               getCurrentFace(Face::LEFT, 7) == Face::LEFT &&   //
+               getCurrentFace(Face::BACK, 7) == Face::BACK &&   //
+               getCurrentFace(Face::RIGHT, 7) == Face::RIGHT;
     };
 
-    // find miss-aligned bottom pieces
+    // find miss-aligned bottom edge pieces
     struct EdgePiece {
         unsigned int localIndex;
         Face side;
@@ -367,16 +368,16 @@ std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
     }};
 
     while (!bottomEdgePiecesAreCorrect()) {
-        // find a piece that is at the top or generate moves to get one to the top
-        for (const EdgePiece &edgePiece : edgePieces) {
-            const Face pieceFace = getCurrentFace(edgePiece.side, edgePiece.localIndex);
+        for (const auto &edgePiece : edgePieces) {
+            // find a piece that is at the top or generate moves to get one to the top
+            const auto pieceFace = getCurrentFace(edgePiece.side, edgePiece.localIndex);
             if (pieceFace != Face::DOWN) {
                 // face of piece is not a bottom face
                 continue;
             }
 
             if (edgePiece.side == Face::DOWN) {
-                const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
+                const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
                 const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
                 if (edgePartnerCurrentFace == edgePiece.expectedEdgePartnerFace) {
                     // piece is already at the correct position
@@ -392,19 +393,19 @@ std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
                 edgePiece.side == Face::BACK) {
                 if (edgePiece.localIndex == 3 || edgePiece.localIndex == 5) {
                     // face is at one of the sides and needs to be moved to the top
-                    const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
+                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
                     localRotate({edgePartner.first,
                                  edgePiece.localIndex == 3 ? Direction::COUNTER_CLOCKWISE : Direction::CLOCKWISE});
                 } else if (edgePiece.localIndex == 1) {
                     // face is at the bottom, but upside down
-                    const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
+                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
                     localRotate({edgePiece.side, Direction::CLOCKWISE});
                     localRotate({edgePartner.first, Direction::CLOCKWISE});
                     localRotate({Face::UP, Direction::CLOCKWISE});
                     localRotate({edgePartner.first, Direction::COUNTER_CLOCKWISE});
                 } else if (edgePiece.localIndex == 7) {
                     // face is at the top, but upside down
-                    const auto edgePartner = getEdgePartnerSide(edgePiece.side, 5);
+                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
                     localRotate({edgePiece.side, Direction::COUNTER_CLOCKWISE});
                     localRotate({edgePartner.first, Direction::CLOCKWISE});
                     localRotate({Face::UP, Direction::CLOCKWISE});
@@ -415,7 +416,7 @@ std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
             }
 
             // face is now at the top
-            const auto edgePartner = getEdgePartnerSide(edgePiece.side, edgePiece.localIndex);
+            const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
             const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
             if (edgePartner.first != edgePartnerCurrentFace) {
                 // TODO use negative rotationCount to signal counter clockwise rotations
@@ -439,17 +440,79 @@ std::vector<RotationCommand> CoreRubiksCube::solveBottomLayer() {
             break;
         }
     }
-
-    // std::cout << rotationCommands.to_string() << std::endl;
-
-    // find the bottom edge pieces
-    // move them to the correct position
-
-    return result;
 }
 
-std::vector<RotationCommand> CoreRubiksCube::solveMiddleLayer() { return {}; }
-std::vector<RotationCommand> CoreRubiksCube::solveTopLayer() { return {}; }
+void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &result) {
+    auto bottomCornerPiecesAreCorrect = [this]() {
+        return getCurrentFace(Face::DOWN, 0) == Face::DOWN &&   //
+               getCurrentFace(Face::DOWN, 2) == Face::DOWN &&   //
+               getCurrentFace(Face::DOWN, 6) == Face::DOWN &&   //
+               getCurrentFace(Face::DOWN, 8) == Face::DOWN &&   //
+               getCurrentFace(Face::FRONT, 6) == Face::FRONT && //
+               getCurrentFace(Face::FRONT, 8) == Face::FRONT && //
+               getCurrentFace(Face::LEFT, 6) == Face::LEFT &&   //
+               getCurrentFace(Face::LEFT, 8) == Face::LEFT &&   //
+               getCurrentFace(Face::BACK, 6) == Face::BACK &&   //
+               getCurrentFace(Face::BACK, 8) == Face::BACK &&   //
+               getCurrentFace(Face::RIGHT, 6) == Face::RIGHT && //
+               getCurrentFace(Face::RIGHT, 8) == Face::RIGHT;
+    };
+
+    // find the bottom corner pieces
+    struct CornerPiece {
+        unsigned int localIndex;
+        Face side;
+        Face expectedCornerPartnerFace0 = Face::NONE;
+        Face expectedCornerPartnerFace1 = Face::NONE;
+    };
+    constexpr unsigned int CORNER_PIECE_COUNT = 24;
+    constexpr std::array<CornerPiece, CORNER_PIECE_COUNT> cornerPieces = {{
+          {0, Face::FRONT},                          //
+          {2, Face::FRONT},                          //
+          {6, Face::FRONT},                          //
+          {8, Face::FRONT},                          //
+          {0, Face::LEFT},                           //
+          {2, Face::LEFT},                           //
+          {6, Face::LEFT},                           //
+          {8, Face::LEFT},                           //
+          {0, Face::BACK},                           //
+          {2, Face::BACK},                           //
+          {6, Face::BACK},                           //
+          {8, Face::BACK},                           //
+          {0, Face::RIGHT},                          //
+          {2, Face::RIGHT},                          //
+          {6, Face::RIGHT},                          //
+          {8, Face::RIGHT},                          //
+          {0, Face::UP},                             //
+          {2, Face::UP},                             //
+          {6, Face::UP},                             //
+          {8, Face::UP},                             //
+          {0, Face::DOWN, Face::LEFT, Face::FRONT},  //
+          {2, Face::DOWN, Face::FRONT, Face::RIGHT}, //
+          {6, Face::DOWN, Face::BACK, Face::LEFT},   //
+          {8, Face::DOWN, Face::RIGHT, Face::BACK},  //
+    }};
+
+    /*
+        while (!bottomCornerPiecesAreCorrect()) {
+            for (const auto &cornerPiece : cornerPieces) {
+                const auto pieceFace = getCurrentFace(cornerPiece.side, cornerPiece.localIndex);
+                if (pieceFace != Face::DOWN) {
+                    // face of piece is not a bottom face
+                    continue;
+                }
+            }
+        }
+    */
+}
+
+void CoreRubiksCube::solveBottomLayer(std::vector<RotationCommand> &result) {
+    solveCreateBottomCross(result);
+    solveBottomCornerPieces(result);
+}
+
+void CoreRubiksCube::solveMiddleLayer(std::vector<RotationCommand> &result) {}
+void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) {}
 
 } // namespace rubiks
 

@@ -320,10 +320,48 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands, ru
     ASSERT_EQ(cube.getCurrentFace(side, localIndex), expectedFace);
 }
 
-TEST(solve, BottomLayer_FrontTurnedUp) {
+TEST(solve, BottomLayer_FrontRotations) {
+    testSolving({R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
     testSolving({R_F, R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_FI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+}
+
+TEST(solve, BottomLayer_LeftRotations) {
+    testSolving({R_L}, rubiks::Face::DOWN, 3, rubiks::Face::DOWN);
+    testSolving({R_L, R_L}, rubiks::Face::DOWN, 3, rubiks::Face::DOWN);
+    testSolving({R_LI}, rubiks::Face::DOWN, 3, rubiks::Face::DOWN);
+}
+
+TEST(solve, BottomLayer_BackRotations) {
+    testSolving({R_B}, rubiks::Face::DOWN, 7, rubiks::Face::DOWN);
+    testSolving({R_B, R_B}, rubiks::Face::DOWN, 7, rubiks::Face::DOWN);
+    testSolving({R_BI}, rubiks::Face::DOWN, 7, rubiks::Face::DOWN);
+}
+
+TEST(solve, BottomLayer_RightRotations) {
+    testSolving({R_R}, rubiks::Face::DOWN, 5, rubiks::Face::DOWN);
+    testSolving({R_R, R_R}, rubiks::Face::DOWN, 5, rubiks::Face::DOWN);
+    testSolving({R_RI}, rubiks::Face::DOWN, 5, rubiks::Face::DOWN);
+}
+
+TEST(solve, BottomLayer_FrontAndUpRotations) {
     testSolving({R_F, R_F, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
     testSolving({R_F, R_F, R_U, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
     testSolving({R_F, R_F, R_UI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+}
+
+TEST(solve, BottomLayer_LeftBackAndRightRotations) {
+    testSolving({R_F, R_F, R_U, R_L}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_LI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+
+    testSolving({R_F, R_F, R_U, R_U, R_B}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_U, R_BI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+
+    testSolving({R_F, R_F, R_UI, R_R}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_UI, R_RI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+}
+
+TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
+    testSolving({R_F, R_L}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_L, R_L}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
 }

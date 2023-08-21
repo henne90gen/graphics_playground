@@ -131,8 +131,9 @@ struct CoreRubiksCube {
 
     /**
      * Solves this Rubiks cube and returns the list of RotationCommands that were applied.
-     * The cube is in a solved configuration after this method has been called, the same as calling the constructor CoreRubiksCube().
-     * 
+     * The cube is in a solved configuration after this method has been called, the same as calling the constructor
+     * CoreRubiksCube().
+     *
      * NOTE: This function is not yet fully implemented
      */
     std::vector<RotationCommand> solve();
@@ -145,9 +146,11 @@ struct CoreRubiksCube {
     void adjustFaceIndicesClockwise(Face side);
     void adjustFaceIndicesCounterClockwise(Face side);
 
-    std::vector<RotationCommand> solveBottomLayer();
-    std::vector<RotationCommand> solveMiddleLayer();
-    std::vector<RotationCommand> solveTopLayer();
+    void solveBottomLayer(std::vector<RotationCommand> &result);
+    void solveCreateBottomCross(std::vector<RotationCommand> &result);
+    void solveBottomCornerPieces(std::vector<RotationCommand> &result);
+    void solveMiddleLayer(std::vector<RotationCommand> &result);
+    void solveTopLayer(std::vector<RotationCommand> &result);
 };
 
 } // namespace rubiks
