@@ -89,54 +89,54 @@ void CoreRubiksCube::adjustCubeletIndicesCounterClockwise(std::array<unsigned in
 }
 
 int getNeighboringLocalIndex(Face side, Face neighbor, unsigned int sideLocalIndex) {
-    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> frontSide = {
-          std::array<int, SMALL_FACE_COUNT>({-1, -1, -1, -1, -1, -1, -1, -1, -1}), // FRONT
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                    // BACK
-          {2, -1, -1, 5, -1, -1, 8, -1, -1},                                       // LEFT
-          {-1, -1, 0, -1, -1, 3, -1, -1, 6},                                       // RIGHT
-          {6, 7, 8, -1, -1, -1, -1, -1, -1},                                       // UP
-          {-1, -1, -1, -1, -1, -1, 0, 1, 2},                                       // DOWN
-    };
-    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> backSide = {
-          std::array<int, SMALL_FACE_COUNT>({-1, -1, -1, -1, -1, -1, -1, -1, -1}), // FRONT
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                    // BACK
-          {-1, -1, 0, -1, -1, 3, -1, -1, 6},                                       // LEFT
-          {2, -1, -1, 5, -1, -1, 8, -1, -1},                                       // RIGHT
-          {2, 1, 0, -1, -1, -1, -1, -1, -1},                                       // UP
-          {-1, -1, -1, -1, -1, -1, 8, 7, 6},                                       // DOWN
-    };
-    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> leftSide = {
-          std::array<int, SMALL_FACE_COUNT>({-1, -1, 0, -1, -1, 3, -1, -1, 6}), // FRONT
-          {2, -1, -1, 5, -1, -1, 8, -1, -1},                                    // BACK
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // LEFT
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // RIGHT
-          {0, 3, 6, -1, -1, -1, -1, -1, -1},                                    // UP
-          {-1, -1, -1, -1, -1, -1, 6, 3, 0},                                    // DOWN
-    };
-    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> rightSide = {
-          std::array<int, SMALL_FACE_COUNT>({2, -1, -1, 5, -1, -1, 8, -1, -1}), // FRONT
-          {-1, -1, 0, -1, -1, 3, -1, -1, 6},                                    // BACK
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // LEFT
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // RIGHT
-          {8, 5, 2, -1, -1, -1, -1, -1, -1},                                    // UP
-          {-1, -1, -1, -1, -1, -1, 2, 5, 8},                                    // DOWN
-    };
-    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> upSide = {
-          std::array<int, SMALL_FACE_COUNT>({-1, -1, -1, -1, -1, -1, 0, 1, 2}), // FRONT
-          {2, 1, 0, -1, -1, -1, -1, -1, -1},                                    // BACK
-          {0, -1, -1, 1, -1, -1, 2, -1, -1},                                    // LEFT
-          {-1, -1, 2, -1, -1, 1, -1, -1, 0},                                    // RIGHT
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // UP
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // DOWN
-    };
-    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> downSide = {
-          std::array<int, SMALL_FACE_COUNT>({6, 7, 8, -1, -1, -1, -1, -1, -1}), // FRONT
-          {-1, -1, -1, -1, -1, -1, 8, 7, 6},                                    // BACK
-          {8, -1, -1, 7, -1, -1, 6, -1, -1},                                    // LEFT
-          {-1, -1, 6, -1, -1, 7, -1, -1, 8},                                    // RIGHT
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // UP
-          {-1, -1, -1, -1, -1, -1, -1, -1, -1},                                 // DOWN
-    };
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> frontSide = {{
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // FRONT
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // BACK
+          {2, -1, -1, 5, -1, -1, 8, -1, -1},    // LEFT
+          {-1, -1, 0, -1, -1, 3, -1, -1, 6},    // RIGHT
+          {6, 7, 8, -1, -1, -1, -1, -1, -1},    // UP
+          {-1, -1, -1, -1, -1, -1, 0, 1, 2},    // DOWN
+    }};
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> backSide = {{
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // FRONT
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // BACK
+          {-1, -1, 0, -1, -1, 3, -1, -1, 6},    // LEFT
+          {2, -1, -1, 5, -1, -1, 8, -1, -1},    // RIGHT
+          {2, 1, 0, -1, -1, -1, -1, -1, -1},    // UP
+          {-1, -1, -1, -1, -1, -1, 8, 7, 6},    // DOWN
+    }};
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> leftSide = {{
+          {-1, -1, 0, -1, -1, 3, -1, -1, 6},    // FRONT
+          {2, -1, -1, 5, -1, -1, 8, -1, -1},    // BACK
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // LEFT
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // RIGHT
+          {0, 3, 6, -1, -1, -1, -1, -1, -1},    // UP
+          {-1, -1, -1, -1, -1, -1, 6, 3, 0},    // DOWN
+    }};
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> rightSide = {{
+          {2, -1, -1, 5, -1, -1, 8, -1, -1},    // FRONT
+          {-1, -1, 0, -1, -1, 3, -1, -1, 6},    // BACK
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // LEFT
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // RIGHT
+          {8, 5, 2, -1, -1, -1, -1, -1, -1},    // UP
+          {-1, -1, -1, -1, -1, -1, 2, 5, 8},    // DOWN
+    }};
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> upSide = {{
+          {-1, -1, -1, -1, -1, -1, 0, 1, 2},    // FRONT
+          {2, 1, 0, -1, -1, -1, -1, -1, -1},    // BACK
+          {0, -1, -1, 1, -1, -1, 2, -1, -1},    // LEFT
+          {-1, -1, 2, -1, -1, 1, -1, -1, 0},    // RIGHT
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // UP
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // DOWN
+    }};
+    constexpr std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT> downSide = {{
+          {6, 7, 8, -1, -1, -1, -1, -1, -1},    // FRONT
+          {-1, -1, -1, -1, -1, -1, 8, 7, 6},    // BACK
+          {8, -1, -1, 7, -1, -1, 6, -1, -1},    // LEFT
+          {-1, -1, 6, -1, -1, 7, -1, -1, 8},    // RIGHT
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // UP
+          {-1, -1, -1, -1, -1, -1, -1, -1, -1}, // DOWN
+    }};
     constexpr std::array<std::array<std::array<int, SMALL_FACE_COUNT>, SIDE_COUNT>, SIDE_COUNT> allSides = {
           frontSide, backSide, leftSide, rightSide, upSide, downSide,
     };
