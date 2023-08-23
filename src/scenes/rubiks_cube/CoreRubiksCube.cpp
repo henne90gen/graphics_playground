@@ -286,16 +286,6 @@ std::vector<RotationCommand> CoreRubiksCube::solve() {
     return result;
 }
 
-// use [side][(localIndex-1)/2] to index into this array
-std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndices = {
-      std::array<std::pair<Face, unsigned int>, 4>(
-            {std::make_pair(Face::UP, 7), {Face::LEFT, 5}, {Face::RIGHT, 3}, {Face::DOWN, 1}}), // FRONT
-      {std::make_pair(Face::UP, 1), {Face::RIGHT, 5}, {Face::LEFT, 3}, {Face::DOWN, 7}},        // BACK
-      {std::make_pair(Face::UP, 3), {Face::BACK, 5}, {Face::FRONT, 3}, {Face::DOWN, 3}},        // LEFT
-      {std::make_pair(Face::UP, 5), {Face::FRONT, 5}, {Face::BACK, 3}, {Face::DOWN, 5}},        // RIGHT
-      {std::make_pair(Face::BACK, 1), {Face::LEFT, 1}, {Face::RIGHT, 1}, {Face::FRONT, 1}},     // UP
-      {std::make_pair(Face::FRONT, 7), {Face::LEFT, 7}, {Face::RIGHT, 7}, {Face::BACK, 7}},     // DOWN
-};
 /**
  * This function only returns valid results for edge pieces. Corner pieces are not supported.
  */
@@ -309,11 +299,55 @@ std::pair<Face, unsigned int> getEdgePartnerSideAndLocalIndex(Face side, unsigne
         return std::make_pair(Face::NONE, 0);
     }
 
+    // use [side][(localIndex-1)/2] to index into this array
+    constexpr std::array<std::array<std::pair<Face, unsigned int>, 4>, 7> edgePartnerLocalIndices = {{
+          {std::make_pair(Face::UP, 7), {Face::LEFT, 5}, {Face::RIGHT, 3}, {Face::DOWN, 1}},    // FRONT
+          {std::make_pair(Face::UP, 1), {Face::RIGHT, 5}, {Face::LEFT, 3}, {Face::DOWN, 7}},    // BACK
+          {std::make_pair(Face::UP, 3), {Face::BACK, 5}, {Face::FRONT, 3}, {Face::DOWN, 3}},    // LEFT
+          {std::make_pair(Face::UP, 5), {Face::FRONT, 5}, {Face::BACK, 3}, {Face::DOWN, 5}},    // RIGHT
+          {std::make_pair(Face::BACK, 1), {Face::LEFT, 1}, {Face::RIGHT, 1}, {Face::FRONT, 1}}, // UP
+          {std::make_pair(Face::FRONT, 7), {Face::LEFT, 7}, {Face::RIGHT, 7}, {Face::BACK, 7}}, // DOWN
+    }};
     return edgePartnerLocalIndices[(int)side - 1][index];
 }
 
-std::pair<Face, unsigned int> getCornerPartnerSideAndLocalIndex(Face side, unsigned int localIndex) {
-    return std::make_pair(Face::NONE, 0);
+std::array<std::pair<Face, unsigned int>, 3> getCornerPartnerSideAndLocalIndex(Face side, unsigned int localIndex) {
+    constexpr std::array<std::array<std::pair<Face, unsigned int>, 3>, 8> corners = {{
+          // FRONT
+          {std::make_pair(Face::FRONT, 0), std::make_pair(Face::LEFT, 2), std::make_pair(Face::UP, 6)}, // TOP-LEFT
+          {std::make_pair(Face::FRONT, 2), std::make_pair(Face::UP, 8), std::make_pair(Face::RIGHT, 0)}, // TOP-RIGHT
+          {std::make_pair(Face::FRONT, 6), std::make_pair(Face::DOWN, 0), std::make_pair(Face::LEFT, 8)}, // BOTTOM-LEFT
+          {std::make_pair(Face::FRONT, 8), std::make_pair(Face::RIGHT, 6), std::make_pair(Face::DOWN, 2)}, // BOTTOM-RIGHT
+
+          // BACK
+          {std::make_pair(Face::BACK, 0), std::make_pair(Face::RIGHT, 2), std::make_pair(Face::UP, 2)}, // TOP-LEFT
+          {std::make_pair(Face::BACK, 2), std::make_pair(Face::UP, 0), std::make_pair(Face::LEFT, 0)}, // TOP-RIGHT
+          {std::make_pair(Face::BACK, 6), std::make_pair(Face::DOWN, 2), std::make_pair(Face::RIGHT, 8)}, // BOTTOM-RIGHT
+          {std::make_pair(Face::BACK, 8), std::make_pair(Face::LEFT, 6), std::make_pair(Face::DOWN, 0)}, // BOTTOM-LEFT
+    }};
+
+    for (const auto &corner : corners) {
+        int foundCornerIndex = -1;
+        for (int i = 0; i < corners.size(); i++) {
+            const auto &[face, localIdx] = corner[i];
+            if (face == side && localIdx == localIndex) {
+                foundCornerIndex = i;
+                break;
+            }
+        }
+        if (foundCornerIndex == -1) {
+            continue;
+        }
+
+        std::array<std::pair<Face, unsigned int>, 3> result = {};
+        for (int i = 0; i < 3; i++) {
+            result[i] = corner[(foundCornerIndex + i) % 3];
+        }
+        return result;
+    }
+
+    // TODO do error handling
+    return {};
 }
 
 void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result) {
