@@ -367,11 +367,11 @@ TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
 }
 
 namespace rubiks {
-std::array<std::pair<rubiks::Face, unsigned int>, 3> getCornerPartnerSideAndLocalIndex(rubiks::Face side,
+std::array<std::pair<rubiks::Face, unsigned int>, 3> getCornerPartners(rubiks::Face side,
                                                                                        unsigned int localIndex);
 }
-TEST(getCornerPartnerSideAndLocalIndex, works) {
-    auto result = rubiks::getCornerPartnerSideAndLocalIndex(rubiks::Face::FRONT, 0);
+TEST(getCornerPartners, works) {
+    auto result = rubiks::getCornerPartners(rubiks::Face::FRONT, 0);
     ASSERT_EQ(result[0].first, rubiks::Face::FRONT);
     ASSERT_EQ(result[0].second, 0);
     ASSERT_EQ(result[1].first, rubiks::Face::LEFT);
@@ -379,7 +379,7 @@ TEST(getCornerPartnerSideAndLocalIndex, works) {
     ASSERT_EQ(result[2].first, rubiks::Face::UP);
     ASSERT_EQ(result[2].second, 6);
 
-    result = rubiks::getCornerPartnerSideAndLocalIndex(rubiks::Face::LEFT, 2);
+    result = rubiks::getCornerPartners(rubiks::Face::LEFT, 2);
     ASSERT_EQ(result[0].first, rubiks::Face::LEFT);
     ASSERT_EQ(result[0].second, 2);
     ASSERT_EQ(result[1].first, rubiks::Face::UP);
@@ -387,7 +387,7 @@ TEST(getCornerPartnerSideAndLocalIndex, works) {
     ASSERT_EQ(result[2].first, rubiks::Face::FRONT);
     ASSERT_EQ(result[2].second, 0);
 
-    result = rubiks::getCornerPartnerSideAndLocalIndex(rubiks::Face::UP, 6);
+    result = rubiks::getCornerPartners(rubiks::Face::UP, 6);
     ASSERT_EQ(result[0].first, rubiks::Face::UP);
     ASSERT_EQ(result[0].second, 6);
     ASSERT_EQ(result[1].first, rubiks::Face::FRONT);
