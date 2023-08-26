@@ -419,7 +419,7 @@ TEST(solve, BottomLayer_LeftBackAndRightRotations) {
 TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
     testSolvingBottomLayer({R_F, R_L});
     testSolvingBottomLayer({R_F, R_F, R_U, R_L, R_L});
-    // testSolvingBottomLayer({R_D, R_D, R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R, R_FI, R_FI, R_R, R_D, R_F, R_L, R_D, R_FI, R_UI, R_R});
+    testSolvingBottomLayer({R_D, R_D, R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R, R_FI, R_FI, R_R, R_D, R_F, R_L, R_D, R_FI, R_UI, R_R});
 }
 
 TEST(solve, DISABLED_BottomLayer_RandomMoves) {

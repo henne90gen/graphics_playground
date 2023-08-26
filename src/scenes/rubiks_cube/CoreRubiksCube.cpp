@@ -387,22 +387,22 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
           {3, Face::UP},                //
           {5, Face::UP},                //
           {7, Face::UP},                //
-          {1, Face::FRONT},             //
           {3, Face::FRONT},             //
           {5, Face::FRONT},             //
           {7, Face::FRONT},             //
-          {1, Face::LEFT},              //
           {3, Face::LEFT},              //
           {5, Face::LEFT},              //
           {7, Face::LEFT},              //
-          {1, Face::RIGHT},             //
           {3, Face::RIGHT},             //
           {5, Face::RIGHT},             //
           {7, Face::RIGHT},             //
-          {1, Face::BACK},              //
           {3, Face::BACK},              //
           {5, Face::BACK},              //
           {7, Face::BACK},              //
+          {1, Face::FRONT},             //
+          {1, Face::LEFT},              //
+          {1, Face::RIGHT},             //
+          {1, Face::BACK},              //
           {1, Face::DOWN, Face::BACK},  //
           {3, Face::DOWN, Face::LEFT},  //
           {5, Face::DOWN, Face::RIGHT}, //
@@ -439,20 +439,24 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
                     const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
                     localRotate({edgePartner.first,
                                  edgePiece.localIndex == 3 ? Direction::COUNTER_CLOCKWISE : Direction::CLOCKWISE});
+                    localRotate({Face::UP, Direction::CLOCKWISE});
+                    localRotate({edgePartner.first,
+                                 edgePiece.localIndex == 3 ? Direction::CLOCKWISE : Direction::COUNTER_CLOCKWISE});
                 } else if (edgePiece.localIndex == 1) {
-                    // face is at the bottom, but upside down
-                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
+                    // face is at the top, but upside down
+                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, 5);
                     localRotate({edgePiece.side, Direction::CLOCKWISE});
                     localRotate({edgePartner.first, Direction::CLOCKWISE});
-                    localRotate({Face::UP, Direction::CLOCKWISE});
+                    localRotate({Face::UP, Direction::COUNTER_CLOCKWISE});
                     localRotate({edgePartner.first, Direction::COUNTER_CLOCKWISE});
-                } else if (edgePiece.localIndex == 7) {
-                    // face is at the top, but upside down
-                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, edgePiece.localIndex);
                     localRotate({edgePiece.side, Direction::COUNTER_CLOCKWISE});
-                    localRotate({edgePartner.first, Direction::CLOCKWISE});
-                    localRotate({Face::UP, Direction::CLOCKWISE});
+                } else if (edgePiece.localIndex == 7) {
+                    // face is at the bottom, but upside down
+                    const auto edgePartner = getEdgePartnerSideAndLocalIndex(edgePiece.side, 3);
+                    localRotate({edgePiece.side, Direction::CLOCKWISE});
                     localRotate({edgePartner.first, Direction::COUNTER_CLOCKWISE});
+                    localRotate({Face::UP, Direction::CLOCKWISE});
+                    localRotate({edgePartner.first, Direction::CLOCKWISE});
                 } else {
                     // TODO add assertion that fails if this point is reached
                 }
@@ -464,20 +468,18 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
             const auto edgePartnerCurrentFace = getCurrentFace(edgePartner.first, edgePartner.second);
             if (edgePartner.first != edgePartnerCurrentFace) {
                 // TODO use negative rotationCount to signal counter clockwise rotations
-                const std::array<std::array<int, 7>, 7> rotationCount = {
-                      std::array<int, 7>(),  //
-                      {0, 0, 2, 3, 1, 0, 0}, // FRONT
-                      {0, 2, 0, 1, 3, 0, 0}, // BACK
-                      {0, 1, 3, 0, 2, 0, 0}, // LEFT
-                      {0, 3, 1, 2, 0, 0, 0}, // RIGHT
-                      {0, 0, 0, 0, 0, 0, 0}, // UP
-                      {0, 0, 0, 0, 0, 0, 0}, // DOWN
-                };
-                const auto count = rotationCount[(int)edgePartnerCurrentFace][(int)edgePartner.first];
+                constexpr std::array<std::array<int, 7>, 7> rotationCount = {{
+                      {0, 2, 3, 1, 0, 0}, // FRONT
+                      {2, 0, 1, 3, 0, 0}, // BACK
+                      {1, 3, 0, 2, 0, 0}, // LEFT
+                      {3, 1, 2, 0, 0, 0}, // RIGHT
+                      {0, 0, 0, 0, 0, 0}, // UP
+                      {0, 0, 0, 0, 0, 0}, // DOWN
+                }};
+                const auto count = rotationCount[(int)edgePartnerCurrentFace - 1][(int)edgePartner.first - 1];
                 for (int i = 0; i < count; i++) {
                     localRotate(R_U);
                 }
-                break;
             }
 
             localRotate({edgePartnerCurrentFace, Direction::CLOCKWISE});
@@ -602,19 +604,37 @@ void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &resul
             }
 
             // the remaining pieces are now at the top
-            if (!cornerIsAtCorrectPosition(cornerPiece)) {
+            constexpr std::array<Face, 6> nextSidesClockwise = {{
+                  Face::LEFT,  // FRONT
+                  Face::RIGHT, // BACK
+                  Face::BACK,  // LEFT
+                  Face::FRONT, // RIGHT
+                  Face::NONE,  // UP
+                  Face::NONE,  // DOWN
+            }};
+            constexpr std::array<int, 9> nextLocalIndexClockwise = {{
+                  2, 5, 8, //
+                  1, 4, 7, //
+                  0, 3, 6, //
+            }};
+            auto currentCornerPiece = cornerPiece;
+            while (!cornerIsAtCorrectPosition(currentCornerPiece)) {
                 localRotate(R_U);
-                break;
+                if (currentCornerPiece.side != Face::UP && currentCornerPiece.side != Face::BACK) {
+                    currentCornerPiece.side = nextSidesClockwise[(int)currentCornerPiece.side - 1];
+                } else {
+                    currentCornerPiece.localIndex = nextLocalIndexClockwise[currentCornerPiece.localIndex];
+                }
             }
 
-            const auto cornerPartners = getCornerPartners(cornerPiece.side, cornerPiece.localIndex);
+            const auto cornerPartners = getCornerPartners(currentCornerPiece.side, currentCornerPiece.localIndex);
             int rotationCount = 0;
             auto rotationFace = Face::NONE;
-            if (cornerPiece.side != Face::UP) {
-                if (cornerPiece.localIndex == 2) {
+            if (currentCornerPiece.side != Face::UP) {
+                if (currentCornerPiece.localIndex == 2) {
                     rotationCount = 1;
-                    rotationFace = cornerPiece.side;
-                } else if (cornerPiece.localIndex == 0) {
+                    rotationFace = currentCornerPiece.side;
+                } else if (currentCornerPiece.localIndex == 0) {
                     rotationCount = 5;
                     rotationFace = cornerPartners[1].first;
                 } else {
