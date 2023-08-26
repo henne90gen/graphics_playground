@@ -128,6 +128,7 @@ struct CoreRubiksCube {
      * @return Face that is present at the selected position
      */
     Face getCurrentFace(Face side, unsigned int localIndex);
+    Face getCurrentFace(const std::pair<Face, unsigned int> &pair);
 
     /**
      * Solves this Rubiks cube and returns the list of RotationCommands that were applied.

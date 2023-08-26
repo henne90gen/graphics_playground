@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <random>
 #include <vector>
 
 #include "CoreRubiksCube.h"
@@ -62,7 +63,7 @@ TEST(getCurrentFace, Face_does_not_change_without_a_rotation) {
     assertWholeFace(cube, rubiks::Face::DOWN);
 }
 
-TEST(getCurrentFace, Face_is_calculated_correctly_with_one_rotation) {
+TEST(getCurrentFace, Face_is_calculated_correctly_for_R) {
     auto cube = rubiks::CoreRubiksCube({R_R});
 
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 2), rubiks::Face::DOWN);
@@ -82,7 +83,7 @@ TEST(getCurrentFace, Face_is_calculated_correctly_with_one_rotation) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 8), rubiks::Face::BACK);
 }
 
-TEST(getCurrentFace, Face_is_calculated_correctly_with_two_rotations_1) {
+TEST(getCurrentFace, Face_is_calculated_correctly_for_R_U) {
     auto cube = rubiks::CoreRubiksCube({R_R, R_U});
 
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 0), rubiks::Face::RIGHT);
@@ -106,6 +107,34 @@ TEST(getCurrentFace, Face_is_calculated_correctly_with_two_rotations_1) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 2), rubiks::Face::BACK);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 5), rubiks::Face::BACK);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 8), rubiks::Face::BACK);
+}
+
+TEST(getCurrentFace, Face_is_calculated_correctly_for_F_L) {
+    auto cube = rubiks::CoreRubiksCube({R_F, R_L});
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 0), rubiks::Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 3), rubiks::Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 6), rubiks::Face::LEFT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 0), rubiks::Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 3), rubiks::Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 6), rubiks::Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 7), rubiks::Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 8), rubiks::Face::LEFT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 2), rubiks::Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 5), rubiks::Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 8), rubiks::Face::RIGHT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 6), rubiks::Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 7), rubiks::Face::DOWN);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 8), rubiks::Face::DOWN);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 0), rubiks::Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 1), rubiks::Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 2), rubiks::Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 3), rubiks::Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 6), rubiks::Face::FRONT);
 }
 
 TEST(rotate, indices_are_adjusted_correctly_for_counter_clockwise_front_rotation) {
@@ -320,6 +349,32 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands, ru
     ASSERT_EQ(cube.getCurrentFace(side, localIndex), expectedFace);
 }
 
+void testSolvingBottomLayer(const std::vector<rubiks::RotationCommand> &initialCommands) {
+    auto cube = rubiks::CoreRubiksCube(initialCommands);
+    auto commands = cube.solve();
+    for (const auto &cmd : commands) {
+        ASSERT_NE(cmd.side, rubiks::Face::NONE);
+    }
+    for (int i = 0; i < 9; i++) {
+        ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, i), rubiks::Face::DOWN);
+    }
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 6), rubiks::Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 7), rubiks::Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 8), rubiks::Face::FRONT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 6), rubiks::Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 7), rubiks::Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 8), rubiks::Face::RIGHT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 6), rubiks::Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 7), rubiks::Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 8), rubiks::Face::BACK);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 6), rubiks::Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 7), rubiks::Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 8), rubiks::Face::LEFT);
+}
+
 TEST(solve, BottomLayer_FrontRotations) {
     testSolving({R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
     testSolving({R_F, R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
@@ -362,13 +417,37 @@ TEST(solve, BottomLayer_LeftBackAndRightRotations) {
 }
 
 TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
-    testSolving({R_F, R_L}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F, R_U, R_L, R_L}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolvingBottomLayer({R_F, R_L});
+    testSolvingBottomLayer({R_F, R_F, R_U, R_L, R_L});
+    // testSolvingBottomLayer({R_D, R_D, R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R, R_FI, R_FI, R_R, R_D, R_F, R_L, R_D, R_FI, R_UI, R_R});
+}
+
+TEST(solve, DISABLED_BottomLayer_RandomMoves) {
+    std::vector<rubiks::RotationCommand> commands = {};
+    static constexpr auto rotationCommandCount = 12;
+    std::array<rubiks::RotationCommand, rotationCommandCount> rotations = {
+          rubiks::RotationCommand(R_R), R_RI, R_F, R_FI, R_D, R_DI, R_L, R_LI, R_U, R_UI, R_B, R_BI,
+    };
+
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
+
+    const int shuffleCount = 20;
+    for (unsigned int i = 0; i < shuffleCount; i++) {
+        unsigned int randomIndex = distribution(generator);
+        rubiks::RotationCommand rotation = rotations[randomIndex];
+        commands.push_back(rotation);
+
+        std::cout << to_string(rotation, true) << ", ";
+    }
+    std::cout << std::endl;
+
+    testSolvingBottomLayer(commands);
 }
 
 namespace rubiks {
-std::array<std::pair<rubiks::Face, unsigned int>, 3> getCornerPartners(rubiks::Face side,
-                                                                                       unsigned int localIndex);
+std::array<std::pair<rubiks::Face, unsigned int>, 3> getCornerPartners(rubiks::Face side, unsigned int localIndex);
 }
 TEST(getCornerPartners, works) {
     auto result = rubiks::getCornerPartners(rubiks::Face::FRONT, 0);

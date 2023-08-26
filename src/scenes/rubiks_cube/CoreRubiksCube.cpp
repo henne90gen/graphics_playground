@@ -276,6 +276,10 @@ Face CoreRubiksCube::getCurrentFace(Face side, unsigned int localIndex) {
     return sideAndLocalIndexToFace[(int)side - 1][localIndex];
 }
 
+Face CoreRubiksCube::getCurrentFace(const std::pair<Face, unsigned int> &pair) {
+    return sideAndLocalIndexToFace[(int)pair.first - 1][pair.second];
+}
+
 std::vector<RotationCommand> CoreRubiksCube::solve() {
     auto result = std::vector<RotationCommand>();
 
@@ -318,23 +322,21 @@ std::pair<Face, unsigned int> getEdgePartnerSideAndLocalIndex(Face side, unsigne
 std::array<std::pair<Face, unsigned int>, 3> getCornerPartners(Face side, unsigned int localIndex) {
     constexpr std::array<std::array<std::pair<Face, unsigned int>, 3>, 8> corners = {{
           // FRONT
-          {std::make_pair(Face::FRONT, 0), std::make_pair(Face::LEFT, 2), std::make_pair(Face::UP, 6)},   // TOP-LEFT
-          {std::make_pair(Face::FRONT, 2), std::make_pair(Face::UP, 8), std::make_pair(Face::RIGHT, 0)},  // TOP-RIGHT
-          {std::make_pair(Face::FRONT, 6), std::make_pair(Face::DOWN, 0), std::make_pair(Face::LEFT, 8)}, // BOTTOM-LEFT
-          {std::make_pair(Face::FRONT, 8), std::make_pair(Face::RIGHT, 6),
-           std::make_pair(Face::DOWN, 2)}, // BOTTOM-RIGHT
+          {std::make_pair(Face::FRONT, 0), {Face::LEFT, 2}, {Face::UP, 6}},    // TOP-LEFT
+          {std::make_pair(Face::FRONT, 2), {Face::UP, 8}, {Face::RIGHT, 0}},   // TOP-RIGHT
+          {std::make_pair(Face::FRONT, 6), {Face::DOWN, 0}, {Face::LEFT, 8}},  // BOTTOM-LEFT
+          {std::make_pair(Face::FRONT, 8), {Face::RIGHT, 6}, {Face::DOWN, 2}}, // BOTTOM-RIGHT
 
           // BACK
-          {std::make_pair(Face::BACK, 0), std::make_pair(Face::RIGHT, 2), std::make_pair(Face::UP, 2)}, // TOP-LEFT
-          {std::make_pair(Face::BACK, 2), std::make_pair(Face::UP, 0), std::make_pair(Face::LEFT, 0)},  // TOP-RIGHT
-          {std::make_pair(Face::BACK, 6), std::make_pair(Face::DOWN, 2),
-           std::make_pair(Face::RIGHT, 8)},                                                              // BOTTOM-RIGHT
-          {std::make_pair(Face::BACK, 8), std::make_pair(Face::LEFT, 6), std::make_pair(Face::DOWN, 0)}, // BOTTOM-LEFT
+          {std::make_pair(Face::BACK, 0), {Face::RIGHT, 2}, {Face::UP, 2}},   // TOP-LEFT
+          {std::make_pair(Face::BACK, 2), {Face::UP, 0}, {Face::LEFT, 0}},    // TOP-RIGHT
+          {std::make_pair(Face::BACK, 8), {Face::DOWN, 6}, {Face::LEFT, 6}},  // BOTTOM-RIGHT
+          {std::make_pair(Face::BACK, 6), {Face::RIGHT, 8}, {Face::DOWN, 8}}, // BOTTOM-LEFT
     }};
 
     for (const auto &corner : corners) {
         int foundCornerIndex = -1;
-        for (int i = 0; i < corners.size(); i++) {
+        for (int i = 0; i < corner.size(); i++) {
             const auto &[face, localIdx] = corner[i];
             if (face == side && localIdx == localIndex) {
                 foundCornerIndex = i;
@@ -427,6 +429,7 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
                 // face is at the bottom, but the neighboring side does not match, thus needs to be moved to the top
                 localRotate({edgePiece.expectedEdgePartnerFace, Direction::CLOCKWISE});
                 localRotate({edgePiece.expectedEdgePartnerFace, Direction::CLOCKWISE});
+                break;
             }
 
             if (edgePiece.side == Face::LEFT || edgePiece.side == Face::RIGHT || edgePiece.side == Face::FRONT ||
@@ -453,6 +456,7 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
                 } else {
                     // TODO add assertion that fails if this point is reached
                 }
+                break;
             }
 
             // face is now at the top
@@ -473,6 +477,7 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
                 for (int i = 0; i < count; i++) {
                     localRotate(R_U);
                 }
+                break;
             }
 
             localRotate({edgePartnerCurrentFace, Direction::CLOCKWISE});
@@ -566,10 +571,10 @@ void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &resul
 
             if (cornerPiece.side == Face::DOWN) {
                 const auto cornerPartners = getCornerPartners(cornerPiece.side, cornerPiece.localIndex);
-                const auto cornerPartner1CurrentFace =
-                      getCurrentFace(cornerPartners[1].first, cornerPartners[1].second);
-                const auto cornerPartner2CurrentFace =
-                      getCurrentFace(cornerPartners[2].first, cornerPartners[2].second);
+                const auto cornerPartner1 = cornerPartners[1];
+                const auto cornerPartner2 = cornerPartners[2];
+                const auto cornerPartner1CurrentFace = getCurrentFace(cornerPartner1.first, cornerPartner1.second);
+                const auto cornerPartner2CurrentFace = getCurrentFace(cornerPartner2.first, cornerPartner2.second);
                 if (cornerPartner1CurrentFace == cornerPiece.expectedCornerPartnerFace0 &&
                     cornerPartner2CurrentFace == cornerPiece.expectedCornerPartnerFace1) {
                     // piece is already at the correct position
@@ -596,6 +601,7 @@ void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &resul
                 break;
             }
 
+            // the remaining pieces are now at the top
             if (!cornerIsAtCorrectPosition(cornerPiece)) {
                 localRotate(R_U);
                 break;
@@ -624,6 +630,7 @@ void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &resul
                 localRotate({rotationFace, Direction::CLOCKWISE});
                 localRotate(R_U);
             }
+            break;
         }
     }
 }
