@@ -873,6 +873,59 @@ void CoreRubiksCube::solveCreateTopCross(std::vector<RotationCommand> &result) {
     }
 
     // at this point we have the cross on top
+
+    const auto faceAndSideMatch = [this](Face side, unsigned int localIndex) {
+        const auto edgePartner = getEdgePartnerSideAndLocalIndex(side, localIndex);
+        const auto edgePartnerFace = getCurrentFace(edgePartner);
+        return edgePartner.first == edgePartnerFace;
+    };
+    const auto edgePartner1 = getEdgePartnerSideAndLocalIndex(Face::UP, 1);
+    const auto edgePartner3 = getEdgePartnerSideAndLocalIndex(Face::UP, 3);
+    const auto edgePartner5 = getEdgePartnerSideAndLocalIndex(Face::UP, 5);
+    const auto edgePartner7 = getEdgePartnerSideAndLocalIndex(Face::UP, 7);
+    if (faceAndSideMatch(Face::UP, 1) && //
+        faceAndSideMatch(Face::UP, 3) && //
+        faceAndSideMatch(Face::UP, 5) && //
+        faceAndSideMatch(Face::UP, 7)) {
+        // top cross is already correctly oriented
+        return;
+    }
+
+    constexpr std::array<Face, 6> nextSidesClockwise = {{
+          Face::LEFT,  // FRONT
+          Face::RIGHT, // BACK
+          Face::BACK,  // LEFT
+          Face::FRONT, // RIGHT
+          Face::NONE,  // UP
+          Face::NONE,  // DOWN
+    }};
+    constexpr std::array<Face, 6> expectedPartners = {{
+          Face::BACK,  // FRONT
+          Face::FRONT, // BACK
+          Face::RIGHT, // LEFT
+          Face::LEFT,  // RIGHT
+          Face::DOWN,  // UP
+          Face::UP,    // DOWN
+    }};
+    const auto leftFace = getCurrentFace(Face::LEFT, 1);
+    const auto rightFace = getCurrentFace(Face::RIGHT, 1);
+    const auto frontFace = getCurrentFace(Face::FRONT, 1);
+    const auto backFace = getCurrentFace(Face::BACK, 1);
+    const auto leftFaceExpectedPartner = expectedPartners[(int)leftFace - 1];
+    const auto frontFaceExpectedPartner = expectedPartners[(int)frontFace - 1];
+    if (leftFaceExpectedPartner == rightFace && //
+        frontFaceExpectedPartner == backFace && //
+        nextSidesClockwise[(int)leftFace - 1] != backFace) {
+        // faces on opposite sides are correct, but faces on adjacent sides are not correct
+        localRotate(R_R);
+        localRotate(R_U);
+        localRotate(R_RI);
+        localRotate(R_U);
+        localRotate(R_R);
+        localRotate(R_U);
+        localRotate(R_U);
+        localRotate(R_RI);
+    }
 }
 
 void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) { solveCreateTopCross(result); }
