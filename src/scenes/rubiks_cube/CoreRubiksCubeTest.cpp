@@ -339,17 +339,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_cw_down_and_cw_right_rotation) {
     ASSERT_EQ(indices[17], 23);
 }
 
-void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands, rubiks::Face side, int localIndex,
-                 rubiks::Face expectedFace) {
-    auto cube = rubiks::CoreRubiksCube(initialCommands);
-    auto commands = cube.solve();
-    for (const auto &cmd : commands) {
-        ASSERT_NE(cmd.side, rubiks::Face::NONE);
-    }
-    ASSERT_EQ(cube.getCurrentFace(side, localIndex), expectedFace);
-}
-
-void testSolvingBottomLayer(const std::vector<rubiks::RotationCommand> &initialCommands) {
+void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands) {
     auto cube = rubiks::CoreRubiksCube(initialCommands);
     auto commands = cube.solve();
     for (const auto &cmd : commands) {
@@ -373,65 +363,79 @@ void testSolvingBottomLayer(const std::vector<rubiks::RotationCommand> &initialC
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 6), rubiks::Face::LEFT);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 7), rubiks::Face::LEFT);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 8), rubiks::Face::LEFT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 3), rubiks::Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 5), rubiks::Face::FRONT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 3), rubiks::Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 5), rubiks::Face::LEFT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 3), rubiks::Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 5), rubiks::Face::RIGHT);
+
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 3), rubiks::Face::BACK);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 5), rubiks::Face::BACK);
 }
 
 TEST(solve, BottomLayer_FrontRotations) {
-    testSolving({R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_FI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F});
+    testSolving({R_F, R_F});
+    testSolving({R_FI});
 }
 
 TEST(solve, BottomLayer_LeftRotations) {
-    testSolving({R_L}, rubiks::Face::DOWN, 3, rubiks::Face::DOWN);
-    testSolving({R_L, R_L}, rubiks::Face::DOWN, 3, rubiks::Face::DOWN);
-    testSolving({R_LI}, rubiks::Face::DOWN, 3, rubiks::Face::DOWN);
+    testSolving({R_L});
+    testSolving({R_L, R_L});
+    testSolving({R_LI});
 }
 
 TEST(solve, BottomLayer_BackRotations) {
-    testSolving({R_B}, rubiks::Face::DOWN, 7, rubiks::Face::DOWN);
-    testSolving({R_B, R_B}, rubiks::Face::DOWN, 7, rubiks::Face::DOWN);
-    testSolving({R_BI}, rubiks::Face::DOWN, 7, rubiks::Face::DOWN);
+    testSolving({R_B});
+    testSolving({R_B, R_B});
+    testSolving({R_BI});
 }
 
 TEST(solve, BottomLayer_RightRotations) {
-    testSolving({R_R}, rubiks::Face::DOWN, 5, rubiks::Face::DOWN);
-    testSolving({R_R, R_R}, rubiks::Face::DOWN, 5, rubiks::Face::DOWN);
-    testSolving({R_RI}, rubiks::Face::DOWN, 5, rubiks::Face::DOWN);
+    testSolving({R_R});
+    testSolving({R_R, R_R});
+    testSolving({R_RI});
 }
 
 TEST(solve, BottomLayer_FrontAndUpRotations) {
-    testSolving({R_F, R_F, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F, R_U, R_U}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F, R_UI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U});
+    testSolving({R_F, R_F, R_U, R_U});
+    testSolving({R_F, R_F, R_UI});
 }
 
 TEST(solve, BottomLayer_LeftBackAndRightRotations) {
-    testSolving({R_F, R_F, R_U, R_L}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F, R_U, R_LI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_L});
+    testSolving({R_F, R_F, R_U, R_LI});
 
-    testSolving({R_F, R_F, R_U, R_U, R_B}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F, R_U, R_U, R_BI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_U, R_U, R_B});
+    testSolving({R_F, R_F, R_U, R_U, R_BI});
 
-    testSolving({R_F, R_F, R_UI, R_R}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
-    testSolving({R_F, R_F, R_UI, R_RI}, rubiks::Face::DOWN, 1, rubiks::Face::DOWN);
+    testSolving({R_F, R_F, R_UI, R_R});
+    testSolving({R_F, R_F, R_UI, R_RI});
 }
 
 TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
-    testSolvingBottomLayer({R_F, R_L});
-    testSolvingBottomLayer({R_F, R_F, R_U, R_L, R_L});
+    testSolving({R_F, R_L});
+    testSolving({R_F, R_F, R_U, R_L, R_L});
 }
 
-TEST(solve, BottomLayer_RegressionTests) {
-    testSolvingBottomLayer({R_D,  R_D,  R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R,
-                            R_FI, R_FI, R_R, R_D,  R_F,  R_L,  R_D,  R_FI, R_UI, R_R});
-    testSolvingBottomLayer({R_B,  R_FI, R_B, R_RI, R_RI, R_RI, R_RI, R_UI, R_BI, R_UI,
-                            R_RI, R_U,  R_L, R_LI, R_FI, R_F,  R_UI, R_L,  R_U,  R_UI});
-    testSolvingBottomLayer({R_R,  R_LI, R_D,  R_BI, R_RI, R_F, R_RI, R_FI, R_R,  R_UI,
-                            R_BI, R_F,  R_UI, R_B,  R_FI, R_U, R_L,  R_FI, R_DI, R_R});
+TEST(solve, RegressionTests) {
+    testSolving({R_D,  R_D,  R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R,
+                 R_FI, R_FI, R_R, R_D,  R_F,  R_L,  R_D,  R_FI, R_UI, R_R});
+    testSolving({R_B,  R_FI, R_B, R_RI, R_RI, R_RI, R_RI, R_UI, R_BI, R_UI,
+                 R_RI, R_U,  R_L, R_LI, R_FI, R_F,  R_UI, R_L,  R_U,  R_UI});
+    testSolving({R_R,  R_LI, R_D,  R_BI, R_RI, R_F, R_RI, R_FI, R_R,  R_UI,
+                 R_BI, R_F,  R_UI, R_B,  R_FI, R_U, R_L,  R_FI, R_DI, R_R});
 }
 
-TEST(solve, DISABLED_BottomLayer_RandomMoves) {
+TEST(solve, DISABLED_RandomMoves) {
     constexpr auto iterationCount = 1000;
+    constexpr int shuffleCount = 50;
+
     for (int i = 0; i < iterationCount; i++) {
         std::vector<rubiks::RotationCommand> commands = {};
         static constexpr auto rotationCommandCount = 12;
@@ -443,7 +447,6 @@ TEST(solve, DISABLED_BottomLayer_RandomMoves) {
         std::default_random_engine generator(seed);
         std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
 
-        const int shuffleCount = 20;
         for (unsigned int i = 0; i < shuffleCount; i++) {
             unsigned int randomIndex = distribution(generator);
             rubiks::RotationCommand rotation = rotations[randomIndex];
@@ -453,7 +456,7 @@ TEST(solve, DISABLED_BottomLayer_RandomMoves) {
         }
         std::cout << std::endl;
 
-        testSolvingBottomLayer(commands);
+        testSolving(commands);
     }
 }
 
