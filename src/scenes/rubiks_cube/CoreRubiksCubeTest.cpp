@@ -419,31 +419,42 @@ TEST(solve, BottomLayer_LeftBackAndRightRotations) {
 TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
     testSolvingBottomLayer({R_F, R_L});
     testSolvingBottomLayer({R_F, R_F, R_U, R_L, R_L});
-    testSolvingBottomLayer({R_D, R_D, R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R, R_FI, R_FI, R_R, R_D, R_F, R_L, R_D, R_FI, R_UI, R_R});
+}
+
+TEST(solve, BottomLayer_RegressionTests) {
+    // testSolvingBottomLayer({R_D,  R_D,  R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R,
+    //                         R_FI, R_FI, R_R, R_D,  R_F,  R_L,  R_D,  R_FI, R_UI, R_R});
+    // testSolvingBottomLayer({R_B,  R_FI, R_B, R_RI, R_RI, R_RI, R_RI, R_UI, R_BI, R_UI,
+    //                         R_RI, R_U,  R_L, R_LI, R_FI, R_F,  R_UI, R_L,  R_U,  R_UI});
+    testSolvingBottomLayer({R_R,  R_LI, R_D,  R_BI, R_RI, R_F, R_RI, R_FI, R_R,  R_UI,
+                            R_BI, R_F,  R_UI, R_B,  R_FI, R_U, R_L,  R_FI, R_DI, R_R});
 }
 
 TEST(solve, DISABLED_BottomLayer_RandomMoves) {
-    std::vector<rubiks::RotationCommand> commands = {};
-    static constexpr auto rotationCommandCount = 12;
-    std::array<rubiks::RotationCommand, rotationCommandCount> rotations = {
-          rubiks::RotationCommand(R_R), R_RI, R_F, R_FI, R_D, R_DI, R_L, R_LI, R_U, R_UI, R_B, R_BI,
-    };
+    constexpr auto iterationCount = 1000;
+    for (int i = 0; i < iterationCount; i++) {
+        std::vector<rubiks::RotationCommand> commands = {};
+        static constexpr auto rotationCommandCount = 12;
+        std::array<rubiks::RotationCommand, rotationCommandCount> rotations = {
+              rubiks::RotationCommand(R_R), R_RI, R_F, R_FI, R_D, R_DI, R_L, R_LI, R_U, R_UI, R_B, R_BI,
+        };
 
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
+        const auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine generator(seed);
+        std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
 
-    const int shuffleCount = 20;
-    for (unsigned int i = 0; i < shuffleCount; i++) {
-        unsigned int randomIndex = distribution(generator);
-        rubiks::RotationCommand rotation = rotations[randomIndex];
-        commands.push_back(rotation);
+        const int shuffleCount = 20;
+        for (unsigned int i = 0; i < shuffleCount; i++) {
+            unsigned int randomIndex = distribution(generator);
+            rubiks::RotationCommand rotation = rotations[randomIndex];
+            commands.push_back(rotation);
 
-        std::cout << to_string(rotation, true) << ", ";
+            std::cout << to_string(rotation, true) << ", ";
+        }
+        std::cout << std::endl;
+
+        testSolvingBottomLayer(commands);
     }
-    std::cout << std::endl;
-
-    testSolvingBottomLayer(commands);
 }
 
 namespace rubiks {

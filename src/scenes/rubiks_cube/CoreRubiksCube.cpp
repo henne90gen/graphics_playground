@@ -330,8 +330,8 @@ std::array<std::pair<Face, unsigned int>, 3> getCornerPartners(Face side, unsign
           // BACK
           {std::make_pair(Face::BACK, 0), {Face::RIGHT, 2}, {Face::UP, 2}},   // TOP-LEFT
           {std::make_pair(Face::BACK, 2), {Face::UP, 0}, {Face::LEFT, 0}},    // TOP-RIGHT
-          {std::make_pair(Face::BACK, 8), {Face::DOWN, 6}, {Face::LEFT, 6}},  // BOTTOM-RIGHT
-          {std::make_pair(Face::BACK, 6), {Face::RIGHT, 8}, {Face::DOWN, 8}}, // BOTTOM-LEFT
+          {std::make_pair(Face::BACK, 8), {Face::LEFT, 6}, {Face::DOWN, 6}},  // BOTTOM-RIGHT
+          {std::make_pair(Face::BACK, 6), {Face::DOWN, 8}, {Face::RIGHT, 8}}, // BOTTOM-LEFT
     }};
 
     for (const auto &corner : corners) {
@@ -403,10 +403,10 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
           {1, Face::LEFT},              //
           {1, Face::RIGHT},             //
           {1, Face::BACK},              //
-          {1, Face::DOWN, Face::BACK},  //
+          {1, Face::DOWN, Face::FRONT},  //
           {3, Face::DOWN, Face::LEFT},  //
           {5, Face::DOWN, Face::RIGHT}, //
-          {7, Face::DOWN, Face::FRONT}, //
+          {7, Face::DOWN, Face::BACK}, //
     }};
 
     while (!bottomEdgePiecesAreCorrect()) {
@@ -620,7 +620,7 @@ void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &resul
             auto currentCornerPiece = cornerPiece;
             while (!cornerIsAtCorrectPosition(currentCornerPiece)) {
                 localRotate(R_U);
-                if (currentCornerPiece.side != Face::UP && currentCornerPiece.side != Face::BACK) {
+                if (currentCornerPiece.side != Face::UP && currentCornerPiece.side != Face::DOWN) {
                     currentCornerPiece.side = nextSidesClockwise[(int)currentCornerPiece.side - 1];
                 } else {
                     currentCornerPiece.localIndex = nextLocalIndexClockwise[currentCornerPiece.localIndex];
