@@ -837,6 +837,7 @@ std::string to_string(const rubiks::Face &face, bool simple) {
             return "DOWN";
         }
     case rubiks::Face::NONE:
+    default:
         return "NONE";
     }
 }

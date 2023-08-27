@@ -451,9 +451,9 @@ void RubiksCubeScene::tick() {
     for (unsigned int i = 0; i < rubiks::CUBELET_COUNT; i++) {
         shader->setUniform("cubeMatrix", rubiksCube->getCubeletRotationMatrix(i));
         const unsigned int vertexCountPerSmallCube = 36;
-        const unsigned int count = i * vertexCountPerSmallCube * sizeof(unsigned int);
-        GL_Call(glDrawElements(GL_TRIANGLES, vertexCountPerSmallCube, GL_UNSIGNED_INT,
-                               reinterpret_cast<void *>(count))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        const uint64_t count = i * vertexCountPerSmallCube * sizeof(unsigned int);
+        GL_Call(
+              glDrawElements(GL_TRIANGLES, vertexCountPerSmallCube, GL_UNSIGNED_INT, reinterpret_cast<void *>(count)));
     }
 
     indexBuffer->unbind();
