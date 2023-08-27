@@ -2,16 +2,21 @@
 
 #include <chrono>
 #include <random>
+#include <iostream>
 
 namespace rubiks {
 
-AnimationRubiksCube::AnimationRubiksCube(std::vector<RotationCommand> commands) : commands(commands) {
+void init(std::array<rubiks::Cubelet, CUBELET_COUNT> &cubelets) {
     for (unsigned int i = 0; i < CUBELET_COUNT; i++) {
         cubelets[i] = {glm::mat4(1.0F)};
     }
+}
 
-    this->commands = commands;
-    currentCommandIndex = 0;
+AnimationRubiksCube::AnimationRubiksCube() { init(cubelets); }
+
+AnimationRubiksCube::AnimationRubiksCube(std::vector<RotationCommand> commands)
+    : commands(commands), currentCommandIndex(0) {
+    init(cubelets);
 }
 
 void updateCubeletRotation(Cubelet &cubelet, glm::vec3 rotationVector) {
@@ -112,7 +117,9 @@ void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
         // TODO do error handling
         return;
     }
+
     updateRotation(cubelets, cube.globalIndexToCubeletIndex, currentCommand, rotationSpeed);
+
     if (!isDoneRotating) {
         return;
     }
@@ -128,27 +135,43 @@ void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
     }
 }
 
-void AnimationRubiksCube::shuffle() {
-    static constexpr auto rotationCommandCount = 12;
-    std::array<RotationCommand, rotationCommandCount> rotations = {
-          RotationCommand(R_R), R_RI, R_F, R_FI, R_D, R_DI, R_L, R_LI, R_U, R_UI, R_B, R_BI,
-    };
+void AnimationRubiksCube::addRotationCommand(RotationCommand command) { commands.push_back(command); }
 
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+void AnimationRubiksCube::shuffle() {
+    constexpr auto rotationCommandCount = 12;
+    constexpr std::array<RotationCommand, rotationCommandCount> rotations = {{
+          R_R,
+          R_RI,
+          R_F,
+          R_FI,
+          R_D,
+          R_DI,
+          R_L,
+          R_LI,
+          R_U,
+          R_UI,
+          R_B,
+          R_BI,
+    }};
+
+    const auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
 
-    const int shuffleCount = 20;
+    constexpr int shuffleCount = 20;
     for (unsigned int i = 0; i < shuffleCount; i++) {
-        unsigned int randomIndex = distribution(generator);
+        const unsigned int randomIndex = distribution(generator);
         RotationCommand rotation = rotations[randomIndex];
         commands.push_back(rotation);
     }
 }
 
 void AnimationRubiksCube::solve() {
-    auto result = cube.solve();
-    commands.insert(commands.end(), result.begin(), result.end());
+    auto copy = cube.copy();
+    const auto result = copy.solve();
+    for (auto &command : result) {
+        commands.push_back(command);
+    }
 }
 
 } // namespace rubiks

@@ -422,10 +422,10 @@ TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
 }
 
 TEST(solve, BottomLayer_RegressionTests) {
-    // testSolvingBottomLayer({R_D,  R_D,  R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R,
-    //                         R_FI, R_FI, R_R, R_D,  R_F,  R_L,  R_D,  R_FI, R_UI, R_R});
-    // testSolvingBottomLayer({R_B,  R_FI, R_B, R_RI, R_RI, R_RI, R_RI, R_UI, R_BI, R_UI,
-    //                         R_RI, R_U,  R_L, R_LI, R_FI, R_F,  R_UI, R_L,  R_U,  R_UI});
+    testSolvingBottomLayer({R_D,  R_D,  R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R,
+                            R_FI, R_FI, R_R, R_D,  R_F,  R_L,  R_D,  R_FI, R_UI, R_R});
+    testSolvingBottomLayer({R_B,  R_FI, R_B, R_RI, R_RI, R_RI, R_RI, R_UI, R_BI, R_UI,
+                            R_RI, R_U,  R_L, R_LI, R_FI, R_F,  R_UI, R_L,  R_U,  R_UI});
     testSolvingBottomLayer({R_R,  R_LI, R_D,  R_BI, R_RI, R_F, R_RI, R_FI, R_R,  R_UI,
                             R_BI, R_F,  R_UI, R_B,  R_FI, R_U, R_L,  R_FI, R_DI, R_R});
 }

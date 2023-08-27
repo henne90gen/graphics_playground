@@ -13,7 +13,7 @@ struct Cubelet {
 };
 
 struct AnimationRubiksCube {
-    AnimationRubiksCube() = default;
+    AnimationRubiksCube();
     AnimationRubiksCube(std::vector<RotationCommand> commands);
 
     /**
@@ -27,6 +27,8 @@ struct AnimationRubiksCube {
      * [0.0, 2.0].
      */
     void rotate(float rotationSpeed);
+
+    void addRotationCommand(RotationCommand command);
 
     /**
      * Shuffles the rubiks cube by generating a random sequence of RotatationCommands.

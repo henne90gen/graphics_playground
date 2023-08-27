@@ -30,6 +30,13 @@ void CoreRubiksCube::init() {
     }
 }
 
+CoreRubiksCube CoreRubiksCube::copy() {
+    CoreRubiksCube result = {};
+    result.globalIndexToCubeletIndex = globalIndexToCubeletIndex;
+    result.sideAndLocalIndexToFace = sideAndLocalIndexToFace;
+    return result;
+}
+
 void CoreRubiksCube::adjustCubeletIndicesClockwise(std::array<unsigned int, SMALL_FACE_COUNT> &selectedCubes) {
     /*
         Local face indices:
@@ -403,10 +410,10 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
           {1, Face::LEFT},              //
           {1, Face::RIGHT},             //
           {1, Face::BACK},              //
-          {1, Face::DOWN, Face::FRONT},  //
+          {1, Face::DOWN, Face::FRONT}, //
           {3, Face::DOWN, Face::LEFT},  //
           {5, Face::DOWN, Face::RIGHT}, //
-          {7, Face::DOWN, Face::BACK}, //
+          {7, Face::DOWN, Face::BACK},  //
     }};
 
     while (!bottomEdgePiecesAreCorrect()) {

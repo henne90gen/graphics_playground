@@ -15,226 +15,244 @@ DEFINE_DEFAULT_SHADERS(rubiks_cube_RubiksCube)
 
 float *addCubeVertices(float *vertPtr, glm::vec3 min, glm::vec3 max) {
     // front face
+    auto r = 0.7176470588235294F;
+    auto g = 0.0705882352941176F;
+    auto b = 0.203921568627451F;
     *vertPtr++ = min.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     // back face
+    r = 1.0F;
+    g = 0.3450980392156863F;
+    b = 0.0F;
     *vertPtr++ = min.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     // left face
+    r = 0.0F;
+    g = 0.2745098039215686F;
+    b = 0.6784313725490196F;
     *vertPtr++ = min.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     // right face
+    r = 0.0F;
+    g = 0.607843137254902F;
+    b = 0.2823529411764706F;
     *vertPtr++ = max.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 1;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     // top face
+    r = 1.0F;
+    g = 0.8352941176470588F;
+    b = 0.0F;
     *vertPtr++ = min.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = max.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 0;     // r
-    *vertPtr++ = 1;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     // bottom face
+    r = 1.0F;
+    g = 1.0F;
+    b = 1.0F;
     *vertPtr++ = min.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = max.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 1.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = max.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 1.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     *vertPtr++ = min.x; // x
     *vertPtr++ = min.y; // y
     *vertPtr++ = min.z; // z
     *vertPtr++ = 0.0F;  // u
     *vertPtr++ = 0.0F;  // v
-    *vertPtr++ = 1;     // r
-    *vertPtr++ = 0;     // g
-    *vertPtr++ = 0;     // b
+    *vertPtr++ = r;     // r
+    *vertPtr++ = g;     // g
+    *vertPtr++ = b;     // b
 
     return vertPtr;
 }
@@ -302,8 +320,7 @@ void RubiksCubeScene::setup() {
 
     indexBuffer = std::make_shared<IndexBuffer>(indices, indicesCount);
 
-    rubiksCube.reset(new rubiks::AnimationRubiksCube({R_F, R_L,  R_RI, R_LI, R_R, R_F,  R_F,   R_DI, R_UI, R_BI,
-                                             R_L, R_FI, R_FI, R_L,  R_L, R_D, R_DI, R_BI, R_UI, R_DI}));
+    rubiksCube.reset(new rubiks::AnimationRubiksCube());
 }
 
 void RubiksCubeScene::destroy() {
@@ -317,6 +334,56 @@ std::string to_string(unsigned int input) {
         return " " + std::to_string(input);
     }
     return std::to_string(input);
+}
+
+void showRotationButtons(std::shared_ptr<rubiks::AnimationRubiksCube> cube) {
+    if (ImGui::Button("Front")) {
+        cube->addRotationCommand(R_F);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Front Inverse")) {
+        cube->addRotationCommand(R_FI);
+    }
+
+    if (ImGui::Button("Back")) {
+        cube->addRotationCommand(R_B);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Back Inverse")) {
+        cube->addRotationCommand(R_BI);
+    }
+
+    if (ImGui::Button("Left")) {
+        cube->addRotationCommand(R_L);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Left Inverse")) {
+        cube->addRotationCommand(R_LI);
+    }
+
+    if (ImGui::Button("Right")) {
+        cube->addRotationCommand(R_R);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Right Inverse")) {
+        cube->addRotationCommand(R_RI);
+    }
+
+    if (ImGui::Button("Up")) {
+        cube->addRotationCommand(R_U);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Up Inverse")) {
+        cube->addRotationCommand(R_UI);
+    }
+
+    if (ImGui::Button("Down")) {
+        cube->addRotationCommand(R_D);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Down Inverse")) {
+        cube->addRotationCommand(R_DI);
+    }
 }
 
 void RubiksCubeScene::tick() {
@@ -338,6 +405,9 @@ void RubiksCubeScene::tick() {
     if (ImGui::Button("Pause")) {
         rubiksCube->togglePause();
     }
+
+    showRotationButtons(rubiksCube);
+
     ImGui::End();
 
     shader->bind();
