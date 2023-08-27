@@ -94,8 +94,8 @@ FetchContent_Declare(
 )
 FetchContent_Declare(
         freetype
-        GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
-        GIT_TAG e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf # 2.12.1
+        GIT_REPOSITORY https://git.savannah.gnu.org/git/freetype/freetype2.git
+        GIT_TAG VER-2-13-2
 )
 FetchContent_Declare(
         fastnoise
