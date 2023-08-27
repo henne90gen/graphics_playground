@@ -384,8 +384,8 @@ void CoreRubiksCube::solveCreateBottomCross(std::vector<RotationCommand> &result
 
     // find miss-aligned bottom edge pieces
     struct EdgePiece {
-        unsigned int localIndex;
-        Face side;
+        unsigned int localIndex = 0;
+        Face side = Face::NONE;
         Face expectedEdgePartnerFace = Face::NONE;
     };
     constexpr unsigned int EDGE_PIECE_COUNT = 24;
@@ -519,8 +519,8 @@ void CoreRubiksCube::solveBottomCornerPieces(std::vector<RotationCommand> &resul
 
     // find the bottom corner pieces
     struct CornerPiece {
-        unsigned int localIndex;
-        Face side;
+        unsigned int localIndex = 0;
+        Face side = Face::NONE;
         Face expectedCornerPartnerFace0 = Face::NONE;
         Face expectedCornerPartnerFace1 = Face::NONE;
     };
@@ -686,8 +686,8 @@ void CoreRubiksCube::solveMiddleLayer(std::vector<RotationCommand> &result) {
 
     // find miss-aligned middle edge pieces
     struct EdgePiece {
-        unsigned int localIndex;
-        Face side;
+        unsigned int localIndex = 0;
+        Face side = Face::NONE;
         Face expectedEdgePartnerFace = Face::NONE;
     };
     constexpr unsigned int EDGE_PIECE_COUNT = 24;
@@ -746,6 +746,7 @@ void CoreRubiksCube::solveMiddleLayer(std::vector<RotationCommand> &result) {
                 break;
             }
 
+            // piece is at the top and can now be dropped into its correct position
             constexpr std::array<Face, 6> nextSidesClockwise = {{
                   Face::LEFT,  // FRONT
                   Face::RIGHT, // BACK
@@ -766,6 +767,7 @@ void CoreRubiksCube::solveMiddleLayer(std::vector<RotationCommand> &result) {
             const auto leftEdgePartner = getEdgePartnerSideAndLocalIndex(currentEdgePiece.side, 3);
             const auto rightEdgePartner = getEdgePartnerSideAndLocalIndex(currentEdgePiece.side, 5);
             if (leftEdgePartner.first == newEdgePartnerFace) {
+                // piece needs to be dropped to the left
                 localRotate(R_UI);
                 localRotate({leftEdgePartner.first, Direction::COUNTER_CLOCKWISE});
                 localRotate(R_U);
@@ -775,6 +777,7 @@ void CoreRubiksCube::solveMiddleLayer(std::vector<RotationCommand> &result) {
                 localRotate(R_UI);
                 localRotate({currentEdgePiece.side, Direction::COUNTER_CLOCKWISE});
             } else if (rightEdgePartner.first == newEdgePartnerFace) {
+                // piece needs to be dropped to the right
                 localRotate(R_U);
                 localRotate({rightEdgePartner.first, Direction::CLOCKWISE});
                 localRotate(R_UI);
