@@ -337,53 +337,77 @@ std::string to_string(unsigned int input) {
 }
 
 void showRotationButtons(std::shared_ptr<rubiks::AnimationRubiksCube> cube) {
+    if (!ImGui::BeginTable("Rotation Buttons", 2)) {
+        return;
+    }
+
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
     if (ImGui::Button("Front")) {
         cube->addRotationCommand(R_F);
     }
-    ImGui::SameLine();
+    ImGui::TableNextColumn();
     if (ImGui::Button("Front Inverse")) {
         cube->addRotationCommand(R_FI);
     }
 
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
     if (ImGui::Button("Back")) {
         cube->addRotationCommand(R_B);
     }
-    ImGui::SameLine();
+    ImGui::TableNextColumn();
     if (ImGui::Button("Back Inverse")) {
         cube->addRotationCommand(R_BI);
     }
 
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
     if (ImGui::Button("Left")) {
         cube->addRotationCommand(R_L);
     }
-    ImGui::SameLine();
+    ImGui::TableNextColumn();
     if (ImGui::Button("Left Inverse")) {
         cube->addRotationCommand(R_LI);
     }
 
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
     if (ImGui::Button("Right")) {
         cube->addRotationCommand(R_R);
     }
-    ImGui::SameLine();
+    ImGui::TableNextColumn();
     if (ImGui::Button("Right Inverse")) {
         cube->addRotationCommand(R_RI);
     }
 
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
     if (ImGui::Button("Up")) {
         cube->addRotationCommand(R_U);
     }
-    ImGui::SameLine();
+    ImGui::TableNextColumn();
     if (ImGui::Button("Up Inverse")) {
         cube->addRotationCommand(R_UI);
     }
 
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
     if (ImGui::Button("Down")) {
         cube->addRotationCommand(R_D);
     }
-    ImGui::SameLine();
+    ImGui::TableNextColumn();
     if (ImGui::Button("Down Inverse")) {
         cube->addRotationCommand(R_DI);
     }
+
+    ImGui::EndTable();
 }
 
 void RubiksCubeScene::tick() {
