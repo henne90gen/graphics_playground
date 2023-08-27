@@ -152,6 +152,7 @@ struct CoreRubiksCube {
     void solveBottomCornerPieces(std::vector<RotationCommand> &result);
     void solveMiddleLayer(std::vector<RotationCommand> &result);
     void solveTopLayer(std::vector<RotationCommand> &result);
+    void solveCreateTopCross(std::vector<RotationCommand> &result);
 };
 
 } // namespace rubiks

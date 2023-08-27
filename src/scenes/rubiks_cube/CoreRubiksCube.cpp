@@ -794,7 +794,88 @@ void CoreRubiksCube::solveMiddleLayer(std::vector<RotationCommand> &result) {
     }
 }
 
-void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) {}
+void CoreRubiksCube::solveCreateTopCross(std::vector<RotationCommand> &result) {
+    const auto localRotate = [this, &result](RotationCommand cmd) {
+        rotate(cmd);
+        result.push_back(cmd);
+    };
+
+    if (getCurrentFace(Face::UP, 1) != Face::UP && //
+        getCurrentFace(Face::UP, 3) != Face::UP && //
+        getCurrentFace(Face::UP, 5) != Face::UP && //
+        getCurrentFace(Face::UP, 7) != Face::UP) {
+        // only the center of the cross is there
+        localRotate(R_F);
+        localRotate(R_U);
+        localRotate(R_R);
+        localRotate(R_UI);
+        localRotate(R_RI);
+        localRotate(R_FI);
+    }
+
+    if (getCurrentFace(Face::UP, 1) == Face::UP && //
+        getCurrentFace(Face::UP, 3) != Face::UP && //
+        getCurrentFace(Face::UP, 5) != Face::UP && //
+        getCurrentFace(Face::UP, 7) == Face::UP) {
+        // straight line from FRONT to BACK
+        localRotate(R_U);
+    }
+
+    if (getCurrentFace(Face::UP, 1) != Face::UP && //
+        getCurrentFace(Face::UP, 3) == Face::UP && //
+        getCurrentFace(Face::UP, 5) == Face::UP && //
+        getCurrentFace(Face::UP, 7) != Face::UP) {
+        // straight line from LEFT to RIGHT
+        localRotate(R_F);
+        localRotate(R_U);
+        localRotate(R_R);
+        localRotate(R_UI);
+        localRotate(R_RI);
+        localRotate(R_FI);
+    }
+
+    if (getCurrentFace(Face::UP, 1) != Face::UP && //
+        getCurrentFace(Face::UP, 3) == Face::UP && //
+        getCurrentFace(Face::UP, 5) != Face::UP && //
+        getCurrentFace(Face::UP, 7) == Face::UP) {
+        // right angle at the bottom left
+        localRotate(R_U);
+    }
+
+    if (getCurrentFace(Face::UP, 1) != Face::UP && //
+        getCurrentFace(Face::UP, 3) != Face::UP && //
+        getCurrentFace(Face::UP, 5) == Face::UP && //
+        getCurrentFace(Face::UP, 7) == Face::UP) {
+        // right angle at the bottom right
+        localRotate(R_U);
+        localRotate(R_U);
+    }
+
+    if (getCurrentFace(Face::UP, 1) == Face::UP && //
+        getCurrentFace(Face::UP, 3) != Face::UP && //
+        getCurrentFace(Face::UP, 5) == Face::UP && //
+        getCurrentFace(Face::UP, 7) != Face::UP) {
+        // right angle at the top right
+        localRotate(R_UI);
+    }
+
+    if (getCurrentFace(Face::UP, 1) == Face::UP && //
+        getCurrentFace(Face::UP, 3) == Face::UP && //
+        getCurrentFace(Face::UP, 5) != Face::UP && //
+        getCurrentFace(Face::UP, 7) != Face::UP) {
+        // right angle at the top left
+        localRotate(R_F);
+        localRotate(R_U);
+        localRotate(R_R);
+        localRotate(R_UI);
+        localRotate(R_RI);
+        localRotate(R_FI);
+    }
+
+    // at this point we have the cross on top
+}
+
+void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) { solveCreateTopCross(result); }
 
 } // namespace rubiks
 

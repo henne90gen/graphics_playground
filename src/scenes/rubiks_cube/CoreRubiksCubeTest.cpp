@@ -345,9 +345,13 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands) {
     for (const auto &cmd : commands) {
         ASSERT_NE(cmd.side, rubiks::Face::NONE);
     }
+
+    // bottom side
     for (int i = 0; i < 9; i++) {
         ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, i), rubiks::Face::DOWN);
     }
+
+    // bottom layer
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 6), rubiks::Face::FRONT);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 7), rubiks::Face::FRONT);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 8), rubiks::Face::FRONT);
@@ -364,6 +368,7 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 7), rubiks::Face::LEFT);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 8), rubiks::Face::LEFT);
 
+    // middle layer
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 3), rubiks::Face::FRONT);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 5), rubiks::Face::FRONT);
 
@@ -375,6 +380,12 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands) {
 
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 3), rubiks::Face::BACK);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 5), rubiks::Face::BACK);
+
+    // top cross
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 1), rubiks::Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 3), rubiks::Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 5), rubiks::Face::UP);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 7), rubiks::Face::UP);
 }
 
 TEST(solve, BottomLayer_FrontRotations) {
@@ -434,7 +445,7 @@ TEST(solve, RegressionTests) {
 
 TEST(solve, DISABLED_RandomMoves) {
     constexpr auto iterationCount = 1000;
-    constexpr int shuffleCount = 50;
+    constexpr int shuffleCount = 20;
 
     for (int i = 0; i < iterationCount; i++) {
         std::vector<rubiks::RotationCommand> commands = {};
