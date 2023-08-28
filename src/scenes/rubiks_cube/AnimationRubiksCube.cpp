@@ -1,8 +1,8 @@
 #include "AnimationRubiksCube.h"
 
 #include <chrono>
-#include <random>
 #include <iostream>
+#include <random>
 
 namespace rubiks {
 
@@ -168,6 +168,9 @@ void AnimationRubiksCube::shuffle() {
 
 void AnimationRubiksCube::solve() {
     auto copy = cube.copy();
+    for (int i = currentCommandIndex; i < commands.size(); i++) {
+        copy.rotate(commands[i]);
+    }
     const auto result = copy.solve();
     for (auto &command : result) {
         commands.push_back(command);
