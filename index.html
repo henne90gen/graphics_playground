@@ -1,27 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="description" content="Trying out different graphical algorithms using C++ and OpenGL">
+    <link rel="shortcut icon" href="favicon.ico" />
     <title>Graphics Playground</title>
-</head>
-<body>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-<div style="display: grid; grid-template-columns: 1fr">
-    <a href="atmospheric_scattering.html">Atmospheric Scattering</a>
-    <a href="cube.html">Cube</a>
-    <a href="fourier_transform.html">Fourier Transform</a>
-    <a href="gamma_calculation.html">Gamma Calculation</a>
-    <a href="graphing_calculator.html">Graphing Calculator</a>
-    <a href="l_systems.html">L Systems</a>
-    <a href="marching_cubes.html">Marching Cubes</a>
-    <a href="meta_balls.html">Meta Balls</a>
-    <a href="rubiks_cube.html">Rubiks Cube</a>
-    <a href="spot_light.html">Spot Light</a>
-    <a href="test_scene.html">Test Scene</a>
-    <a href="texture_demo.html">Texture Demo</a>
-    <a href="triangle.html">Triangle</a>
-</div>
+        .main-content {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-auto-rows: 1fr;
+            gap: 1rem;
+        }
+
+        .card {
+            padding: 1rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.2), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+            text-decoration: none;
+            color: black;
+            font-weight: 600;
+            text-align: center;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .card span {
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        img {
+            width: 100%;
+        }
+
+        img.wip {
+            width: 3.5rem;
+            height: 3.5rem;
+        }
+
+        footer {
+            padding: 0.5rem;
+            text-align: center;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-content">
+        <a class="card" href="ambient_occlusion.html">
+            <span>Ambient Occlusion</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="atmospheric_scattering.html">
+            <span>Atmospheric Scattering</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="cube.html">
+            <span>Cube</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <!-- <a class="card" href="bloom_effect.html">Bloom Effect</a> -->
+        <a class="card" href="fourier_transform.html">
+            <span>Fourier Transform</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="gamma_calculation.html">
+            <span>Gamma Calculation</span>
+            <img src="gamma-calculation.gif" />
+        </a>
+        <!-- <a class="card" href="graph_vis.html">Graph Visualization</a> -->
+        <a class="card" href="graphing_calculator.html">
+            <span>Graphing Calculator</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <!-- <a class="card" href="light_demo.html">Light Demo</a> -->
+        <a class="card" href="l_systems.html">
+            <span>L Systems</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="marching_cubes.html">
+            <span>Marching Cubes</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="meta_balls.html">
+            <span>Meta Balls</span>
+            <img src="meta-balls-2.gif" />
+        </a>
+        <a class="card" href="rubiks_cube.html">
+            <span>Rubiks Cube</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="spot_light.html">
+            <span>Spot Light</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <!-- <a class="card" href="terrain_erosion.html">Terrain Erosion</a> -->
+        <a class="card" href="test_scene.html">
+            <span>Test Scene</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="texture_demo.html">
+            <span>Texture Demo</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+        <a class="card" href="triangle.html">
+            <span>Triangle</span>
+            <img class="wip" src="placeholder.png" alt="Work in progress" />
+        </a>
+    </div>
+
+    <footer>
+        <a href="https://www.flaticon.com/free-icons/playground" title="playground icons">
+            Playground icons created by Freepik - Flaticon
+        </a>
+        <a href="https://www.flaticon.com/free-icons/under-construction" title="under construction icons">
+            Under construction icons created by Freepik - Flaticon
+        </a>
+    </footer>
 
 </body>
+
 </html>
