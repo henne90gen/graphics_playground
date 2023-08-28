@@ -1,10 +1,6 @@
 function(create_scene)
     get_filename_component(SCENE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-    if (EMSCRIPTEN)
-        configure_file(${CMAKE_SOURCE_DIR}/src/web/scene.html ${CMAKE_BINARY_DIR}/html/${SCENE_NAME}.html)
-    endif ()
-
     file(GLOB_RECURSE SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.glsl")
     foreach (INPUT_FILE ${SHADER_FILES})
         get_filename_component(INPUT_FILE_NAME ${INPUT_FILE} NAME)
@@ -26,6 +22,11 @@ function(create_scene)
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
     )
+
+    if (EMSCRIPTEN)
+        configure_file(${CMAKE_SOURCE_DIR}/src/web/scene.html ${CMAKE_BINARY_DIR}/html/${SCENE_NAME}.html)
+        add_dependencies(${SCENE_NAME} copy_static_files)
+    endif ()
 endfunction()
 
 function(create_scene_test)

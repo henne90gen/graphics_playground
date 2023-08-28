@@ -16,4 +16,25 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ERROR_ON_UNDEFINED_SYMB
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/html)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/html)
 
-configure_file(src/web/index.html ${CMAKE_BINARY_DIR}/html/index.html)
+set(STATIC_FILES
+    ${CMAKE_SOURCE_DIR}/src/web/static/index.html
+    ${CMAKE_SOURCE_DIR}/src/web/static/favicon.ico
+    ${CMAKE_SOURCE_DIR}/src/web/static/placeholder.png
+    ${CMAKE_SOURCE_DIR}/screenshots/gamma-calculation.gif
+    ${CMAKE_SOURCE_DIR}/screenshots/meta-balls-2.gif
+)
+
+foreach (INPUT_FILE ${STATIC_FILES})
+    get_filename_component(INPUT_FILE_NAME ${INPUT_FILE} NAME)
+    set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/html/${INPUT_FILE_NAME}")
+    add_custom_command(
+        OUTPUT ${OUTPUT_FILE}
+        COMMAND ${CMAKE_COMMAND} -E copy ${INPUT_FILE} ${OUTPUT_FILE}
+        DEPENDS ${INPUT_FILE}
+        COMMENT "Copying static file ${INPUT_FILE} to ${OUTPUT_FILE}"
+        VERBATIM
+    )
+    list(APPEND STATIC_FILES_DEST ${OUTPUT_FILE})
+endforeach ()
+
+add_custom_target(copy_static_files DEPENDS ${STATIC_FILES_DEST})
