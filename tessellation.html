@@ -7,45 +7,51 @@
     <title>tessellation</title>
     <style>
         html {
-            height: 100vh;
-        }
-
-        body {
-            height: 100vh;
-            font-family: arial;
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
         }
 
-        .main-content {
-            height: 100%;
+        body {
             width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #main-content {
+            width: 100%;
+            height: 100%;
             display: grid;
             grid-template-columns: auto;
             grid-template-rows: auto 10rem;
-            justify-content: center;
+            padding: 0.5rem;
+            box-sizing: border-box;
             gap: 1rem;
         }
 
         #canvas {
+            max-width: 100%;
+            max-height: 100%;
+            min-width: 100%;
+            min-height: 100%;
             border: 0 none;
             background-color: black;
-            height: 100%;
             padding: 0;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 0;
             display: block;
             text-align: center;
         }
 
         #console {
+            background-color: black;
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             display: block;
-            background-color: black;
             color: white;
             font-family: 'Lucida Console', Monaco, monospace;
             outline: none;
@@ -55,15 +61,26 @@
 
 <body>
 
-    <div class="main-content">
+    <div id="main-content">
         <canvas id="canvas" width="100" height="100" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
         <textarea id="console" rows="8"></textarea>
     </div>
 
     <script type='text/javascript'>
+        var initialWidth = 0;
+        var initialHeight = 0;
         var Module = {
             preRun: [],
-            postRun: [],
+            postRun: [
+                function () {
+                    if (!Object.hasOwn(Module, "_emscriptenCanvasResized")) {
+                        return;
+                    }
+
+                    var canvas = document.getElementById('canvas');
+                    Module._emscriptenCanvasResized(initialWidth, initialHeight);
+                }
+            ],
             print: (function () {
                 var element = document.getElementById('console');
                 if (element) element.value = ''; // clear browser cache
@@ -86,12 +103,13 @@
 
                 const observer = new ResizeObserver((entries) => {
                     const entry = entries.find((entry) => entry.target === canvas);
-                    canvas.width = entry.devicePixelContentBoxSize[0].inlineSize;
-                    canvas.height = entry.devicePixelContentBoxSize[0].blockSize;
+                    initialWidth = entry.devicePixelContentBoxSize[0].inlineSize;
+                    initialHeight = entry.devicePixelContentBoxSize[0].blockSize;
+                    canvas.width = initialWidth;
+                    canvas.height = initialHeight;
                     if (Object.hasOwn(Module, "_emscriptenCanvasResized")) {
                         Module._emscriptenCanvasResized(canvas.width, canvas.height);
                     }
-                    console.log("Resized to " + canvas.width + "x" + canvas.height);
                 });
                 observer.observe(canvas, { box: 'device-pixel-content-box' });
 
@@ -130,9 +148,9 @@
                 statusElement.innerHTML = text;
             },
             totalDependencies: 0,
-            monitorRunDependencies: function (left) {
-                this.totalDependencies = Math.max(this.totalDependencies, left);
-                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            monitorRunDependencies: function (dependenciesLeft) {
+                this.totalDependencies = Math.max(this.totalDependencies, dependenciesLeft);
+                Module.setStatus(dependenciesLeft ? 'Preparing... (' + (this.totalDependencies - dependenciesLeft) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
             }
         };
         Module.setStatus('Downloading...');
