@@ -24,6 +24,7 @@ class RubiksCubeScene : public Scene {
     void destroy() override;
 
   private:
+    glm::mat4 modelMatrix = glm::mat4(1.0F);
     std::shared_ptr<Shader> shader;
     std::shared_ptr<VertexArray> vertexArray;
     std::shared_ptr<IndexBuffer> indexBuffer;

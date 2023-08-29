@@ -273,6 +273,11 @@ unsigned int *addCubeIndices(unsigned int *indPtr, unsigned int cubeNumber) {
 }
 
 void RubiksCubeScene::setup() {
+    static auto modelRotation = glm::vec3(0.56F, -0.68F, 0.0F);
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
+
     shader = CREATE_DEFAULT_SHADER(rubiks_cube_RubiksCube);
     shader->bind();
 
@@ -337,6 +342,7 @@ std::string to_string(unsigned int input) {
 }
 
 void showRotationButtons(std::shared_ptr<rubiks::AnimationRubiksCube> cube) {
+    ImGui::NewLine();
     if (!ImGui::BeginTable("Rotation Buttons", 2)) {
         return;
     }
@@ -411,13 +417,9 @@ void showRotationButtons(std::shared_ptr<rubiks::AnimationRubiksCube> cube) {
 }
 
 void RubiksCubeScene::tick() {
-    static auto translation = glm::vec3(3.0F, 0.0F, -12.0F);
-    static auto modelRotation = glm::vec3(-0.56F, -0.68F, 0.0F);
     static auto rotationSpeed = 0.1F;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
-    ImGui::DragFloat3("Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::DragFloat("Animation Speed", &rotationSpeed, 0.001F, 0.001F, 1.0F);
 
     if (ImGui::Button("Shuffle")) {
@@ -438,10 +440,6 @@ void RubiksCubeScene::tick() {
     vertexArray->bind();
     indexBuffer->bind();
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
-    modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", getCamera().getViewMatrix());
     shader->setUniform("projectionMatrix", getCamera().getProjectionMatrix());
