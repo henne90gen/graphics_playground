@@ -907,28 +907,186 @@ void CoreRubiksCube::solveCreateTopCross(std::vector<RotationCommand> &result) {
           Face::DOWN,  // UP
           Face::UP,    // DOWN
     }};
-    const auto leftFace = getCurrentFace(Face::LEFT, 1);
-    const auto rightFace = getCurrentFace(Face::RIGHT, 1);
-    const auto frontFace = getCurrentFace(Face::FRONT, 1);
-    const auto backFace = getCurrentFace(Face::BACK, 1);
-    const auto leftFaceExpectedPartner = expectedPartners[(int)leftFace - 1];
-    const auto frontFaceExpectedPartner = expectedPartners[(int)frontFace - 1];
-    if (leftFaceExpectedPartner == rightFace && //
-        frontFaceExpectedPartner == backFace && //
-        nextSidesClockwise[(int)leftFace - 1] != backFace) {
-        // faces on opposite sides are correct, but faces on adjacent sides are not correct
-        localRotate(R_R);
+    {
+        const auto leftFace = getCurrentFace(Face::LEFT, 1);
+        const auto rightFace = getCurrentFace(Face::RIGHT, 1);
+        const auto frontFace = getCurrentFace(Face::FRONT, 1);
+        const auto backFace = getCurrentFace(Face::BACK, 1);
+        const auto leftFaceExpectedPartner = expectedPartners[(int)leftFace - 1];
+        const auto frontFaceExpectedPartner = expectedPartners[(int)frontFace - 1];
+        if (leftFaceExpectedPartner == rightFace && //
+            frontFaceExpectedPartner == backFace && //
+            nextSidesClockwise[(int)leftFace - 1] != backFace) {
+            // faces on opposite sides are correct, but faces on adjacent sides are not correct
+            localRotate(R_R);
+            localRotate(R_U);
+            localRotate(R_RI);
+            localRotate(R_U);
+            localRotate(R_R);
+            localRotate(R_U);
+            localRotate(R_U);
+            localRotate(R_RI);
+        }
+    }
+
+    {
+        const auto leftFace = getCurrentFace(Face::LEFT, 1);
+        const auto rightFace = getCurrentFace(Face::RIGHT, 1);
+        const auto frontFace = getCurrentFace(Face::FRONT, 1);
+        const auto backFace = getCurrentFace(Face::BACK, 1);
+        const auto leftFaceExpectedPartnerClockwise = nextSidesClockwise[(int)leftFace - 1];
+        const auto rightFaceExpectedPartnerClockwise = nextSidesClockwise[(int)rightFace - 1];
+        const auto frontFaceExpectedPartnerClockwise = nextSidesClockwise[(int)frontFace - 1];
+        const auto backFaceExpectedPartnerClockwise = nextSidesClockwise[(int)backFace - 1];
+        bool doAlgorithm = false;
+        if (leftFace == frontFaceExpectedPartnerClockwise && rightFace != backFaceExpectedPartnerClockwise) {
+            localRotate(R_U);
+            localRotate(R_U);
+            doAlgorithm = true;
+        } else if (backFace == leftFaceExpectedPartnerClockwise && frontFace != rightFaceExpectedPartnerClockwise) {
+            localRotate(R_U);
+            doAlgorithm = true;
+        } else if (rightFace == backFaceExpectedPartnerClockwise && leftFace != frontFaceExpectedPartnerClockwise) {
+            doAlgorithm = true;
+        } else if (frontFace == rightFaceExpectedPartnerClockwise && backFace != leftFaceExpectedPartnerClockwise) {
+            localRotate(R_UI);
+            doAlgorithm = true;
+        }
+
+        if (doAlgorithm) {
+            localRotate(R_R);
+            localRotate(R_U);
+            localRotate(R_RI);
+            localRotate(R_U);
+            localRotate(R_R);
+            localRotate(R_U);
+            localRotate(R_U);
+            localRotate(R_RI);
+        }
+    }
+
+    // cross has already been created, now it needs to be rotated into place
+    const auto crossIsAtCorrectPosition = [this]() {
+        const auto leftFace = getCurrentFace(Face::LEFT, 1);
+        const auto rightFace = getCurrentFace(Face::RIGHT, 1);
+        const auto frontFace = getCurrentFace(Face::FRONT, 1);
+        const auto backFace = getCurrentFace(Face::BACK, 1);
+        return leftFace == Face::LEFT && rightFace == Face::RIGHT && frontFace == Face::FRONT && backFace == Face::BACK;
+    };
+    while (!crossIsAtCorrectPosition()) {
         localRotate(R_U);
-        localRotate(R_RI);
-        localRotate(R_U);
-        localRotate(R_R);
-        localRotate(R_U);
-        localRotate(R_U);
-        localRotate(R_RI);
     }
 }
 
-void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) { solveCreateTopCross(result); }
+void CoreRubiksCube::solvePlaceTopCorners(std::vector<RotationCommand> &result) {
+    const auto localRotate = [this, &result](RotationCommand cmd) {
+        rotate(cmd);
+        result.push_back(cmd);
+    };
+    const auto isCornerCorrect = [this](Face side, unsigned int localIndex) {
+        auto partners = getCornerPartners(side, localIndex);
+        int foundMatches = 0;
+        for (const auto p1 : partners) {
+            const auto face = getCurrentFace(p1);
+            bool found = false;
+            for (const auto p2 : partners) {
+                if (p2.first == Face::UP) {
+                    continue;
+                }
+                if (face == p2.first) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                foundMatches++;
+            }
+        }
+        return foundMatches >= 2;
+    };
+
+    // how many corners are correct?
+    // 0 corner -> do algorithm once
+    // 1 corner -> rotate correct corner to UP,8 and then do the algorithm
+    // 4 corners -> nothing to do
+    {
+        const auto frontLeftCornerCorrect = isCornerCorrect(Face::UP, 6);
+        const auto frontRightCornerCorrect = isCornerCorrect(Face::UP, 8);
+        const auto backLeftCornerCorrect = isCornerCorrect(Face::UP, 0);
+        const auto backRightCornerCorrect = isCornerCorrect(Face::UP, 2);
+        const auto correctCornerCount =
+              frontLeftCornerCorrect + backLeftCornerCorrect + frontRightCornerCorrect + backRightCornerCorrect;
+        if (correctCornerCount == 0) {
+            localRotate(R_U);
+            localRotate(R_R);
+            localRotate(R_UI);
+            localRotate(R_LI);
+            localRotate(R_U);
+            localRotate(R_RI);
+            localRotate(R_UI);
+            localRotate(R_L);
+        }
+    }
+
+    // rotate top face into the correct position again
+    // TODO cross rotation could be extracted to its own function for better re-use
+    const auto crossIsAtCorrectPosition = [this]() {
+        const auto leftFace = getCurrentFace(Face::LEFT, 1);
+        const auto rightFace = getCurrentFace(Face::RIGHT, 1);
+        const auto frontFace = getCurrentFace(Face::FRONT, 1);
+        const auto backFace = getCurrentFace(Face::BACK, 1);
+        return leftFace == Face::LEFT && rightFace == Face::RIGHT && frontFace == Face::FRONT && backFace == Face::BACK;
+    };
+    while (!crossIsAtCorrectPosition()) {
+        localRotate(R_U);
+    }
+
+    {
+        const auto frontLeftCornerCorrect = isCornerCorrect(Face::UP, 6);
+        const auto frontRightCornerCorrect = isCornerCorrect(Face::UP, 8);
+        const auto backLeftCornerCorrect = isCornerCorrect(Face::UP, 0);
+        const auto backRightCornerCorrect = isCornerCorrect(Face::UP, 2);
+        const auto correctCornerCount =
+              frontLeftCornerCorrect + backLeftCornerCorrect + frontRightCornerCorrect + backRightCornerCorrect;
+        if (correctCornerCount == 1) {
+            if (frontLeftCornerCorrect) {
+                localRotate(R_UI);
+            } else if (backLeftCornerCorrect) {
+                localRotate(R_U);
+                localRotate(R_U);
+            } else if (backRightCornerCorrect) {
+                localRotate(R_U);
+            }
+
+            localRotate(R_U);
+            localRotate(R_R);
+            localRotate(R_UI);
+            localRotate(R_LI);
+            localRotate(R_U);
+            localRotate(R_RI);
+            localRotate(R_UI);
+            localRotate(R_L);
+        }
+    }
+
+    // rotate top face into the correct position again
+    while (!crossIsAtCorrectPosition()) {
+        localRotate(R_U);
+    }
+}
+
+void CoreRubiksCube::solveRotateTopCorners(std::vector<RotationCommand> &result) {
+    const auto localRotate = [this, &result](RotationCommand cmd) {
+        rotate(cmd);
+        result.push_back(cmd);
+    };
+}
+
+void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) {
+    solveCreateTopCross(result);
+    solvePlaceTopCorners(result);
+    solveRotateTopCorners(result);
+}
 
 } // namespace rubiks
 

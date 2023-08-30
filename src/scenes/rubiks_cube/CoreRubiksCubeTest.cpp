@@ -386,6 +386,12 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 3), rubiks::Face::UP);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 5), rubiks::Face::UP);
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 7), rubiks::Face::UP);
+
+    // sides of top cross
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 1), rubiks::Face::FRONT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 1), rubiks::Face::LEFT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 1), rubiks::Face::RIGHT);
+    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 1), rubiks::Face::BACK);
 }
 
 TEST(solve, BottomLayer_FrontRotations) {
