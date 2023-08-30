@@ -8,6 +8,8 @@ constexpr float Z_FAR = 10000.0F;
 
 void Scene::renderMetrics() {
     ImGui::Begin("Metrics");
+    ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+    ImGui::SetWindowCollapsed(true, ImGuiCond_FirstUseEver);
 
     for (auto &dataPoint : performanceCounter.dataPoints) {
         ImGui::Text("%.3fms - Last Time - %s", dataPoint.second.lastValue, dataPoint.first.c_str());
