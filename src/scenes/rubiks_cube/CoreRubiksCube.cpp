@@ -1080,6 +1080,16 @@ void CoreRubiksCube::solveRotateTopCorners(std::vector<RotationCommand> &result)
         rotate(cmd);
         result.push_back(cmd);
     };
+
+    for (int i = 0; i < 4; i++) {
+        while (getCurrentFace(Face::UP, 8) != Face::UP) {
+            localRotate(R_RI);
+            localRotate(R_DI);
+            localRotate(R_R);
+            localRotate(R_D);
+        }
+        localRotate(R_U);
+    }
 }
 
 void CoreRubiksCube::solveTopLayer(std::vector<RotationCommand> &result) {
