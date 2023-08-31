@@ -18,7 +18,7 @@ void assertCubeIsInitialCube(const rubiks::CoreRubiksCube &actual) {
     }
 }
 
-TEST(rotate, works_when_reversed) {
+TEST(RubiksCubeTest, rotate_works_when_reversed) {
     std::array<rubiks::Face, rubiks::SIDE_COUNT> faces = {
           rubiks::Face::FRONT, rubiks::Face::BACK, rubiks::Face::LEFT,
           rubiks::Face::RIGHT, rubiks::Face::UP,   rubiks::Face::DOWN,
@@ -53,7 +53,7 @@ void assertWholeFace(rubiks::CoreRubiksCube cube, rubiks::Face face) {
     }
 }
 
-TEST(getCurrentFace, Face_does_not_change_without_a_rotation) {
+TEST(RubiksCubeTest, getCurrentFace_Face_does_not_change_without_a_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     assertWholeFace(cube, rubiks::Face::FRONT);
     assertWholeFace(cube, rubiks::Face::BACK);
@@ -63,7 +63,7 @@ TEST(getCurrentFace, Face_does_not_change_without_a_rotation) {
     assertWholeFace(cube, rubiks::Face::DOWN);
 }
 
-TEST(getCurrentFace, Face_is_calculated_correctly_for_R) {
+TEST(RubiksCubeTest, getCurrentFace_Face_is_calculated_correctly_for_R) {
     auto cube = rubiks::CoreRubiksCube({R_R});
 
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 2), rubiks::Face::DOWN);
@@ -83,7 +83,7 @@ TEST(getCurrentFace, Face_is_calculated_correctly_for_R) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 8), rubiks::Face::BACK);
 }
 
-TEST(getCurrentFace, Face_is_calculated_correctly_for_R_U) {
+TEST(RubiksCubeTest, getCurrentFace_Face_is_calculated_correctly_for_R_U) {
     auto cube = rubiks::CoreRubiksCube({R_R, R_U});
 
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 0), rubiks::Face::RIGHT);
@@ -109,7 +109,7 @@ TEST(getCurrentFace, Face_is_calculated_correctly_for_R_U) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 8), rubiks::Face::BACK);
 }
 
-TEST(getCurrentFace, Face_is_calculated_correctly_for_F_L) {
+TEST(RubiksCubeTest, getCurrentFace_Face_is_calculated_correctly_for_F_L) {
     auto cube = rubiks::CoreRubiksCube({R_F, R_L});
 
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 0), rubiks::Face::UP);
@@ -137,7 +137,7 @@ TEST(getCurrentFace, Face_is_calculated_correctly_for_F_L) {
     ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, 6), rubiks::Face::FRONT);
 }
 
-TEST(rotate, indices_are_adjusted_correctly_for_counter_clockwise_front_rotation) {
+TEST(RubiksCubeTest, rotate_indices_are_adjusted_correctly_for_counter_clockwise_front_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_FI);
 
@@ -152,7 +152,7 @@ TEST(rotate, indices_are_adjusted_correctly_for_counter_clockwise_front_rotation
     ASSERT_EQ(indices[26], 20);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_back_rotation) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_counter_clockwise_back_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_BI);
 
@@ -167,7 +167,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_back_rotation)
     ASSERT_EQ(indices[8], 6);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_left_rotation) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_counter_clockwise_left_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_LI);
 
@@ -182,7 +182,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_left_rotation)
     ASSERT_EQ(indices[6], 24);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_right_rotation) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_counter_clockwise_right_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_RI);
 
@@ -197,7 +197,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_right_rotation
     ASSERT_EQ(indices[2], 20);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_up_rotation) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_counter_clockwise_up_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_UI);
 
@@ -212,7 +212,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_counter_clockwise_up_rotation) {
     ASSERT_EQ(indices[26], 24);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_two_counter_clockwise_down_rotations) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_two_counter_clockwise_down_rotations) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_DI);
 
@@ -238,7 +238,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_two_counter_clockwise_down_rotat
     ASSERT_EQ(indices[9], 11);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_two_clockwise_down_rotations) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_two_clockwise_down_rotations) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_D);
 
@@ -264,7 +264,7 @@ TEST(rotate, Indices_are_adjusted_correctly_for_two_clockwise_down_rotations) {
     ASSERT_EQ(indices[9], 11);
 }
 
-TEST(rotate, IndicesAdjustment_RI) {
+TEST(RubiksCubeTest, rotate_IndicesAdjustment_RI) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_RI);
 
@@ -279,7 +279,7 @@ TEST(rotate, IndicesAdjustment_RI) {
     ASSERT_EQ(indices[23], 17);
 }
 
-TEST(rotate, IndicesAdjustment_RI_DI) {
+TEST(RubiksCubeTest, rotate_IndicesAdjustment_RI_DI) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_RI);
     cube.rotate(R_DI);
@@ -295,7 +295,7 @@ TEST(rotate, IndicesAdjustment_RI_DI) {
     ASSERT_EQ(indices[1], 9);
 }
 
-TEST(rotate, IndicesAdjustment_RI_DI_R) {
+TEST(RubiksCubeTest, rotate_IndicesAdjustment_RI_DI_R) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_RI);
     cube.rotate(R_DI);
@@ -312,7 +312,7 @@ TEST(rotate, IndicesAdjustment_RI_DI_R) {
     ASSERT_EQ(indices[26], 20);
 }
 
-TEST(rotate, Indices_are_adjusted_correctly_for_cw_down_and_cw_right_rotation) {
+TEST(RubiksCubeTest, rotate_Indices_are_adjusted_correctly_for_cw_down_and_cw_right_rotation) {
     auto cube = rubiks::CoreRubiksCube();
     cube.rotate(R_D);
 
@@ -346,94 +346,40 @@ void testSolving(const std::vector<rubiks::RotationCommand> &initialCommands) {
         ASSERT_NE(cmd.side, rubiks::Face::NONE);
     }
 
-    // bottom side
-    for (int i = 0; i < 9; i++) {
-        ASSERT_EQ(cube.getCurrentFace(rubiks::Face::DOWN, i), rubiks::Face::DOWN);
-    }
-
-    // bottom layer
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 6), rubiks::Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 7), rubiks::Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 8), rubiks::Face::FRONT);
-
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 6), rubiks::Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 7), rubiks::Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 8), rubiks::Face::RIGHT);
-
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 6), rubiks::Face::BACK);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 7), rubiks::Face::BACK);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 8), rubiks::Face::BACK);
-
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 6), rubiks::Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 7), rubiks::Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 8), rubiks::Face::LEFT);
-
-    // middle layer
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 3), rubiks::Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 5), rubiks::Face::FRONT);
-
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 3), rubiks::Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 5), rubiks::Face::LEFT);
-
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 3), rubiks::Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 5), rubiks::Face::RIGHT);
-
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 3), rubiks::Face::BACK);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 5), rubiks::Face::BACK);
-
-    // top cross
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 1), rubiks::Face::UP);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 3), rubiks::Face::UP);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 5), rubiks::Face::UP);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 7), rubiks::Face::UP);
-
-    // sides of top cross
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::FRONT, 1), rubiks::Face::FRONT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::LEFT, 1), rubiks::Face::LEFT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::RIGHT, 1), rubiks::Face::RIGHT);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::BACK, 1), rubiks::Face::BACK);
-
-    // top corners
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 0), rubiks::Face::UP);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 2), rubiks::Face::UP);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 6), rubiks::Face::UP);
-    ASSERT_EQ(cube.getCurrentFace(rubiks::Face::UP, 8), rubiks::Face::UP);
-
-    // TODO find out why the final result is not equal to the initial cube
-    // assertCubeIsInitialCube(cube);
+    assertCubeIsInitialCube(cube);
 }
 
-TEST(solve, BottomLayer_FrontRotations) {
+TEST(RubiksCubeTest, solve_FrontRotations) {
     testSolving({R_F});
     testSolving({R_F, R_F});
     testSolving({R_FI});
 }
 
-TEST(solve, BottomLayer_LeftRotations) {
+TEST(RubiksCubeTest, solve_LeftRotations) {
     testSolving({R_L});
     testSolving({R_L, R_L});
     testSolving({R_LI});
 }
 
-TEST(solve, BottomLayer_BackRotations) {
+TEST(RubiksCubeTest, solve_BackRotations) {
     testSolving({R_B});
     testSolving({R_B, R_B});
     testSolving({R_BI});
 }
 
-TEST(solve, BottomLayer_RightRotations) {
+TEST(RubiksCubeTest, solve_RightRotations) {
     testSolving({R_R});
     testSolving({R_R, R_R});
     testSolving({R_RI});
 }
 
-TEST(solve, BottomLayer_FrontAndUpRotations) {
+TEST(RubiksCubeTest, solve_FrontAndUpRotations) {
     testSolving({R_F, R_F, R_U});
     testSolving({R_F, R_F, R_U, R_U});
     testSolving({R_F, R_F, R_UI});
 }
 
-TEST(solve, BottomLayer_LeftBackAndRightRotations) {
+TEST(RubiksCubeTest, solve_LeftBackAndRightRotations) {
     testSolving({R_F, R_F, R_U, R_L});
     testSolving({R_F, R_F, R_U, R_LI});
 
@@ -444,12 +390,12 @@ TEST(solve, BottomLayer_LeftBackAndRightRotations) {
     testSolving({R_F, R_F, R_UI, R_RI});
 }
 
-TEST(solve, BottomLayer_PieceAtBottomLayerButWrongPosition) {
+TEST(RubiksCubeTest, solve_PieceAtBottomLayerButWrongPosition) {
     testSolving({R_F, R_L});
     testSolving({R_F, R_F, R_U, R_L, R_L});
 }
 
-TEST(solve, RegressionTests) {
+TEST(RubiksCubeTest, solve_RegressionTests) {
     testSolving({R_D,  R_D,  R_L, R_DI, R_FI, R_LI, R_UI, R_UI, R_BI, R_R,
                  R_FI, R_FI, R_R, R_D,  R_F,  R_L,  R_D,  R_FI, R_UI, R_R});
     testSolving({R_B,  R_FI, R_B, R_RI, R_RI, R_RI, R_RI, R_UI, R_BI, R_UI,
@@ -458,10 +404,10 @@ TEST(solve, RegressionTests) {
                  R_BI, R_F,  R_UI, R_B,  R_FI, R_U, R_L,  R_FI, R_DI, R_R});
 }
 
-TEST(solve, DISABLED_RandomMoves) {
+TEST(RubiksCubeTest, RandomMoves) {
+#define PRINT_COMMANDS 0
     constexpr auto iterationCount = 1000;
-    constexpr int shuffleCount = 20;
-
+    constexpr int shuffleCount = 30;
     for (int i = 0; i < iterationCount; i++) {
         std::vector<rubiks::RotationCommand> commands = {};
         static constexpr auto rotationCommandCount = 12;
@@ -478,9 +424,13 @@ TEST(solve, DISABLED_RandomMoves) {
             rubiks::RotationCommand rotation = rotations[randomIndex];
             commands.push_back(rotation);
 
+#if PRINT_COMMANDS
             std::cout << to_string(rotation, true) << ", ";
+#endif
         }
+#if PRINT_COMMANDS
         std::cout << std::endl;
+#endif
 
         testSolving(commands);
     }
@@ -489,7 +439,7 @@ TEST(solve, DISABLED_RandomMoves) {
 namespace rubiks {
 std::array<std::pair<rubiks::Face, unsigned int>, 3> getCornerPartners(rubiks::Face side, unsigned int localIndex);
 }
-TEST(getCornerPartners, works) {
+TEST(RubiksCubeTest, getCornerPartners) {
     auto result = rubiks::getCornerPartners(rubiks::Face::FRONT, 0);
     ASSERT_EQ(result[0].first, rubiks::Face::FRONT);
     ASSERT_EQ(result[0].second, 0);

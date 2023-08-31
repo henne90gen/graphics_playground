@@ -988,6 +988,10 @@ void CoreRubiksCube::solvePlaceTopCorners(std::vector<RotationCommand> &result) 
         int foundMatches = 0;
         for (const auto p1 : partners) {
             const auto face = getCurrentFace(p1);
+            if (face == Face::UP) {
+                continue;
+            }
+
             bool found = false;
             for (const auto p2 : partners) {
                 if (p2.first == Face::UP) {
@@ -998,6 +1002,7 @@ void CoreRubiksCube::solvePlaceTopCorners(std::vector<RotationCommand> &result) 
                     break;
                 }
             }
+
             if (found) {
                 foundMatches++;
             }
@@ -1005,30 +1010,6 @@ void CoreRubiksCube::solvePlaceTopCorners(std::vector<RotationCommand> &result) 
         return foundMatches >= 2;
     };
 
-    // how many corners are correct?
-    // 0 corner -> do algorithm once
-    // 1 corner -> rotate correct corner to UP,8 and then do the algorithm
-    // 4 corners -> nothing to do
-    {
-        const auto frontLeftCornerCorrect = isCornerCorrect(Face::UP, 6);
-        const auto frontRightCornerCorrect = isCornerCorrect(Face::UP, 8);
-        const auto backLeftCornerCorrect = isCornerCorrect(Face::UP, 0);
-        const auto backRightCornerCorrect = isCornerCorrect(Face::UP, 2);
-        const auto correctCornerCount =
-              frontLeftCornerCorrect + backLeftCornerCorrect + frontRightCornerCorrect + backRightCornerCorrect;
-        if (correctCornerCount == 0) {
-            localRotate(R_U);
-            localRotate(R_R);
-            localRotate(R_UI);
-            localRotate(R_LI);
-            localRotate(R_U);
-            localRotate(R_RI);
-            localRotate(R_UI);
-            localRotate(R_L);
-        }
-    }
-
-    // rotate top face into the correct position again
     // TODO cross rotation could be extracted to its own function for better re-use
     const auto crossIsAtCorrectPosition = [this]() {
         const auto leftFace = getCurrentFace(Face::LEFT, 1);
@@ -1037,17 +1018,21 @@ void CoreRubiksCube::solvePlaceTopCorners(std::vector<RotationCommand> &result) 
         const auto backFace = getCurrentFace(Face::BACK, 1);
         return leftFace == Face::LEFT && rightFace == Face::RIGHT && frontFace == Face::FRONT && backFace == Face::BACK;
     };
-    while (!crossIsAtCorrectPosition()) {
-        localRotate(R_U);
-    }
 
-    {
+    // how many corners are correct?
+    // 0 corner -> do algorithm once
+    // 1 corner -> rotate correct corner to UP,8 and then do the algorithm
+    // 4 corners -> nothing to do
+    while (true) {
         const auto frontLeftCornerCorrect = isCornerCorrect(Face::UP, 6);
         const auto frontRightCornerCorrect = isCornerCorrect(Face::UP, 8);
         const auto backLeftCornerCorrect = isCornerCorrect(Face::UP, 0);
         const auto backRightCornerCorrect = isCornerCorrect(Face::UP, 2);
         const auto correctCornerCount =
               frontLeftCornerCorrect + backLeftCornerCorrect + frontRightCornerCorrect + backRightCornerCorrect;
+        if (correctCornerCount == 4) {
+            break;
+        }
         if (correctCornerCount == 1) {
             if (frontLeftCornerCorrect) {
                 localRotate(R_UI);
@@ -1057,21 +1042,31 @@ void CoreRubiksCube::solvePlaceTopCorners(std::vector<RotationCommand> &result) 
             } else if (backRightCornerCorrect) {
                 localRotate(R_U);
             }
-
-            localRotate(R_U);
-            localRotate(R_R);
-            localRotate(R_UI);
-            localRotate(R_LI);
-            localRotate(R_U);
-            localRotate(R_RI);
-            localRotate(R_UI);
-            localRotate(R_L);
         }
-    }
+        if (correctCornerCount == 2) {
+            if (frontLeftCornerCorrect && frontRightCornerCorrect) {
+                localRotate(R_UI);
+            } else if (backLeftCornerCorrect && frontLeftCornerCorrect) {
+                localRotate(R_U);
+                localRotate(R_U);
+            } else if (backRightCornerCorrect && backLeftCornerCorrect) {
+                localRotate(R_U);
+            }
+        }
 
-    // rotate top face into the correct position again
-    while (!crossIsAtCorrectPosition()) {
         localRotate(R_U);
+        localRotate(R_R);
+        localRotate(R_UI);
+        localRotate(R_LI);
+        localRotate(R_U);
+        localRotate(R_RI);
+        localRotate(R_UI);
+        localRotate(R_L);
+
+        // rotate top face into the correct position again
+        while (!crossIsAtCorrectPosition()) {
+            localRotate(R_U);
+        }
     }
 }
 
