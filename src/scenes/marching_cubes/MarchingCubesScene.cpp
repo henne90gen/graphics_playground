@@ -18,7 +18,6 @@ DEFINE_DEFAULT_SHADERS(marching_cubes_MarchingCubes)
 void MarchingCubesScene::setup() {
     shader = CREATE_DEFAULT_SHADER(marching_cubes_MarchingCubes);
     shader->bind();
-    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     cubeVertexArray = std::make_shared<VertexArray>(shader);
     cubeVertexArray->bind();
@@ -61,26 +60,19 @@ void MarchingCubesScene::setup() {
     surfaceIndexBuffer->bind();
 }
 
-void MarchingCubesScene::onAspectRatioChange() {
-    projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
-}
-
 void MarchingCubesScene::destroy() {}
 
 void MarchingCubesScene::tick() {
-    static auto translation = glm::vec3(1.0F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
-    static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static float scale = 0.1F;                                 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool rotate = true;
     static bool drawWireframe = false;
+    static float rotationSpeed = 0.03F;
 
-    const float rotationSpeed = 0.03F;
     if (rotate) {
         modelRotation.y += rotationSpeed;
     }
 
-    showSettings(translation, cameraRotation, modelRotation, scale, rotate, drawWireframe);
+    showSettings(rotationSpeed, rotate, drawWireframe);
 
     {
         RECORD_SCOPE_NAME("MarchingCubes");
@@ -98,15 +90,14 @@ void MarchingCubesScene::tick() {
         shader->bind();
 
         glm::mat4 modelMatrix = glm::mat4(1.0F);
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2F));
         modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
         modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
         modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
         modelMatrix = glm::translate(modelMatrix, modelCenter);
-        glm::mat4 viewMatrix = createViewMatrix(translation, cameraRotation);
         shader->setUniform("u_Model", modelMatrix);
-        shader->setUniform("u_View", viewMatrix);
-        shader->setUniform("u_Projection", projectionMatrix);
+        shader->setUniform("u_View", getCamera().getViewMatrix());
+        shader->setUniform("u_Projection", getCamera().getProjectionMatrix());
         shader->setUniform("u_Dimensions", dimensions);
 
         drawSurface(drawWireframe);
@@ -116,24 +107,15 @@ void MarchingCubesScene::tick() {
     }
 }
 
-void MarchingCubesScene::showSettings(glm::vec3 &translation, glm::vec3 &cameraRotation, glm::vec3 &modelRotation,
-                                      float &scale, bool &rotate, bool &drawWireframe) const {
+void MarchingCubesScene::showSettings(float &rotationSpeed, bool &rotate, bool &drawWireframe) const {
     ImGui::Begin("Settings");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::Checkbox("Interpolate", &marchingCubes->interpolate);
     ImGui::Checkbox("Animate", &marchingCubes->animate);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    ImGui::DragFloat("Scale", &scale, 0.001F);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    ImGui::DragFloat("Rotation Speed", &rotationSpeed, 0.001F);
     ImGui::DragInt("Animation Speed", &marchingCubes->animationSpeed, 1.0F, 1, 100);
 
     std::array<int, 3> dimensions = {static_cast<int>(marchingCubes->width), static_cast<int>(marchingCubes->height),

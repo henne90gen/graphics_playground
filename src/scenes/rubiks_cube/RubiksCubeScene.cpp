@@ -329,8 +329,8 @@ void RubiksCubeScene::setup() {
 }
 
 void RubiksCubeScene::destroy() {
-    free(vertices); // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
-    free(indices);  // NOLINT(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory,hicpp-no-malloc)
+    free(vertices);
+    free(indices);
 }
 
 std::string to_string(unsigned int input) {
