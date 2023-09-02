@@ -60,7 +60,7 @@ void TerrainParams::showLayersGui() {
     ImGui::Separator();
     static int layerType = 0;
     static const std::array<const char *, 2> items = {"Noise", "Ridge"};
-    ImGui::Combo("", &layerType, items.data(), items.size());
+    ImGui::Combo("##", &layerType, items.data(), items.size());
     ImGui::SameLine();
     if (ImGui::Button("Add Layer")) {
         switch (layerType) {

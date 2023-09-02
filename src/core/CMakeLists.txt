@@ -31,7 +31,7 @@ endif ()
 
 target_compile_definitions(core PRIVATE GLFW_INCLUDE_NONE)
 
-set(WITH_SCREEN_RECORDING 0)
+set(WITH_SCREEN_RECORDING 1)
 if (NOT WITH_SCREEN_RECORDING)
     message("-- Screen Recording: disabled")
 else ()

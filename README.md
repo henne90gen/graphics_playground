@@ -58,7 +58,10 @@ Now we can use the value we have calculated for each position as the height at t
 
 Here you can see a rubiks cube.
 It can be shuffled by pressing a button.
-Maybe I will get around to implementing a solver at some point.
+A simple solving algorithm has also been implemented.
+Each layer is solved one by one.
+
+![Rubiks Cube](screenshots/rubiks_cube.gif)
 
 ### Marching Cubes
 

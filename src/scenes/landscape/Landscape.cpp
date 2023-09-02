@@ -74,7 +74,7 @@ void Landscape::tick() {
     ImGui::Begin("Settings");
     ImGui::SliderFloat("Day Time", &dayTime, 0.0F, 1.0F);
     ImGui::SameLine();
-    ImGui::Checkbox("", &animateDayTime);
+    ImGui::Checkbox("##", &animateDayTime);
     auto cameraPosition = getCamera().getPosition();
     auto cameraDirection = getCamera().getForwardDirection();
     auto tmp = glm::vec2(getCamera().getPitch(), getCamera().getYaw());
