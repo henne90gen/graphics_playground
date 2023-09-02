@@ -100,36 +100,6 @@ void installCallbacks(GLFWwindow *window) {
     glfwSetFramebufferSizeCallback(window, resizeCallback);
 }
 
-#ifdef WITH_SCREEN_RECORDING
-void renderCaptureMenu(ScreenRecorder *recorder) {
-    ImGui::Begin("Recording Menu");
-    ImGui::SetWindowPos(ImVec2(0, 0));
-    const unsigned int windowWidth = 150;
-    const unsigned int windowHeight = 100;
-    ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
-
-    if (ImGui::Button("Take Screenshot")) {
-        recorder->takeScreenshot();
-    }
-
-    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&recorder->recordingType), ScreenRecorder::RecordingType::GIF);
-    ImGui::SameLine();
-    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&recorder->recordingType), ScreenRecorder::RecordingType::MP4);
-
-    if (recorder->isRecording()) {
-        if (ImGui::Button("Stop Recording")) {
-            recorder->stopRecording();
-        }
-    } else {
-        if (ImGui::Button("Start Recording")) {
-            recorder->startRecording();
-        }
-    }
-
-    ImGui::End();
-}
-#endif
-
 void runMainLoop(void *data) {
     auto *scene = static_cast<Scene *>(data);
 
@@ -139,11 +109,6 @@ void runMainLoop(void *data) {
     startImGuiFrame();
 
     scene->internalTick();
-
-#ifdef WITH_SCREEN_RECORDING
-    renderCaptureMenu(&recorder);
-    recorder.tick(scene->getWidth(), scene->getHeight());
-#endif
 
     finishImGuiFrame();
 
@@ -181,11 +146,6 @@ int runScene(Scene *scene) {
 
     // to disable vsync uncomment this line
     //    glfwSwapInterval(0);
-
-#ifdef WITH_SCREEN_RECORDING
-    ScreenRecorder recorder = {};
-    glfwSetWindowUserPointer(window, &recorder);
-#endif
 
     glfwSetWindowUserPointer(glfwWindow, scene);
     // triggering it once "manually" to ensure the aspect ratio is set up correctly

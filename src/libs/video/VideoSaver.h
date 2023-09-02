@@ -4,9 +4,6 @@
 #include <string>
 #include <utility>
 
-#define GIF_FLIP_VERT
-#include <gif.h>
-
 #if FFMPEG_FOUND
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -42,7 +39,7 @@ struct Frame {
 class VideoSaver {
   public:
     explicit VideoSaver(std::string videoFileName) : videoFileName(std::move(videoFileName)) {}
-    virtual ~VideoSaver() = default;
+    virtual ~VideoSaver() {}
 
     virtual bool doInit() = 0;
     virtual void doAcceptFrame(const std::unique_ptr<Frame> &frame) = 0;
@@ -101,5 +98,5 @@ class GifVideoSaver : public VideoSaver {
   private:
     int delay = 1;
     bool scaleDown = true;
-    GifWriter *gifWriter = nullptr;
+    void *gifWriter = nullptr;
 };

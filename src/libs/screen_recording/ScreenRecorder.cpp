@@ -17,14 +17,14 @@ std::string generateScreenshotFilename() {
     return "../../screenshot-" + buffer.str() + ".png";
 }
 
-std::string generateScreenrecordingDirectoryName(unsigned int recordingIndex) {
+std::string generateScreenRecordingDirectoryName(unsigned int recordingIndex) {
     std::stringstream buffer;
     std::time_t t = std::time(nullptr);
     buffer << std::put_time(std::localtime(&t), "%Y-%m-%d-%H-%M-%S");
     return "../../screenrecording-" + buffer.str() + "-" + std::to_string(recordingIndex) + "/";
 }
 
-std::string generateScreenrecordingName(unsigned int recordingIndex, ScreenRecorder::RecordingType recordingType) {
+std::string generateScreenRecordingName(unsigned int recordingIndex, ScreenRecorder::RecordingType recordingType) {
     std::string fileExtension;
     switch (recordingType) {
     case ScreenRecorder::GIF:
@@ -34,7 +34,7 @@ std::string generateScreenrecordingName(unsigned int recordingIndex, ScreenRecor
         fileExtension = ".mp4";
         break;
     }
-    std::string dir = generateScreenrecordingDirectoryName(recordingIndex);
+    std::string dir = generateScreenRecordingDirectoryName(recordingIndex);
     std::string fileName = dir.substr(0, dir.size() - 1);
     return fileName + fileExtension;
 }
@@ -68,6 +68,19 @@ void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
     }
 }
 
+void ScreenRecorder::startRecording() {
+    std::string fileName = generateScreenRecordingName(recordingIndex, recordingType);
+    if (recordingType == RecordingType::GIF) {
+        videoSaver = new GifVideoSaver(fileName);
+#if FFMPEG_FOUND
+    } else if (recordingType == RecordingType::MP4) {
+        videoSaver = std::make_unique<Mp4VideoSaver>(fileName);
+#endif
+    } else {
+        std::cerr << "Recording type is not supported (" << recordingType << ")" << std::endl;
+    }
+}
+
 void ScreenRecorder::stopRecording() {
     if (videoSaver == nullptr) {
         std::cout << "There is no video to save." << std::endl;
@@ -76,17 +89,4 @@ void ScreenRecorder::stopRecording() {
     videoSaver->save();
     videoSaver = nullptr;
     recordingIndex++;
-}
-
-void ScreenRecorder::startRecording() {
-    std::string fileName = generateScreenrecordingName(recordingIndex, recordingType);
-    if (recordingType == RecordingType::GIF) {
-        videoSaver = std::make_unique<GifVideoSaver>(fileName);
-#if FFMPEG_FOUND
-    } else if (recordingType == RecordingType::MP4) {
-        videoSaver = std::make_unique<Mp4VideoSaver>(fileName);
-#endif
-    } else {
-        std::cerr << "Recording type is not supported (" << recordingType << ")" << std::endl;
-    }
 }

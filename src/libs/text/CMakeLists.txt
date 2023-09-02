@@ -6,8 +6,8 @@ set_target_properties(text PROPERTIES
 
 target_link_libraries(text
         freetype
-        opengl)
+        opengl
+        glm)
 target_include_directories(text PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${FREETYPE_DIR}
-        ${GLM_DIR})
+        ${FREETYPE_DIR})

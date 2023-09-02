@@ -11,6 +11,10 @@
 #include "util/InputData.h"
 #include "util/TimeUtils.h"
 
+#ifdef WITH_SCREEN_RECORDING
+#include <ScreenRecorder.h>
+#endif
+
 class Scene {
   public:
     explicit Scene(std::string name) : name(std::move(name)) {
@@ -23,7 +27,8 @@ class Scene {
     void setup(GLFWwindow *window);
     void internalTick();
 
-    void renderMetrics();
+    void renderMetricsMenu();
+    void renderCaptureMenu();
 
     const std::string &getName() { return name; }
 
@@ -61,4 +66,8 @@ class Scene {
     float aspectRatio = 16.0F / 9.0F;
 
     PerformanceCounter performanceCounter = {};
+
+#ifdef WITH_SCREEN_RECORDING
+    ScreenRecorder recorder = {};
+#endif
 };

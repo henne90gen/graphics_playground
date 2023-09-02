@@ -5,6 +5,9 @@
 
 #include <glad/glad.h>
 
+#define GIF_FLIP_VERT
+#include <gif.h>
+
 constexpr const char *VIDEO_TMP_FILE = "tmp.h264";
 
 constexpr const unsigned int SCALED_DOWN_WIDTH = 800;
@@ -348,7 +351,7 @@ bool Mp4VideoSaver::doSave() {
 }
 #endif
 
-GifVideoSaver::~GifVideoSaver() { delete gifWriter; }
+GifVideoSaver::~GifVideoSaver() { delete ((GifWriter *)gifWriter); }
 
 bool GifVideoSaver::doInit() {
     if (gifWriter == nullptr) {
@@ -362,7 +365,7 @@ bool GifVideoSaver::doInit() {
         height = SCALED_DOWN_HEIGHT;
     }
 
-    if (!GifBegin(gifWriter, videoFileName.c_str(), width, height, delay)) {
+    if (!GifBegin((GifWriter *)gifWriter, videoFileName.c_str(), width, height, delay)) {
         std::cerr << "Could not open " << videoFileName << " for writing." << std::endl;
         return false;
     }
@@ -435,7 +438,7 @@ void GifVideoSaver::doAcceptFrame(const std::unique_ptr<Frame> &frame) {
     if (scaleDown) {
         scaleDownFrame(frame.get(), SCALED_DOWN_WIDTH, SCALED_DOWN_HEIGHT);
     }
-    GifWriteFrame(gifWriter, frame->buffer, frame->width, frame->height, delay);
+    GifWriteFrame((GifWriter *)gifWriter, frame->buffer, frame->width, frame->height, delay);
 }
 
-bool GifVideoSaver::doSave() { return GifEnd(gifWriter); }
+bool GifVideoSaver::doSave() { return GifEnd((GifWriter *)gifWriter); }

@@ -10,11 +10,10 @@ target_link_libraries(model
         core
         glad
         image
-        opengl)
+        opengl
+        glm)
 
-target_include_directories(model PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${GLM_DIR})
+target_include_directories(model PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (NOT EMSCRIPTEN)
     create_scene_benchmark(ModelBench.cpp)

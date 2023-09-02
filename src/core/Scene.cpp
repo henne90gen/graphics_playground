@@ -6,7 +6,7 @@ constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 10000.0F;
 
-void Scene::renderMetrics() {
+void Scene::renderMetricsMenu() {
     ImGui::Begin("Metrics");
     ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
     ImGui::SetWindowCollapsed(true, ImGuiCond_FirstUseEver);
@@ -23,6 +23,36 @@ void Scene::renderMetrics() {
 
     ImGui::End();
 }
+
+#ifdef WITH_SCREEN_RECORDING
+void Scene::renderCaptureMenu() {
+    ImGui::Begin("Recording Menu");
+    ImGui::SetWindowPos(ImVec2(0, 0));
+    const unsigned int windowWidth = 150;
+    const unsigned int windowHeight = 100;
+    ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
+
+    if (ImGui::Button("Take Screenshot")) {
+        recorder.takeScreenshot();
+    }
+
+    ImGui::RadioButton("GIF", reinterpret_cast<int *>(&recorder.recordingType), ScreenRecorder::RecordingType::GIF);
+    ImGui::SameLine();
+    ImGui::RadioButton("MP4", reinterpret_cast<int *>(&recorder.recordingType), ScreenRecorder::RecordingType::MP4);
+
+    if (recorder.isRecording()) {
+        if (ImGui::Button("Stop Recording")) {
+            recorder.stopRecording();
+        }
+    } else {
+        if (ImGui::Button("Start Recording")) {
+            recorder.startRecording();
+        }
+    }
+
+    ImGui::End();
+}
+#endif
 
 void Scene::setup(GLFWwindow *w) {
     RECORD_SCOPE();
@@ -46,7 +76,12 @@ void Scene::internalTick() {
     camera.update(input);
     tick();
 
-    renderMetrics();
+    renderMetricsMenu();
+
+#ifdef WITH_SCREEN_RECORDING
+    renderCaptureMenu();
+    recorder.tick(getWidth(), getHeight());
+#endif
 }
 
 void Scene::onWindowResize(const int w, const int h) {
