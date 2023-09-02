@@ -22,6 +22,8 @@ set(STATIC_FILES
     ${CMAKE_SOURCE_DIR}/src/web/static/placeholder.png
     ${CMAKE_SOURCE_DIR}/screenshots/gamma-calculation.gif
     ${CMAKE_SOURCE_DIR}/screenshots/meta-balls-2.gif
+    ${CMAKE_SOURCE_DIR}/screenshots/marching-cubes.gif
+    ${CMAKE_SOURCE_DIR}/screenshots/rubiks-cube.gif
 )
 
 foreach (INPUT_FILE ${STATIC_FILES})
