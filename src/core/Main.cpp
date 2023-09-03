@@ -53,26 +53,55 @@ void enableOpenGLDebugging() {
 }
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+        return;
+    }
+
     auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
     scene->onMouseButton(button, action, mods);
 }
 
 void cursorPosCallback(GLFWwindow *window, double xPos, double yPos) {
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+        return;
+    }
+
     auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
     scene->onCursorPos(xPos, yPos);
 }
 
 void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+        return;
+    }
+
     auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
     scene->onScroll(xOffset, yOffset);
 }
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+        glfwSetWindowShouldClose(window, 1);
+    }
+
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureKeyboard) {
+        return;
+    }
+
     auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
     scene->onKey(key, scancode, action, mods);
 }
 
 void charCallback(GLFWwindow *window, unsigned int c) {
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureKeyboard) {
+        return;
+    }
+
     auto *scene = reinterpret_cast<Scene *>(glfwGetWindowUserPointer(window));
     scene->onCharacterTyped(c);
 }

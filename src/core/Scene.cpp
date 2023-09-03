@@ -98,9 +98,7 @@ void Scene::onWindowResize(const int w, const int h) {
 }
 
 void Scene::onKey(int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-        glfwSetWindowShouldClose(window, 1);
-    } else if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
+    if (key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
 #ifdef WITH_SCREEN_RECORDER
         auto *recorder = static_cast<ScreenRecorder *>(glfwGetWindowUserPointer(window));
         recorder->takeScreenshot();
