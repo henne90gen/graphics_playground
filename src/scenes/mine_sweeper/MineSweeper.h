@@ -34,10 +34,10 @@ class MineSweeper : public Scene {
     glm::mat4 projectionMatrix = glm::identity<glm::mat4>();
 
     GameData data = {};
-    Text t = {};
+    Text text = {};
 
-    void renderQuad(const glm::vec2 &position, const glm::vec3 &color);
-    void renderNumber(const glm::vec2 &pos, int num, float scale);
+    void renderQuad(const glm::vec2 &position, const glm::vec3 &color, float zoom);
+    void renderNumber(const glm::vec2 &pos, int num, float scale, float zoom);
 
     void initGameData();
     static int countMines(GameData &data, int row, int col);

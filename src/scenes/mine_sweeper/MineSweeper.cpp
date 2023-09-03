@@ -14,7 +14,7 @@ void MineSweeper::setup() {
     quadVA = createQuadVA(shader);
 
     const std::string fontPath = "mine_sweeper_resources/assets/Vonique 64.ttf";
-    t.load(fontPath, 50);
+    text.load(fontPath, 50);
 
     initGameData();
 }
@@ -28,6 +28,7 @@ void MineSweeper::destroy() {}
 
 void MineSweeper::tick() {
     static float scale = 0.5F;
+    static float zoom = 1.0F;
 
     auto mousePixelPos = getInput().mouse.pos;
 
@@ -46,6 +47,7 @@ void MineSweeper::tick() {
     ImGui::Text("Pixel Pos: (%f,%f)", mousePixelPos.x, mousePixelPos.y);
     ImGui::Text("Mouse Pos: (%f,%f,%f)", mousePos.x, mousePos.y, mousePos.z);
     ImGui::DragFloat("Character Scale", &scale, 0.001F);
+    ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::End();
 
     for (int row = 0; row < data.height; row++) {
@@ -58,14 +60,14 @@ void MineSweeper::tick() {
                 color = glm::vec3(0.0, 1.0, 0.0);
             }
             const glm::vec2 pos = glm::vec2(x, y);
-            renderQuad(pos, color);
-            renderNumber(pos, data.numbers[i], scale);
+            renderQuad(pos, color, zoom);
+            renderNumber(pos, data.numbers[i], scale, zoom);
         }
     }
 }
 
-void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale) {
-    std::optional<Character> characterOpt = t.character(static_cast<char>(num + 48));
+void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float zoom) {
+    std::optional<Character> characterOpt = text.character(static_cast<char>(num + 48));
     if (!characterOpt.has_value()) {
         return;
     }
@@ -75,12 +77,14 @@ void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale) {
     glm::vec2 finalTranslation = pos - offset;
     auto characterScale = character.scale();
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
+    glm::mat4 modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::scale(modelMatrix, glm::vec3(characterScale, 1.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, 1.0F));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
+    auto viewMatrix = glm::identity<glm::mat4>();
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
     shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", glm::identity<glm::mat4>());
+    shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("useTexture", true);
     shader->setUniform("textureSampler", 0);
@@ -92,13 +96,15 @@ void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale) {
     GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void MineSweeper::renderQuad(const glm::vec2 &position, const glm::vec3 &color) {
+void MineSweeper::renderQuad(const glm::vec2 &position, const glm::vec3 &color, float zoom) {
     shader->bind();
     auto modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1F));
+    auto viewMatrix = glm::identity<glm::mat4>();
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
     shader->setUniform("modelMatrix", modelMatrix);
-    shader->setUniform("viewMatrix", glm::identity<glm::mat4>());
+    shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("useTexture", false);
     shader->setUniform("flatColor", color);
