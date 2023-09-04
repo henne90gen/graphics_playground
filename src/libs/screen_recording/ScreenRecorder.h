@@ -27,5 +27,5 @@ class ScreenRecorder {
   private:
     bool shouldTakeScreenshot = false;
     unsigned int recordingIndex = 0;
-    VideoSaver *videoSaver = nullptr;
+    std::unique_ptr<VideoSaver> videoSaver = nullptr;
 };

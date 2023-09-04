@@ -71,7 +71,7 @@ void ScreenRecorder::tick(unsigned int windowWidth, unsigned int windowHeight) {
 void ScreenRecorder::startRecording() {
     std::string fileName = generateScreenRecordingName(recordingIndex, recordingType);
     if (recordingType == RecordingType::GIF) {
-        videoSaver = new GifVideoSaver(fileName);
+        videoSaver = std::make_unique<GifVideoSaver>(fileName);
 #if FFMPEG_FOUND
     } else if (recordingType == RecordingType::MP4) {
         videoSaver = std::make_unique<Mp4VideoSaver>(fileName);
