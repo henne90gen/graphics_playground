@@ -27,7 +27,7 @@ void MineSweeper::onAspectRatioChange() {
 void MineSweeper::destroy() {}
 
 void MineSweeper::tick() {
-    static float scale = 0.5F;
+    static float scale = 0.1F;
     static float zoom = 1.0F;
 
     auto mousePixelPos = getInput().mouse.pos;
@@ -52,8 +52,8 @@ void MineSweeper::tick() {
 
     for (int row = 0; row < data.height; row++) {
         for (int col = 0; col < data.height; col++) {
-            float x = static_cast<float>(col) * 0.1F;
-            float y = static_cast<float>(row) * 0.1F;
+            float x = static_cast<float>(col);
+            float y = static_cast<float>(row);
             int i = row * data.width + col;
             glm::vec3 color = glm::vec3(1.0, 0.0, 0.0);
             if (data.mines[i]) {
@@ -73,9 +73,10 @@ void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float
     }
 
     auto character = characterOpt.value();
-    auto offset = character.offset(scale);
-    glm::vec2 finalTranslation = pos - offset;
+    // auto offset = character.offset(scale);
+    glm::vec2 finalTranslation = pos;
     auto characterScale = character.scale();
+    characterScale.y *= -1.0F;
 
     glm::mat4 modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::scale(modelMatrix, glm::vec3(characterScale, 1.0F));
@@ -99,8 +100,8 @@ void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float
 void MineSweeper::renderQuad(const glm::vec2 &position, const glm::vec3 &color, float zoom) {
     shader->bind();
     auto modelMatrix = glm::identity<glm::mat4>();
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1F));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(position, 0.0F));
     auto viewMatrix = glm::identity<glm::mat4>();
     viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
     shader->setUniform("modelMatrix", modelMatrix);
