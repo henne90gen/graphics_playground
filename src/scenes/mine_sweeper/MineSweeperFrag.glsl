@@ -12,6 +12,9 @@ out vec4 color;
 void main() {
     if (useTexture) {
         vec4 textureColor = texture(textureSampler, UV);
+        if (textureColor.r <= 0.2F) {
+            discard;
+        }
         color = vec4(flatColor * textureColor.r, 1.0F);
     } else {
         color = vec4(flatColor, 1.0F);

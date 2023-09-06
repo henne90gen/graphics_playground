@@ -17,6 +17,8 @@ void MineSweeper::setup() {
     text.load(fontPath, 50);
 
     initGameData();
+
+    GL_Call(glDisable(GL_DEPTH_TEST));
 }
 
 void MineSweeper::onAspectRatioChange() {
@@ -24,11 +26,11 @@ void MineSweeper::onAspectRatioChange() {
     projectionMatrix = glm::ortho(-aspectRatio, aspectRatio, -1.0F, 1.0F);
 }
 
-void MineSweeper::destroy() {}
+void MineSweeper::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
 
 void MineSweeper::tick() {
-    static float scale = 0.1F;
-    static float zoom = 1.0F;
+    static float scale = 1.0F;
+    static float zoom = 0.1F;
 
     auto mousePixelPos = getInput().mouse.pos;
 
@@ -55,37 +57,55 @@ void MineSweeper::tick() {
             float x = static_cast<float>(col);
             float y = static_cast<float>(row);
             int i = row * data.width + col;
-            glm::vec3 color = glm::vec3(1.0, 0.0, 0.0);
+
+            auto color = glm::vec3(1.0, 0.0, 0.0);
             if (data.mines[i]) {
                 color = glm::vec3(0.0, 1.0, 0.0);
             }
+
+            const glm::vec2 pos = glm::vec2(x, y);
+            renderNumber(pos, data.numbers[i], scale, zoom);
+        }
+    }
+
+    for (int row = 0; row < data.height; row++) {
+        for (int col = 0; col < data.height; col++) {
+            float x = static_cast<float>(col);
+            float y = static_cast<float>(row);
+            int i = row * data.width + col;
+
+            auto color = glm::vec3(1.0, 0.0, 0.0);
+            if (data.mines[i]) {
+                color = glm::vec3(0.0, 1.0, 0.0);
+            }
+
             const glm::vec2 pos = glm::vec2(x, y);
             renderQuad(pos, color, zoom);
-            renderNumber(pos, data.numbers[i], scale, zoom);
         }
     }
 }
 
 void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float zoom) {
-    std::optional<Character> characterOpt = text.character(static_cast<char>(num + 48));
+    const auto characterOpt = text.character(static_cast<char>(num + 48));
     if (!characterOpt.has_value()) {
         return;
     }
 
-    auto character = characterOpt.value();
-    // auto offset = character.offset(scale);
-    glm::vec2 finalTranslation = pos;
+    const auto character = characterOpt.value();
+    auto finalTranslation = pos;
     auto characterScale = character.scale();
     characterScale.y *= -1.0F;
 
-    glm::mat4 modelMatrix = glm::identity<glm::mat4>();
+    auto modelMatrix = glm::identity<glm::mat4>();
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(characterScale, 1.0F));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, 1.0F));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
+    shader->setUniform("modelMatrix", modelMatrix);
+
     auto viewMatrix = glm::identity<glm::mat4>();
     viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
-    shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
+
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("useTexture", true);
     shader->setUniform("textureSampler", 0);
@@ -100,7 +120,6 @@ void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float
 void MineSweeper::renderQuad(const glm::vec2 &position, const glm::vec3 &color, float zoom) {
     shader->bind();
     auto modelMatrix = glm::identity<glm::mat4>();
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1F));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(position, 0.0F));
     auto viewMatrix = glm::identity<glm::mat4>();
     viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
@@ -125,6 +144,7 @@ void MineSweeper::initGameData() {
     data.flags.resize(data.width * data.height);
     data.numbers.resize(data.width * data.height);
 
+#if 0
     int numMines = 0;
     int maxNumMines = 20;
     for (int row = 0; row < data.height; row++) {
@@ -139,6 +159,17 @@ void MineSweeper::initGameData() {
             data.flags[i] = false;
         }
     }
+#else
+    for (int row = 0; row < data.height; row++) {
+        for (int col = 0; col < data.width; col++) {
+            int i = row * data.width + col;
+            double rand = distribution(generator);
+            data.mines[i] = row == 0 && col == 0;
+            data.opened[i] = false;
+            data.flags[i] = false;
+        }
+    }
+#endif
 
     for (int row = 0; row < data.height; row++) {
         for (int col = 0; col < data.width; col++) {
