@@ -17,8 +17,6 @@ void MineSweeper::setup() {
     text.load(fontPath, 50);
 
     initGameData();
-
-    GL_Call(glDisable(GL_DEPTH_TEST));
 }
 
 void MineSweeper::onAspectRatioChange() {
@@ -26,10 +24,9 @@ void MineSweeper::onAspectRatioChange() {
     projectionMatrix = glm::ortho(-aspectRatio, aspectRatio, -1.0F, 1.0F);
 }
 
-void MineSweeper::destroy() { GL_Call(glEnable(GL_DEPTH_TEST)); }
+void MineSweeper::destroy() {}
 
 void MineSweeper::tick() {
-    static float scale = 1.0F;
     static float zoom = 0.1F;
 
     auto mousePixelPos = getInput().mouse.pos;
@@ -45,67 +42,179 @@ void MineSweeper::tick() {
     auto mousePos = glm::vec3(adjustedDisplayPos.x, adjustedDisplayPos.y, 0.0F);
     mousePos.x *= getAspectRatio();
 
+    if (data.lost) {
+        // TODO show game over message
+        // TODO allow player to restart game
+    } else {
+        static bool previousRightMouseButton = false;
+        if (previousRightMouseButton && !getInput().mouse.right) {
+            toggleFlag(mousePos);
+        }
+        previousRightMouseButton = getInput().mouse.right;
+
+        static bool previousLeftMouseButton = false;
+        if (previousLeftMouseButton && !getInput().mouse.left) {
+            uncoverField(mousePos);
+        }
+        previousLeftMouseButton = getInput().mouse.left;
+    }
+
     ImGui::Begin("Settings");
     ImGui::Text("Pixel Pos: (%f,%f)", mousePixelPos.x, mousePixelPos.y);
     ImGui::Text("Mouse Pos: (%f,%f,%f)", mousePos.x, mousePos.y, mousePos.z);
-    ImGui::DragFloat("Character Scale", &scale, 0.001F);
     ImGui::DragFloat("Zoom", &zoom, 0.001F);
     ImGui::End();
 
-    for (int row = 0; row < data.height; row++) {
-        for (int col = 0; col < data.height; col++) {
-            float x = static_cast<float>(col);
-            float y = static_cast<float>(row);
-            int i = row * data.width + col;
+    viewMatrix = glm::identity<glm::mat4>();
+    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
 
-            auto color = glm::vec3(1.0, 0.0, 0.0);
-            if (data.mines[i]) {
-                color = glm::vec3(0.0, 1.0, 0.0);
-            }
+    renderForeground();
+    renderNumbers();
+    renderBackground();
+}
 
-            const glm::vec2 pos = glm::vec2(x, y);
-            renderNumber(pos, data.numbers[i], scale, zoom);
-        }
+int convertToIndex(const GameData &data, const glm::vec2 &position) {
+    const int x = static_cast<int>((position.x * 10.0F) + 0.5F);
+    const int y = static_cast<int>((position.y * 10.0F) + 0.5F);
+    return y * data.width + x;
+}
+
+void MineSweeper::toggleFlag(const glm::vec2 &position) {
+    const int index = convertToIndex(data, position);
+    if (index < 0 || index > data.width * data.height) {
+        return;
+    }
+    data.flags[index] = !data.flags[index];
+}
+
+void MineSweeper::uncoverField(const glm::vec2 &position) {
+    int index = convertToIndex(data, position);
+    if (index < 0 || index > data.width * data.height) {
+        return;
     }
 
-    for (int row = 0; row < data.height; row++) {
-        for (int col = 0; col < data.height; col++) {
-            float x = static_cast<float>(col);
-            float y = static_cast<float>(row);
-            int i = row * data.width + col;
+    if (data.opened[index]) {
+        return;
+    }
 
-            auto color = glm::vec3(1.0, 0.0, 0.0);
+    if (data.mines[index]) {
+        data.lost = true;
+        for (int i = 0; i < data.width * data.height; i++) {
             if (data.mines[i]) {
-                color = glm::vec3(0.0, 1.0, 0.0);
+                data.opened[i] = true;
             }
+        }
+        return;
+    }
 
-            const glm::vec2 pos = glm::vec2(x, y);
-            renderQuad(pos, color, zoom);
+    std::vector<int> queue = {};
+    queue.push_back(index);
+    while (!queue.empty()) {
+        index = queue.back();
+        queue.pop_back();
+        if (data.mines[index]) {
+            continue;
+        }
+
+        data.opened[index] = true;
+
+        if (data.numbers[index] > 0) {
+            continue;
+        }
+
+        const int thisRow = index / data.width;
+        const int thisCol = index % data.width;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                auto currentIndex = index + i + j * data.width;
+                if (currentIndex == index) {
+                    continue;
+                }
+                if (index < 0 || index > data.width * data.height) {
+                    continue;
+                }
+
+                const int row = currentIndex / data.width;
+                const int col = currentIndex % data.width;
+                if (abs(thisRow - row) > 1 || abs(thisCol - col) > 1) {
+                    continue;
+                }
+
+                if (data.opened[currentIndex]) {
+                    continue;
+                }
+
+                queue.push_back(currentIndex);
+            }
         }
     }
 }
 
-void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float zoom) {
-    const auto characterOpt = text.character(static_cast<char>(num + 48));
+void MineSweeper::renderForeground() {
+    for (int row = 0; row < data.height; row++) {
+        for (int col = 0; col < data.height; col++) {
+            const float x = static_cast<float>(col);
+            const float y = static_cast<float>(row);
+            const int i = row * data.width + col;
+            if (data.opened[i]) {
+                continue;
+            }
+
+            auto color = glm::vec3(0.8, 0.8, 0.8);
+            if (data.flags[i]) {
+                color = glm::vec3(0.0, 0.0, 1.0);
+            }
+            const auto position = glm::vec2(x, y);
+            renderQuad(position, 1.0F, color);
+        }
+    }
+}
+
+void MineSweeper::renderNumbers() {
+    for (int row = 0; row < data.height; row++) {
+        for (int col = 0; col < data.height; col++) {
+            const float x = static_cast<float>(col);
+            const float y = static_cast<float>(row);
+            const int i = row * data.width + col;
+            const glm::vec2 position = glm::vec2(x, y);
+            renderNumber(position, 0.0F, data.numbers[i]);
+        }
+    }
+}
+
+void MineSweeper::renderBackground() {
+    for (int row = 0; row < data.height; row++) {
+        for (int col = 0; col < data.height; col++) {
+            const float x = static_cast<float>(col);
+            const float y = static_cast<float>(row);
+            const int i = row * data.width + col;
+
+            auto color = glm::vec3(1.0, 0.0, 0.0);
+            if (data.mines[i]) {
+                color = glm::vec3(0.0, 1.0, 0.0);
+            }
+
+            const glm::vec2 position = glm::vec2(x, y);
+            renderQuad(position, -1.0F, color);
+        }
+    }
+}
+
+void MineSweeper::renderNumber(const glm::vec2 &position, float layer, int number) {
+    const auto characterOpt = text.character(static_cast<char>(number + 48));
     if (!characterOpt.has_value()) {
         return;
     }
 
     const auto character = characterOpt.value();
-    auto finalTranslation = pos;
     auto characterScale = character.scale();
     characterScale.y *= -1.0F;
 
     auto modelMatrix = glm::identity<glm::mat4>();
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(finalTranslation, 0.0F));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(position, layer));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(characterScale, 1.0F));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, 1.0F));
     shader->setUniform("modelMatrix", modelMatrix);
-
-    auto viewMatrix = glm::identity<glm::mat4>();
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
     shader->setUniform("viewMatrix", viewMatrix);
-
     shader->setUniform("projectionMatrix", projectionMatrix);
     shader->setUniform("useTexture", true);
     shader->setUniform("textureSampler", 0);
@@ -117,12 +226,10 @@ void MineSweeper::renderNumber(const glm::vec2 &pos, int num, float scale, float
     GL_Call(glDrawElements(GL_TRIANGLES, quadVA->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-void MineSweeper::renderQuad(const glm::vec2 &position, const glm::vec3 &color, float zoom) {
+void MineSweeper::renderQuad(const glm::vec2 &position, float layer, const glm::vec3 &color) {
     shader->bind();
     auto modelMatrix = glm::identity<glm::mat4>();
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(position, 0.0F));
-    auto viewMatrix = glm::identity<glm::mat4>();
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(position, layer));
     shader->setUniform("modelMatrix", modelMatrix);
     shader->setUniform("viewMatrix", viewMatrix);
     shader->setUniform("projectionMatrix", projectionMatrix);
@@ -137,6 +244,7 @@ void MineSweeper::initGameData() {
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
 
+    data.lost = false;
     data.width = 10;
     data.height = 10;
     data.mines.resize(data.width * data.height);
@@ -144,7 +252,7 @@ void MineSweeper::initGameData() {
     data.flags.resize(data.width * data.height);
     data.numbers.resize(data.width * data.height);
 
-#if 0
+#if 1
     int numMines = 0;
     int maxNumMines = 20;
     for (int row = 0; row < data.height; row++) {
@@ -187,9 +295,6 @@ int MineSweeper::countMines(GameData &data, int row, int col) {
     int mines = 0;
     for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
-            if (row == 0 && col == 0) {
-                continue;
-            }
             if (row + i < 0 || row + i >= data.height) {
                 continue;
             }
