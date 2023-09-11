@@ -75,7 +75,7 @@ void MineSweeper::tick() {
     viewMatrix = glm::scale(viewMatrix, glm::vec3(zoom));
 
     // renderGame();
-    // renderBackground();
+    renderBackground();
     renderNumbers();
     // renderForeground();
 }
