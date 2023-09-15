@@ -43,8 +43,7 @@ class AudioVis : public Scene {
 
     void initSoundIo(int sampleRate);
     void initMesh();
-    void renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation,
-                    bool drawWireframe);
+    void renderMesh(const glm::vec3 &modelScale, bool drawWireframe);
     void updateMesh(const std::function<double(int)> &calcSample01Func, unsigned int linesPerSecond);
     void updateMeshAmplitude(unsigned int linesPerSecond);
     void updateMeshPhase(unsigned int linesPerSecond);

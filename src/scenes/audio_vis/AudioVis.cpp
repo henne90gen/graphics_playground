@@ -31,6 +31,10 @@ void AudioVis::setup() {
 
     initSoundIo(wav.header.sampleRate);
     initMesh();
+
+    getCamera().setFocalPoint(glm::vec3(35, 0, 0));
+    getCamera().setRotation(0.25, -0.7);
+    getCamera().setDistance(50);
 }
 
 void AudioVis::destroy() {
@@ -46,16 +50,12 @@ void AudioVis::tick() {
     }
 
     static auto modelScale = glm::vec3(1.0F, 20.0F, -1.0F);
-    static auto cameraPosition = glm::vec3(-35.0F, -75.0F, -50.0F);
-    static glm::vec3 cameraRotation = {0.75F, -0.25F, 0.0F};
     static bool drawWireframe = true;
     static int linesPerSecond = 15;
     static VisMode currentMode = VisMode::AMPLITUDE;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), 0.001F);
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.1F);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.001F);
     ImGui::Checkbox("Wireframe", &drawWireframe);
 
     ImGui::Separator();
@@ -109,7 +109,7 @@ void AudioVis::tick() {
         break;
     }
 
-    renderMesh(modelScale, cameraPosition, cameraRotation, drawWireframe);
+    renderMesh(modelScale, drawWireframe);
 #endif
 }
 
@@ -295,14 +295,13 @@ void AudioVis::initMesh() {
     va->setIndexBuffer(indexBuffer);
 }
 
-void AudioVis::renderMesh(const glm::vec3 &modelScale, const glm::vec3 &cameraPosition, const glm::vec3 &cameraRotation,
-                          const bool drawWireframe) {
+void AudioVis::renderMesh(const glm::vec3 &modelScale, const bool drawWireframe) {
     shader->bind();
     va->bind();
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, modelScale);
-    const auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    const auto viewMatrix = getCamera().getViewMatrix();
     const auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     shader->setUniform("model", modelMatrix);
     shader->setUniform("view", viewMatrix);
