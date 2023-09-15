@@ -35,6 +35,8 @@ void BloomEffect::setup() {
     initLightCubeData();
 
     setupFramebuffers();
+
+    getCamera().setDistance(5);
 }
 
 void BloomEffect::onAspectRatioChange() {
@@ -170,8 +172,6 @@ void BloomEffect::setupFinalFramebuffer() {
 void BloomEffect::renderSceneToFramebuffer(const glm::vec3 &modelPosition, const glm::vec3 &modelRotation,
                                            const glm::vec3 &lightPosition, float threshold) {
     RECORD_SCOPE();
-    static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3();
     static auto ambientColor = glm::vec3(0.005F, 0.005F, 0.005F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);      // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto lightColor = glm::vec3(1.0F);
@@ -186,9 +186,8 @@ void BloomEffect::renderSceneToFramebuffer(const glm::vec3 &modelPosition, const
     shader->setUniform("u_Light.color", lightColor);
     shader->setUniform("u_Threshold", threshold);
 
-    glm::mat4 viewMatrix = createViewMatrix(cameraTranslation, cameraRotation);
+    glm::mat4 viewMatrix = getCamera().getViewMatrix();
     drawModel(viewMatrix, modelPosition, modelRotation);
-
     drawLightCube(viewMatrix, lightPosition);
 }
 
