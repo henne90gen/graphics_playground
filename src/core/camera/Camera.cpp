@@ -1,6 +1,7 @@
 #include "Camera.h"
 
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 #include <iostream>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -48,16 +49,16 @@ float Camera::zoomSpeed() const {
 }
 
 void Camera::update(const InputData &input) {
-//    if (!input.keyboard.isKeyDown(GLFW_KEY_LEFT_ALT)) {
-//        updateView();
-//        return;
-//    }
+    //    if (!input.keyboard.isKeyDown(GLFW_KEY_LEFT_ALT)) {
+    //        updateView();
+    //        return;
+    //    }
 
     const auto &mouse = input.mouse.pos;
     const auto delta = (mouse - initialMousePosition) * 0.003F;
     initialMousePosition = mouse;
 
-    if (input.mouse.middle) {
+    if (input.mouse.middle || (input.mouse.left && input.keyboard.isKeyDown(GLFW_KEY_LEFT_CONTROL))) {
         mousePan(delta);
     } else if (input.mouse.left) {
         mouseRotate(delta);
@@ -109,3 +110,19 @@ glm::vec3 Camera::getForwardDirection() const { return glm::rotate(getOrientatio
 glm::vec3 Camera::getPosition() const { return focalPoint - getForwardDirection() * distance; }
 
 glm::quat Camera::getOrientation() const { return {glm::vec3(-pitch, -yaw, 0.0F)}; }
+
+void Camera::setRotation(float _pitch, float _yaw) {
+    this->pitch = _pitch;
+    this->yaw = _yaw;
+}
+
+void Camera::setDistance(float _distance) { this->distance = _distance; }
+
+void Camera::showValuesInImGui() {
+    ImGui::Begin("Camera");
+    ImGui::DragFloat3("Focal Point", reinterpret_cast<float *>(&focalPoint), 0.001F);
+    ImGui::DragFloat("Distance", &distance, 0.001F);
+    ImGui::DragFloat("Pitch", &pitch, 0.001F);
+    ImGui::DragFloat("Yaw", &yaw, 0.001F);
+    ImGui::End();
+}

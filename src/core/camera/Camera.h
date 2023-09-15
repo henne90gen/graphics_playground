@@ -21,6 +21,8 @@ class Camera {
 
     void setViewportSize(float width, float height);
     void setFocalPoint(const glm::vec3 &point) { focalPoint = point; }
+    void setRotation(float pitch, float yaw);
+    void setDistance(float distance);
 
     [[nodiscard]] glm::vec3 getUpDirection() const;
     [[nodiscard]] glm::vec3 getRightDirection() const;
@@ -32,6 +34,9 @@ class Camera {
 
     [[nodiscard]] float getYaw() const { return yaw; }
     [[nodiscard]] float getPitch() const { return pitch; }
+    [[nodiscard]] float getDistance() const { return distance; }
+
+    void showValuesInImGui();
 
   private:
     void updateProjection();
@@ -42,15 +47,14 @@ class Camera {
     void mouseZoom(float delta);
 
     [[nodiscard]] glm::vec2 panSpeed() const;
-    [[nodiscard]] static float rotationSpeed() ;
+    [[nodiscard]] static float rotationSpeed();
     [[nodiscard]] float zoomSpeed() const;
 
     float fov = 45.0F, aspectRatio = 1.778F, nearClip = 0.1F, farClip = 10000.0F;
 
-    glm::vec3 focalPoint = {0.0F, 0.0F, 0.0F};
-
     glm::vec2 initialMousePosition = {0.0F, 0.0F};
 
+    glm::vec3 focalPoint = {0.0F, 0.0F, 0.0F};
     float distance = 10.0F;
     float pitch = 0.0F;
     float yaw = 0.0F;
