@@ -28,16 +28,14 @@ void LightDemo::onAspectRatioChange() {
 void LightDemo::destroy() {}
 
 void LightDemo::tick() {
-    static auto cameraTranslation = glm::vec3(0.5F, 0.0F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3();
     static auto modelTranslation = glm::vec3();
     static auto modelRotation = glm::vec3();
     static float scale = 1.0F;
-    static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);   // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static auto ambientColor = glm::vec3(0.05F, 0.05F, 0.05F);
+    static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);
+    static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);
     static auto lightColor = glm::vec3(1.0F);
-    static bool rotate = true;
+    static bool rotate = false;
     static bool useAmbient = true;
     static bool useDiffuse = true;
     static bool useSpecular = true;
@@ -49,8 +47,8 @@ void LightDemo::tick() {
         modelRotation.y += rotationSpeed;
     }
 
-    showSettings(cameraTranslation, cameraRotation, modelTranslation, modelRotation, scale, ambientColor, specularColor,
-                 lightPosition, lightColor, rotate, useAmbient, useDiffuse, useSpecular);
+    showSettings(modelTranslation, modelRotation, scale, ambientColor, specularColor, lightPosition, lightColor, rotate,
+                 useAmbient, useDiffuse, useSpecular);
 
     shader->bind();
     shader->setUniform("u_AmbientColor", ambientColor);
@@ -60,31 +58,23 @@ void LightDemo::tick() {
     shader->setUniform("u_UseAmbient", useAmbient);
     shader->setUniform("u_UseDiffuse", useDiffuse);
     shader->setUniform("u_UseSpecular", useSpecular);
-    drawModel(scale, modelTranslation, modelRotation, cameraRotation, cameraTranslation);
+
+    glm::mat4 viewMatrix = getCamera().getViewMatrix();
+    drawModel(scale, modelTranslation, modelRotation, viewMatrix);
 }
 
-void LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRotation, glm::vec3 &modelTranslation,
-                             glm::vec3 &modelRotation, float &scale, glm::vec3 &ambientColor, glm::vec3 &specularColor,
-                             glm::vec3 &lightPosition, glm::vec3 &lightColor, bool &rotate, bool &useAmbient,
-                             bool &useDiffuse, bool &useSpecular) {
+void LightDemo::showSettings(glm::vec3 &modelTranslation, glm::vec3 &modelRotation, float &scale,
+                             glm::vec3 &ambientColor, glm::vec3 &specularColor, glm::vec3 &lightPosition,
+                             glm::vec3 &lightColor, bool &rotate, bool &useAmbient, bool &useDiffuse,
+                             bool &useSpecular) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Camera Translation", reinterpret_cast<float *>(&cameraTranslation), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Translation", reinterpret_cast<float *>(&modelTranslation), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
     ImGui::DragFloat("Model Scale", &scale, dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Ambient Color", reinterpret_cast<float *>(&ambientColor));
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Specular Color", reinterpret_cast<float *>(&specularColor));
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
     ImGui::Checkbox("Rotate", &rotate);
     ImGui::Checkbox("Ambient", &useAmbient);
@@ -94,7 +84,7 @@ void LightDemo::showSettings(glm::vec3 &cameraTranslation, glm::vec3 &cameraRota
 }
 
 void LightDemo::drawModel(float scale, const glm::vec3 &modelTranslation, const glm::vec3 &modelRotation,
-                          const glm::vec3 &cameraRotation, const glm::vec3 &cameraTranslation) const {
+                          const glm::mat4 &viewMatrix) const {
     if (!model.isLoaded()) {
         return;
     }
@@ -114,7 +104,6 @@ void LightDemo::drawModel(float scale, const glm::vec3 &modelTranslation, const 
         modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
         modelMatrix = glm::translate(modelMatrix, modelTranslation);
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-        glm::mat4 viewMatrix = createViewMatrix(cameraTranslation, cameraRotation);
         shader->setUniform("u_Model", modelMatrix);
         shader->setUniform("u_NormalMatrix", normalMatrix);
         shader->setUniform("u_View", viewMatrix);
