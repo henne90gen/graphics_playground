@@ -22,6 +22,7 @@ struct AnimatedBall {
 void updateAnimatedBall(AnimatedBall &ball, float delta, float speed);
 
 void MetaBallsScene::setup() {
+    getCamera().setDistance(50);
     shader = CREATE_DEFAULT_SHADER(meta_balls_MetaBalls);
     shader->bind();
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
@@ -105,8 +106,7 @@ void MetaBallsScene::tick() {
 
     const float halfScale = -0.5F;
     glm::vec3 modelCenter = glm::vec3(dimensions) * halfScale;
-    glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
-    viewMatrix = glm::scale(viewMatrix, glm::vec3(scale));
+    glm::mat4 viewMatrix = getCamera().getViewMatrix();
     auto modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));

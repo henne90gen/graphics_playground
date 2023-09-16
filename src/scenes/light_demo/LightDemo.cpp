@@ -35,7 +35,7 @@ void LightDemo::tick() {
     static auto specularColor = glm::vec3(0.3F, 0.3F, 0.3F);
     static auto lightPosition = glm::vec3(0.0F, -0.7F, 1.6F);
     static auto lightColor = glm::vec3(1.0F);
-    static bool rotate = false;
+    static bool rotate = true;
     static bool useAmbient = true;
     static bool useDiffuse = true;
     static bool useSpecular = true;
