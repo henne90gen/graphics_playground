@@ -116,7 +116,7 @@ void MetaBallsScene::tick() {
     shader->bind();
     shader->setUniform("u_View", viewMatrix);
     shader->setUniform("u_Projection", projectionMatrix);
-    shader->setUniform("u_Dimensions", dimensions);
+    shader->setUniform("u_Dimensions", glm::vec3(dimensions));
 
     drawSurface(modelMatrix, drawWireframe);
 
