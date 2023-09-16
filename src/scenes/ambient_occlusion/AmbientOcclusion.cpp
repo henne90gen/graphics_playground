@@ -16,8 +16,6 @@ DEFINE_FRAGMENT_SHADER(ambient_occlusion_Lighting)
 DEFINE_FRAGMENT_SHADER(ambient_occlusion_SSAO)
 DEFINE_FRAGMENT_SHADER(ambient_occlusion_SSAOBlur)
 
-float lerp(float a, float b, float f) { return a + f * (b - a); }
-
 void AmbientOcclusion::setup() {
     geometryShader = CREATE_DEFAULT_SHADER(ambient_occlusion_Geometry);
     textureShader = createDefaultShader(SHADER_CODE(ambient_occlusion_ScreenQuadVert),
@@ -323,6 +321,8 @@ void AmbientOcclusion::initSSAOBlurBuffer() {
     checkFramebufferStatus();
 }
 
+float custom_lerp(float a, float b, float f) { return a + f * (b - a); }
+
 void AmbientOcclusion::initKernelAndNoiseTexture() {
     std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
     std::default_random_engine generator;
@@ -334,7 +334,7 @@ void AmbientOcclusion::initKernelAndNoiseTexture() {
         float scale = float(i) / 64.0F;
 
         // scale samples so that they're more aligned to center of kernel
-        scale = lerp(0.1F, 1.0F, scale * scale);
+        scale = custom_lerp(0.1F, 1.0F, scale * scale);
         sample *= scale;
         ssaoKernel.push_back(sample);
     }

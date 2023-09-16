@@ -24,8 +24,6 @@ DEFINE_FRAGMENT_SHADER(landscape_Lighting)
 DEFINE_FRAGMENT_SHADER(landscape_SSAO)
 DEFINE_FRAGMENT_SHADER(landscape_SSAOBlur)
 
-float lerp(float a, float b, float f) { return a + f * (b - a); }
-
 void Landscape::setup() {
     getCamera().setFocalPoint(glm::vec3(0.0F, 150.0F, 0.0F));
     playerCamera.setFocalPoint(glm::vec3(0.0F, 33.0F, 0.0F));
@@ -467,6 +465,8 @@ void Landscape::initSSAOBlurBuffer() {
     checkFramebufferStatus();
 }
 
+float custom_lerp(float a, float b, float f) { return a + f * (b - a); }
+
 void Landscape::initKernelAndNoiseTexture() {
     std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
     std::default_random_engine generator;
@@ -478,7 +478,7 @@ void Landscape::initKernelAndNoiseTexture() {
         float scale = float(i) / 64.0F;
 
         // scale samples so that they're more aligned to center of kernel
-        scale = lerp(0.1F, 1.0F, scale * scale);
+        scale = custom_lerp(0.1F, 1.0F, scale * scale);
         sample *= scale;
         ssaoKernel.push_back(sample);
     }
