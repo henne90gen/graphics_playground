@@ -20,17 +20,12 @@ void ModelLoading::setup() {
 void ModelLoading::destroy() {}
 
 void ModelLoading::tick() {
-    static glm::vec3 translation = {1.7F, -3.5F, -12.0F}; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static glm::vec3 modelRotation = {0.0F, 1.0F, 0.0F};
-    static float scale = 0.5F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static float scale = 0.5F;
     static bool rotate = false;
-    static bool rotateWithMouse = false;
-    static float mouseRotationSpeed = 5.0F;
     static bool drawWireframe = false;
     static unsigned int currentModel = 3;
     static unsigned int prevModel = currentModel + 1;
-
-    static glm::vec2 lastMousePos = {};
 
     const float rotationSpeed = 0.03F;
     if (rotate) {
@@ -38,8 +33,7 @@ void ModelLoading::tick() {
     }
 
     std::vector<std::string> paths = {};
-    showSettings(rotate, rotateWithMouse, mouseRotationSpeed, translation, modelRotation, scale, drawWireframe,
-                 currentModel, paths);
+    showSettings(rotate, modelRotation, scale, drawWireframe, currentModel, paths);
 
     shader->bind();
 
@@ -50,18 +44,17 @@ void ModelLoading::tick() {
         prevModel = currentModel;
     }
 
-    drawModel(translation, modelRotation, scale, drawWireframe);
+    drawModel(modelRotation, scale, drawWireframe);
 }
 
-void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &modelRotation, float scale,
-                             bool drawWireframe) {
+void ModelLoading::drawModel(const glm::vec3 &modelRotation, float scale, bool drawWireframe) {
     if (!model.isLoaded()) {
         return;
     }
 
     RECORD_SCOPE_NAME("RenderModel");
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    glm::mat4 modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
@@ -95,17 +88,13 @@ void ModelLoading::drawModel(const glm::vec3 &translation, const glm::vec3 &mode
     }
 }
 
-void ModelLoading::showSettings(bool &rotate, bool &rotateWithMouse, float &mouseRotationSpeed, glm::vec3 &translation,
-                                glm::vec3 &modelRotation, float &scale, bool &drawWireframe, unsigned int &currentModel,
-                                std::vector<std::string> &paths) {
+void ModelLoading::showSettings(bool &rotate, glm::vec3 &modelRotation, float &scale, bool &drawWireframe,
+                                unsigned int &currentModel, std::vector<std::string> &paths) {
     ImGui::Begin("Settings");
     ImGui::FileSelector("Models", "model_loading_resources/models/", currentModel, paths);
-    ImGui::DragFloat3("Position", reinterpret_cast<float *>(&translation), 0.05F);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), 0.01F);
     ImGui::Checkbox("Wireframe", &drawWireframe);
     ImGui::Checkbox("Rotate", &rotate);
-    ImGui::Checkbox("Rotate With Mouse", &rotateWithMouse);
-    ImGui::DragFloat("Mouse Rotation Speed", &mouseRotationSpeed, 0.01F);
     ImGui::DragFloat("Scale", &scale, 0.001F);
 
     if (model.isLoaded()) {
