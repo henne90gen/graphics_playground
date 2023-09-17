@@ -13,6 +13,10 @@ constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 10000.0F;
 
 void Tessellation::setup() {
+    getCamera().setDistance(400);
+    getCamera().setRotation(0.4F, 2.3F);
+    getCamera().setFocalPoint(glm::vec3(40, 200, 80));
+
     shader = std::make_shared<Shader>();
     shader->attachVertexShader(SHADER_CODE(tessellation_TessellationVert));
     shader->attachFragmentShader(SHADER_CODE(tessellation_TessellationFrag));
@@ -74,14 +78,11 @@ void Tessellation::setup() {
 void Tessellation::destroy() {}
 
 void Tessellation::tick() {
-    static auto camera = CameraSpace();
     static auto model = ModelSpace();
     static auto drawWireframe = true;
     static TessellationLevels tessellationLevels = {};
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&camera.position), 0.01F);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&camera.rotation), 0.01F);
     ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&model.position), 0.01F);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&model.rotation), 0.01F);
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&model.scale), 0.01F);
@@ -90,10 +91,10 @@ void Tessellation::tick() {
     ImGui::DragFloat("Inner Tess", &tessellationLevels.inner, 1.0F, 1.0F, 100.0F);
     ImGui::End();
 
-    renderTessellatedQuad(drawWireframe, camera, model, tessellationLevels);
+    renderTessellatedQuad(drawWireframe, model, tessellationLevels);
 }
 
-void Tessellation::renderTessellatedQuad(bool drawWireframe, const CameraSpace &camera, const ModelSpace &model,
+void Tessellation::renderTessellatedQuad(bool drawWireframe, const ModelSpace &model,
                                          const TessellationLevels &levels) {
     va->bind();
 
@@ -103,7 +104,7 @@ void Tessellation::renderTessellatedQuad(bool drawWireframe, const CameraSpace &
     modelMatrix = glm::rotate(modelMatrix, model.rotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, model.rotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, model.scale);
-    auto viewMatrix = createViewMatrix(camera.position, camera.rotation);
+    auto viewMatrix = getCamera().getViewMatrix();
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
     shader->bind();
