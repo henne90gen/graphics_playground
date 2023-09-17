@@ -12,6 +12,8 @@ DEFINE_SCENE_MAIN(NormalMapping)
 DEFINE_DEFAULT_SHADERS(normal_mapping_NormalMapping)
 
 void NormalMapping::setup() {
+    getCamera().setDistance(5);
+
     shader = CREATE_DEFAULT_SHADER(normal_mapping_NormalMapping);
     shader->bind();
     onAspectRatioChange();
@@ -58,9 +60,6 @@ void NormalMapping::destroy() {}
 
 void NormalMapping::tick() {
     static float scale = 1.0F;
-    static glm::vec3 cameraPosition = {1.0, 0.0, -5.0};
-    static glm::vec3 cameraRotation = {};
-    static glm::vec3 position = {};
     static glm::vec3 rotation = {};
     static glm::vec3 lightPosition = {0.0, 0.0, 1.7};
     static glm::vec3 lightColor = {1.0, 1.0, 1.0};
@@ -69,10 +68,7 @@ void NormalMapping::tick() {
     static bool useNormalMap = true;
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.01F);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.01F);
     ImGui::DragFloat("Model Scale", &scale, 0.01F);
-    ImGui::DragFloat3("Model Position", reinterpret_cast<float *>(&position), 0.01F);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&rotation), 0.01F);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPosition), 0.01F);
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor));
@@ -85,7 +81,7 @@ void NormalMapping::tick() {
         rotation.y += rotationSpeed;
     }
 
-    glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    const auto &viewMatrix = getCamera().getViewMatrix();
 
     shader->bind();
     shader->setUniform("u_Light.position", lightPosition);
@@ -97,13 +93,12 @@ void NormalMapping::tick() {
     {
         RECORD_SCOPE_NAME("Render");
         for (const auto &mesh : model.getMeshes()) {
-            renderMesh(mesh, position, rotation, scale);
+            renderMesh(mesh, rotation, scale);
         }
     }
 }
 
-void NormalMapping::renderMesh(const OpenGLMesh &mesh, const glm::vec3 &position, const glm::vec3 &rotation,
-                               const float scale) {
+void NormalMapping::renderMesh(const OpenGLMesh &mesh, const glm::vec3 &rotation, const float scale) {
     if (!mesh.visible) {
         return;
     }
@@ -115,7 +110,6 @@ void NormalMapping::renderMesh(const OpenGLMesh &mesh, const glm::vec3 &position
     modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
     modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
-    modelMatrix = glm::translate(modelMatrix, position);
     shader->setUniform("u_Model", modelMatrix);
 
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));

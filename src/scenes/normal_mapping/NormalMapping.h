@@ -40,6 +40,5 @@ class NormalMapping : public Scene {
                                                const std::vector<glm::vec3> &vertices,
                                                const std::vector<glm::vec2> &uvs, std::vector<glm::vec3> &tangents,
                                                std::vector<glm::vec3> &biTangents);
-    void renderMesh(const OpenGLMesh &mesh, const glm::vec3 &position, const glm::vec3 &rotation,
-                    const float scale);
+    void renderMesh(const OpenGLMesh &mesh, const glm::vec3 &rotation, const float scale);
 };
