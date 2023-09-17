@@ -17,6 +17,9 @@ DEFINE_DEFAULT_SHADERS(terrain_erosion_Terrain)
 DEFINE_DEFAULT_SHADERS(terrain_erosion_Path)
 
 void TerrainErosion::setup() {
+    getCamera().setDistance(200);
+    getCamera().setRotation(0.7F, 2.4F);
+    getCamera().setFocalPoint(glm::vec3(40, 80, 40));
     std::random_device global_random_device;
     randomGenerator = std::mt19937(global_random_device());
     randomDistribution = std::uniform_real_distribution<double>(0.0, 1.0);
@@ -49,8 +52,6 @@ void TerrainErosion::destroy() {}
 void TerrainErosion::tick() {
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
     static auto modelRotation = glm::vec3(0.0F, 0.0F, 0.0F);
-    static auto cameraPosition = glm::vec3(-75.0F, -180.0F, -325.0F);
-    static auto cameraRotation = glm::vec3(0.6F, -0.05F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
     static glm::ivec2 terrainSize = glm::ivec2(INITIAL_WIDTH, INITIAL_HEIGHT);
@@ -77,9 +78,9 @@ void TerrainErosion::tick() {
     const auto previousTerrainSize = terrainSize;
     const auto previousRaindropCount = raindropCount;
 
-    showSettings(modelScale, modelRotation, cameraPosition, cameraRotation, surfaceToLight, lightColor, lightPower,
-                 wireframe, drawTriangles, verticesPerFrame, shouldRenderPaths, onlyRainAroundCenterPoint, letItRain,
-                 params, raindropCount, centerPoint, radius, terrainLevels, terrainSize);
+    showSettings(modelScale, modelRotation, surfaceToLight, lightColor, lightPower, wireframe, drawTriangles,
+                 verticesPerFrame, shouldRenderPaths, onlyRainAroundCenterPoint, letItRain, params, raindropCount,
+                 centerPoint, radius, terrainLevels, terrainSize);
 
     if (previousTerrainSize != terrainSize) {
         generateNoiseTerrainData(terrainSize);
@@ -90,7 +91,7 @@ void TerrainErosion::tick() {
     modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0, 1, 0));
     modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, modelScale);
-    const auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    const auto viewMatrix = getCamera().getViewMatrix();
     const auto projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     const auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
@@ -109,24 +110,15 @@ void TerrainErosion::tick() {
                   lightPower, wireframe, drawTriangles, verticesPerFrame, terrainLevels);
 }
 
-void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotation, glm::vec3 &cameraPosition,
-                                  glm::vec3 &cameraRotation, glm::vec3 &surfaceToLight, glm::vec3 &lightColor,
-                                  float &lightPower, bool &wireframe, bool &drawTriangles, int &verticesPerFrame,
-                                  bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint, bool &letItRain,
-                                  SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint, float &radius,
-                                  TerrainLevels &terrainLevels, glm::ivec2 &terrainSize) {
+void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotation, glm::vec3 &surfaceToLight,
+                                  glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
+                                  int &verticesPerFrame, bool &shouldRenderPaths, bool &onlyRainAroundCenterPoint,
+                                  bool &letItRain, SimulationParams &params, int &raindropCount, glm::vec2 &centerPoint,
+                                  float &radius, TerrainLevels &terrainLevels, glm::ivec2 &terrainSize) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
     ImGui::DragFloat3("Model Rotation", reinterpret_cast<float *>(&modelRotation), dragSpeed);
-
-    cameraPosition.x *= -1.0F;
-    cameraPosition.z *= -1.0F;
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition));
-    cameraPosition.x *= -1.0F;
-    cameraPosition.z *= -1.0F;
-
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&surfaceToLight));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, dragSpeed);
@@ -150,15 +142,8 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotatio
         letItRain = true;
     }
     ImGui::DragInt("Iteration Count", &raindropCount);
-    const auto before = onlyRainAroundCenterPoint;
-    ImGui::Checkbox("Only Simulate around Point", &onlyRainAroundCenterPoint);
-    if (before != onlyRainAroundCenterPoint) {
-        centerPoint = glm::vec2(-cameraPosition.x, -cameraPosition.z);
-    }
-    if (onlyRainAroundCenterPoint) {
-        ImGui::DragFloat2("Center Point", reinterpret_cast<float *>(&centerPoint), dragSpeed);
-        ImGui::DragFloat("Radius", &radius, dragSpeed);
-    }
+    ImGui::DragFloat2("Center Point", reinterpret_cast<float *>(&centerPoint), dragSpeed);
+    ImGui::DragFloat("Radius", &radius, dragSpeed);
     ImGui::DragFloat("Kq = constant parameter for soil carry capacity formula", &params.Kq, dragSpeed);
     ImGui::DragFloat("Kw = water evaporation speed", &params.Kw, dragSpeed);
     ImGui::DragFloat("Kr = erosion speed", &params.Kr, dragSpeed);

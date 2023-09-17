@@ -44,6 +44,7 @@ void SpotLight::tick() {
     const float dragSpeed = 0.01F;
 
     ImGui::Begin("Settings");
+    ImGui::Text("Use W,A,S,D to move around the scene");
     ImGui::Checkbox("Wireframe", &wireframe);
     ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
     ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
@@ -133,9 +134,9 @@ void SpotLight::moveKeyboardOnly(glm::vec3 &position, glm::vec3 &rotation, float
 
 void addWall(std::vector<float> &vertices, const glm::vec3 &position, const glm::vec3 &normal) {
 #define ADD_VERTEX(v)                                                                                                  \
-    vertices.push_back((v).x);                                                                                           \
-    vertices.push_back((v).y);                                                                                           \
-    vertices.push_back((v).z);                                                                                           \
+    vertices.push_back((v).x);                                                                                         \
+    vertices.push_back((v).y);                                                                                         \
+    vertices.push_back((v).z);                                                                                         \
     vertices.push_back(normal.x);                                                                                      \
     vertices.push_back(normal.y);                                                                                      \
     vertices.push_back(normal.z)
