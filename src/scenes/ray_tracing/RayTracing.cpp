@@ -22,22 +22,15 @@ void RayTracing::setup() {
 
     setupRayTracedTexture();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     light = {{1, 1, -0.5}, 0.75};
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::sphere({}, {}, 0.5));
 
     objects.push_back(RayTracer::plane({-2, 0, 0}, {0, 1, 1}, {1, 0, 0}));
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::plane({0, 0, -5}, {1, 1, 0}, {0, 0, 1}));
     objects.push_back(RayTracer::plane({0, 2, 0}, {1, 0, 1}, {0, -1, 0}));
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::sphere({0, 0, -2}, {1, 0, 0}, 0.5, 1.0));
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::sphere({1, 0, -1.5}, {0, 1, 0}, 0.25));
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::sphere({0, 1, -1.5}, {0, 0, 1}, 0.25));
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     objects.push_back(RayTracer::sphere({1, 1, -3}, {1, 0.5, 0.5}, 0.5));
 }
 
@@ -48,40 +41,25 @@ void RayTracing::onAspectRatioChange() {
 void RayTracing::destroy() {}
 
 void RayTracing::tick() {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static std::array<int, 2> dimensions = {250, 250};
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static glm::vec3 rayTracerCameraPosition = {0, 0.25, 1.0};
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static float zDistance = -2.1F;
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static glm::vec3 cameraPosition = {-1.5, -0.2, -2};
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static glm::vec3 cameraRotation = {0, -0.5, 0};
     static bool runAsync = true;
     static glm::vec3 rayColor = {1, 1, 1};
     static bool shouldRenderRays = false;
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static int maxRayDepth = 5;
     static glm::vec3 glassSpherePosition = {0, 0, -2};
     const float dragSpeed = 0.001F;
 
     ImGui::Begin("Settings");
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     ImGui::DragInt2("Dimensions", dimensions.data(), 1.0, 1, 1000);
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), dragSpeed);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat3("Position of Ray-Tracer Camera", reinterpret_cast<float *>(&rayTracerCameraPosition), dragSpeed);
     ImGui::DragFloat("Z-Distance", &zDistance, dragSpeed);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&light.position), dragSpeed);
     ImGui::Checkbox("Run Async", &runAsync);
     ImGui::Checkbox("Render Rays", &shouldRenderRays);
     ImGui::ColorEdit3("Ray Color", reinterpret_cast<float *>(&rayColor));
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragInt("Max Ray Depth", &maxRayDepth, 1.0F, 0, 100);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     ImGui::DragFloat3("Glass Sphere Position", reinterpret_cast<float *>(&glassSpherePosition), dragSpeed);
     ImGui::End();
 
@@ -104,7 +82,7 @@ void RayTracing::tick() {
     {
         RECORD_SCOPE_NAME("Render");
         shader->bind();
-        auto viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+        auto viewMatrix = getCamera().getViewMatrix();
         shader->setUniform("u_View", viewMatrix);
         shader->setUniform("u_Projection", projectionMatrix);
 
