@@ -9,6 +9,7 @@
 #include <mutex>
 #include <random>
 
+#include "DtmDownloader.h"
 #include "XyzLoader.h"
 #include "gl/IndexBuffer.h"
 #include "gl/VertexArray.h"
@@ -17,6 +18,11 @@
 #define GPU_BATCH_COUNT_CONFIGURABLE 1
 
 constexpr unsigned long GPU_POINTS_PER_BATCH = 10000;
+
+enum class DtmDataSource {
+    LOCAL = 0,
+    SAXONY = 1,
+};
 
 struct DtmSettings {
     float waterLevel = 0.0F;
@@ -81,6 +87,9 @@ struct Dtm {
         }
         return 0.0F;
     }
+
+    void reset(std::shared_ptr<Shader> shader, int pointCountEstimate);
+    void initGpuMemory(std::shared_ptr<Shader> shader, const unsigned int gpuBatchCount);
 };
 
 class DtmViewer : public Scene {
@@ -95,6 +104,9 @@ class DtmViewer : public Scene {
   private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Shader> simpleShader;
+    std::unique_ptr<DtmDownloader> downloader;
+
+    DtmDataSource dataSource = DtmDataSource::LOCAL;
 
     Dtm dtm = {};
 
@@ -127,8 +139,10 @@ class DtmViewer : public Scene {
                       DtmSettings &terrainLevels, int &gpuBatchCount);
 
     void loadDtm();
+    void loadLocalDtm(const std::string &directory);
+    void loadSaxonDtm();
     void initGpuMemory(unsigned int gpuBatchCount);
-    void loadDtmAsync();
+    void loadDtmAsync(const std::string &path);
 
     void batchProcessor();
     void processBatch(const RawBatch &rawBatch);

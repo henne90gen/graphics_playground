@@ -13,4 +13,6 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
 bool loadXyzDir(const std::string &dirName, const TakePointsFunc &takePointsFunc);
 bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &takePointsFunc);
 
+std::vector<glm::vec3> loadXyzFile(const std::string &fileName);
+
 unsigned long countLinesInDir(const std::string &dirName);

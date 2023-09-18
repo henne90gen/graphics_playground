@@ -1,8 +1,10 @@
 #pragma once
 
+#include <string>
+
 struct DtmDownloader {
     DtmDownloader();
     ~DtmDownloader();
 
-    void download();
+    void download(const std::string &url);
 };

@@ -54,44 +54,52 @@ bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &tak
 #pragma omp parallel for
     for (int i = 0; i < fileCount; i++) {
         const auto &fileName = files[i];
-        if (fileName[fileName.size() - 4] != '.' || fileName[fileName.size() - 3] != 'x' ||
-            fileName[fileName.size() - 2] != 'y' || fileName[fileName.size() - 1] != 'z') {
+        auto points = loadXyzFile(fileName);
+        if (points.empty()) {
             continue;
         }
-
-        std::ifstream file;
-        file.open(fileName, std::ios::in | std::ios::ate | std::ios::binary);
-        if (!file.is_open()) {
-            std::cout << "Could not open file: " << fileName << std::endl;
-            continue;
-        }
-
-        size_t fileSize = file.tellg();
-        file.seekg(0);
-        char *buffer = reinterpret_cast<char *>(std::malloc(fileSize));
-        file.read(buffer, fileSize);
-
-        std::vector<glm::vec3> temp = {};
-        char *workingBuffer = buffer;
-        while (workingBuffer - buffer < fileSize - 3) {
-            glm::vec3 vec;
-            char *last = nullptr;
-            vec.x = strtof(workingBuffer, &last);
-            vec.z = strtof(last, &last);
-            vec.y = strtof(last, &last);
-            temp.push_back(vec);
-
-            workingBuffer = last;
-        }
-        std::free(buffer);
 
 #pragma omp critical
-        { takePointsFunc(fileName, temp); }
-
-        file.close();
+        { takePointsFunc(fileName, points); }
     }
 
     return true;
+}
+
+std::vector<glm::vec3> loadXyzFile(const std::string &fileName) {
+    if (fileName[fileName.size() - 4] != '.' || fileName[fileName.size() - 3] != 'x' ||
+        fileName[fileName.size() - 2] != 'y' || fileName[fileName.size() - 1] != 'z') {
+        return {};
+    }
+
+    std::ifstream file;
+    file.open(fileName, std::ios::in | std::ios::ate | std::ios::binary);
+    if (!file.is_open()) {
+        std::cout << "Could not open file: " << fileName << std::endl;
+        return {};
+    }
+
+    size_t fileSize = file.tellg();
+    file.seekg(0);
+    char *buffer = reinterpret_cast<char *>(std::malloc(fileSize));
+    file.read(buffer, fileSize);
+
+    std::vector<glm::vec3> points = {};
+    char *workingBuffer = buffer;
+    while (workingBuffer - buffer < fileSize - 3) {
+        glm::vec3 vec;
+        char *last = nullptr;
+        vec.x = strtof(workingBuffer, &last);
+        vec.z = strtof(last, &last);
+        vec.y = strtof(last, &last);
+        points.push_back(vec);
+
+        workingBuffer = last;
+    }
+    std::free(buffer);
+
+    file.close();
+    return points;
 }
 
 unsigned long countLinesInDir(const std::string &dirName) {

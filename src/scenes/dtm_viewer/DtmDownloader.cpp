@@ -13,14 +13,20 @@ DtmDownloader::DtmDownloader() {
 
 DtmDownloader::~DtmDownloader() { curl_global_cleanup(); }
 
-void DtmDownloader::download() {
+void DtmDownloader::download(const std::string &url) {
     CURL *curl = curl_easy_init();
     if (!curl) {
         return;
     }
 
     CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+    // TODO add callbacks for when data is received
+
     res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        std::cerr << "Failed to download " << url << std::endl;
+    }
     curl_easy_cleanup(curl);
 }

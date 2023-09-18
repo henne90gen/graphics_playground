@@ -13,7 +13,7 @@ constexpr float Z_FAR = 100000.0F;
 
 constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
 
-constexpr const char *DTM_DIRECTORY = "dtm_viewer_resources/dtm";
+constexpr const char *LOCAL_DTM_DIRECTORY = "dtm_viewer_resources/dtm";
 
 DEFINE_SCENE_MAIN(DtmViewer);
 DEFINE_DEFAULT_SHADERS(dtm_viewer_Terrain)
@@ -25,6 +25,7 @@ void DtmViewer::setup() {
 
     simpleShader = CREATE_DEFAULT_SHADER(dtm_viewer_Simple);
     shader = CREATE_DEFAULT_SHADER(dtm_viewer_Terrain);
+    downloader = std::make_unique<DtmDownloader>();
 
     GL_Call(glPointSize(5));
 
@@ -54,8 +55,7 @@ void DtmViewer::tick() {
 
     if (gpuBatchCount != previousGpuBatchCount) {
         previousGpuBatchCount = gpuBatchCount;
-        dtm.gpuMemoryMap = std::vector<GpuBatch>(gpuBatchCount);
-        initGpuMemory(gpuBatchCount);
+        dtm.initGpuMemory(shader, gpuBatchCount);
     }
 
     glm::mat4 modelMatrix = glm::identity<glm::mat4>();
@@ -87,6 +87,14 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
                              DtmSettings &terrainSettings, int &gpuBatchCount) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
+
+    auto previousDataSource = dataSource;
+    static const std::array<const char *, 2> items = {"Local", "Saxony"};
+    ImGui::Combo("Data Source", reinterpret_cast<int *>(&dataSource), items.data(), items.size());
+    if (previousDataSource != dataSource) {
+        loadDtm();
+    }
+
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
@@ -148,47 +156,110 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
 }
 
 void DtmViewer::loadDtm() {
-    auto files = getFilesInDirectory(DTM_DIRECTORY);
+    switch (dataSource) {
+    case DtmDataSource::LOCAL:
+        loadLocalDtm(LOCAL_DTM_DIRECTORY);
+        return;
+    case DtmDataSource::SAXONY:
+        loadSaxonDtm();
+        return;
+    }
+}
+
+void DtmViewer::loadSaxonDtm() {
+    std::vector<std::string> downloadUrls = {
+          "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/"
+          "download?path=%2F&files=dgm1_33390_5638_2_sn_xyz.zip",
+          "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/"
+          "download?path=%2F&files=dgm1_33390_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5636_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5638_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5630_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5632_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5634_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5636_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5638_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5630_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5632_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5634_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5636_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5638_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5632_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5634_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5636_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5638_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5644_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5632_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5634_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5636_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5638_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5644_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5646_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5638_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5640_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5642_2_sn_xyz.zip",
+          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5644_2_sn_xyz.zip",
+    };
+
+    // TODO create download directory
+
+    // download all zip files
+    for (const auto &url : downloadUrls) {
+        downloader->download(url);
+    }
+
+    // extract each zip file
+    
+    // go through each .xyz file and load its content as a batch
+
+    // loadLocalDtm();
+}
+
+void DtmViewer::loadLocalDtm(const std::string &directory) {
+    auto files = getFilesInDirectory(directory);
     auto pointCountEstimate = files.size() * GPU_POINTS_PER_BATCH;
     if (pointCountEstimate < 0) {
         std::cout << "Could not count points in dtm" << std::endl;
         return;
     }
 
-    // one file is not a .xyz
-    totalLoadedFileCount = files.size() - 1;
-    totalProcessedFileCount = files.size() - 1;
+    totalLoadedFileCount = files.size();
+    totalProcessedFileCount = files.size();
     loadedFileCount = 0;
     processedFileCount = 0;
 
-    dtm.vertices = std::vector<glm::vec3>(pointCountEstimate);
-    dtm.normals = std::vector<glm::vec3>(pointCountEstimate);
-    dtm.indices = std::vector<glm::ivec3>(pointCountEstimate * 2);
+    dtm.reset(shader, pointCountEstimate);
 
-    initGpuMemory(DEFAULT_GPU_BATCH_COUNT);
-
-    loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this);
+    loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this, directory);
 }
 
-void DtmViewer::loadDtmAsync() {
-#define LOOKUP_INDEX(x, y) (static_cast<long>(x) << 32) | (y)
-
+void DtmViewer::loadDtmAsync(const std::string &directory) {
     RECORD_SCOPE();
     startLoading = std::chrono::high_resolution_clock::now();
 
-    bool success =
-          loadXyzDir(DTM_DIRECTORY, [this](const std::string &batchName, const std::vector<glm::vec3> &points) {
-              RECORD_SCOPE_NAME("Process Points");
-              {
-                  const std::lock_guard<std::mutex> guard(rawBatchMutex);
-                  RawBatch rawBatch = {batchName, points};
-                  rawBatches.push_back(rawBatch);
-              }
+    bool success = loadXyzDir(directory, [this](const std::string &batchName, const std::vector<glm::vec3> &points) {
+        RECORD_SCOPE_NAME("Process Points");
+        {
+            const std::lock_guard<std::mutex> guard(rawBatchMutex);
+            RawBatch rawBatch = {batchName, points};
+            rawBatches.push_back(rawBatch);
+        }
 
-              std::cout << "Loaded batch of terrain data from disk: " << batchName << " with " << points.size()
-                        << " points\n";
-              loadedFileCount++;
-          });
+        std::cout << "Loaded batch of terrain data from disk: " << batchName << " with " << points.size()
+                  << " points\n";
+        loadedFileCount++;
+    });
 
     if (!success) {
         std::cout << "Could not load DTM" << std::endl;
@@ -311,8 +382,9 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
     shader->unbind();
 }
 
-void DtmViewer::renderBoundingBoxes(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-                                    const BoundingBox3 &bb, const std::vector<Batch> &batches) {
+void DtmViewer::renderBoundingBoxes(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+                                    const glm::mat4 &projectionMatrix, const BoundingBox3 &bb,
+                                    const std::vector<Batch> &batches) {
     auto bbParams = std::vector<std::pair<glm::vec3, glm::vec3>>(batches.size() + 1);
     bbParams[0] = std::make_pair(bb.center(), bb.max - bb.min);
     for (unsigned int i = 1; i < batches.size() + 1; i++) {
@@ -421,6 +493,8 @@ void DtmViewer::batchProcessor() {
     getCamera().setFocalPoint(dtm.bb.center());
 }
 
+#define LOOKUP_INDEX(x, y) (static_cast<long>(x) << 32) | (y)
+
 void DtmViewer::processBatch(const RawBatch &rawBatch) {
     constexpr float stepWidth = 20.0F;
     Batch batch = {};
@@ -526,23 +600,33 @@ void DtmViewer::processBatch(const RawBatch &rawBatch) {
     }
 }
 
-void DtmViewer::initGpuMemory(const unsigned int gpuBatchCount) {
+void Dtm::initGpuMemory(std::shared_ptr<Shader> shader, const unsigned int gpuBatchCount) {
+    gpuMemoryMap = std::vector<GpuBatch>(gpuBatchCount);
+
     const unsigned int gpuPointCount = gpuBatchCount * GPU_POINTS_PER_BATCH;
     const unsigned int vertexSize = gpuPointCount * sizeof(glm::vec3);
     const unsigned int normalSize = gpuPointCount * sizeof(glm::vec3);
     const unsigned int indexSize = gpuPointCount * 2 * sizeof(glm::ivec3);
 
-    dtm.va = std::make_shared<VertexArray>(shader);
-    dtm.va->bind();
+    va = std::make_shared<VertexArray>(shader);
+    va->bind();
 
     BufferLayout positionLayout = {{ShaderDataType::Float3, "position"}};
-    dtm.vertexBuffer = std::make_shared<VertexBuffer>(nullptr, vertexSize, positionLayout);
-    dtm.va->addVertexBuffer(dtm.vertexBuffer);
+    vertexBuffer = std::make_shared<VertexBuffer>(nullptr, vertexSize, positionLayout);
+    va->addVertexBuffer(vertexBuffer);
 
     BufferLayout normalLayout = {{ShaderDataType::Float3, "in_normal"}};
-    dtm.normalBuffer = std::make_shared<VertexBuffer>(nullptr, normalSize, normalLayout);
-    dtm.va->addVertexBuffer(dtm.normalBuffer);
+    normalBuffer = std::make_shared<VertexBuffer>(nullptr, normalSize, normalLayout);
+    va->addVertexBuffer(normalBuffer);
 
-    dtm.indexBuffer = std::make_shared<IndexBuffer>(nullptr, indexSize);
-    dtm.va->setIndexBuffer(dtm.indexBuffer);
+    indexBuffer = std::make_shared<IndexBuffer>(nullptr, indexSize);
+    va->setIndexBuffer(indexBuffer);
+}
+
+void Dtm::reset(std::shared_ptr<Shader> shader, int pointCountEstimate) {
+    vertices = std::vector<glm::vec3>(pointCountEstimate);
+    normals = std::vector<glm::vec3>(pointCountEstimate);
+    indices = std::vector<glm::ivec3>(pointCountEstimate * 2);
+
+    initGpuMemory(shader, DEFAULT_GPU_BATCH_COUNT);
 }
