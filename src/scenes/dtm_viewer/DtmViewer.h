@@ -34,7 +34,7 @@ struct BatchIndices {
 
 struct Batch {
     unsigned int batchId;
-    unsigned int batchName;
+    std::string batchName;
     BatchIndices indices = {};
     BoundingBox3 bb = {};
     std::unordered_map<long, unsigned int> vertexMap = {};
@@ -47,7 +47,7 @@ struct GpuBatch {
 };
 
 struct RawBatch {
-    unsigned int batchName;
+    std::string batchName;
     std::vector<glm::vec3> points;
 };
 
@@ -138,7 +138,8 @@ class DtmViewer : public Scene {
     static bool pointExists(Batch &batch, int x, int z);
 
     void initBoundingBox();
-    void renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const BoundingBox3 &bb,
+    void renderBoundingBoxes(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix,
+                             const glm::mat4 &projectionMatrix, const BoundingBox3 &bb,
                              const std::vector<Batch> &batches);
 
     bool allFilesLoaded() const { return loadedFileCount == totalLoadedFileCount; }

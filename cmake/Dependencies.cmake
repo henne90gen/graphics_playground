@@ -3,12 +3,12 @@ include(FetchContent)
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG 7482de6071d21db77a7236155da44c172a7f6c9e # 3.3.8
+        GIT_TAG 3.3.8
 )
 FetchContent_Declare(
         glm
         GIT_REPOSITORY https://github.com/g-truc/glm.git
-        GIT_TAG bf71a834948186f4097caa076cd2663c69a10e1e # 0.9.9.8
+        GIT_TAG 0.9.9.8
 )
 FetchContent_Declare(
         imgui
@@ -38,7 +38,7 @@ FetchContent_Declare(
 FetchContent_Declare(
         libpng
         GIT_REPOSITORY https://github.com/glennrp/libpng.git
-        GIT_TAG 07b8803110da160b158ebfef872627da6c85cbdf # v1.6.39
+        GIT_TAG v1.6.39
 )
 FetchContent_Declare(
         gif
@@ -48,17 +48,22 @@ FetchContent_Declare(
 FetchContent_Declare(
         zlib
         GIT_REPOSITORY https://github.com/madler/zlib.git
-        GIT_TAG 04f42ceca40f73e2978b50e93806c2a18c1281fc # v1.2.13
+        GIT_TAG v1.3
 )
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
+        GIT_TAG v1.14.0
 )
 FetchContent_Declare(
         benchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG d572f4777349d43653b21d6c2fc63020ab326db2 # v1.7.1
+        GIT_TAG v1.8.3
+)
+FetchContent_Declare(
+        curl
+        GIT_REPOSITORY https://github.com/curl/curl.git
+        GIT_TAG curl-8_3_0
 )
 
 FetchContent_MakeAvailable(zlib)
@@ -101,6 +106,10 @@ set(BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_DYNAMIC_LIBS ON CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_TESTS OFF CACHE BOOL "" FORCE) # libsoundio
 set(BUILD_EXAMPLE_PROGRAMS OFF CACHE BOOL "" FORCE) # libsoundio
+set(CURL_ENABLE_EXPORT_TARGET OFF CACHE BOOL "" FORCE) # curl
+set(CURL_ZLIB OFF CACHE BOOL "" FORCE) # curl
+set(ZLIB_FOUND ON CACHE BOOL "" FORCE) # curl
+add_library(ZLIB::ZLIB ALIAS zlibstatic) # curl
 
 FetchContent_MakeAvailable(
         glm
@@ -111,6 +120,7 @@ FetchContent_MakeAvailable(
         libjpeg
         gif
         zlib
+        curl
 )
 
 if (NOT EMSCRIPTEN)

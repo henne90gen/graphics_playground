@@ -20,7 +20,7 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
 
     result.clear();
     result.reserve(files.size() * 10000);
-    return loadXyzDir(files, [&bb, &result](unsigned int batchName, const std::vector<glm::vec3> &temp) {
+    return loadXyzDir(files, [&bb, &result](const std::string &batchName, const std::vector<glm::vec3> &temp) {
         for (unsigned int i = 0; i < temp.size(); i++) {
             UPDATE_BB(temp[i].x, <, bb.min.x)
             UPDATE_BB(temp[i].y, <, bb.min.y)
@@ -85,9 +85,8 @@ bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &tak
         }
         std::free(buffer);
 
-        auto batchName = getBatchName(fileName);
 #pragma omp critical
-        { takePointsFunc(batchName, temp); }
+        { takePointsFunc(fileName, temp); }
 
         file.close();
     }

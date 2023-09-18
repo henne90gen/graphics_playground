@@ -22,11 +22,3 @@ TEST(XyzLoaderTest, Can_count_lines_in_xyz_directory) {
     const auto result = countLinesInDir("../../../../src/test/gis/dtm");
     ASSERT_EQ(result, 38220);
 }
-
-TEST(XyzLoaderTest, Can_parse_batch_name_from_file_name) {
-    auto result = getBatchName("332785590_dgm20.xyz");
-    ASSERT_EQ(result, 2785590);
-
-    result = getBatchName("331234567_dgm20.xyz");
-    ASSERT_EQ(result, 1234567);
-}

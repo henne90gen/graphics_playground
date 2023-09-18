@@ -1,5 +1,11 @@
 
-create_scene(DtmViewer.cpp XyzLoader.cpp ShpLoader.cpp)
+create_scene(
+    DtmViewer.cpp
+    DtmDownloader.cpp
+    XyzLoader.cpp
+    ShpLoader.cpp
+)
+target_link_libraries(dtm_viewer ${ZLIB_LIBRARY} CURL::libcurl)
 add_scene_resource_directory(dtm)
 
 create_scene_test(

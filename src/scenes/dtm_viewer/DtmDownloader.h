@@ -1,5 +1,8 @@
 #pragma once
 
-class DtmDownloader {
+struct DtmDownloader {
+    DtmDownloader();
+    ~DtmDownloader();
+
     void download();
 };

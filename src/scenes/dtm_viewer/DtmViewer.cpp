@@ -58,7 +58,7 @@ void DtmViewer::tick() {
         initGpuMemory(gpuBatchCount);
     }
 
-    glm::mat4 modelMatrix = glm::mat4(1.0F);
+    glm::mat4 modelMatrix = glm::identity<glm::mat4>();
     modelMatrix = glm::scale(modelMatrix, modelScale);
     glm::mat4 viewMatrix = getCamera().getViewMatrix();
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
@@ -74,7 +74,7 @@ void DtmViewer::tick() {
         }
 
         if (drawBoundingBoxes) {
-            renderBoundingBoxes(viewMatrix, projectionMatrix, dtm.bb, dtm.batches);
+            renderBoundingBoxes(modelMatrix, viewMatrix, projectionMatrix, dtm.bb, dtm.batches);
         }
     }
 
@@ -176,17 +176,19 @@ void DtmViewer::loadDtmAsync() {
     RECORD_SCOPE();
     startLoading = std::chrono::high_resolution_clock::now();
 
-    bool success = loadXyzDir(DTM_DIRECTORY, [this](unsigned int batchName, const std::vector<glm::vec3> &points) {
-        RECORD_SCOPE_NAME("Process Points");
-        {
-            const std::lock_guard<std::mutex> guard(rawBatchMutex);
-            RawBatch rawBatch = {batchName, points};
-            rawBatches.push_back(rawBatch);
-        }
+    bool success =
+          loadXyzDir(DTM_DIRECTORY, [this](const std::string &batchName, const std::vector<glm::vec3> &points) {
+              RECORD_SCOPE_NAME("Process Points");
+              {
+                  const std::lock_guard<std::mutex> guard(rawBatchMutex);
+                  RawBatch rawBatch = {batchName, points};
+                  rawBatches.push_back(rawBatch);
+              }
 
-        std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
-        loadedFileCount++;
-    });
+              std::cout << "Loaded batch of terrain data from disk: " << batchName << " with " << points.size()
+                        << " points\n";
+              loadedFileCount++;
+          });
 
     if (!success) {
         std::cout << "Could not load DTM" << std::endl;
@@ -309,7 +311,7 @@ void DtmViewer::renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &vie
     shader->unbind();
 }
 
-void DtmViewer::renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+void DtmViewer::renderBoundingBoxes(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                                     const BoundingBox3 &bb, const std::vector<Batch> &batches) {
     auto bbParams = std::vector<std::pair<glm::vec3, glm::vec3>>(batches.size() + 1);
     bbParams[0] = std::make_pair(bb.center(), bb.max - bb.min);
@@ -319,6 +321,7 @@ void DtmViewer::renderBoundingBoxes(const glm::mat4 &viewMatrix, const glm::mat4
     }
 
     simpleShader->bind();
+    simpleShader->setUniform("modelMatrix", modelMatrix);
     simpleShader->setUniform("viewMatrix", viewMatrix);
     simpleShader->setUniform("projectionMatrix", projectionMatrix);
 
@@ -402,7 +405,11 @@ void DtmViewer::batchProcessor() {
 #if OpenMP_FOUND
 #pragma omp task
 #endif
-            { processBatch(rawBatch); }
+            {
+                processBatch(rawBatch);
+                std::cout << "Processed batch of terrain data: " << rawBatch.batchName << " with "
+                          << rawBatch.points.size() << " points" << std::endl;
+            }
         }
 #if OpenMP_FOUND
 #pragma omp taskwait
@@ -410,7 +417,7 @@ void DtmViewer::batchProcessor() {
     }
 
     finishProcessing = std::chrono::high_resolution_clock::now();
-
+    std::cout << "Finished processing DTM" << std::endl;
     getCamera().setFocalPoint(dtm.bb.center());
 }
 
