@@ -13,11 +13,16 @@ constexpr float Z_FAR = 100000.0F;
 
 constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
 
+constexpr const char *DTM_DIRECTORY = "dtm_viewer_resources/dtm";
+
 DEFINE_SCENE_MAIN(DtmViewer);
 DEFINE_DEFAULT_SHADERS(dtm_viewer_Terrain)
 DEFINE_DEFAULT_SHADERS(dtm_viewer_Simple)
 
 void DtmViewer::setup() {
+    getCamera().setDistance(1000);
+    getCamera().setRotation(0.75, 0);
+
     simpleShader = CREATE_DEFAULT_SHADER(dtm_viewer_Simple);
     shader = CREATE_DEFAULT_SHADER(dtm_viewer_Terrain);
 
@@ -32,10 +37,7 @@ void DtmViewer::setup() {
 void DtmViewer::destroy() {}
 
 void DtmViewer::tick() {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     static auto modelScale = glm::vec3(1.0F, 1.0F, 1.0F);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(4.5F, 0.0F, 0.0F);
     static glm::vec3 surfaceToLight = {-4.5F, 7.0F, 0.0F};
     static glm::vec3 lightColor = {1.0F, 1.0F, 1.0F};
     static float lightPower = 13.0F;
@@ -47,8 +49,8 @@ void DtmViewer::tick() {
     static int gpuBatchCount = DEFAULT_GPU_BATCH_COUNT;
     static int previousGpuBatchCount = 0;
 
-    showSettings(modelScale, cameraPositionWorld, cameraRotation, surfaceToLight, lightColor, lightPower, wireframe,
-                 drawTriangles, drawBoundingBoxes, showBatchIds, terrainSettings, gpuBatchCount);
+    showSettings(modelScale, surfaceToLight, lightColor, lightPower, wireframe, drawTriangles, drawBoundingBoxes,
+                 showBatchIds, terrainSettings, gpuBatchCount);
 
     if (gpuBatchCount != previousGpuBatchCount) {
         previousGpuBatchCount = gpuBatchCount;
@@ -58,17 +60,14 @@ void DtmViewer::tick() {
 
     glm::mat4 modelMatrix = glm::mat4(1.0F);
     modelMatrix = glm::scale(modelMatrix, modelScale);
-    glm::vec3 cameraPosition = cameraPositionWorld;
-    cameraPosition *= -1.0F;
-    cameraPosition.y *= -1.0F;
-    glm::mat4 viewMatrix = createViewMatrix(cameraPosition, cameraRotation);
+    glm::mat4 viewMatrix = getCamera().getViewMatrix();
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
     {
         const std::lock_guard<std::mutex> guard(dtmMutex);
         std::vector<unsigned int> closestBatches = {};
-        if (dtm.quadTree.get(cameraPositionWorld, gpuBatchCount, closestBatches)) {
+        if (dtm.quadTree.get(getCamera().getFocalPoint(), gpuBatchCount, closestBatches)) {
             for (unsigned int closestBatch : closestBatches) {
                 uploadBatch(gpuBatchCount, closestBatch, dtm.batches[closestBatch].indices);
             }
@@ -83,15 +82,12 @@ void DtmViewer::tick() {
                   wireframe, drawTriangles, showBatchIds, terrainSettings, gpuBatchCount);
 }
 
-void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation,
-                             glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower, bool &wireframe,
-                             bool &drawTriangles, bool &drawBoundingBoxes, bool &showBatchIds,
+void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower,
+                             bool &wireframe, bool &drawTriangles, bool &drawBoundingBoxes, bool &showBatchIds,
                              DtmSettings &terrainSettings, int &gpuBatchCount) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
     ImGui::DragFloat3("Model Scale", reinterpret_cast<float *>(&modelScale), dragSpeed);
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 10.0F);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), dragSpeed);
     ImGui::DragFloat3("Light Position", reinterpret_cast<float *>(&lightPos));
     ImGui::ColorEdit3("Light Color", reinterpret_cast<float *>(&lightColor), dragSpeed);
     ImGui::DragFloat("Light Power", &lightPower, dragSpeed);
@@ -102,7 +98,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
     ImGui::DragFloat4("Terrain Levels", reinterpret_cast<float *>(&terrainSettings), dragSpeed);
     ImGui::SliderInt("GPU Batch Count", &gpuBatchCount, 10, 1000);
     if (ImGui::Button("Reset Camera to Center")) {
-        cameraPositionWorld = dtm.bb.center() + glm::vec3(0.0F, 10000.0F, -2000.0F);
+        getCamera().setFocalPoint(dtm.bb.center());
     }
     ImGui::Separator();
 
@@ -152,7 +148,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, g
 }
 
 void DtmViewer::loadDtm() {
-    auto files = getFilesInDirectory("../../gis_data/dtm");
+    auto files = getFilesInDirectory(DTM_DIRECTORY);
     auto pointCountEstimate = files.size() * GPU_POINTS_PER_BATCH;
     if (pointCountEstimate < 0) {
         std::cout << "Could not count points in dtm" << std::endl;
@@ -180,18 +176,17 @@ void DtmViewer::loadDtmAsync() {
     RECORD_SCOPE();
     startLoading = std::chrono::high_resolution_clock::now();
 
-    bool success =
-          loadXyzDir("../../gis_data/dtm", [this](unsigned int batchName, const std::vector<glm::vec3> &points) {
-              RECORD_SCOPE_NAME("Process Points");
-              {
-                  const std::lock_guard<std::mutex> guard(rawBatchMutex);
-                  RawBatch rawBatch = {batchName, points};
-                  rawBatches.push_back(rawBatch);
-              }
+    bool success = loadXyzDir(DTM_DIRECTORY, [this](unsigned int batchName, const std::vector<glm::vec3> &points) {
+        RECORD_SCOPE_NAME("Process Points");
+        {
+            const std::lock_guard<std::mutex> guard(rawBatchMutex);
+            RawBatch rawBatch = {batchName, points};
+            rawBatches.push_back(rawBatch);
+        }
 
-              std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
-              loadedFileCount++;
-          });
+        std::cout << "Loaded batch of terrain data from disk: " << points.size() << " points\n";
+        loadedFileCount++;
+    });
 
     if (!success) {
         std::cout << "Could not load DTM" << std::endl;
@@ -415,6 +410,8 @@ void DtmViewer::batchProcessor() {
     }
 
     finishProcessing = std::chrono::high_resolution_clock::now();
+
+    getCamera().setFocalPoint(dtm.bb.center());
 }
 
 void DtmViewer::processBatch(const RawBatch &rawBatch) {

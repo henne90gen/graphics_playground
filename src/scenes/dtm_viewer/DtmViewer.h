@@ -102,8 +102,6 @@ class DtmViewer : public Scene {
     std::mutex rawBatchMutex = {};
     std::vector<RawBatch> rawBatches = {};
 
-    glm::vec3 cameraPositionWorld = {};
-
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
     std::future<void> loadDtmFuture;
@@ -124,9 +122,9 @@ class DtmViewer : public Scene {
                        float lightPower, bool wireframe, bool drawTriangles, bool showBatchIds,
                        const DtmSettings &levels, unsigned int gpuBatchCount);
 
-    void showSettings(glm::vec3 &modelScale, glm::vec3 &cameraPosition, glm::vec3 &cameraRotation, glm::vec3 &lightPos,
-                      glm::vec3 &lightColor, float &lightPower, bool &wireframe, bool &drawTriangles,
-                      bool &drawBoundingBoxes, bool &showBatchIds, DtmSettings &terrainLevels, int &gpuBatchCount);
+    void showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower,
+                      bool &wireframe, bool &drawTriangles, bool &drawBoundingBoxes, bool &showBatchIds,
+                      DtmSettings &terrainLevels, int &gpuBatchCount);
 
     void loadDtm();
     void initGpuMemory(unsigned int gpuBatchCount);

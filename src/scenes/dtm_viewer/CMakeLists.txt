@@ -1,5 +1,6 @@
 
 create_scene(DtmViewer.cpp XyzLoader.cpp ShpLoader.cpp)
+add_scene_resource_directory(dtm)
 
 create_scene_test(
         ShpLoader.cpp

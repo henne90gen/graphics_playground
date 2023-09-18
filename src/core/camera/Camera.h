@@ -32,6 +32,7 @@ class Camera {
     [[nodiscard]] const glm::mat4 &getProjectionMatrix() const { return projectionMatrix; }
     [[nodiscard]] const glm::mat4 &getViewMatrix() const { return viewMatrix; }
 
+    [[nodiscard]] glm::vec3 getFocalPoint() const { return focalPoint; }
     [[nodiscard]] float getYaw() const { return yaw; }
     [[nodiscard]] float getPitch() const { return pitch; }
     [[nodiscard]] float getDistance() const { return distance; }
