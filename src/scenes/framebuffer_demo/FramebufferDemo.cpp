@@ -12,14 +12,16 @@ DEFINE_SCENE_MAIN(FramebufferDemo)
 DEFINE_DEFAULT_SHADERS(framebuffer_demo_FramebufferDemo)
 
 void FramebufferDemo::setup() {
+    getCamera().setDistance(2.0);
+
     shader = CREATE_DEFAULT_SHADER(framebuffer_demo_FramebufferDemo);
     shader->bind();
 
     projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW), getAspectRatio(), Z_NEAR, Z_FAR);
 
-    Object cube1 = {createCubeVA(shader), glm::vec3(0, 0, -1), glm::vec3(0.5, 1.0, 0.75), 0.25};
-    Object cube2 = {createCubeVA(shader), glm::vec3(0.5, 0, -1), glm::vec3(0.75, 0.0, 0.5), 0.25};
-    Object cube3 = {createCubeVA(shader), glm::vec3(0, 0.5, -1), glm::vec3(0.0, 0.5, 0.75), 0.25};
+    Object cube1 = {createCubeVA(shader), glm::vec3(0, 0, 0), glm::vec3(0.5, 1.0, 0.75), 0.25};
+    Object cube2 = {createCubeVA(shader), glm::vec3(0.5, 0, 0), glm::vec3(0.75, 0.0, 0.5), 0.25};
+    Object cube3 = {createCubeVA(shader), glm::vec3(0, 0.5, 0), glm::vec3(0.0, 0.5, 0.75), 0.25};
 
     objects.push_back(cube1);
     objects.push_back(cube2);
@@ -37,26 +39,22 @@ void FramebufferDemo::onAspectRatioChange() {
 void FramebufferDemo::destroy() {}
 
 void FramebufferDemo::tick() {
-    static glm::vec3 cameraPosition = {0.0F, 0.0F, 0.0F};
-    static glm::vec3 cameraRotation = {0.0F, 0.0F, 0.0F};
-    static glm::vec3 mirrorPosition = {-0.4F, -0.2F, -0.995F};
+    static glm::vec3 mirrorPosition = {-0.4F, -0.2F, -0.005F};
     static glm::vec3 mirrorRotation = {-0.6F, 0.85F, 0.0F};
 
     ImGui::Begin("Settings");
-    ImGui::DragFloat3("Camera Position", reinterpret_cast<float *>(&cameraPosition), 0.001F);
-    ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float *>(&cameraRotation), 0.001F);
     ImGui::DragFloat3("Mirror Position", reinterpret_cast<float *>(&mirrorPosition), 0.001F);
     ImGui::DragFloat3("Mirror Rotation", reinterpret_cast<float *>(&mirrorRotation), 0.001F);
     ImGui::End();
 
-    glm::mat4 cameraRotationMatrix = createViewMatrix({0, 0, 0}, cameraRotation);
-    glm::vec3 cameraDirection = cameraRotationMatrix * glm::vec4(0.0F, 0.0F, -1.0F, 0.0F);
-    glm::vec3 cameraUp = cameraRotationMatrix * glm::vec4(0.0F, 1.0F, 0.0F, 0.0F);
+    glm::vec3 cameraDirection = getCamera().getForwardDirection();
+    glm::vec3 cameraUp = getCamera().getUpDirection();
 
     glm::mat4 mirrorRotationMatrix = createViewMatrix({0, 0, 0}, mirrorRotation);
     glm::vec3 mirrorNormal = mirrorRotationMatrix * glm::vec4(0.0F, 0.0F, 1.0F, 0.0F);
     glm::vec3 mirrorUp = mirrorRotationMatrix * glm::vec4(0.0F, 1.0F, 0.0F, 0.0F);
 
+    const auto cameraPosition = getCamera().getPosition();
     glm::vec3 mirrorCameraDirection = glm::normalize(glm::reflect(mirrorPosition - cameraPosition, mirrorNormal));
     glm::mat4 viewMatrix = glm::lookAt(mirrorPosition, mirrorPosition + mirrorCameraDirection, mirrorUp);
     GL_Call(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
