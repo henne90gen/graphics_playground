@@ -57,7 +57,20 @@ struct LocalFileHeader {
     char *file_name = nullptr;
     char *extra_field = nullptr;
 };
+
+struct DataDescriptor {
+    uint32_t data_descriptor_signature = 0;
+    uint32_t crc32 = 0;
+    uint32_t compressed_size = 0;
+    uint32_t uncompressed_size = 0;
+};
 #pragma pack(pop)
+
+struct File {
+    LocalFileHeader local_file_header = {};
+    char *file_data = nullptr;
+    DataDescriptor data_descriptor = {};
+};
 
 std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
     LocalFileHeader fileHeader = {};
