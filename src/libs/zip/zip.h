@@ -8,8 +8,7 @@ namespace zip {
 
 struct Container {
     std::string filepath;
-
-    std::vector<std::string> files();
+    std::vector<std::string> files = {};
 };
 
 std::optional<Container> open(const std::string &filepath);

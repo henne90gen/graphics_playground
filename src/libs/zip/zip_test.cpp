@@ -9,8 +9,7 @@ TEST(zip, opens_test_zip) {
     auto z = zOpt.value();
     ASSERT_EQ("../../src/libs/zip/test.zip", z.filepath);
 
-    auto fileList = z.files();
-    ASSERT_EQ(2, fileList.size());
-    ASSERT_EQ("hello.txt", fileList[0]);
-    ASSERT_EQ("world.txt", fileList[1]);
+    ASSERT_EQ(2, z.files.size());
+    ASSERT_EQ("hello.txt", z.files[0]);
+    ASSERT_EQ("world.txt", z.files[1]);
 }

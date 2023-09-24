@@ -24,7 +24,28 @@ struct LocalFileHeader {
 
     uint32_t local_file_header_signature = 0;
     uint16_t version_needed_to_extract = 0;
-    uint16_t general_purpose_bit_flag = 0;
+
+    union {
+        uint16_t general_purpose_bit_flag;
+        uint16_t                              //
+              is_encrypted : 1,               //
+              bit_1 : 1,                      //
+              bit_2 : 1,                      //
+              is_data_descriptor_present : 1, //
+              enhanced_deflating : 1,         //
+              is_compressed_patched_data : 1, //
+              strong_encryption : 1,          //
+              bit_7 : 1,                      //
+              bit_8 : 1,                      //
+              bit_9 : 1,                      //
+              bit_10 : 1,                     //
+              bit_11 : 1,                     //
+              enhanced_compression : 1,       //
+              bit_13 : 1,                     //
+              bit_14 : 1,                     //
+              bit_15 : 1;
+    } general_purpose_bit_flag;
+
     uint16_t compression_method = 0;
     uint16_t last_mod_file_time = 0;
     uint16_t last_mod_file_data = 0;
@@ -40,6 +61,7 @@ struct LocalFileHeader {
 
 std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
     LocalFileHeader fileHeader = {};
+    fileHeader.general_purpose_bit_flag.general_purpose_bit_flag = 0;
     auto sizeOfFileHeaderWithoutVariableLengthFields =
           sizeof(fileHeader) - (sizeof(fileHeader.file_name) + sizeof(fileHeader.extra_field));
 
@@ -70,7 +92,7 @@ std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
 
     fs.seekg(fileHeader.compressed_size, std::ios_base::cur);
 
-    if (fileHeader.general_purpose_bit_flag & 0b100) {
+    if (fileHeader.general_purpose_bit_flag.is_data_descriptor_present) {
         fs.seekg(16, std::ios_base::cur);
     }
 
@@ -85,14 +107,18 @@ std::optional<Container> open(const std::string &filepath) {
     if (!fs.is_open()) {
         return {};
     }
+
     for (int i = 0; i < 2; i++) {
-        auto fileHeader = readLocalFileHeader(fs);
-        int j = 0;
+        auto fileHeaderOpt = readLocalFileHeader(fs);
+        if (!fileHeaderOpt.has_value()) {
+            return {};
+        }
+
+        auto fileHeader = fileHeaderOpt.value();
+        result.files.push_back(std::string(fileHeader.file_name, fileHeader.file_name_length));
     }
 
     return result;
 }
-
-std::vector<std::string> Container::files() { return {}; }
 
 } // namespace zip
