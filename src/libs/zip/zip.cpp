@@ -7,6 +7,25 @@
 namespace zip {
 
 #pragma pack(push, 1)
+struct GeneralPurposeBitFlag {
+    bool is_encrypted : 1;
+    bool bit_1 : 1;
+    bool bit_2 : 1;
+    bool is_data_descriptor_present : 1;
+    bool enhanced_deflating : 1;
+    bool is_compressed_patched_data : 1;
+    bool strong_encryption : 1;
+    bool bit_7 : 1;
+    bool bit_8 : 1;
+    bool bit_9 : 1;
+    bool bit_10 : 1;
+    bool bit_11 : 1;
+    bool enhanced_compression : 1;
+    bool bit_13 : 1;
+    bool bit_14 : 1;
+    bool bit_15 : 1;
+};
+
 struct LocalFileHeader {
     // local file header signature     4 bytes  (0x04034b50) 67324752
     // version needed to extract       2 bytes
@@ -25,26 +44,7 @@ struct LocalFileHeader {
     uint32_t local_file_header_signature = 0;
     uint16_t version_needed_to_extract = 0;
 
-    union {
-        uint16_t general_purpose_bit_flag;
-        uint16_t                              //
-              is_encrypted : 1,               //
-              bit_1 : 1,                      //
-              bit_2 : 1,                      //
-              is_data_descriptor_present : 1, //
-              enhanced_deflating : 1,         //
-              is_compressed_patched_data : 1, //
-              strong_encryption : 1,          //
-              bit_7 : 1,                      //
-              bit_8 : 1,                      //
-              bit_9 : 1,                      //
-              bit_10 : 1,                     //
-              bit_11 : 1,                     //
-              enhanced_compression : 1,       //
-              bit_13 : 1,                     //
-              bit_14 : 1,                     //
-              bit_15 : 1;
-    } general_purpose_bit_flag;
+    GeneralPurposeBitFlag general_purpose_bit_flag = {};
 
     uint16_t compression_method = 0;
     uint16_t last_mod_file_time = 0;
@@ -74,7 +74,6 @@ struct File {
 
 std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
     LocalFileHeader fileHeader = {};
-    fileHeader.general_purpose_bit_flag.general_purpose_bit_flag = 0;
     auto sizeOfFileHeaderWithoutVariableLengthFields =
           sizeof(fileHeader) - (sizeof(fileHeader.file_name) + sizeof(fileHeader.extra_field));
 
@@ -103,10 +102,22 @@ std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
         return {};
     }
 
-    fs.seekg(fileHeader.compressed_size, std::ios_base::cur);
+    // TODO find out when to move forward by uncompressed_size and when to move forward by compressed_size
+    fs.seekg(fileHeader.uncompressed_size, std::ios_base::cur);
 
     if (fileHeader.general_purpose_bit_flag.is_data_descriptor_present) {
-        fs.seekg(16, std::ios_base::cur);
+        DataDescriptor dataDescriptor = {};
+        auto dataDescriptorSize = sizeof(dataDescriptor);
+        fs.read((char *)&dataDescriptor, dataDescriptorSize);
+        if (!fs.good()) {
+            std::cerr << "Failed to read data descriptor" << std::endl;
+            return {};
+        }
+
+        if (dataDescriptor.data_descriptor_signature != 0x08074b50) {
+            std::cerr << "Signature of data descriptor is not 0x08074b50" << std::endl;
+            return {};
+        }
     }
 
     return fileHeader;
