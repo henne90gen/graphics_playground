@@ -6,5 +6,5 @@ struct DtmDownloader {
     DtmDownloader();
     ~DtmDownloader();
 
-    void download(const std::string &url);
+    void download(const std::string &url, const std::string &destinationFilename);
 };

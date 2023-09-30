@@ -1,5 +1,6 @@
 #include "DtmViewer.h"
 
+#include <filesystem>
 #include <glm/glm.hpp>
 
 #include "Main.h"
@@ -13,7 +14,8 @@ constexpr float Z_FAR = 100000.0F;
 
 constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
 
-constexpr const char *LOCAL_DTM_DIRECTORY = "dtm_viewer_resources/dtm";
+constexpr const char *DTM_DIRECTORY_LOCAL = "dtm_viewer_resources/local";
+constexpr const char *DTM_DIRECTORY_SAXONY = "dtm_viewer_resources/saxony";
 
 DEFINE_SCENE_MAIN(DtmViewer);
 DEFINE_DEFAULT_SHADERS(dtm_viewer_Terrain)
@@ -158,20 +160,23 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
 void DtmViewer::loadDtm() {
     switch (dataSource) {
     case DtmDataSource::LOCAL:
-        loadLocalDtm(LOCAL_DTM_DIRECTORY);
+        loadLocalDtm(DTM_DIRECTORY_LOCAL);
         return;
     case DtmDataSource::SAXONY:
-        loadSaxonDtm();
+        loadSaxonyDtm();
         return;
     }
 }
 
-void DtmViewer::loadSaxonDtm() {
+void DtmViewer::loadSaxonyDtm() {
+    loadSaxonyDtmFuture = std::async(std::launch::async, &DtmViewer::loadSaxonyDtmAsync, this);
+}
+
+void DtmViewer::loadSaxonyDtmAsync() {
     std::vector<std::string> downloadUrls = {
           "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/"
           "download?path=%2F&files=dgm1_33390_5638_2_sn_xyz.zip",
-          "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/"
-          "download?path=%2F&files=dgm1_33390_5640_2_sn_xyz.zip",
+          //   "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5640_2_sn_xyz.zip",
           // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5642_2_sn_xyz.zip",
           // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5636_2_sn_xyz.zip",
           // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5638_2_sn_xyz.zip",
@@ -212,16 +217,19 @@ void DtmViewer::loadSaxonDtm() {
           // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5644_2_sn_xyz.zip",
     };
 
-    // TODO create download directory
+    std::filesystem::create_directories(DTM_DIRECTORY_SAXONY);
 
-    // download all zip files
     for (const auto &url : downloadUrls) {
-        downloader->download(url);
-    }
+        // download zip file
+        // TODO parse the url and extract the file name
+        auto destinationFilename = std::string("dgm1_33390_5638_2_sn_xyz.zip");
+        auto destinationFilepath = std::string(DTM_DIRECTORY_SAXONY) + "/" + destinationFilename;
+        downloader->download(url, destinationFilepath);
 
-    // extract each zip file
-    
-    // go through each .xyz file and load its content as a batch
+        // extract zip file
+
+        // go through each .xyz file and load its content as a batch
+    }
 
     // loadLocalDtm();
 }
@@ -241,10 +249,10 @@ void DtmViewer::loadLocalDtm(const std::string &directory) {
 
     dtm.reset(shader, pointCountEstimate);
 
-    loadDtmFuture = std::async(std::launch::async, &DtmViewer::loadDtmAsync, this, directory);
+    loadLocalDtmFuture = std::async(std::launch::async, &DtmViewer::loadLocalDtmAsync, this, directory);
 }
 
-void DtmViewer::loadDtmAsync(const std::string &directory) {
+void DtmViewer::loadLocalDtmAsync(const std::string &directory) {
     RECORD_SCOPE();
     startLoading = std::chrono::high_resolution_clock::now();
 

@@ -6,7 +6,7 @@ create_scene(
     ShpLoader.cpp
 )
 target_link_libraries(dtm_viewer ${ZLIB_LIBRARY} CURL::libcurl)
-add_scene_resource_directory(dtm)
+add_scene_resource_directory(local)
 
 create_scene_test(
         ShpLoader.cpp

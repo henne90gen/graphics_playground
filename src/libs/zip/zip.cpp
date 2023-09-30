@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <zlib.h>
 
 namespace zip {
@@ -13,7 +14,7 @@ namespace zip {
         return {};                                                                                                     \
     }
 
-std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
+template <typename T> std::optional<LocalFileHeader> readLocalFileHeader(T &fs) {
     LocalFileHeader fileHeader = {};
     auto fileHeaderSize = fileHeader.get_struct_size();
 
@@ -36,7 +37,7 @@ std::optional<LocalFileHeader> readLocalFileHeader(std::ifstream &fs) {
     return fileHeader;
 }
 
-std::optional<CentralDirectorySignature> readCentralDirectorySignature(std::ifstream &fs) {
+template <typename T> std::optional<CentralDirectorySignature> readCentralDirectorySignature(T &fs) {
     CentralDirectorySignature result = {};
     fs.read((char *)&result, result.get_struct_size());
     ENSURE_FS_IS_GOOD(fs, "Failed to read central directory digital signature");
@@ -53,7 +54,8 @@ std::optional<CentralDirectorySignature> readCentralDirectorySignature(std::ifst
     return result;
 }
 
-std::optional<CentralDirectory> readCentralDirectory(std::ifstream &fs,
+template <typename T>
+std::optional<CentralDirectory> readCentralDirectory(T &fs,
                                                      const EndOfCentralDirectoryRecord &endOfCentralDirectoryRecord) {
     if (endOfCentralDirectoryRecord.number_of_the_disk_with_the_start_if_the_central_directory !=
         endOfCentralDirectoryRecord.number_of_this_disk) {
@@ -98,7 +100,7 @@ std::optional<CentralDirectory> readCentralDirectory(std::ifstream &fs,
     return centralDirectory;
 }
 
-std::optional<EndOfCentralDirectoryRecord> readEndOfCentralDirectoryRecord(std::ifstream &fs) {
+template <typename T> std::optional<EndOfCentralDirectoryRecord> readEndOfCentralDirectoryRecord(T &fs) {
     EndOfCentralDirectoryRecord result = {};
     auto endOfCentralDirectoryRecordSize = result.get_struct_size();
 
@@ -124,7 +126,7 @@ std::optional<EndOfCentralDirectoryRecord> readEndOfCentralDirectoryRecord(std::
     return result;
 }
 
-std::optional<File> readFile(std::ifstream &fs, const CentralFileHeader &central_file_header) {
+template <typename T> std::optional<File> readFile(T &fs, const CentralFileHeader &central_file_header) {
     fs.seekg(central_file_header.relative_offset_of_local_header, std::ios_base::beg);
     auto localFileHeaderOpt = readLocalFileHeader(fs);
     if (!localFileHeaderOpt.has_value()) {
@@ -158,12 +160,7 @@ std::optional<File> readFile(std::ifstream &fs, const CentralFileHeader &central
     return result;
 }
 
-std::optional<Container> open(const std::string &filepath) {
-    auto fs = std::ifstream(filepath);
-    if (!fs.is_open()) {
-        return {};
-    }
-
+template <typename T> std::optional<Container> open(T &fs) {
     auto endOfCentralDirectoryRecordOpt = readEndOfCentralDirectoryRecord(fs);
     if (!endOfCentralDirectoryRecordOpt.has_value()) {
         return {};
@@ -193,6 +190,21 @@ std::optional<Container> open(const std::string &filepath) {
     }
 
     return result;
+}
+
+std::optional<Container> open_from_file(const std::string &filepath) {
+    auto fs = std::ifstream(filepath);
+    if (!fs.is_open()) {
+        return {};
+    }
+
+    return open(fs);
+}
+
+std::optional<Container> open_from_memory(char *data, uint64_t size) {
+    auto s = std::string(data, size);
+    auto ss = std::stringstream(s);
+    return open(ss);
 }
 
 std::optional<std::string_view> File::get_content() {

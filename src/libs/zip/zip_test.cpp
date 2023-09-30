@@ -3,7 +3,7 @@
 #include <zip.h>
 
 TEST(zip, opens_test_zip) {
-    auto zOpt = zip::open("../../src/libs/zip/test.zip");
+    auto zOpt = zip::open_from_file("../../src/libs/zip/test.zip");
     ASSERT_TRUE(zOpt.has_value());
 
     auto z = zOpt.value();

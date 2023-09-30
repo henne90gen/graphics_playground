@@ -215,6 +215,7 @@ struct Container {
     EndOfCentralDirectoryRecord end_of_central_directory_record = {};
 };
 
-std::optional<Container> open(const std::string &filepath);
+std::optional<Container> open_from_file(const std::string &filepath);
+std::optional<Container> open_from_memory(char *data, uint64_t size);
 
 } // namespace zip

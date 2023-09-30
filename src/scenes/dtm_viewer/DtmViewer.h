@@ -116,7 +116,8 @@ class DtmViewer : public Scene {
 
     std::shared_ptr<VertexArray> bbVA = nullptr;
 
-    std::future<void> loadDtmFuture;
+    std::future<void> loadLocalDtmFuture;
+    std::future<void> loadSaxonyDtmFuture;
     std::future<void> processDtmFuture;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> startLoading;
@@ -139,10 +140,12 @@ class DtmViewer : public Scene {
                       DtmSettings &terrainLevels, int &gpuBatchCount);
 
     void loadDtm();
+
     void loadLocalDtm(const std::string &directory);
-    void loadSaxonDtm();
-    void initGpuMemory(unsigned int gpuBatchCount);
-    void loadDtmAsync(const std::string &path);
+    void loadLocalDtmAsync(const std::string &directory);
+
+    void loadSaxonyDtm();
+    void loadSaxonyDtmAsync();
 
     void batchProcessor();
     void processBatch(const RawBatch &rawBatch);
