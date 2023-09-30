@@ -12,7 +12,7 @@ constexpr float FIELD_OF_VIEW = 45.0F;
 constexpr float Z_NEAR = 0.1F;
 constexpr float Z_FAR = 100000.0F;
 
-constexpr unsigned int DEFAULT_GPU_BATCH_COUNT = 200;
+constexpr uint32_t DEFAULT_GPU_BATCH_COUNT = 200;
 
 constexpr const char *DTM_DIRECTORY_LOCAL = "dtm_viewer_resources/local";
 constexpr const char *DTM_DIRECTORY_SAXONY = "dtm_viewer_resources/saxony";
@@ -86,7 +86,7 @@ void DtmViewer::tick() {
 
 void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower,
                              bool &wireframe, bool &drawTriangles, bool &drawBoundingBoxes, bool &showBatchIds,
-                             DtmSettings &terrainSettings, int &gpuBatchCount) {
+                             DtmSettings &terrainSettings, int32_t &gpuBatchCount) {
     const float dragSpeed = 0.01F;
     ImGui::Begin("Settings");
 
@@ -112,7 +112,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
     }
     ImGui::Separator();
 
-    unsigned int occupied = 0;
+    uint32_t occupied = 0;
     for (auto &batch : dtm.gpuMemoryMap) {
         if (batch.isOccupied) {
             occupied++;
@@ -120,11 +120,11 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
     }
     ImGui::Text("Occupied GPU memory slots: %d / %lu", occupied, dtm.gpuMemoryMap.size());
 
-    const unsigned int gpuPointCount = gpuBatchCount * GPU_POINTS_PER_BATCH;
-    const unsigned int vertexSize = gpuPointCount * sizeof(glm::vec3);
-    const unsigned int normalSize = gpuPointCount * sizeof(glm::vec3);
-    const unsigned int indexSize = gpuPointCount * 2 * sizeof(glm::ivec3);
-    unsigned int gpuMemorySize = vertexSize + normalSize + indexSize;
+    const auto gpuPointCount = gpuBatchCount * GPU_POINTS_PER_BATCH;
+    const auto vertexSize = gpuPointCount * sizeof(glm::vec3);
+    const auto normalSize = gpuPointCount * sizeof(glm::vec3);
+    const auto indexSize = gpuPointCount * 2 * sizeof(glm::ivec3);
+    const auto gpuMemorySize = vertexSize + normalSize + indexSize;
     float gpuMemorySizeMB = static_cast<float>(gpuMemorySize) / 1024.0F / 1024.0F;
     ImGui::Text("GPU memory usage: %.2fMB", gpuMemorySizeMB);
 
@@ -133,10 +133,10 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
         if (allFilesLoaded()) {
             end = finishLoading;
         }
-        auto diff = end - startLoading;
-        auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
-        auto diffS = diffNs / 1000000000.0F;
-        float filesPerSecond = static_cast<float>(loadedFileCount) / diffS;
+        const auto diff = end - startLoading;
+        const auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
+        const auto diffS = diffNs / 1000000000.0F;
+        const auto filesPerSecond = static_cast<float>(loadedFileCount) / diffS;
         ImGui::Text("Loaded:    %4d / %d (%.2f files/s, %.2fs)", loadedFileCount, totalLoadedFileCount, filesPerSecond,
                     diffS);
     }
@@ -145,10 +145,10 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
         if (allFilesProcessed()) {
             end = finishProcessing;
         }
-        auto diff = end - startProcessing;
-        auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
-        auto diffS = diffNs / 1000000000.0F;
-        float filesPerSecond = static_cast<float>(processedFileCount) / diffS;
+        const auto diff = end - startProcessing;
+        const auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
+        const auto diffS = diffNs / 1000000000.0F;
+        const auto filesPerSecond = static_cast<float>(processedFileCount) / diffS;
         ImGui::Text("Processed: %4d / %d (%.2f files/s, %.2fs)", processedFileCount, totalProcessedFileCount,
                     filesPerSecond, diffS);
     }

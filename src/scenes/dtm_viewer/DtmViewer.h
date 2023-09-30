@@ -137,7 +137,7 @@ class DtmViewer : public Scene {
 
     void showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::vec3 &lightColor, float &lightPower,
                       bool &wireframe, bool &drawTriangles, bool &drawBoundingBoxes, bool &showBatchIds,
-                      DtmSettings &terrainLevels, int &gpuBatchCount);
+                      DtmSettings &terrainLevels, int32_t &gpuBatchCount);
 
     void loadDtm();
 
