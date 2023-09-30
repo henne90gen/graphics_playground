@@ -187,7 +187,7 @@ struct EndOfCentralDirectoryRecord {
     uint32_t offset_of_start_of_central_directory_with_respect_to_the_starting_disk_number = 0;
     uint16_t zip_file_comment_length = 0;
 
-    char *zip_file_comment = 0;
+    char *zip_file_comment = nullptr;
 
     uint64_t get_struct_size() { return sizeof(*this) - sizeof(zip_file_comment); }
 };
@@ -198,7 +198,10 @@ struct File {
     char *file_data = nullptr;
     DataDescriptor data_descriptor = {};
 
+    char *uncompressed_file_data = nullptr;
+
     std::string_view get_file_name() const { return local_file_header.get_file_name(); }
+    std::optional<std::string_view> get_content();
 };
 
 struct CentralDirectory {

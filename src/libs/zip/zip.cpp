@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <zlib.h>
 
 namespace zip {
 
@@ -123,8 +124,8 @@ std::optional<EndOfCentralDirectoryRecord> readEndOfCentralDirectoryRecord(std::
     return result;
 }
 
-std::optional<File> readFile(std::ifstream &fs, const CentralFileHeader &file_header) {
-    fs.seekg(file_header.relative_offset_of_local_header, std::ios_base::beg);
+std::optional<File> readFile(std::ifstream &fs, const CentralFileHeader &central_file_header) {
+    fs.seekg(central_file_header.relative_offset_of_local_header, std::ios_base::beg);
     auto localFileHeaderOpt = readLocalFileHeader(fs);
     if (!localFileHeaderOpt.has_value()) {
         return {};
@@ -135,7 +136,7 @@ std::optional<File> readFile(std::ifstream &fs, const CentralFileHeader &file_he
 
     uint32_t file_size = 0;
     if (result.local_file_header.general_purpose_bit_flag.is_data_descriptor_present) {
-        file_size = file_header.compressed_size;
+        file_size = central_file_header.compressed_size;
     } else {
         file_size = result.local_file_header.compressed_size;
     }
@@ -177,17 +178,78 @@ std::optional<Container> open(const std::string &filepath) {
     }
     result.central_directory = centralDirectoryOpt.value();
 
-    for (const auto &file_header : result.central_directory.file_headers) {
-        auto fileOpt = readFile(fs, file_header);
+    for (const auto &central_file_header : result.central_directory.file_headers) {
+        auto fileOpt = readFile(fs, central_file_header);
         if (!fileOpt.has_value()) {
-            std::cerr << "Failed to load file " << file_header.get_file_name() << std::endl;
+            std::cerr << "Failed to load file " << central_file_header.get_file_name() << std::endl;
             return {};
         }
 
         result.files.push_back(fileOpt.value());
+
+        // fixing up local file header with information from the central file header
+        result.files.back().local_file_header.compressed_size = central_file_header.compressed_size;
+        result.files.back().local_file_header.uncompressed_size = central_file_header.uncompressed_size;
     }
 
     return result;
+}
+
+std::optional<std::string_view> File::get_content() {
+    auto compressionMethod = local_file_header.get_compression_method();
+    if (compressionMethod == CompressionMethod::NO_COMPRESSION) {
+        return std::string_view(file_data, local_file_header.uncompressed_size);
+    }
+
+    if (compressionMethod != CompressionMethod::DEFLATED) {
+        std::cerr << "Compression methods other than DEFLATED are not supported" << std::endl;
+        return {};
+    }
+
+    if (uncompressed_file_data != nullptr) {
+        return std::string_view(uncompressed_file_data, local_file_header.uncompressed_size);
+    }
+
+    auto *input = file_data;
+    size_t inputSize = local_file_header.compressed_size;
+
+    auto *output = (char *)malloc(local_file_header.uncompressed_size);
+    size_t outputSize = local_file_header.uncompressed_size;
+
+    z_stream infstream;
+    infstream.zalloc = Z_NULL;
+    infstream.zfree = Z_NULL;
+    infstream.opaque = Z_NULL;
+    infstream.avail_in = (uInt)inputSize;   // size of input
+    infstream.next_in = (Bytef *)input;     // input char array
+    infstream.avail_out = (uInt)outputSize; // size of output
+    infstream.next_out = (Bytef *)output;   // output char array
+
+    auto err = inflateInit2(&infstream, -MAX_WBITS);
+    if (err < 0) {
+        std::cerr << "Failed to inflate file data: " << infstream.msg << std::endl;
+        return {};
+    }
+
+    err = inflate(&infstream, Z_NO_FLUSH);
+    if (err < 0) {
+        std::cerr << "Failed to inflate file data: " << infstream.msg << std::endl;
+        return {};
+    }
+
+    if (infstream.avail_out != 0) {
+        std::cerr << "Failed to inflate file data in a single call" << std::endl;
+        return {};
+    }
+
+    err = inflateEnd(&infstream);
+    if (err < 0) {
+        std::cerr << "Failed to inflate file data: " << infstream.msg << std::endl;
+        return {};
+    }
+
+    uncompressed_file_data = output;
+    return std::string_view(uncompressed_file_data, local_file_header.uncompressed_size);
 }
 
 } // namespace zip
