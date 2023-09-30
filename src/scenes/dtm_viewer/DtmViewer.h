@@ -32,23 +32,23 @@ struct DtmSettings {
 };
 
 struct BatchIndices {
-    unsigned long startVertex = 0;
-    unsigned long endVertex = 0; // exclusive
-    unsigned long startIndex = 0;
-    unsigned long endIndex = 0; // exclusive
+    uint64_t startVertex = 0;
+    uint64_t endVertex = 0; // exclusive
+    uint64_t startIndex = 0;
+    uint64_t endIndex = 0; // exclusive
 };
 
 struct Batch {
-    unsigned int batchId;
+    uint64_t batchId;
     std::string batchName;
     BatchIndices indices = {};
     BoundingBox3 bb = {};
-    std::unordered_map<long, unsigned int> vertexMap = {};
+    std::unordered_map<int64_t, unsigned int> vertexMap = {};
 };
 
 struct GpuBatch {
     bool isOccupied = false;
-    unsigned int batchId = 0;
+    uint64_t batchId = 0;
     BatchIndices indices = {};
 };
 
@@ -67,20 +67,20 @@ struct Dtm {
     std::vector<glm::vec3> normals = {};
     std::vector<glm::ivec3> indices = {};
 
-    unsigned long vertexOffset = 0;
-    unsigned long indexOffset = 0;
+    uint64_t vertexOffset = 0;
+    uint64_t indexOffset = 0;
 
     std::vector<Batch> batches = {};
 
     BoundingBox3 bb = {};
 
     // the index stored in the quad tree refers to the batch that the vertex belongs to
-    QuadTree<unsigned int> quadTree = {};
+    QuadTree<uint64_t> quadTree = {};
 
     std::vector<GpuBatch> gpuMemoryMap = {};
 
     float getHeightAt(const Batch &batch, int x, int z) const {
-        long index = (static_cast<long>(x) << 32) | z;
+        auto index = (static_cast<int64_t>(x) << 32) | z;
         auto localItr = batch.vertexMap.find(index);
         if (localItr != batch.vertexMap.end()) {
             return vertices[localItr->second + batch.indices.startVertex].y;
@@ -88,8 +88,8 @@ struct Dtm {
         return 0.0F;
     }
 
-    void reset(std::shared_ptr<Shader> shader, int pointCountEstimate);
-    void initGpuMemory(std::shared_ptr<Shader> shader, const unsigned int gpuBatchCount);
+    void reset(std::shared_ptr<Shader> shader, size_t pointCountEstimate);
+    void initGpuMemory(std::shared_ptr<Shader> shader, size_t gpuBatchCount);
 };
 
 class DtmViewer : public Scene {
@@ -122,13 +122,13 @@ class DtmViewer : public Scene {
 
     std::chrono::time_point<std::chrono::high_resolution_clock> startLoading;
     std::chrono::time_point<std::chrono::high_resolution_clock> finishLoading;
-    unsigned int loadedFileCount = 0;
-    unsigned int totalLoadedFileCount = 0;
+    uint64_t loadedFileCount = 0;
+    uint64_t totalLoadedFileCount = 0;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> startProcessing;
     std::chrono::time_point<std::chrono::high_resolution_clock> finishProcessing;
-    unsigned int processedFileCount = 0;
-    unsigned int totalProcessedFileCount = 0;
+    uint64_t processedFileCount = 0;
+    uint64_t totalProcessedFileCount = 0;
 
     void renderTerrain(const glm::mat4 &modelMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
                        const glm::mat3 &normalMatrix, const glm::vec3 &surfaceToLight, const glm::vec3 &lightColor,
@@ -150,7 +150,7 @@ class DtmViewer : public Scene {
     void batchProcessor();
     void processBatch(const RawBatch &rawBatch);
 
-    void uploadBatch(unsigned int gpuBatchCount, unsigned int batchId, const BatchIndices &batchIndices);
+    void uploadBatch(unsigned int gpuBatchCount, uint64_t batchId, const BatchIndices &batchIndices);
 
     static bool pointExists(Batch &batch, int x, int z);
 
