@@ -1,6 +1,7 @@
 #include "zip.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -193,7 +194,7 @@ template <typename T> std::optional<Container> open(T &fs) {
 }
 
 std::optional<Container> open_from_file(const std::string &filepath) {
-    auto fs = std::ifstream(filepath);
+    auto fs = std::ifstream(filepath, std::ios::in | std::ios::binary);
     if (!fs.is_open()) {
         return {};
     }
@@ -203,7 +204,7 @@ std::optional<Container> open_from_file(const std::string &filepath) {
 
 std::optional<Container> open_from_memory(char *data, uint64_t size) {
     auto s = std::string(data, size);
-    auto ss = std::stringstream(s);
+    auto ss = std::stringstream(s, std::ios::in | std::ios::binary);
     return open(ss);
 }
 
@@ -262,6 +263,24 @@ std::optional<std::string_view> File::get_content() {
 
     uncompressed_file_data = output;
     return std::string_view(uncompressed_file_data, local_file_header.uncompressed_size);
+}
+
+void Container::extract_to_directory(const std::string &directoryPath) {
+    std::filesystem::create_directories(directoryPath);
+
+    for (auto &file : files) {
+        const auto destinationFilepath = directoryPath + "/" + std::string(file.get_file_name());
+        auto os = std::ofstream(destinationFilepath, std::ios::out | std::ios::binary | std::ios::trunc);
+
+        auto contentOpt = file.get_content();
+        if (!contentOpt) {
+            std::cerr << "Failed to decompress " << file.get_file_name() << std::endl;
+            return;
+        }
+
+        auto content = contentOpt.value();
+        os.write(content.data(), content.size());
+    }
 }
 
 } // namespace zip

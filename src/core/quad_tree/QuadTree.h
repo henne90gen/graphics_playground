@@ -9,6 +9,7 @@
 /*
  * Running the benchmark revealed that K=256 is a pretty optimal size for the tree.
  */
+constexpr unsigned int DEFAULT_MAX_ELEMENTS_PER_NODE = 256;
 
 inline float distanceSq(const glm::vec3 &p1, const glm::vec3 &p2) {
     auto vec = p1 - p2;
@@ -24,8 +25,8 @@ template <typename T> struct QuadTree {
         Iterator end;
         BoundingBox3 bb = {};
         bool parity = false;
-        Node *left = nullptr;
-        Node *right = nullptr;
+        std::shared_ptr<Node> left = nullptr;
+        std::shared_ptr<Node> right = nullptr;
 
         Node(unsigned int maxElementsPerNode, Iterator begin, Iterator end) : begin(begin), end(end) {
             init(maxElementsPerNode);
@@ -34,10 +35,7 @@ template <typename T> struct QuadTree {
             : begin(begin), end(end), parity(parity) {
             init(maxElementsPerNode);
         }
-        ~Node() {
-            delete left;
-            delete right;
-        }
+        ~Node() = default;
 
         void init(unsigned int maxElementsPerNode) {
             std::function<bool(const Element &, const Element &)> comp;
@@ -48,41 +46,43 @@ template <typename T> struct QuadTree {
             }
             std::sort(begin, end, comp);
 
-            long numElements = end - begin;
+            const auto numElements = end - begin;
             if (numElements <= maxElementsPerNode) {
                 for (Iterator itr = begin; itr != end; itr++) {
                     bb.update(itr->first);
                 }
-            } else {
-                long numElementsHalf = numElements / 2;
-                left = new Node(maxElementsPerNode, begin, begin + numElementsHalf, !parity);
-                bb.update(left->bb);
-
-                right = new Node(maxElementsPerNode, begin + numElementsHalf, end, !parity);
-                bb.update(right->bb);
+                return;
             }
+
+            const auto numElementsHalf = numElements / 2;
+            left = std::make_shared<Node>(maxElementsPerNode, begin, begin + numElementsHalf, !parity);
+            bb.update(left->bb);
+
+            right = std::make_shared<Node>(maxElementsPerNode, begin + numElementsHalf, end, !parity);
+            bb.update(right->bb);
         }
 
         inline bool isLeaf() { return left == nullptr; }
     };
 
-    QuadTree() = default;
-    explicit QuadTree(unsigned int maxElementsPerNode) : maxElementsPerNode(maxElementsPerNode) {}
-    ~QuadTree() { delete root; }
-
+    QuadTree()
+        : maxElementsPerNode(DEFAULT_MAX_ELEMENTS_PER_NODE), elements({}),
+          root(std::make_shared<Node>(maxElementsPerNode, elements.begin(), elements.end())) {}
+    explicit QuadTree(unsigned int maxElementsPerNode)
+        : maxElementsPerNode(maxElementsPerNode), elements({}),
+          root(std::make_shared<Node>(maxElementsPerNode, elements.begin(), elements.end())) {}
+    ~QuadTree() = default;
     void insert(const glm::vec3 &point, T data) {
-        delete root;
         elements.push_back(std::make_pair(point, data));
-        root = new Node(maxElementsPerNode, elements.begin(), elements.end());
+        root = std::make_shared<Node>(maxElementsPerNode, elements.begin(), elements.end());
     }
 
     void insert(const std::vector<Element> &newElements) {
-        delete root;
         elements.reserve(elements.size() + newElements.size());
         for (const auto &element : newElements) {
             elements.push_back(element);
         }
-        root = new Node(maxElementsPerNode, elements.begin(), elements.end());
+        root = std::make_shared<Node>(maxElementsPerNode, elements.begin(), elements.end());
     }
 
     bool get(const glm::vec3 &query, const unsigned int k, std::vector<T> &result) const {
@@ -91,9 +91,9 @@ template <typename T> struct QuadTree {
         }
 
         std::vector<std::pair<float, T>> closestElements = {};
-        std::vector<Node *> nodeQueue = {root};
+        std::vector<std::shared_ptr<Node>> nodeQueue = {root};
         while (!nodeQueue.empty()) {
-            Node *currentNode = nodeQueue.back();
+            std::shared_ptr<Node> currentNode = nodeQueue.back();
             nodeQueue.pop_back();
 
             const auto closestPoint = currentNode->bb.closestPointOnSurface(query);
@@ -149,10 +149,10 @@ template <typename T> struct QuadTree {
         return true;
     }
 
-    void traversPreOrder(const std::function<void(Node *)> &traversalFunc) const {
-        std::vector<Node *> stack = {root};
+    void traversePreOrder(const std::function<void(std::shared_ptr<Node>)> &traversalFunc) const {
+        std::vector<std::shared_ptr<Node>> stack = {root};
         while (!stack.empty()) {
-            Node *current = stack.back();
+            auto current = stack.back();
             stack.pop_back();
             if (current == nullptr) {
                 continue;
@@ -165,9 +165,9 @@ template <typename T> struct QuadTree {
         }
     }
 
-    void traversPostOrder(const std::function<void(Node *)> &traversalFunc) const {
-        std::vector<Node *> stack = {};
-        Node *current = root;
+    void traversePostOrder(const std::function<void(std::shared_ptr<Node>)> &traversalFunc) const {
+        std::vector<std::shared_ptr<Node>> stack = {};
+        std::shared_ptr<Node> current = root;
         while (true) {
             while (current != nullptr) {
                 if (current->right != nullptr) {
@@ -196,9 +196,9 @@ template <typename T> struct QuadTree {
         }
     }
 
-    void traversInOrder(const std::function<void(Node *)> &traversalFunc) const {
-        std::vector<Node *> stack = {};
-        Node *current = root;
+    void traverseInOrder(const std::function<void(std::shared_ptr<Node>)> &traversalFunc) const {
+        std::vector<std::shared_ptr<Node>> stack = {};
+        std::shared_ptr<Node> current = root;
         while (true) {
             if (current != nullptr) {
                 stack.push_back(current);
@@ -219,7 +219,7 @@ template <typename T> struct QuadTree {
         }
     }
 
-    unsigned int maxElementsPerNode = 256;
+    unsigned int maxElementsPerNode = DEFAULT_MAX_ELEMENTS_PER_NODE;
     std::vector<Element> elements = {};
-    Node *root = new Node(maxElementsPerNode, elements.begin(), elements.end());
+    std::shared_ptr<Node> root = nullptr;
 };

@@ -69,6 +69,7 @@ void ImGui::ListBox(const std::string &label, unsigned int &currentItem, const s
 
 void ImGui::FileSelector(const std::string &label, const std::string &path, unsigned int &currentItem,
                          std::vector<std::string> &filePaths) {
-    getFilesInDirectory(path, filePaths);
+    getFilesInDirectory(
+          path, [](const std::string &fileName) { return true; }, filePaths);
     ImGui::ListBox(label, currentItem, filePaths, path);
 }

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <glm/glm.hpp>
+#include <zip.h>
 
 #include "Main.h"
 #include "util/ImGuiUtils.h"
@@ -16,6 +17,49 @@ constexpr uint32_t DEFAULT_GPU_BATCH_COUNT = 200;
 
 constexpr const char *DTM_DIRECTORY_LOCAL = "dtm_viewer_resources/local";
 constexpr const char *DTM_DIRECTORY_SAXONY = "dtm_viewer_resources/saxony";
+
+std::array<std::string, 1> SAXONY_DOWNLOAD_URLS = {
+      "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5636_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5630_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5632_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5634_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5636_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5630_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5632_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5634_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5636_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5632_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5634_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5636_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5644_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5632_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5634_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5636_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5644_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5646_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5638_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5640_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5642_2_sn_xyz.zip",
+      // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5644_2_sn_xyz.zip",
+};
 
 DEFINE_SCENE_MAIN(DtmViewer);
 DEFINE_DEFAULT_SHADERS(dtm_viewer_Terrain)
@@ -34,7 +78,6 @@ void DtmViewer::setup() {
     bbVA = createBoundingBoxVA(simpleShader);
 
     loadDtm();
-    processDtmFuture = std::async(std::launch::async, &DtmViewer::batchProcessor, this);
 }
 
 void DtmViewer::destroy() {}
@@ -160,82 +203,55 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
 void DtmViewer::loadDtm() {
     switch (dataSource) {
     case DtmDataSource::LOCAL:
-        loadLocalDtm(DTM_DIRECTORY_LOCAL);
-        return;
+        loadLocalDtm(DTM_DIRECTORY_LOCAL, true);
+        break;
     case DtmDataSource::SAXONY:
         loadSaxonyDtm();
-        return;
+        break;
     }
+
+    processDtmFuture = std::async(std::launch::async, &DtmViewer::batchProcessor, this);
 }
 
 void DtmViewer::loadSaxonyDtm() {
+    totalLoadedFileCount = 1;
+    totalProcessedFileCount = 1;
+    loadedFileCount = 0;
+    processedFileCount = 0;
+
+    dtm.reset(shader, SAXONY_DOWNLOAD_URLS.size() * GPU_POINTS_PER_BATCH);
+
     loadSaxonyDtmFuture = std::async(std::launch::async, &DtmViewer::loadSaxonyDtmAsync, this);
 }
 
 void DtmViewer::loadSaxonyDtmAsync() {
-    std::vector<std::string> downloadUrls = {
-          "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/"
-          "download?path=%2F&files=dgm1_33390_5638_2_sn_xyz.zip",
-          //   "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33390_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5636_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5638_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33392_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5630_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5632_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5634_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5636_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5638_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33394_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5630_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5632_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5634_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5636_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5638_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33396_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5632_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5634_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5636_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5638_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33398_5644_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5632_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5634_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5636_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5638_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5644_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33400_5646_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5638_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5640_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5642_2_sn_xyz.zip",
-          // "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files=dgm1_33402_5644_2_sn_xyz.zip",
-    };
-
     std::filesystem::create_directories(DTM_DIRECTORY_SAXONY);
 
-    for (const auto &url : downloadUrls) {
+    for (const auto &url : SAXONY_DOWNLOAD_URLS) {
         // download zip file
         // TODO parse the url and extract the file name
         auto destinationFilename = std::string("dgm1_33390_5638_2_sn_xyz.zip");
         auto destinationFilepath = std::string(DTM_DIRECTORY_SAXONY) + "/" + destinationFilename;
-        downloader->download(url, destinationFilepath);
+        if (!std::filesystem::exists(destinationFilepath)) {
+            downloader->download(url, destinationFilepath);
+        }
 
         // extract zip file
+        auto zipContainerOpt = zip::open_from_file(destinationFilepath);
+        if (!zipContainerOpt) {
+            std::cerr << "Failed to open downloaded zip file: " << destinationFilepath << std::endl;
+            continue;
+        }
 
-        // go through each .xyz file and load its content as a batch
+        auto zipContainer = zipContainerOpt.value();
+        zipContainer.extract_to_directory(DTM_DIRECTORY_SAXONY);
     }
 
-    // loadLocalDtm();
+    loadLocalDtm(DTM_DIRECTORY_SAXONY, false);
 }
 
-void DtmViewer::loadLocalDtm(const std::string &directory) {
-    auto files = getFilesInDirectory(directory);
+void DtmViewer::loadLocalDtm(const std::string &directory, bool shouldResetDtm) {
+    auto files = getFilesInDirectory(directory, &isXyzFile);
     auto pointCountEstimate = files.size() * GPU_POINTS_PER_BATCH;
     if (pointCountEstimate < 0) {
         std::cout << "Could not count points in dtm" << std::endl;
@@ -247,7 +263,9 @@ void DtmViewer::loadLocalDtm(const std::string &directory) {
     loadedFileCount = 0;
     processedFileCount = 0;
 
-    dtm.reset(shader, pointCountEstimate);
+    if (shouldResetDtm) {
+        dtm.reset(shader, pointCountEstimate);
+    }
 
     loadLocalDtmFuture = std::async(std::launch::async, &DtmViewer::loadLocalDtmAsync, this, directory);
 }
@@ -632,6 +650,14 @@ void Dtm::initGpuMemory(std::shared_ptr<Shader> shader, const size_t gpuBatchCou
 }
 
 void Dtm::reset(std::shared_ptr<Shader> shader, const size_t pointCountEstimate) {
+    batches = {};
+    bb = {};
+    quadTree = {};
+    gpuMemoryMap = {};
+
+    vertexOffset = 0;
+    indexOffset = 0;
+
     vertices = std::vector<glm::vec3>(pointCountEstimate);
     normals = std::vector<glm::vec3>(pointCountEstimate);
     indices = std::vector<glm::ivec3>(pointCountEstimate * 2);

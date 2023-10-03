@@ -141,7 +141,7 @@ class DtmViewer : public Scene {
 
     void loadDtm();
 
-    void loadLocalDtm(const std::string &directory);
+    void loadLocalDtm(const std::string &directory, bool shouldResetDtm);
     void loadLocalDtmAsync(const std::string &directory);
 
     void loadSaxonyDtm();

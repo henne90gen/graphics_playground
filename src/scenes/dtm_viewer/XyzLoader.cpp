@@ -1,5 +1,6 @@
 #include "XyzLoader.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
@@ -10,8 +11,16 @@
         (right) = (left);                                                                                              \
     }
 
+bool isXyzFile(const std::string &fileName) {
+    return std::filesystem::exists(fileName) &&    //
+           fileName[fileName.size() - 4] == '.' && //
+           fileName[fileName.size() - 3] == 'x' && //
+           fileName[fileName.size() - 2] == 'y' && //
+           fileName[fileName.size() - 1] == 'z';
+}
+
 bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::vec3> &result) {
-    auto files = getFilesInDirectory(dirName);
+    const auto files = getFilesInDirectory(dirName, &isXyzFile);
     if (files.empty()) {
         return false;
     }
@@ -36,7 +45,7 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
 }
 
 bool loadXyzDir(const std::string &dirName, const TakePointsFunc &takePointsFunc) {
-    auto files = getFilesInDirectory(dirName);
+    auto files = getFilesInDirectory(dirName, &isXyzFile);
     if (files.empty()) {
         return false;
     }
@@ -103,20 +112,16 @@ std::vector<glm::vec3> loadXyzFile(const std::string &fileName) {
 }
 
 unsigned long countLinesInDir(const std::string &dirName) {
-    auto files = getFilesInDirectory(dirName);
-    if (files.empty()) {
+    const auto xyzFiles = getFilesInDirectory(dirName, &isXyzFile);
+    if (xyzFiles.empty()) {
         return -1;
     }
 
     unsigned long totalLineCount = 0;
 
 #pragma omp parallel for
-    for (int i = 0; i < files.size(); i++) {
-        const auto &fileName = files[i];
-        if (fileName[fileName.size() - 4] != '.' || fileName[fileName.size() - 3] != 'x' ||
-            fileName[fileName.size() - 2] != 'y' || fileName[fileName.size() - 1] != 'z') {
-            continue;
-        }
+    for (int i = 0; i < xyzFiles.size(); i++) {
+        const auto &fileName = xyzFiles[i];
 
         std::ifstream file;
         file.open(fileName, std::ios::in | std::ios::ate | std::ios::binary);

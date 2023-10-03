@@ -303,8 +303,8 @@ void createTree(std::vector<GraphNode> &nodes, std::vector<GraphEdge> &edges) {
     }
     tree.insert(elements);
 
-    std::unordered_map<QuadTree<unsigned int>::Node *, unsigned int> nodeToIndexMap = {};
-    tree.traversPostOrder([&nodeToIndexMap, &nodes, &edges](QuadTree<unsigned int>::Node *node) {
+    std::unordered_map<std::shared_ptr<QuadTree<unsigned int>::Node>, unsigned int> nodeToIndexMap = {};
+    tree.traversePostOrder([&nodeToIndexMap, &nodes, &edges](std::shared_ptr<QuadTree<unsigned int>::Node> node) {
         unsigned int index = nodes.size();
         float x = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
         float y = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);

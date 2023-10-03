@@ -1,8 +1,8 @@
 #include "DtmDownloader.h"
 
 #include <curl/curl.h>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 DtmDownloader::DtmDownloader() {
     auto version_info = curl_version_info(CURLVERSION_NOW);
@@ -15,15 +15,17 @@ DtmDownloader::DtmDownloader() {
 DtmDownloader::~DtmDownloader() { curl_global_cleanup(); }
 
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+    auto r = size * nmemb;
     auto write_data = (std::ofstream *)userdata;
-    write_data->write(ptr, nmemb);
-    return nmemb;
+    write_data->write(ptr, r);
+    return r;
 }
 
-void DtmDownloader::download(const std::string &url,  const std::string &destinationFilename) {
-    auto write_data = std::ofstream(destinationFilename);
-    if (write_data.is_open()) {
-
+void DtmDownloader::download(const std::string &url, const std::string &destinationFilename) {
+    auto write_data = std::ofstream(destinationFilename, std::ios::out | std::ios::binary | std::ios::trunc);
+    if (!write_data.is_open()) {
+        std::cerr << "Failed to open output file: " << destinationFilename << std::endl;
+        return;
     }
 
     CURL *curl = curl_easy_init();
@@ -38,6 +40,8 @@ void DtmDownloader::download(const std::string &url,  const std::string &destina
                   << std::endl;
         return;
     }
+
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
     res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     if (res != CURLE_OK) {
@@ -73,7 +77,4 @@ void DtmDownloader::download(const std::string &url,  const std::string &destina
     }
 
     curl_easy_cleanup(curl);
-
-    // auto s = write_data.str();
-    // std::cout << "Download of " << url << " successful. Downloaded " << s.size() << " bytes" << std::endl;
 }

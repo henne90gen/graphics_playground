@@ -79,14 +79,14 @@ TEST(QuadTreeTest, branches_correctly) {
     ASSERT_EQ(tree.root->bb.max, glm::vec3(4.0F));
 
     ASSERT_NE(tree.root->left, nullptr);
-    ASSERT_EQ(tree.root->left->begin->first , glm::vec3(1.0F));
-    ASSERT_EQ((tree.root->left->begin + 1)->first , glm::vec3(2.0F));
-    ASSERT_EQ((tree.root->left->begin + 2) , tree.root->left->end);
+    ASSERT_EQ(tree.root->left->begin->first, glm::vec3(1.0F));
+    ASSERT_EQ((tree.root->left->begin + 1)->first, glm::vec3(2.0F));
+    ASSERT_EQ((tree.root->left->begin + 2), tree.root->left->end);
 
     ASSERT_NE(tree.root->right, nullptr);
-    ASSERT_EQ(tree.root->right->begin->first , glm::vec3(3.0F));
-    ASSERT_EQ((tree.root->right->begin + 1)->first , glm::vec3(4.0F));
-    ASSERT_EQ((tree.root->right->begin + 2) , tree.root->right->end);
+    ASSERT_EQ(tree.root->right->begin->first, glm::vec3(3.0F));
+    ASSERT_EQ((tree.root->right->begin + 1)->first, glm::vec3(4.0F));
+    ASSERT_EQ((tree.root->right->begin + 2), tree.root->right->end);
 }
 
 TEST(QuadTreeTest, fails_if_there_are_no_elements) {
@@ -97,7 +97,7 @@ TEST(QuadTreeTest, fails_if_there_are_no_elements) {
 
     unsigned int result = 0;
     ASSERT_TRUE(!tree.get(glm::vec3(1.75F), result));
-    ASSERT_EQ(result , 0);
+    ASSERT_EQ(result, 0);
 }
 
 TEST(QuadTreeTest, can_retrieve_nearest_element) {
@@ -112,7 +112,7 @@ TEST(QuadTreeTest, can_retrieve_nearest_element) {
 
     unsigned int result = 0;
     ASSERT_TRUE(tree.get(glm::vec3(1.75F), result));
-    ASSERT_EQ(result , 2);
+    ASSERT_EQ(result, 2);
 }
 
 TEST(QuadTreeTest, can_retrieve_nearest_element_from_branched_tree) {
@@ -128,7 +128,7 @@ TEST(QuadTreeTest, can_retrieve_nearest_element_from_branched_tree) {
 
     unsigned int result = 0;
     ASSERT_TRUE(tree.get(glm::vec3(1.75F), result));
-    ASSERT_EQ(result , 2);
+    ASSERT_EQ(result, 2);
 }
 
 TEST(QuadTreeTest, can_retrieve_nearest_element_from_large_branched_tree) {
@@ -146,7 +146,7 @@ TEST(QuadTreeTest, can_retrieve_nearest_element_from_large_branched_tree) {
 
     unsigned int result = 0;
     ASSERT_TRUE(tree.get(glm::vec3(width / 2.0F, 0, height / 2.0F), result));
-    ASSERT_EQ(result , 5050);
+    ASSERT_EQ(result, 5050);
 }
 
 TEST(QuadTreeTest, can_retrieve_nearest_elements_from_branched_tree) {
@@ -162,12 +162,12 @@ TEST(QuadTreeTest, can_retrieve_nearest_elements_from_branched_tree) {
 
     std::vector<unsigned int> result = {};
     ASSERT_TRUE(tree.get(glm::vec3(0.0F), 2, result));
-    ASSERT_EQ(result.size() , 2);
-    ASSERT_EQ(result[0] , 1);
-    ASSERT_EQ(result[1] , 2);
+    ASSERT_EQ(result.size(), 2);
+    ASSERT_EQ(result[0], 1);
+    ASSERT_EQ(result[1], 2);
 }
 
-TEST(QuadTreeTest, can_travers_branched_tree_in_pre_order) {
+TEST(QuadTreeTest, can_traverse_branched_tree_in_pre_order) {
     auto tree = QuadTree<unsigned int>(2);
 
     std::vector<std::pair<glm::vec3, unsigned int>> elements = {
@@ -179,7 +179,7 @@ TEST(QuadTreeTest, can_travers_branched_tree_in_pre_order) {
     tree.insert(elements);
 
     int count = 0;
-    tree.traversPreOrder([&count](QuadTree<unsigned int>::Node *node) {
+    tree.traversePreOrder([&count](std::shared_ptr<QuadTree<unsigned int>::Node> node) {
         if (count == 0) {
             ASSERT_TRUE(!node->isLeaf());
         } else if (count == 1) {
@@ -191,10 +191,10 @@ TEST(QuadTreeTest, can_travers_branched_tree_in_pre_order) {
         }
         count++;
     });
-    ASSERT_EQ(count , 3);
+    ASSERT_EQ(count, 3);
 }
 
-TEST(QuadTreeTest, can_travers_branched_tree_in_post_order) {
+TEST(QuadTreeTest, can_traverse_branched_tree_in_post_order) {
     auto tree = QuadTree<unsigned int>(2);
 
     std::vector<std::pair<glm::vec3, unsigned int>> elements = {
@@ -206,7 +206,7 @@ TEST(QuadTreeTest, can_travers_branched_tree_in_post_order) {
     tree.insert(elements);
 
     int count = 0;
-    tree.traversPostOrder([&count](QuadTree<unsigned int>::Node *node) {
+    tree.traversePostOrder([&count](std::shared_ptr<QuadTree<unsigned int>::Node> node) {
         if (count == 0) {
             ASSERT_TRUE(node->isLeaf());
         } else if (count == 1) {
@@ -218,10 +218,10 @@ TEST(QuadTreeTest, can_travers_branched_tree_in_post_order) {
         }
         count++;
     });
-    ASSERT_EQ(count , 3);
+    ASSERT_EQ(count, 3);
 }
 
-TEST(QuadTreeTest, can_travers_branched_tree_in_inOrder) {
+TEST(QuadTreeTest, can_traverse_branched_tree_in_inOrder) {
     auto tree = QuadTree<unsigned int>(2);
 
     std::vector<std::pair<glm::vec3, unsigned int>> elements = {
@@ -233,7 +233,7 @@ TEST(QuadTreeTest, can_travers_branched_tree_in_inOrder) {
     tree.insert(elements);
 
     int count = 0;
-    tree.traversInOrder([&count](QuadTree<unsigned int>::Node *node) {
+    tree.traverseInOrder([&count](std::shared_ptr<QuadTree<unsigned int>::Node> node) {
         if (count == 0) {
             ASSERT_TRUE(node->isLeaf());
         } else if (count == 1) {
@@ -245,5 +245,22 @@ TEST(QuadTreeTest, can_travers_branched_tree_in_inOrder) {
         }
         count++;
     });
-    ASSERT_EQ(count , 3);
+    ASSERT_EQ(count, 3);
+}
+
+TEST(QuadTreeTest, deconstructor_works) {
+    auto tree = QuadTree<unsigned int>(2);
+
+    std::vector<std::pair<glm::vec3, unsigned int>> elements = {
+          std::make_pair(glm::vec3(1.0F), 1), //
+          std::make_pair(glm::vec3(2.0F), 2), //
+          std::make_pair(glm::vec3(3.0f), 3), //
+          std::make_pair(glm::vec3(4.0f), 4)  //
+    };
+    tree.insert(elements);
+
+    tree = {};
+    ASSERT_EQ(nullptr, tree.root->left);
+    ASSERT_EQ(nullptr, tree.root->right);
+    tree.insert(glm::vec3(1.0F), 1);
 }

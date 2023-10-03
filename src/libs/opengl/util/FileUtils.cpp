@@ -15,23 +15,30 @@
 #define stat _stat
 #endif
 
-void getFilesInDirectory(const std::string &directoryPath, std::vector<std::string> &filePaths) {
+void getFilesInDirectory(const std::string &directoryPath, std::function<bool(const std::string &)> filterFunc,
+                         std::vector<std::string> &filePaths) {
     if (!std::filesystem::exists(directoryPath)) {
         std::cerr << "Directory '" << directoryPath << "' does not exist" << std::endl;
         return;
     }
 
     for (const auto &entry : std::filesystem::directory_iterator(directoryPath)) {
-        auto fileName = entry.path().string();
+        const auto fileName = entry.path().string();
+
+        if (!filterFunc(fileName)) {
+            continue;
+        }
+
         filePaths.push_back(fileName);
     }
 
     std::sort(filePaths.begin(), filePaths.end());
 }
 
-std::vector<std::string> getFilesInDirectory(const std::string &directoryPath) {
+std::vector<std::string> getFilesInDirectory(const std::string &directoryPath,
+                                             std::function<bool(const std::string &)> filterFunc) {
     std::vector<std::string> result = {};
-    getFilesInDirectory(directoryPath, result);
+    getFilesInDirectory(directoryPath, filterFunc, result);
     return result;
 }
 
