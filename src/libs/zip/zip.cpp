@@ -195,6 +195,7 @@ template <typename T> std::optional<Container> open(T &fs) {
 std::optional<Container> open_from_file(const std::string &filepath) {
     auto fs = std::ifstream(filepath, std::ios::in | std::ios::binary);
     if (!fs.is_open()) {
+        std::cerr << "Failed to open zip file for reading: " << filepath << std::endl;
         return {};
     }
 
