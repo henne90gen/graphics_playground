@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <glm/glm.hpp>
+#include <memory>
 #include <vector>
 
 #include "util/BoundingBox.h"

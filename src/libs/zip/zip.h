@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -214,7 +215,7 @@ struct Container {
     CentralDirectory central_directory = {};
     EndOfCentralDirectoryRecord end_of_central_directory_record = {};
 
-    void extract_to_directory(const std::string&directoryPath);
+    void extract_to_directory(const std::string &directoryPath);
 };
 
 std::optional<Container> open_from_file(const std::string &filepath);
