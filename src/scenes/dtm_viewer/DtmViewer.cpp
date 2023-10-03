@@ -237,7 +237,7 @@ void DtmViewer::loadSaxonyDtmAsync() {
         }
 
         // extract zip file
-        auto zipContainerOpt = zip::open_from_file(destinationFilepath);
+        auto zipContainerOpt = zip::Container::open_from_file(destinationFilepath);
         if (!zipContainerOpt) {
             std::cerr << "Failed to open downloaded zip file: " << destinationFilepath << std::endl;
             continue;

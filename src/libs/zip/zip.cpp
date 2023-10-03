@@ -192,7 +192,7 @@ template <typename T> std::optional<Container> open(T &fs) {
     return result;
 }
 
-std::optional<Container> open_from_file(const std::string &filepath) {
+std::optional<Container> Container::open_from_file(const std::string &filepath) {
     auto fs = std::ifstream(filepath, std::ios::in | std::ios::binary);
     if (!fs.is_open()) {
         std::cerr << "Failed to open zip file for reading: " << filepath << std::endl;
@@ -202,7 +202,7 @@ std::optional<Container> open_from_file(const std::string &filepath) {
     return open(fs);
 }
 
-std::optional<Container> open_from_memory(char *data, uint64_t size) {
+std::optional<Container> Container::open_from_memory(char *data, uint64_t size) {
     auto s = std::string(data, size);
     auto ss = std::stringstream(s, std::ios::in | std::ios::binary);
     return open(ss);

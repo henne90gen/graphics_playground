@@ -4,7 +4,7 @@
 #include <zip.h>
 
 TEST(zip, opens_test_zip) {
-    auto zOpt = zip::open_from_file("zip_test_resources/resources/test.zip");
+    auto zOpt = zip::Container::open_from_file("zip_test_resources/resources/test.zip");
     ASSERT_TRUE(zOpt.has_value());
 
     auto z = zOpt.value();
