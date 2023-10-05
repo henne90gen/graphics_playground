@@ -1,5 +1,7 @@
 #include "DtmDownloader.h"
 
+#if !EMSCRIPTEN
+
 #include <curl/curl.h>
 #include <fstream>
 #include <iostream>
@@ -78,3 +80,15 @@ void DtmDownloader::download(const std::string &url, const std::string &destinat
 
     curl_easy_cleanup(curl);
 }
+
+#else
+
+// TODO implement downloader using Fetch-API (see https://emscripten.org/docs/api_reference/fetch.html)
+
+DtmDownloader::DtmDownloader() {}
+
+DtmDownloader::~DtmDownloader() {}
+
+void DtmDownloader::download(const std::string &url, const std::string &destinationFilename) {}
+
+#endif

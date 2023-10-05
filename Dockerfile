@@ -4,6 +4,7 @@ RUN mkdir /app
 WORKDIR /app
 
 RUN git config --global http.sslverify false
+RUN apt-get update && apt-get dist-upgrade -y && apt-get install -y libssl-dev
 RUN echo "#!/usr/bin/env bash \n\
 set -e \n\
 mkdir -p build \n\

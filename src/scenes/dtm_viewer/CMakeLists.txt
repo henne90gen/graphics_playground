@@ -5,7 +5,10 @@ create_scene(
     XyzLoader.cpp
     ShpLoader.cpp
 )
-target_link_libraries(dtm_viewer ${ZLIB_LIBRARY} CURL::libcurl zip)
+target_link_libraries(dtm_viewer ${ZLIB_LIBRARY} zip)
+if (NOT EMSCRIPTEN)
+    target_link_libraries(dtm_viewer CURL::libcurl)
+endif ()
 add_scene_resource_directory(local)
 
 create_scene_test(
@@ -16,7 +19,9 @@ create_scene_test(
         DtmDownloader.cpp
         DtmDownloaderTest.cpp
 )
-target_link_libraries(dtm_viewer_test CURL::libcurl)
+if (NOT EMSCRIPTEN)
+    target_link_libraries(dtm_viewer_test CURL::libcurl)
+endif ()
 
 if (NOT EMSCRIPTEN)
     create_scene_benchmark(
