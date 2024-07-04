@@ -20,8 +20,8 @@ const glm::vec3 visitedColor = {85.0 / 255.0, 191.0 / 255.0, 240.0 / 255.0};
 const glm::vec3 workingSetColor = {65.0 / 255.0, 209.0 / 255.0, 217.0 / 255.0};
 
 struct Board {
-    unsigned int width;
-    unsigned int height;
+    unsigned int width = 200;
+    unsigned int height = 200;
     std::vector<glm::vec3> pixels;
 };
 
