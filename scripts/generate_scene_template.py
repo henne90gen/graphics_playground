@@ -6,7 +6,7 @@ from typing import Tuple, Union
 CPP_TEMPLATE = """\
 #include "{name}.h"
 
-#include <Main.h>
+#include "Main.h"
 
 DEFINE_SCENE_MAIN({name})
 DEFINE_DEFAULT_SHADERS({folder_name}_{name})
@@ -23,11 +23,10 @@ void {name}::tick() {{}}\
 H_TEMPLATE = """\
 #pragma once
 
-#include <Scene.h>
+#include "gl/Shader.h"
+#include "Scene.h"
 
 #include <functional>
-
-#include <gl/Shader.h>
 
 class {name} : public Scene {{
   public:
@@ -110,7 +109,7 @@ def generate_scene_template(scene_name: str):
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python generate_scene_template.py <scene_name>")
+        print("Usage: python generate_scene_template.py <SceneName>")
         return
 
     generate_scene_template(sys.argv[1])
