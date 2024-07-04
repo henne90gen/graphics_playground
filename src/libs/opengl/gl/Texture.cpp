@@ -57,18 +57,24 @@ void Texture::update(const std::vector<glm::vec4> &data, unsigned int width, uns
 
 void Texture::update(const std::vector<glm::vec3> &data, unsigned int width, unsigned int height,
                      unsigned int unpackAlignment) const {
+
+    if (width * height != data.size()) {
+        std::cout << "Warning: width*height does not match size of data array." << std::endl;
+    }
+
+    update(data.data(), width, height, unpackAlignment);
+}
+
+void Texture::update(const glm::vec3 *data, unsigned int width, unsigned int height,
+                     unsigned int unpackAlignment) const {
     bind();
     if (unpackAlignment != 4) {
         ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 8);
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment));
     }
 
-    if (width * height != data.size()) {
-        std::cout << "Warning: width*height does not match size of data array." << std::endl;
-    }
-
-    GL_Call(glTexImage2D(GL_TEXTURE_2D, 0, settings.openGlDataType, width, height, 0, settings.dataType, GL_FLOAT,
-                         data.data()));
+    GL_Call(
+          glTexImage2D(GL_TEXTURE_2D, 0, settings.openGlDataType, width, height, 0, settings.dataType, GL_FLOAT, data));
 
     if (unpackAlignment != 4) {
         GL_Call(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
