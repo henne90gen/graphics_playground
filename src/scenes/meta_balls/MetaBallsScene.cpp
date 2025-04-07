@@ -50,7 +50,6 @@ void MetaBallsScene::destroy() {}
 
 void MetaBallsScene::tick() {
     static auto cameraPosition = glm::vec3(0.8F, -1.5F, -5.0F); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    static auto cameraRotation = glm::vec3(0.25F, 0.0F, 0.0F);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static auto modelRotation = glm::vec3();
     static float scale = 0.1F; // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     static bool drawWireframe = false;

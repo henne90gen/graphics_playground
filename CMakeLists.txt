@@ -11,8 +11,8 @@ include(SceneFunc)
 include(Emscripten)
 include(ClangTidy)
 include(FFMPEG)
-
 include(Dependencies)
+include(CompilerWarnings)
 
 enable_testing()
 configure_file(${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake ${CMAKE_BINARY_DIR})

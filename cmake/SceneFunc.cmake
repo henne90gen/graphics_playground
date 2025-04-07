@@ -16,7 +16,7 @@ function(create_scene)
     endforeach ()
 
     add_executable(${SCENE_NAME} ${ARGN} ${SHADERS})
-    target_link_libraries(${SCENE_NAME} core opengl)
+    target_link_libraries(${SCENE_NAME} core opengl warnings)
     set_target_properties(
             ${SCENE_NAME} PROPERTIES
             CXX_STANDARD 20
