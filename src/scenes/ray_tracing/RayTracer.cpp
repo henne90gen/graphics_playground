@@ -1,12 +1,10 @@
 #include "RayTracer.h"
 
-#include <future>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/projection.hpp>
 #include <iostream>
 #include <optional>
-
-#include "util/VectorUtils.h"
 
 #define USE_GLM_INTERSECT 1
 
