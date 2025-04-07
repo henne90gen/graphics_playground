@@ -250,7 +250,7 @@ void rayTrace(const std::vector<Object> &objects, const Light &light, const glm:
         }
 
 #pragma omp parallel for
-        for (int i = 0; i < rays.size(); i++) {
+        for (size_t i = 0; i < rays.size(); i++) {
             pixels[i] = trace(rays[i], light, cameraPosition, objects, 0, maxRayDepth);
         }
 
@@ -271,7 +271,7 @@ Object sphere(const glm::vec3 &position, const glm::vec3 &color, const float rad
     result.position = position;
     result.color = color;
     result.reflection = reflection;
-    result.data = {radius};
+    result.data.sphere = {radius};
     return result;
 }
 

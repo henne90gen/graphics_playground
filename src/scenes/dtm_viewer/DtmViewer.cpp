@@ -180,7 +180,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
         const auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
         const auto diffS = diffNs / 1000000000.0F;
         const auto filesPerSecond = static_cast<float>(loadedFileCount) / diffS;
-        ImGui::Text("Loaded:    %4d / %d (%.2f files/s, %.2fs)", loadedFileCount, totalLoadedFileCount, filesPerSecond,
+        ImGui::Text("Loaded:    %4lu / %lu (%.2f files/s, %.2fs)", loadedFileCount, totalLoadedFileCount, filesPerSecond,
                     diffS);
     }
     {
@@ -192,7 +192,7 @@ void DtmViewer::showSettings(glm::vec3 &modelScale, glm::vec3 &lightPos, glm::ve
         const auto diffNs = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
         const auto diffS = diffNs / 1000000000.0F;
         const auto filesPerSecond = static_cast<float>(processedFileCount) / diffS;
-        ImGui::Text("Processed: %4d / %d (%.2f files/s, %.2fs)", processedFileCount, totalProcessedFileCount,
+        ImGui::Text("Processed: %4lu / %lu (%.2f files/s, %.2fs)", processedFileCount, totalProcessedFileCount,
                     filesPerSecond, diffS);
     }
 

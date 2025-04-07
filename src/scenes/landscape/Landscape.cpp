@@ -7,10 +7,6 @@
 #include <cmath>
 #include <random>
 
-constexpr unsigned int WIDTH = 10;
-constexpr unsigned int HEIGHT = 10;
-constexpr int INITIAL_POINT_DENSITY = 15;
-
 DEFINE_SCENE_MAIN(Landscape)
 
 DEFINE_SHADER(landscape_NoiseLib)

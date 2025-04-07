@@ -1,6 +1,7 @@
 #include "AnimationRubiksCube.h"
 
 #include <chrono>
+#include <cstddef>
 #include <iostream>
 #include <random>
 
@@ -96,7 +97,7 @@ void updateRotation(std::array<Cubelet, CUBELET_COUNT> &cubelets,
 }
 
 void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
-    if (isAnimationPaused || currentCommandIndex < 0 || currentCommandIndex >= commands.size()) {
+    if (isAnimationPaused || currentCommandIndex < 0 || currentCommandIndex >= (int)commands.size()) {
         return;
     }
 
@@ -129,7 +130,7 @@ void AnimationRubiksCube::rotate(float rotationSpeed = 2.0F) {
     currentAngle = 0.0F;
     currentCommandIndex++;
 
-    if (currentCommandIndex >= commands.size()) {
+    if (currentCommandIndex >= (int)commands.size()) {
         currentCommandIndex = 0;
         commands = {};
     }
@@ -168,7 +169,7 @@ void AnimationRubiksCube::shuffle() {
 
 void AnimationRubiksCube::solve() {
     auto copy = cube.copy();
-    for (int i = currentCommandIndex; i < commands.size(); i++) {
+    for (size_t i = currentCommandIndex; i < commands.size(); i++) {
         copy.rotate(commands[i]);
     }
     const auto result = copy.solve();

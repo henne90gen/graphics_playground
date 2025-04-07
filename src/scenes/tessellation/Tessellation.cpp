@@ -40,7 +40,7 @@ void Tessellation::setup() {
     std::vector<float> vertices = {};
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            for (int i = 0; i < quadVertices.size(); i++) {
+            for (size_t i = 0; i < quadVertices.size(); i++) {
                 float f = quadVertices[i];
                 if (i % 8 == 0) {
                     f += static_cast<float>(row);
