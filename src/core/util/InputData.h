@@ -17,7 +17,7 @@ struct KeyboardData {
      * @param key is one of the GLFW_KEY_* constants
      * @return
      */
-    [[nodiscard]] inline bool isKeyDown(char key) const {
+    [[nodiscard]] inline bool isKeyDown(int key) const {
         auto itr = keys.find(key);
         return itr != keys.end() && itr->second;
     }

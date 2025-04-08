@@ -61,7 +61,7 @@ bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &tak
     }
 
 #pragma omp parallel for
-    for (size_t i = 0; i < fileCount; i++) {
+    for (int i = 0; i < (int)fileCount; i++) {
         const auto &fileName = files[i];
         auto points = loadXyzFile(fileName);
         if (points.empty()) {
@@ -122,7 +122,7 @@ unsigned long countLinesInDir(const std::string &dirName) {
     unsigned long totalLineCount = 0;
 
 #pragma omp parallel for
-    for (size_t i = 0; i < xyzFiles.size(); i++) {
+    for (int i = 0; i < (int)xyzFiles.size(); i++) {
         const auto &fileName = xyzFiles[i];
 
         std::ifstream file;

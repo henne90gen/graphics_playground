@@ -231,7 +231,7 @@ void parseMaterialLib(const std::string &fileName, unsigned long lineNumber, con
     materials[currentMaterial->name] = currentMaterial;
 }
 
-void parseVec2(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+void parseVec2(const std::string & /*fileName*/, unsigned long /*lineNumber*/, const std::string &line,
                std::vector<glm::vec2> &list) {
     glm::vec2 v;
     int vIndex = 0;
@@ -256,7 +256,7 @@ void parseVec2(const std::string &fileName, unsigned long lineNumber, const std:
     list.push_back(v);
 }
 
-void parseVec3(const std::string &fileName, unsigned long lineNumber, const std::string &line,
+void parseVec3(const std::string & /*fileName*/, unsigned long /*lineNumber*/, const std::string &line,
                std::vector<glm::vec3> &list) {
     glm::vec3 v;
     int vIndex = 0;
@@ -281,8 +281,8 @@ void parseVec3(const std::string &fileName, unsigned long lineNumber, const std:
     list.push_back(v);
 }
 
-void parseFace(const std::string &fileName, unsigned long lineNumber, const std::string &line, std::vector<Face> &faces,
-               PerformanceCounter *pc) {
+void parseFace(const std::string & /*fileName*/, unsigned long /*lineNumber*/, const std::string &line,
+               std::vector<Face> &faces, PerformanceCounter *) {
     std::string l = line.substr(2);
 
     std::vector<FaceVertex> faceVertices = {};

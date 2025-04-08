@@ -11,7 +11,8 @@ target_link_libraries(model
         glad
         image
         opengl
-        glm)
+        glm
+        warnings)
 
 target_include_directories(model PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

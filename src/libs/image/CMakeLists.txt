@@ -8,6 +8,7 @@ target_link_libraries(image
         opengl
         jpeg
         png_static
-        zlibstatic)
+        zlibstatic
+        warnings)
 
 target_include_directories(image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

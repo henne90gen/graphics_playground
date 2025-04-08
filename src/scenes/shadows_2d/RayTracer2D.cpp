@@ -126,7 +126,7 @@ std::vector<Ray> calculateRays(const std::vector<Polygon> &walls, const Polygon 
 
     if (runAsync) {
 #pragma omp parallel for
-        for (size_t i = 0; i < rays.size(); i++) {
+        for (int i = 0; i < (int)rays.size(); i++) {
             findIntersections(lineSegments, rays, i, i + 1);
         }
     } else {

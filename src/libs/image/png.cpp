@@ -1,3 +1,6 @@
+#include "Image.h"
+
+#include <iostream>
 #define PNG_DEBUG 3
 #include <png.h>
 
@@ -72,9 +75,9 @@ bool loadPng(Image &image) {
     png_read_image(png_ptr, row_pointers);
 
     if (image.bitDepth == 8) {
-        for (int y = 0; y < image.height; y++) {
+        for (size_t y = 0; y < image.height; y++) {
             png_bytep row = row_pointers[y];
-            for (unsigned int x = 0; x < image.width; x++) {
+            for (size_t x = 0; x < image.width; x++) {
                 png_bytep px = &(row[x * image.channels]);
                 image.pixels[y * image.width * image.channels + x * image.channels] = px[0];
                 if (image.channels > 1) {
@@ -95,9 +98,9 @@ bool loadPng(Image &image) {
 // #define SCALE_TO_BYTE(pix) static_cast<unsigned char>((static_cast<float>(pix) / 1023.0F) * 255.0F)
 // #define SCALE_TO_BYTE(pix) static_cast<unsigned char>(static_cast<float>(pix))
 #define SCALE_TO_BYTE(pix) pix
-        for (int y = 0; y < image.height; y++) {
+        for (size_t y = 0; y < image.height; y++) {
             png_uint_16p row = reinterpret_cast<png_uint_16p>(row_pointers[y]);
-            for (int x = 0; x < image.width; x++) {
+            for (size_t x = 0; x < image.width; x++) {
                 png_uint_16p px = &(row[x * image.channels]);
                 image.pixels[y * image.width * image.channels + x * image.channels] = SCALE_TO_BYTE(px[0]);
                 if (image.channels > 1) {

@@ -1,8 +1,7 @@
 #include "Fourier.h"
 
 #include <glm/ext.hpp>
-
-#define M_PI 3.14159265359
+#include <math.h>
 
 namespace fourier {
 

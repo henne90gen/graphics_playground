@@ -347,7 +347,7 @@ void Trees::generateTrees() {
 
     // adjust uv coordinates to be constrained to the bark side of the texture
 #pragma omp parallel for
-    for (size_t i = 0; i < uvs.size(); i++) {
+    for (int i = 0; i < (int)uvs.size(); i++) {
         uvs[i].x *= 0.671;
     }
 
@@ -370,7 +370,7 @@ void Trees::generateTrees() {
     indices.resize(totalIndices);
 
 #pragma omp parallel for
-    for (size_t i = 0; i < leafModelMatrices.size(); i++) {
+    for (int i = 0; i < (int)leafModelMatrices.size(); i++) {
         const auto &modelMatrix = leafModelMatrices[i];
         int positionOffset = leafPositionOffset + i * verticesPerLeaf;
         int indexOffset = leafIndicesOffset + i * indicesPerLeaf;
@@ -384,7 +384,7 @@ void Trees::generateTrees() {
 
     auto vertexData = std::vector<float>(positions.size() * 8);
 #pragma omp parallel for
-    for (size_t i = 0; i < positions.size(); i++) {
+    for (int i = 0; i < (int)positions.size(); i++) {
         vertexData[i * 8 + 0] = positions[i].x;
         vertexData[i * 8 + 1] = positions[i].y;
         vertexData[i * 8 + 2] = positions[i].z;
