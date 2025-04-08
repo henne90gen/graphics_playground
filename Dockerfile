@@ -5,15 +5,7 @@ WORKDIR /app
 
 RUN git config --global http.sslverify false
 RUN apt-get update && apt-get dist-upgrade -y && apt-get install -y libssl-dev
-RUN echo "#!/usr/bin/env bash \n\
-set -e \n\
-mkdir -p build \n\
-cd build || exit 0 \n\
-cmake .. -G Ninja -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++ \n\
-cmake --build . \n\
-ctest\n" > /build.sh
-
-RUN chmod +x /build.sh
+COPY build.sh /build.sh
 CMD ["/build.sh"]
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
