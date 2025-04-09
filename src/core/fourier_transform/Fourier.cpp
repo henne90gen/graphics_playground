@@ -1,6 +1,8 @@
 #include "Fourier.h"
 
 #include <glm/ext.hpp>
+
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 namespace fourier {
