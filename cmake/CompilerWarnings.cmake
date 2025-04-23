@@ -2,8 +2,6 @@
 #
 # https://github.com/lefticus/cppbestpractices/blob/master/02-Use_the_Tools_Available.md
 
-option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" FALSE)
-
 set(MSVC_WARNINGS
       /W4 # Baseline reasonable warnings
       /w14242 # 'identifier': conversion from 'type1' to 'type1', possible loss of data
@@ -53,7 +51,7 @@ set(CLANG_WARNINGS
     -Wno-redundant-move # redundant std::move's are required for g++ < 5.1
   )
 
-if(WARNINGS_AS_ERRORS)
+if(GPLAY_WARNINGS_AS_ERRORS)
     set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
     set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
 endif()
