@@ -49,6 +49,7 @@ set(CLANG_WARNINGS
     -Wno-overloaded-virtual # ortCPPLIBE05/include/e05/Item.h throws this warning a lot
     -Wno-unused-function
     -Wno-redundant-move # redundant std::move's are required for g++ < 5.1
+    -Wno-nontrivial-memcall
   )
 
 if(GPLAY_WARNINGS_AS_ERRORS)
