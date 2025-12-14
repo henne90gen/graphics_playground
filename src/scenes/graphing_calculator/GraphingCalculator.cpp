@@ -20,7 +20,7 @@ void GraphingCalculator::tick() {
     static glm::vec2 boundsX = glm::vec2(-1.0, 1.0);
     static glm::vec2 boundsY = glm::vec2(-1.0, 1.0);
     static float axisWidth = 0.001F;
-    static float lineWidth = 0.5F;
+    static float lineWidth = 1.0F;
 
     ImGui::Begin("Settings");
     ImGui::DragFloat2("Bounds X", reinterpret_cast<float *>(&boundsX), 0.1F);
@@ -32,6 +32,9 @@ void GraphingCalculator::tick() {
     shader->bind();
 
     const auto resolution = glm::vec2(getWidth(), getHeight());
+    // std::cout << resolution.x << ", " << resolution.y << std::endl;
+    // std::cout << boundsX.x << ", " << boundsX.y << std::endl;
+    // std::cout << boundsY.x << ", " << boundsY.y << std::endl;
     shader->setUniform("resolution", resolution);
     shader->setUniform("horizontalCoordinateBounds", boundsX);
     shader->setUniform("verticalCoordinateBounds", boundsY);

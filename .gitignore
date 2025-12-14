@@ -11,3 +11,4 @@ docs/
 src/scenes/model_loading/models/
 gis_data/
 documents/.~lock.QuadTreeBenchmark.ods#
+.cache/
