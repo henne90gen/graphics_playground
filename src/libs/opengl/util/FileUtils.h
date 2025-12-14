@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 void getFilesInDirectory(const std::string &directoryPath, std::function<bool(const std::string &)> filterFunc,
                          std::vector<std::string> &filePaths);

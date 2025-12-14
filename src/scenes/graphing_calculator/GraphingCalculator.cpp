@@ -17,8 +17,8 @@ void GraphingCalculator::setup() {
 void GraphingCalculator::destroy() {}
 
 void GraphingCalculator::tick() {
-    static glm::vec2 boundsX = glm::vec2(-1.0, 1.0);
-    static glm::vec2 boundsY = glm::vec2(-1.0, 1.0);
+    static glm::vec2 boundsX = glm::vec2(-10.0, 10.0);
+    static glm::vec2 boundsY = glm::vec2(-10.0, 10.0);
     static float axisWidth = 0.001F;
     static float lineWidth = 1.0F;
 
