@@ -1,5 +1,6 @@
 #include "Shader.h"
 
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -39,11 +40,11 @@ ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     }
 
     std::vector<std::string> lines = {};
-    int j = 0;
-    for (int i = 0; i < static_cast<int>(shaderCode.size()); i++) {
+    int idx = 0;
+    for (size_t i = 0; i < shaderCode.size(); i++) {
         if (shaderCode[i] == '\n') {
-            lines.push_back(shaderCode.substr(j, i - j));
-            j = i;
+            lines.push_back(shaderCode.substr(idx, i - idx));
+            idx = i;
         }
     }
 
@@ -52,11 +53,11 @@ ShaderCode readShaderCodeFromFile(const std::string &filePath) {
     int *lineLengths = (int *)std::malloc(lineLengthsSize);
     unsigned int shaderSourceSize = lineCount * sizeof(char *);
     char **shaderSource = (char **)std::malloc(shaderSourceSize);
-    for (int i = 0; i < static_cast<int>(lines.size()); i++) {
+    for (size_t i = 0; i < lines.size(); i++) {
         int lineLength = static_cast<int>(lines[i].size());
         lineLengths[i] = lineLength;
         shaderSource[i] = (char *)std::malloc(lineLength * sizeof(char));
-        for (int j = 0; j < static_cast<int>(lines[i].size()); j++) {
+        for (size_t j = 0; j < lines[i].size(); j++) {
             shaderSource[i][j] = lines[i][j];
         }
     }

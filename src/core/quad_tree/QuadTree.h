@@ -38,7 +38,7 @@ template <typename T> struct QuadTree {
         }
         ~Node() = default;
 
-        void init(unsigned int maxElementsPerNode) {
+        void init(unsigned int _maxElementsPerNode) {
             std::function<bool(const Element &, const Element &)> comp;
             if (parity) {
                 comp = [](const Element &l, const Element &r) { return l.first.x < r.first.x; };
@@ -48,7 +48,7 @@ template <typename T> struct QuadTree {
             std::sort(begin, end, comp);
 
             const auto numElements = end - begin;
-            if (numElements <= maxElementsPerNode) {
+            if (numElements <= _maxElementsPerNode) {
                 for (Iterator itr = begin; itr != end; itr++) {
                     bb.update(itr->first);
                 }
@@ -56,10 +56,10 @@ template <typename T> struct QuadTree {
             }
 
             const auto numElementsHalf = numElements / 2;
-            left = std::make_shared<Node>(maxElementsPerNode, begin, begin + numElementsHalf, !parity);
+            left = std::make_shared<Node>(_maxElementsPerNode, begin, begin + numElementsHalf, !parity);
             bb.update(left->bb);
 
-            right = std::make_shared<Node>(maxElementsPerNode, begin + numElementsHalf, end, !parity);
+            right = std::make_shared<Node>(_maxElementsPerNode, begin + numElementsHalf, end, !parity);
             bb.update(right->bb);
         }
 

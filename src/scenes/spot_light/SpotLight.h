@@ -4,8 +4,6 @@
 #include "gl/Shader.h"
 #include "gl/VertexArray.h"
 
-#include <functional>
-
 class SpotLight : public Scene {
   public:
     explicit SpotLight() : Scene("SpotLight"){};

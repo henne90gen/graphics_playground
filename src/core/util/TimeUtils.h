@@ -57,7 +57,8 @@ class Timer {
 #define FUNCTION_NAME __PRETTY_FUNCTION__
 #endif
 
-#define COMBINE(X, Y) X##Y
+#define COMBINE2(X_, Y_) X_##Y_
+#define COMBINE(X, Y) COMBINE2(X, Y)
 
 #define TIME_SCOPE() auto COMBINE(timer, __LINE__) = Timer(nullptr, FUNCTION_NAME)
 #define TIME_SCOPE_NAME(name) auto COMBINE(timer, __LINE__) = Timer(nullptr, name)

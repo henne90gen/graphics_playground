@@ -5,7 +5,7 @@ create_scene(
     XyzLoader.cpp
     ShpLoader.cpp
 )
-target_link_libraries(dtm_viewer ${ZLIB_LIBRARY} zip)
+target_link_libraries(dtm_viewer zlibstatic zip)
 if (NOT EMSCRIPTEN)
     target_link_libraries(dtm_viewer CURL::libcurl)
 endif ()

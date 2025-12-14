@@ -4,9 +4,7 @@
 
 class ScreenRecorder {
   public:
-    ScreenRecorder() {
-      int i = 0;
-    }
+    ScreenRecorder() = default;
 
     void tick(unsigned int windowWidth, unsigned int windowHeight);
 

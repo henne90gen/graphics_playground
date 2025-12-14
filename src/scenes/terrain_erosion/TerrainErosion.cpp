@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include "Main.h"
-#include "util/ImGuiUtils.h"
+#include "imgui.h"
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.1F;
@@ -143,6 +143,7 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotatio
     }
     ImGui::DragInt("Iteration Count", &raindropCount);
     ImGui::DragFloat2("Center Point", reinterpret_cast<float *>(&centerPoint), dragSpeed);
+    ImGui::Checkbox("Only Rain Around Center Point", &onlyRainAroundCenterPoint);
     ImGui::DragFloat("Radius", &radius, dragSpeed);
     ImGui::DragFloat("Kq = constant parameter for soil carry capacity formula", &params.Kq, dragSpeed);
     ImGui::DragFloat("Kw = water evaporation speed", &params.Kw, dragSpeed);
@@ -159,12 +160,12 @@ void TerrainErosion::showSettings(glm::vec3 &modelScale, glm::vec3 &modelRotatio
 }
 
 void TerrainErosion::generateNoiseTerrainData(const glm::ivec2 &terrainSize) {
-    const int width = terrainSize.x;
-    const int height = terrainSize.y;
+    const auto width = (size_t)terrainSize.x;
+    const auto height = (size_t)terrainSize.y;
     const unsigned int verticesCount = width * height;
     auto grid = std::vector<glm::vec2>(verticesCount);
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
             grid[y * width + x] = glm::vec2(x, y);
         }
     }
@@ -173,8 +174,8 @@ void TerrainErosion::generateNoiseTerrainData(const glm::ivec2 &terrainSize) {
     const unsigned int indicesCount = width * height * indicesPerQuad;
     auto indices = std::vector<glm::ivec3>(indicesCount);
     unsigned int counter = 0;
-    for (unsigned int y = 0; y < height - 1; y++) {
-        for (unsigned int x = 0; x < width - 1; x++) {
+    for (size_t y = 0; y < height - 1; y++) {
+        for (size_t x = 0; x < width - 1; x++) {
             indices[counter++] = {
                   (y + 1) * width + x, //
                   y * width + (x + 1), //
@@ -268,7 +269,7 @@ void TerrainErosion::regenerateNoiseTerrain() {
 
 template <typename T>
 void uploadBufferDataStriped(const TerrainData &terrainData, const std::shared_ptr<VertexBuffer> &buffer,
-                             const int counter, int verticesPerFrame,
+                             const int counter, size_t verticesPerFrame,
                              const std::function<T(const TerrainData &, int)> &func) {
     int numSegments = 0;
     if (verticesPerFrame < terrainData.heightMap.grid.size()) {

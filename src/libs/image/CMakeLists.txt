@@ -7,7 +7,8 @@ set_target_properties(image PROPERTIES
 target_link_libraries(image
         opengl
         jpeg
-        png
-        ${ZLIB_LIBRARY})
+        png_static
+        zlibstatic
+        warnings)
 
-target_include_directories(image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${LIBPNG_INCLUDE_DIR})
+target_include_directories(image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

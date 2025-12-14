@@ -36,7 +36,7 @@ class Scene {
     virtual void onKey(int key, int scancode, int action, int mods);
     virtual void onCursorPos(double xPos, double yPos);
     virtual void onMouseButton(int button, int action, int mods);
-    virtual void onCharacterTyped(unsigned int i) {}
+    virtual void onCharacterTyped(unsigned int) {}
     virtual void onScroll(double xOffset, double yOffset);
 
     [[nodiscard]] inline float getAspectRatio() const { return aspectRatio; }
@@ -51,7 +51,7 @@ class Scene {
     virtual void setup() = 0;
     virtual void tick() = 0;
     virtual void destroy() = 0;
-    virtual void onAspectRatioChange(){};
+    virtual void onAspectRatioChange() {};
 
   private:
     const std::string name;

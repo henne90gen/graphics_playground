@@ -1,8 +1,10 @@
+#include "Image.h"
+
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <vector>
 
 #pragma pack(push, 1)
@@ -58,7 +60,7 @@ bool writeBmp(const Image &image) {
 
     int rowSize = static_cast<int>(std::ceil((infoHeader.bitsPerPixel * image.width) / 32)) * 4;
     uint8_t *pBuf = nullptr;
-    if (rowSize == image.width * 3) {
+    if (rowSize == (int)image.width * 3) {
         pBuf = const_cast<uint8_t *>(image.pixels.data());
     } else {
         // we have to create a copy of the pixels to account for additional padding
@@ -70,8 +72,8 @@ bool writeBmp(const Image &image) {
 
         // TODO this could be optimized with omp and memcpy (copying each row
         //  instead of each pixel)
-        for (int row = 0; row < image.height; row++) {
-            for (int col = 0; col < image.width; col++) {
+        for (size_t row = 0; row < image.height; row++) {
+            for (size_t col = 0; col < image.width; col++) {
                 int pBufIndex = row * rowSize + col * 3;
                 int pixelsIndex = (row * image.width + col) * 3;
                 pBuf[pBufIndex + 0] = image.pixels[pixelsIndex + 0];

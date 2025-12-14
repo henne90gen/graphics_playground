@@ -48,6 +48,10 @@ struct ShaderCode {
     ShaderCode(const unsigned int lineCount, int *lineLengths, char **shaderSource, std::string filePath)
         : lineCount(lineCount), lineLengths(lineLengths), shaderSource(shaderSource), filePath(std::move(filePath)),
           lastAccessTimeNano(getLastModifiedTimeNano(filePath)) {}
+
+    ShaderCode &operator=(ShaderCode &other) = default;
+    ShaderCode &operator=(ShaderCode &&other) = default;
+    ShaderCode &operator=(const ShaderCode &other) = default;
 };
 
 class Shader {

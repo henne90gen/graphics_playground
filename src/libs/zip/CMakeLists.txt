@@ -4,7 +4,7 @@ set_target_properties(zip PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(zip ${ZLIB_LIBRARY})
+target_link_libraries(zip PRIVATE zlibstatic warnings)
 
 target_include_directories(zip PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

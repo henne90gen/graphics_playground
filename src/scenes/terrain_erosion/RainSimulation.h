@@ -34,4 +34,4 @@ struct SimulationParams {
 
 void simulateRaindrop(HeightMap &heightMap, std::mt19937 randomGenerator,
                       std::uniform_real_distribution<double> randomDistribution, const SimulationParams &params,
-                      Raindrop &raindrop, int maxPathLength = 100);
+                      Raindrop &raindrop, size_t maxPathLength = 100);

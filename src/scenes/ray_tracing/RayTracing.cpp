@@ -2,11 +2,13 @@
 
 #include "Main.h"
 #include "RayTracer.h"
-#include "util/ImGuiUtils.h"
 #include "util/RenderUtils.h"
 #include "util/TimeUtils.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+
+#include <array>
 
 const float FIELD_OF_VIEW = 45.0F;
 const float Z_NEAR = 0.01F;

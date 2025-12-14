@@ -1,6 +1,7 @@
 #include "Trees.h"
 
 #include <array>
+#include <cstddef>
 #include <imgui.h>
 #include <random>
 #include <util/RenderUtils.h>
@@ -180,7 +181,11 @@ void Trees::initModel() {
 
 void Trees::renderTreeModels(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix,
                              const ShaderToggles &shaderToggles) {
-#if USE_TREE_MODELS
+#if !USE_TREE_MODELS
+    (void)projectionMatrix;
+    (void)viewMatrix;
+    (void)shaderToggles;
+#else
     if (!treeModel.isLoaded()) {
         return;
     }
@@ -272,7 +277,7 @@ void appendLeaf(int positionOffset, int indexOffset, std::vector<glm::vec3> &pos
     };
     const glm::vec3 quadNormal = {0.0F, 1.0F, 0.0F};
 
-    for (int i = 0; i < leafVertices.size(); i++) {
+    for (size_t i = 0; i < leafVertices.size(); i++) {
         positions[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(leafVertices[i], 1.0));
         normals[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(quadNormal, 0.0));
     }
@@ -299,7 +304,7 @@ void appendSphereLeaf(const glm::mat4 modelMatrix, std::vector<glm::vec3> &posit
     Sphere s = {5, 3};
     s.append(vertices, sphereNormals, sphereUvs, sphereIndices);
 
-    for (int i = 0; i < vertices.size(); i++) {
+    for (size_t i = 0; i < vertices.size(); i++) {
         const auto &vertex = vertices[i];
         positions[positionOffset + i] = glm::vec3(modelMatrix * glm::vec4(vertex, 1.0));
 
@@ -313,7 +318,7 @@ void appendSphereLeaf(const glm::mat4 modelMatrix, std::vector<glm::vec3> &posit
         uvs[positionOffset + i] = uv;
     }
 
-    for (int i = 0; i < sphereIndices.size(); i++) {
+    for (size_t i = 0; i < sphereIndices.size(); i++) {
         indices[indexOffset + i] = sphereIndices[i] + positionOffset;
     }
 }
@@ -342,7 +347,7 @@ void Trees::generateTrees() {
 
     // adjust uv coordinates to be constrained to the bark side of the texture
 #pragma omp parallel for
-    for (int i = 0; i < uvs.size(); i++) {
+    for (int i = 0; i < (int)uvs.size(); i++) {
         uvs[i].x *= 0.671;
     }
 
@@ -365,7 +370,7 @@ void Trees::generateTrees() {
     indices.resize(totalIndices);
 
 #pragma omp parallel for
-    for (int i = 0; i < leafModelMatrices.size(); i++) {
+    for (int i = 0; i < (int)leafModelMatrices.size(); i++) {
         const auto &modelMatrix = leafModelMatrices[i];
         int positionOffset = leafPositionOffset + i * verticesPerLeaf;
         int indexOffset = leafIndicesOffset + i * indicesPerLeaf;
@@ -379,7 +384,7 @@ void Trees::generateTrees() {
 
     auto vertexData = std::vector<float>(positions.size() * 8);
 #pragma omp parallel for
-    for (int i = 0; i < positions.size(); i++) {
+    for (int i = 0; i < (int)positions.size(); i++) {
         vertexData[i * 8 + 0] = positions[i].x;
         vertexData[i * 8 + 1] = positions[i].y;
         vertexData[i * 8 + 2] = positions[i].z;

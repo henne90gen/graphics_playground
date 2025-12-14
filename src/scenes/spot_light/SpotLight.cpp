@@ -1,9 +1,9 @@
 #include "SpotLight.h"
 
 #include "Main.h"
-#include "util/RenderUtils.h"
 
 #include <array>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 
 const float FIELD_OF_VIEW = 45.0F;

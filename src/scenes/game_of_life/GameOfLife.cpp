@@ -109,17 +109,19 @@ void GameOfLife::checkForMouseClick(const unsigned int canvasWidth, const unsign
 
 void GameOfLife::setupDefaultGame() {
     board.pixels_front = (glm::vec3 *)malloc(sizeof(glm::vec3) * board.width * board.height);
-    for (int i = 0; i < board.width * board.height; i++) {
+    for (size_t i = 0; i < board.width * board.height; i++) {
         board.pixels_front[i] = deadColor;
     }
 
     board.pixels_back = (glm::vec3 *)malloc(sizeof(glm::vec3) * board.width * board.height);
-    for (int i = 0; i < board.width * board.height; i++) {
+    for (size_t i = 0; i < board.width * board.height; i++) {
         board.pixels_back[i] = deadColor;
     }
 }
 
-bool is_in_bounds(Board &board, int x, int y) { return x >= 0 and x < board.width and y >= 0 and y < board.height; }
+bool is_in_bounds(Board &board, int x, int y) {
+    return x >= 0 and x < (int)board.width and y >= 0 and y < (int)board.height;
+}
 
 int count_neighbors(Board &board, int x, int y) {
     int result = 0;
@@ -146,7 +148,7 @@ int count_neighbors(Board &board, int x, int y) {
 }
 
 void GameOfLife::stepGame() {
-    for (int i = 0; i < board.width * board.height; i++) {
+    for (size_t i = 0; i < board.width * board.height; i++) {
         int x = i % board.width;
         int y = i / board.width;
 

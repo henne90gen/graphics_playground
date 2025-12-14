@@ -277,7 +277,7 @@ void runMarchingCubes(const glm::ivec3 &dimensions, std::vector<glm::vec3> &vert
 
     indices.resize(vertices.size() / 3);
 #pragma omp parallel for
-    for (int i = 0; i < indices.size(); i++) {
+    for (int i = 0; i < (int)indices.size(); i++) {
         indices[i] = glm::ivec3(i * 3, i * 3 + 1, i * 3 + 2);
     }
 }

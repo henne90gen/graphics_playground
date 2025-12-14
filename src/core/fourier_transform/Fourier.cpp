@@ -2,7 +2,8 @@
 
 #include <glm/ext.hpp>
 
-#define M_PI 3.14159265359
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 namespace fourier {
 

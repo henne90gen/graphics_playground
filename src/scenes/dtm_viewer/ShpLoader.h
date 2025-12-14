@@ -3,10 +3,10 @@
 #include <array>
 #include <cstdint>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <functional>
 
 #pragma pack(push, 1)
 
@@ -122,7 +122,7 @@ bool loadDbfFile(const std::string &fileName, DbfData &data);
 template <typename Raw, typename R>
 std::vector<R> convertTo(const DbfData &data, const std::function<R(const Raw &)> convertFunc) {
     auto records = std::vector<R>(data.header.numRecords);
-    for (size_t i = 0; i < data.header.numRecords; i++) {
+    for (size_t i = 0; i < (size_t)data.header.numRecords; i++) {
         auto record = reinterpret_cast<Raw *>(data.data)[i];
         records[i] = convertFunc(record);
     }

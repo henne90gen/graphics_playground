@@ -114,7 +114,7 @@ float AStarSolver::h(const glm::ivec2 &pos1, const glm::ivec2 &pos2) const {
 }
 
 bool isValidNeighbor(const Board &board, glm::ivec2 &pos) {
-    if (pos.x < 0 || pos.x >= board.width || pos.y < 0 || pos.y >= board.height) {
+    if (pos.x < 0 || pos.x >= (int)board.width || pos.y < 0 || pos.y >= (int)board.height) {
         return false;
     }
 

@@ -4,12 +4,6 @@
 
 #include "Main.h"
 
-const float FIELD_OF_VIEW = 45.0F;
-const float Z_NEAR = 0.1F;
-const float Z_FAR = 100.0F;
-
-const unsigned int NUMBER_OF_SMALL_CUBES = 27;
-
 DEFINE_SCENE_MAIN(RubiksCubeScene)
 DEFINE_DEFAULT_SHADERS(rubiks_cube_RubiksCube)
 

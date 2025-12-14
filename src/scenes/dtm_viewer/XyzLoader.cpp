@@ -29,7 +29,7 @@ bool loadXyzDir(const std::string &dirName, BoundingBox3 &bb, std::vector<glm::v
 
     result.clear();
     result.reserve(files.size() * 10000);
-    return loadXyzDir(files, [&bb, &result](const std::string &batchName, const std::vector<glm::vec3> &temp) {
+    return loadXyzDir(files, [&bb, &result](const std::string &, const std::vector<glm::vec3> &temp) {
         for (unsigned int i = 0; i < temp.size(); i++) {
             UPDATE_BB(temp[i].x, <, bb.min.x)
             UPDATE_BB(temp[i].y, <, bb.min.y)
@@ -54,14 +54,14 @@ bool loadXyzDir(const std::string &dirName, const TakePointsFunc &takePointsFunc
 }
 
 bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &takePointsFunc) {
-    unsigned long fileCount = files.size();
-    constexpr unsigned int maxFileCount = 100000;
+    auto fileCount = files.size();
+    constexpr auto maxFileCount = 100000;
     if (fileCount > maxFileCount) {
         fileCount = maxFileCount;
     }
 
 #pragma omp parallel for
-    for (int i = 0; i < fileCount; i++) {
+    for (int i = 0; i < (int)fileCount; i++) {
         const auto &fileName = files[i];
         auto points = loadXyzFile(fileName);
         if (points.empty()) {
@@ -69,7 +69,9 @@ bool loadXyzDir(const std::vector<std::string> &files, const TakePointsFunc &tak
         }
 
 #pragma omp critical
-        { takePointsFunc(fileName, points); }
+        {
+            takePointsFunc(fileName, points);
+        }
     }
 
     return true;
@@ -95,7 +97,7 @@ std::vector<glm::vec3> loadXyzFile(const std::string &fileName) {
 
     std::vector<glm::vec3> points = {};
     char *workingBuffer = buffer;
-    while (workingBuffer - buffer < fileSize - 3) {
+    while ((size_t)(workingBuffer - buffer) < fileSize - 3) {
         glm::vec3 vec;
         char *last = nullptr;
         vec.x = strtof(workingBuffer, &last);
@@ -120,7 +122,7 @@ unsigned long countLinesInDir(const std::string &dirName) {
     unsigned long totalLineCount = 0;
 
 #pragma omp parallel for
-    for (int i = 0; i < xyzFiles.size(); i++) {
+    for (int i = 0; i < (int)xyzFiles.size(); i++) {
         const auto &fileName = xyzFiles[i];
 
         std::ifstream file;
@@ -138,7 +140,7 @@ unsigned long countLinesInDir(const std::string &dirName) {
 
         unsigned long lineCount = 0;
         char *workingBuffer = buffer;
-        while (workingBuffer - buffer < fileSize) {
+        while (workingBuffer - buffer < (int64_t)fileSize) {
             if (*workingBuffer == '\n') {
                 lineCount++;
             }
@@ -148,7 +150,9 @@ unsigned long countLinesInDir(const std::string &dirName) {
         file.close();
 
 #pragma omp critical
-        { totalLineCount += lineCount; }
+        {
+            totalLineCount += lineCount;
+        }
     }
 
     return totalLineCount;

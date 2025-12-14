@@ -1,3 +1,4 @@
+#include <chrono>
 #include <gtest/gtest.h>
 #include <random>
 #include <vector>
@@ -6,12 +7,12 @@
 
 void assertCubeIsInitialCube(const rubiks::CoreRubiksCube &actual) {
     const auto expected = rubiks::CoreRubiksCube();
-    for (int i = 0; i < expected.globalIndexToCubeletIndex.size(); i++) {
+    for (size_t i = 0; i < expected.globalIndexToCubeletIndex.size(); i++) {
         ASSERT_EQ(expected.globalIndexToCubeletIndex[i], actual.globalIndexToCubeletIndex[i]) << "where i=" << i;
     }
 
-    for (int i = 0; i < expected.sideAndLocalIndexToFace.size(); i++) {
-        for (int j = 0; j < expected.sideAndLocalIndexToFace[i].size(); j++) {
+    for (size_t i = 0; i < expected.sideAndLocalIndexToFace.size(); i++) {
+        for (size_t j = 0; j < expected.sideAndLocalIndexToFace[i].size(); j++) {
             ASSERT_EQ(expected.sideAndLocalIndexToFace[i][j], actual.sideAndLocalIndexToFace[i][j])
                   << "where i=" << i << " and j=" << j;
         }
@@ -25,7 +26,7 @@ TEST(RubiksCubeTest, rotate_works_when_reversed) {
     };
 
     // test all rotations and their back rotation
-    for (int i = 0; i < faces.size(); i++) {
+    for (size_t i = 0; i < faces.size(); i++) {
         std::vector<rubiks::RotationCommand> commands = {
               {faces[i], rubiks::Direction::CLOCKWISE},
               {faces[i], rubiks::Direction::COUNTER_CLOCKWISE},
@@ -34,8 +35,8 @@ TEST(RubiksCubeTest, rotate_works_when_reversed) {
     }
 
     // test all combinations of two rotations and their back rotation
-    for (int i = 0; i < faces.size(); i++) {
-        for (int j = 0; j < faces.size(); j++) {
+    for (size_t i = 0; i < faces.size(); i++) {
+        for (size_t j = 0; j < faces.size(); j++) {
             std::vector<rubiks::RotationCommand> commands = {
                   {faces[i], rubiks::Direction::CLOCKWISE},
                   {faces[j], rubiks::Direction::CLOCKWISE},
@@ -419,7 +420,7 @@ TEST(RubiksCubeTest, RandomMoves) {
         std::default_random_engine generator(seed);
         std::uniform_int_distribution<int> distribution(0, rotations.size() - 1);
 
-        for (unsigned int i = 0; i < shuffleCount; i++) {
+        for (size_t j = 0; j < shuffleCount; j++) {
             unsigned int randomIndex = distribution(generator);
             rubiks::RotationCommand rotation = rotations[randomIndex];
             commands.push_back(rotation);

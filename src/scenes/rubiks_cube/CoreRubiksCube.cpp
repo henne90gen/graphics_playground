@@ -23,8 +23,8 @@ void CoreRubiksCube::init() {
         globalIndexToCubeletIndex[i] = i;
     }
     std::array<Face, SIDE_COUNT> sides = {Face::FRONT, Face::BACK, Face::LEFT, Face::RIGHT, Face::UP, Face::DOWN};
-    for (int i = 0; i < sides.size(); i++) {
-        for (int j = 0; j < SMALL_FACE_COUNT; j++) {
+    for (size_t i = 0; i < sides.size(); i++) {
+        for (size_t j = 0; j < SMALL_FACE_COUNT; j++) {
             sideAndLocalIndexToFace[i][j] = sides[i];
         }
     }
@@ -218,10 +218,10 @@ void CoreRubiksCube::adjustFaceIndicesClockwise(Face side) {
           getCurrentFace(lastSideToSwitch, localIndex1),
           getCurrentFace(lastSideToSwitch, localIndex2),
     };
-    for (int i = 0; i < sidesToSwitch.size(); i++) {
+    for (size_t i = 0; i < sidesToSwitch.size(); i++) {
         auto sideToSwitch = sidesToSwitch[i];
         auto localIndices = localIndicesToTraverse[i];
-        for (int j = 0; j < localIndices.size(); j++) {
+        for (size_t j = 0; j < localIndices.size(); j++) {
             auto localIndex = getNeighboringLocalIndex(side, sideToSwitch, localIndices[j]);
             auto &faceToSwap = sideAndLocalIndexToFace[(int)sideToSwitch - 1][localIndex];
             auto tmp = faceToSwap;
@@ -343,7 +343,7 @@ std::array<std::pair<Face, unsigned int>, 3> getCornerPartners(Face side, unsign
 
     for (const auto &corner : corners) {
         int foundCornerIndex = -1;
-        for (int i = 0; i < corner.size(); i++) {
+        for (size_t i = 0; i < corner.size(); i++) {
             const auto &[face, localIdx] = corner[i];
             if (face == side && localIdx == localIndex) {
                 foundCornerIndex = i;
@@ -879,10 +879,7 @@ void CoreRubiksCube::solveCreateTopCross(std::vector<RotationCommand> &result) {
         const auto edgePartnerFace = getCurrentFace(edgePartner);
         return edgePartner.first == edgePartnerFace;
     };
-    const auto edgePartner1 = getEdgePartnerSideAndLocalIndex(Face::UP, 1);
-    const auto edgePartner3 = getEdgePartnerSideAndLocalIndex(Face::UP, 3);
-    const auto edgePartner5 = getEdgePartnerSideAndLocalIndex(Face::UP, 5);
-    const auto edgePartner7 = getEdgePartnerSideAndLocalIndex(Face::UP, 7);
+
     if (faceAndSideMatch(Face::UP, 1) && //
         faceAndSideMatch(Face::UP, 3) && //
         faceAndSideMatch(Face::UP, 5) && //

@@ -8,7 +8,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
-    GIT_TAG 0.9.9.8
+    GIT_TAG 1.0.1
 )
 FetchContent_Declare(
     imgui
@@ -17,8 +17,8 @@ FetchContent_Declare(
 )
 FetchContent_Declare(
     freetype
-    GIT_REPOSITORY https://git.savannah.gnu.org/git/freetype/freetype2.git
-    GIT_TAG VER-2-13-2
+    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+    GIT_TAG VER-2-13-3
 )
 FetchContent_Declare(
     fastnoise
@@ -28,7 +28,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     libsoundio
     GIT_REPOSITORY https://github.com/andrewrk/libsoundio.git
-    GIT_TAG 49a1f78b50eb0f5a49d096786a95a93874a2592a # 20.07.2023
+    GIT_TAG 2.0.1-7
 )
 FetchContent_Declare(
     libjpeg
@@ -72,7 +72,7 @@ set(ZLIB_LIBRARY zlibstatic) # libpng
 set(ZLIB_LIBRARIES zlibstatic) # libpng
 set(ZLIB_INCLUDE_DIR "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}") # libpng
 set(ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR}) # libpng
-target_include_directories(${ZLIB_LIBRARY} PUBLIC ${ZLIB_INCLUDE_DIR}) # libpng
+target_include_directories(zlibstatic PUBLIC ${ZLIB_INCLUDE_DIR}) # libpng
 
 if (EMSCRIPTEN)
     target_include_directories(example PUBLIC ${ZLIB_INCLUDE_DIR})
@@ -82,17 +82,17 @@ if (EMSCRIPTEN)
 endif ()
 
 set(SKIP_INSTALL_EXPORT ON CACHE BOOL "" FORCE) # libpng
-set(PNG_STATIC OFF CACHE BOOL "" FORCE) # libpng
-set(PNG_SHARED ON CACHE BOOL "" FORCE) # libpng
+set(PNG_STATIC ON CACHE BOOL "" FORCE) # libpng
+set(PNG_SHARED OFF CACHE BOOL "" FORCE) # libpng
 set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # libpng
 set(PNG_TESTS OFF CACHE BOOL "" FORCE) # libpng
 set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE) # libpng
 FetchContent_MakeAvailable(libpng)
 
 # libpng
-set(PNG_LIBRARY png)
+set(PNG_LIBRARY png_static)
 set(PNG_PNG_INCLUDE_DIR "${libpng_SOURCE_DIR}" "${libpng_BINARY_DIR}")
-target_include_directories(png PUBLIC ${PNG_PNG_INCLUDE_DIR})
+target_include_directories(png_static PUBLIC ${PNG_PNG_INCLUDE_DIR})
 
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE) # benchmark
 set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE) # benchmark
@@ -123,15 +123,14 @@ if (NOT EMSCRIPTEN)
     set(CURL_ENABLE_EXPORT_TARGET OFF CACHE BOOL "" FORCE) # curl
     set(CURL_ENABLE_SSL ON CACHE BOOL "" FORCE) # curl
     if(WIN32)
-    set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE) # curl
+        set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE) # curl
     else()
-    set(CURL_USE_OPENSSL ON CACHE BOOL "" FORCE) # curl
+        set(CURL_USE_OPENSSL ON CACHE BOOL "" FORCE) # curl
     endif()
     # TODO configure curl to use our zlib. See https://github.com/curl/curl/pull/11648 and https://github.com/curl/curl/issues/11285
     set(CURL_ZLIB OFF CACHE BOOL "" FORCE) # curl
     set(ZLIB_FOUND OFF CACHE BOOL "" FORCE) # curl
-    # add_library(ZLIB::ZLIB ALIAS zlibstatic) # curl
-    
+
     FetchContent_MakeAvailable(
         glfw
         googletest

@@ -188,7 +188,7 @@ std::shared_ptr<VertexArray> Sphere::createVA(const std::shared_ptr<Shader> &sha
 
     auto vertexData = std::vector<float>(vertices.size() * 8);
 #pragma omp parallel for
-    for (int i = 0; i < vertices.size(); i++) {
+    for (int i = 0; i < (int)vertices.size(); i++) {
         vertexData[i * 8 + 0] = vertices[i].x;
         vertexData[i * 8 + 1] = vertices[i].y;
         vertexData[i * 8 + 2] = vertices[i].z;
