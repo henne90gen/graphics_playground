@@ -93,7 +93,9 @@ void OpenGLMesh::updateTexture(RawMesh &rawMesh, std::unordered_map<std::string,
         ImageOps::createCheckerBoard(image);
     }
     texture->update(image.pixels.data(), image.width, image.height);
-    textures[rawMesh.material->diffuseTextureMap] = texture;
+    if (rawMesh.material != nullptr) {
+        textures[rawMesh.material->diffuseTextureMap] = texture;
+    }
 }
 
 /**

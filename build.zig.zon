@@ -37,8 +37,12 @@
     // internet connectivity.
     .dependencies = .{
         .glfw = .{
-            .url = "git+https://github.com/allyourcodebase/glfw#98607df9bce062c7fd837d58fafa06dae22edb04",
-            .hash = "glfw-0.0.0-R5AeUm0HGgA_Rlrr9HR91ejkGd-K_JyCjkXz_U3b-jp9",
+            .url = "git+https://github.com/allyourcodebase/glfw.git#602c6a309f5155dcc9cd12e8cff21f795888dcb5",
+            .hash = "glfw-0.0.0-R5AeUpoHGgBKdZ1yvUnvg_hkJRb9JuswHd00q1ZuZP99",
+        },
+        .curl = .{
+            .url = "git+https://github.com/allyourcodebase/curl.git#6b43eca64fea0ab958f12ad863748449c0c08030",
+            .hash = "curl-8.15.0-mFDAWPDzAADRUo0hA9JEsT2vEFkAY8uDYdLapuctqA0u",
         },
     },
     .paths = .{
